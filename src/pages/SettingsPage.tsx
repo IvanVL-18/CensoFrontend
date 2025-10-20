@@ -1,0 +1,1 @@
+export default function X(){ return <div className="bg-white rounded-xl shadow p-6">X</div>; }
