@@ -1,7 +1,7 @@
-import TopBar from "../components/TopBar"
-import LoginCard from "../components/Login/LoginCard"
-import Footer from "../components/Footer"
-import FallingEmblems from "../components/Login/FallingEmblems"
+import TopBar from "../components/ui/layout/TopBar"
+import LoginCard from "../components/ui/auth/LoginCard"
+import Footer from "../components/ui/layout/Footer"
+import FallingEmblems from "../components/ui/auth/FallingEmblems"
 
 export default function LoginPage() {
   return (

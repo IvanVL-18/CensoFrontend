@@ -1,4 +1,4 @@
-import SearchBar from "./SearchBar";
+import SearchBar from "../../../components/ui/common/SearchBar"; 
 
 type Props = {
   title: string;
@@ -65,7 +65,7 @@ export default function UsersHeader({
                   d='M12 4v16m8-8H4'
                 />
               </svg>
-              Nuevo Encuestado
+              Nuevo
             </button>
           )}
         </div>

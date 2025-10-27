@@ -1,10 +1,14 @@
+import React, { memo } from "react";
+
 interface Props {
-  onLogin: (e: React.FormEvent) => void
+  onLogin: (e: React.FormEvent) => void;
 }
 
-export default function ActionButtons({ onLogin }: Props) {
+function ActionButtonsBase({ onLogin }: Props) {
+  // 🔹 Previene recrear funciones internas (usa props puras)
   return (
     <div className="flex items-center justify-between pt-2">
+      {/* Botón Nuevo */}
       <button
         type="button"
         className="h-8 px-4 rounded-md text-[#5b1d27] bg-[#efe4cf] hover:bg-[#e6d9c2] transition-colors text-sm"
@@ -12,6 +16,7 @@ export default function ActionButtons({ onLogin }: Props) {
         Nuevo
       </button>
 
+      {/* Botón Acceder */}
       <button
         type="submit"
         onClick={onLogin}
@@ -20,5 +25,8 @@ export default function ActionButtons({ onLogin }: Props) {
         Acceder
       </button>
     </div>
-  )
+  );
 }
+
+// ✅ Memo evita re-render innecesario si las props no cambian
+export default memo(ActionButtonsBase);

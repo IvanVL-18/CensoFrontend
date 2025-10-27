@@ -10,7 +10,7 @@ type Props = {
 const accents = {
   blue: "from-[#0C2A52] to-[#173F7A]",
   green: "from-[#136B2E] to-[#2D8C41]",
-  teal: "from-[#0C5A66] to-[#0E7E8D]",
+  teal:  "from-[#0C5A66] to-[#0E7E8D]",
 };
 
 export default function StatCard({ title, value, icon, accent="blue" }: Props) {

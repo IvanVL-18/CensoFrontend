@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Modal from "../users/Modal";
+import Modal from "../../../components/ui/common/Modal";
 
 export type NewEncuestadoPayload = {
   email: string;
@@ -66,7 +66,7 @@ export default function NewEncuestadoModal({ open, onClose, onSubmit, loading }:
           <button
             onClick={handleAccept}
             disabled={loading}
-            className="w-full rounded-full bg-[#5b1d27] text-white py-2 hover:opacity-95 disabled:opacity-60"
+            className="w-full rounded-full bg-[#5b1d27] text-white py-2 hover:opacity-50 disabled:opacity-60"
           >
             {loading ? "Guardando..." : "Aceptar"}
           </button>
