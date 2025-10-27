@@ -1,8 +1,8 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import Sidebar from "../components/layout/Sidebar";
-import TopBar from "../components/TopBar2";
-import Breadcrumbs from "../components/layout/Breadcrumbs";
+import Sidebar from "../components/ui/layout/Sidebar";
+import TopBar from "../components/ui/layout/TopBar2";
+import Breadcrumbs from "../components/ui/layout/Breadcrumbs";
 
 export default function DashboardLayout() {
   const [open, setOpen] = useState<boolean>(() => {

@@ -7,7 +7,7 @@ export default function LoginCard() {
   const [user, setUser] = useState("")
   const [pass, setPass] = useState("")
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => { 
     e.preventDefault()
     // TODO: conecta a tu API
     console.log({ user, pass })

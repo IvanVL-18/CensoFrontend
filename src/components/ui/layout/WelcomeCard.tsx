@@ -1,4 +1,4 @@
-import { ArrowRight, BarChart3, Building2, Users } from "lucide-react";
+import { BarChart3, Building2, Users } from "lucide-react";
 
 type Props = {
   title?: string;
@@ -14,7 +14,6 @@ export default function WelcomeCard({
   title = "Bienvenido al Sistema de Censos del Estado de Hidalgo",
   subtitle = "Plataforma oficial para la gestión, registro y análisis de censos.",
   userName,
-  onPrimaryClick,
   emblemSrc = "/estrella.png",
   heroSrc = "/img/HGO.png",
 }: Props) {
@@ -55,29 +54,6 @@ export default function WelcomeCard({
             <KpiChip icon={<BarChart3 className="h-4 w-4" />} label="Censos activos" value="37" />
           </div>
 
-          {/* CTA + enlaces rápidos */}
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={onPrimaryClick}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#5F0F1B] px-4 py-2 text-white hover:bg-[#7A1828] focus:outline-none focus:ring-2 focus:ring-[#C9A54C]/60"
-            >
-              Ir al Dashboard <ArrowRight className="h-4 w-4" />
-            </button>
-            <a href="/censos" className="text-sm underline-offset-4 hover:underline text-[#5F0F1B]">
-              Ver censos
-            </a>
-            <a href="/graficador" className="text-sm underline-offset-4 hover:underline text-[#5F0F1B]">
-              Graficador
-            </a>
-            <a href="/usuarios" className="text-sm underline-offset-4 hover:underline text-[#5F0F1B]">
-              Usuarios
-            </a>
-          </div>
-
-          {/* Nota actualización */}
-          <p className="text-xs text-neutral-500">
-            Última actualización: octubre 2025 · Transparencia y eficiencia en la información estatal.
-          </p>
         </div>
 
         {/* Columna imagen/hero */}
@@ -85,7 +61,7 @@ export default function WelcomeCard({
           <div className="aspect-[4/3] md:aspect-[5/4] w-full overflow-hidden rounded-xl ring-1 ring-black/5 bg-[#F7F3E8]">
             {heroSrc ? (
               <img
-                src="/src/assets/HGO.png"
+                src="/public/HGO.png"
                 alt="Mapa o ilustración del Estado de Hidalgo"
                 className="h-full w-full object-contain md:object-cover"
               />
@@ -94,13 +70,6 @@ export default function WelcomeCard({
                 
               </div>
             )}
-          </div>
-          {/* Tarjeta flotante mini */}
-          <div className="absolute -bottom-3 right-2 md:right-4 rounded-lg bg-white/90 backdrop-blur px-3 py-2 shadow-lg ring-1 ring-black/5">
-            <div className="text-[10px] uppercase tracking-wide text-neutral-500">Progreso general</div>
-            <div className="mt-1 h-1.5 w-40 overflow-hidden rounded bg-neutral-200">
-              <div className="h-full w-3/4 bg-[#C9A54C]" />
-            </div>
           </div>
         </div>
       </div>
