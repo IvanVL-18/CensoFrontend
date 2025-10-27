@@ -12,6 +12,7 @@ import CensosPage from "./pages/CensosPage";
 import ChartsPage from "./pages/ChartsPage";
 import FiscalPage from "./pages/FiscalPage";
 import SettingsPage from "./pages/SettingsPage";
+import Units from "./pages/Units/units";
 
 export default function App() {
   return (
@@ -30,8 +31,8 @@ export default function App() {
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/ejercicios-fiscales" element={<FiscalPage />} />
         <Route path="/ajustes" element={<SettingsPage />} />
+        <Route path="/Unidades" element={<Units />} />
       </Route>
-
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>
