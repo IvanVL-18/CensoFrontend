@@ -6,7 +6,7 @@ export interface Unit {
   name: string;
   created_at: string;
   updated_at: string;
-  deleted_at?: string; // <-- CORRECCIÓN 1: '?' lo hace opcional (puede no existir)
+  deleted_at: string; // <-- CORRECCIÓN 1: '?' lo hace opcional (puede no existir)
 }
 
 // --- Interaces para la paginación ---

@@ -28,7 +28,16 @@ export function useUnits() {
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "name",
     direction: "ascending",
+    
   });
+
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewingUnit, setViewingUnit] = useState<Unit | null>(null);
+  
+  const handleViewModalClose = useCallback(() => {
+    setIsViewModalOpen(false);
+    setViewingUnit(null);
+  }, []);
 
   // --- NUEVO: Estado para el Modal ---
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -235,8 +244,9 @@ export function useUnits() {
   
 
   // --- Placeholders para el futuro ---
-  const onView = useCallback((unit: Unit) => {
-    console.log("TODO: Implementar lógica para VER", unit);
+ const onView = useCallback((unit: Unit) => {
+    setViewingUnit(unit);
+    setIsViewModalOpen(true);
   }, []);
 
   const onEdit = useCallback((unit: Unit) => {
@@ -292,6 +302,8 @@ export function useUnits() {
     isSubmitting,
     modalError,
     editingUnit,
+    isViewModalOpen,
+    viewingUnit,
 
     // Controladores (Filtros, Paginación)
     handleFilterChange,
@@ -308,7 +320,8 @@ export function useUnits() {
     onBan,
     onRestore,
     onDelete,
-    handleConfirmModalClose, // <--- FALTABA ESTE
+    handleConfirmModalClose, 
     handleConfirmAction,
+    handleViewModalClose
   };
 }

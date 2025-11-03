@@ -4,6 +4,7 @@ import { UnitsTable } from "./UnitsTable";
 import { Pagination } from "./Pagination";
 import { UnitModal } from "./UnitModal";
 import { ConfirmModal } from "./ConfirmModal";
+import { ViewUnitModal } from "./ViewUnitModal"; 
 
 export default function Units() {
   const {
@@ -21,6 +22,8 @@ export default function Units() {
     isConfirmModalOpen,
     actionUnit,
     actionType,
+    isViewModalOpen,
+    viewingUnit,
     handleFilterChange,
     handleSearchChange,
     handleSort,
@@ -33,6 +36,7 @@ export default function Units() {
     onBan,
     onRestore,
     onDelete,
+    handleViewModalClose,
     handleConfirmModalClose, 
     handleConfirmAction,
   } = useUnits();
@@ -128,6 +132,12 @@ export default function Units() {
         confirmButtonColor={confirmButtonColor}
         onClose={handleConfirmModalClose}
         onConfirm={handleConfirmAction}
+      />
+
+      <ViewUnitModal
+        isOpen={isViewModalOpen}
+        unit={viewingUnit}
+        onClose={handleViewModalClose}
       />
     </div>
   );
