@@ -1,20 +1,19 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 // Páginas base
-import LoginPage from "./pages/LoginPage";
-import HomePage from "./pages/HomePage";
-import DashboardPage from "./pages/DashboardPage";
-import CensosPage from "./pages/CensosPage";
-import ChartsPage from "./pages/ChartsPage";
-import FiscalPage from "./pages/FiscalPage";
-import SettingsPage from "./pages/SettingsPage";
+import LoginPage from "./pages/login/page/LoginPage";
+import HomePage from "./pages/home/page/HomePage";
+import DashboardPage from "./pages/deshboard/page/DashboardPage";
+import CensosPage from "./pages/census/page/CensosPage";
+import ChartsPage from "./pages/grapher/page/ChartsPage";
+import FiscalPage from "./pages/fiscal-years/page/FiscalPage";
+import SettingsPage from "./pages/settings/page/SettingsPage";
 
-// Layout
-import DashboardLayout from "./layouts/DashboardLayout";
+import DashboardLayout from "./components/DashboardLayout";
 
 // Features
-import UsersPage from "./features/users/pages/UsersPage";
-import InstitutionsPage from "./features/institutions/pages/InstitutionsPage";
+import UsersPage from "./pages/users/page/UsersPage";
+import InstitutionsPage from "./pages/institutions/page/InstitutionsPage";
 
 export default function App() {
   return (
