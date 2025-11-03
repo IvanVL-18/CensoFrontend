@@ -1,45 +1,60 @@
-import { useState, useEffect, type ChangeEvent, useMemo } from "react";
-import { getUnits, type UnitFilter } from "./units.service";
-import type { Unit, PaginatedUnitsResponse, Meta } from "./units.interfaces";
+import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
+// --- NUEVO ---: Importamos el servicio de creación
+import { getUnits, createUnit, updateUnit,banUnit, restoreUnit,forceDeleteUnit, type UnitFilter } from "./units.service";
+import type {
+  Unit,
+  PaginatedUnitsResponse,
+  Meta,
+  CreateUnitDTO,
+  UpdateUnitDTO,
+} from "./units.interfaces";
 
-/**
- * Hook personalizado para manejar toda la lógica del listado de Unidades.
- * Se encarga de:
- * - Cargar los datos de la API.
- * - Manejar los estados de carga, error y paginación.
- * - Gestionar los filtros, búsqueda y ordenamiento.
- * - Exponer las funciones para interactuar con los datos (eliminar, restaurar, etc.).
- */
-export const useUnits = () => {
-  // --- Estados de Datos ---
+type SortConfig = {
+  key: keyof Unit;
+  direction: "ascending" | "descending";
+};
+
+export function useUnits() {
+  // --- Estados de datos ---
   const [units, setUnits] = useState<Unit[]>([]);
-  const [links, setLinks] = useState<PaginatedUnitsResponse["links"] | null>(
-    null
-  );
+  const [links, setLinks] = useState<PaginatedUnitsResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
-
-  // --- Estados de UI ---
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // --- Estados de Filtro y Ordenamiento ---
+  // --- Estados de filtros y orden ---
   const [filter, setFilter] = useState<UnitFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof Unit;
-    direction: "ascending" | "descending";
-  }>({ key: "name", direction: "ascending" });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: "name",
+    direction: "ascending",
+  });
 
+  // --- NUEVO: Estado para el Modal ---
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
+  // --- NUEVO: Estado para forzar recarga ---
+  // (Esto nos permite recargar la lista después de crear un item)
+  const [reloadToken, setReloadToken] = useState(0);
+  const reloadUnits = useCallback(() => setReloadToken((t) => t + 1), []);
+  // Guardará la unidad que estamos editando
+  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
+
+  // --- 2. NUEVOS ESTADOS PARA EL MODAL DE CONFIRMACIÓN ---
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  // Guardará la unidad que queremos desactivar, restaurar o eliminar
+  const [actionUnit, setActionUnit] = useState<Unit | null>(null);
+  // Guardará qué acción estamos por confirmar
+  const [actionType, setActionType] = useState<'ban' | 'restore' | 'delete' | null>(null);
+
+  
   // --- Lógica de Carga de Datos ---
-  const loadUnits = (url?: string) => {
+
+  // 1. Efecto para cargar datos
+  useEffect(() => {
     setLoading(true);
-
-    // Si se provee una URL (de paginación), úsala. Si no, usa el servicio con el filtro.
-    const fetchPromise = url
-      ? fetch(url).then((res) => res.json() as Promise<PaginatedUnitsResponse>)
-      : getUnits(filter);
-
-    fetchPromise
+    getUnits(filter)
       .then((response) => {
         setUnits(response.data);
         setLinks(response.links);
@@ -48,123 +63,252 @@ export const useUnits = () => {
       })
       .catch((err) => {
         console.error(err);
-        setError(`Error al cargar las Modulos: ${err.message}`);
+        setError(`Error al cargar los Modulos: ${err.message}`);
       })
       .finally(() => {
         setLoading(false);
       });
-  };
+  }, [filter, reloadToken]); // --- MODIFICADO: Se recarga también con reloadToken
 
-  // Carga inicial y recarga cuando el filtro cambia
-  useEffect(() => {
-    loadUnits();
-  }, [filter]);
+  // 2. Función para paginación
+  const loadUnitsByUrl = useCallback((url: string) => {
+    setLoading(true);
+    fetch(url)
+      .then((res) => res.json() as Promise<PaginatedUnitsResponse>)
+      .then((response) => {
+        setUnits(response.data);
+        setLinks(response.links);
+        setMeta(response.meta);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(`Error al cargar la página: ${err.message}`);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
-  // --- Handlers (Manejadores de Eventos) ---
+  // --- Controladores de Eventos (Filtros, Paginación) ---
 
-  const handleFilterChange = (e: ChangeEvent<HTMLSelectElement>) => {
+  const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
     setFilter(e.target.value as UnitFilter);
-  };
+  }, []);
 
-  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-  };
+  }, []);
 
-  const handlePageClick = (url: string | null) => {
-    if (url) {
-      loadUnits(url);
-    }
-  };
+  const handlePageClick = useCallback(
+    (url: string | null) => {
+      if (url) {
+        loadUnitsByUrl(url);
+      }
+    },
+    [loadUnitsByUrl]
+  );
 
-  const handleSort = (key: keyof Unit) => {
-    let direction: "ascending" | "descending" = "ascending";
-    if (sortConfig.key === key && sortConfig.direction === "ascending") {
-      direction = "descending";
-    }
-    setSortConfig({ key, direction });
-  };
+  const handleSort = useCallback((key: keyof Unit) => {
+    setSortConfig((currentConfig) => {
+      let direction: "ascending" | "descending" = "ascending";
+      if (
+        currentConfig.key === key &&
+        currentConfig.direction === "ascending"
+      ) {
+        direction = "descending";
+      }
+      return { key, direction };
+    });
+  }, []);
 
-  // --- Handlers de Acciones (Listos para tu lógica de API) ---
-
-  const handleDesactivate = (id: number | string) => {
-    console.log("Desactivar (Soft Delete) Módulo con ID:", id);
-    // TODO: Implementar llamada a la API (ej. api.delete(`/units/${id}`))
-    // .then(() => {
-    //   console.log("Módulo desactivado");
-    //   loadUnits(); // Recargar la lista
-    // })
-    // .catch(err => console.error("Error al desactivar", err));
-  };
-
-  const handleRestore = (id: number | string) => {
-    console.log("Restaurar Módulo con ID:", id);
-    // TODO: Implementar llamada a la API (ej. api.post(`/units/${id}/restore`))
-    // .then(() => {
-    //   console.log("Módulo restaurado");
-    //   loadUnits(); // Recargar la lista
-    // })
-    // .catch(err => console.error("Error al restaurar", err));
-  };
-
-  const handleDelete = (id: number | string) => {
-    console.log("Eliminar Permanentemente Módulo con ID:", id);
-    // TODO: Implementar llamada a la API (ej. api.delete(`/units/${id}/force-delete`))
-    // .then(() => {
-    //   console.log("Módulo eliminado permanentemente");
-    //   loadUnits(); // Recargar la lista
-    // })
-    // .catch(err => console.error("Error al eliminar", err));
-  };
-
-  // --- Datos Computados (Memoizados) ---
-
-  // Primero filtra por búsqueda
+  // --- Lógica de Memoización (Datos Computados) ---
   const filteredUnits = useMemo(() => {
     return units.filter((unit) =>
       unit.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [units, searchTerm]);
 
-  // Luego ordena los resultados filtrados
   const sortedUnits = useMemo(() => {
     let sortableItems = [...filteredUnits];
-    if (sortConfig.key) {
-      sortableItems.sort((a, b) => {
-        const valA = a[sortConfig.key];
-        const valB = b[sortConfig.key];
-        if (valA == null) return 1;
-        if (valB == null) return -1;
-        if (valA < valB) {
-          return sortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (valA > valB) {
-          return sortConfig.direction === "ascending" ? 1 : -1;
-        }
-        return 0;
-      });
-    }
+    sortableItems.sort((a, b) => {
+      // ... (lógica de ordenamiento sin cambios)
+      const valA = a[sortConfig.key];
+      const valB = b[sortConfig.key];
+      if (valA == null) return 1;
+      if (valB == null) return -1;
+      if (valA < valB) {
+        return sortConfig.direction === "ascending" ? -1 : 1;
+      }
+      if (valA > valB) {
+        return sortConfig.direction === "ascending" ? 1 : -1;
+      }
+      return 0;
+    });
     return sortableItems;
   }, [filteredUnits, sortConfig]);
 
-  // --- Retorno del Hook ---
-  // Exponemos solo lo que el componente necesita
+  // --- NUEVAS FUNCIONES (Acciones CRUD) ---
+
+  // MODIFICADO: Abre el modal
+  const handleAddClick = useCallback(() => {
+    setEditingUnit(null);
+    setModalError(null); // Limpia errores antiguos
+    setIsModalOpen(true);
+  }, []);
+  
+  // NUEVO: Cierra el modal
+  const handleModalClose = useCallback(() => {
+    setIsModalOpen(false);
+    setModalError(null); // Limpia errores al cerrar
+    setEditingUnit(null);
+  }, []);
+
+  // NUEVO: Lógica para guardar
+ // Reemplaza tu 'handleModalSave' con esto:
+  const handleModalSave = useCallback(
+    async (name: string) => {
+      setIsSubmitting(true);
+      setModalError(null);
+
+      try {
+        if (editingUnit) {
+          // --- LÓGICA DE ACTUALIZAR ---
+          // (Asumiendo que tu DTO es solo { name })
+          const unitData: UpdateUnitDTO = { name }; 
+          await updateUnit(editingUnit.id, unitData);
+
+        } else {
+          // --- LÓGICA DE CREAR (la que ya tenías) ---
+          const unitData: CreateUnitDTO = { name };
+          await createUnit(unitData);
+        }
+
+        // ¡Éxito!
+        setIsModalOpen(false); // Cierra el modal
+        setEditingUnit(null);  // Limpia el estado de edición
+        reloadUnits();         // Dispara la recarga de datos
+
+      } catch (err) {
+        console.error("Error al guardar la unidad:", err);
+        setModalError((err as Error).message || "Ocurrió un error");
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [reloadUnits, editingUnit] // <--- AÑADIR 'editingUnit' A LAS DEPENDENCIAS
+  );
+
+  const handleConfirmModalClose = useCallback(() => {
+    setIsConfirmModalOpen(false);
+    setActionUnit(null);
+    setActionType(null);
+    setModalError(null); // Limpia error
+  }, []);
+
+  const handleConfirmAction = useCallback(async () => {
+    if (!actionUnit || !actionType) return;
+
+    setIsSubmitting(true);
+    setModalError(null);
+
+    try {
+      if (actionType === 'ban') {
+        await banUnit(actionUnit.id);
+      } else if (actionType === 'restore') {
+        await restoreUnit(actionUnit.id);
+      } else if (actionType === 'delete') { // <--- AÑADIR ESTE BLOQUE
+        await forceDeleteUnit(actionUnit.id);
+      }
+
+      // ¡Éxito!
+      handleConfirmModalClose(); // Cierra el modal
+      reloadUnits();             // Recarga los datos
+
+    } catch (err) {
+      console.error("Error al procesar la acción:", err);
+      setModalError((err as Error).message || "Ocurrió un error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [actionUnit, actionType, reloadUnits, handleConfirmModalClose]); // <-- Las dependencias están bien
+  
+
+  // --- Placeholders para el futuro ---
+  const onView = useCallback((unit: Unit) => {
+    console.log("TODO: Implementar lógica para VER", unit);
+  }, []);
+
+  const onEdit = useCallback((unit: Unit) => {
+    setEditingUnit(unit); // <--- Guarda la unidad a editar
+    setModalError(null);
+    setIsModalOpen(true); // <--- Abre el modal
+  }, []);
+
+  const onBan = useCallback((unit: Unit) => {
+    setActionUnit(unit);
+    setActionType('ban');
+    setIsConfirmModalOpen(true); // Abre el modal de confirmación
+    setModalError(null);
+  }, []);
+
+  const onRestore = useCallback((unit: Unit) => {
+    setActionUnit(unit);
+    setActionType('restore');
+    setIsConfirmModalOpen(true);
+    setModalError(null);
+  }, []);
+
+  const onDelete = useCallback((unit: Unit) => {
+  setActionUnit(unit);
+  setActionType('delete'); // <--- Esto le dice al modal qué textos mostrar
+  setIsConfirmModalOpen(true);
+  setModalError(null);
+}, []);
+
+  
+
+  // --- Objeto de Retorno ---
   return {
-    // Estados
+    // Estado de carga
     loading,
     error,
-    meta,
-    links,
-    filter,
-    searchTerm,
+    
     // Datos
     sortedUnits,
-    // Handlers
+    meta,
+    links,
+    
+    // Estado de filtros
+    filter,
+    searchTerm,
+
+    isConfirmModalOpen,
+    actionUnit,
+    actionType,
+    
+    // --- NUEVO: Estado del Modal ---
+    isModalOpen,
+    isSubmitting,
+    modalError,
+    editingUnit,
+
+    // Controladores (Filtros, Paginación)
     handleFilterChange,
     handleSearchChange,
-    handlePageClick,
     handleSort,
-    handleDesactivate,
-    handleRestore,
-    handleDelete,
+    handlePageClick,
+
+    // Controladores de acciones (CRUD)
+    handleAddClick,
+    handleModalClose, // --- NUEVO ---
+    handleModalSave,  // --- NUEVO ---
+    onView,
+    onEdit,
+    onBan,
+    onRestore,
+    onDelete,
+    handleConfirmModalClose, // <--- FALTABA ESTE
+    handleConfirmAction,
   };
-};
+}

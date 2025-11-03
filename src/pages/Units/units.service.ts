@@ -2,12 +2,12 @@ import type {
   Unit,
   PaginatedUnitsResponse,
   CreateUnitDTO,
-  UpdateUnitDTO
-} from './units.interfaces';
+  UpdateUnitDTO,
+} from "./units.interfaces";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
-export type UnitFilter = 'all' | 'active' | 'inactive';
+export type UnitFilter = "all" | "active" | "inactive";
 
 /**
  * ⚙️ Helper para manejar respuestas JSON
@@ -19,14 +19,19 @@ const handleJsonResponse = async (response: Response) => {
     const data = JSON.parse(text);
 
     if (!response.ok) {
-      throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
+      throw new Error(
+        data.message || `Error ${response.status}: ${response.statusText}`
+      );
     }
 
     return data;
   } catch (error) {
     // Lanzamos un error más descriptivo si el JSON falla
     throw new Error(
-      `Respuesta no válida del servidor o no es JSON. Detalle: ${text.slice(0, 200)}`
+      `Respuesta no válida del servidor o no es JSON. Detalle: ${text.slice(
+        0,
+        200
+      )}`
     );
   }
 };
@@ -37,7 +42,7 @@ const handleJsonResponse = async (response: Response) => {
 const handleEmptyResponse = async (response: Response) => {
   if (!response.ok) {
     // Consumimos el texto del error aunque no lo usemos, es buena práctica
-    await response.text(); 
+    await response.text();
     throw new Error(`Error ${response.status}: ${response.statusText}`);
   }
   // Si la respuesta es ok (200, 204), simplemente retornamos void
@@ -47,13 +52,20 @@ const handleEmptyResponse = async (response: Response) => {
 /**
  * 📥 OBTENER (GET) lista de units con filtro y paginación
  */
-export const getUnits = (filter: UnitFilter = 'all'): Promise<PaginatedUnitsResponse> => {
+export const getUnits = (
+  filter: UnitFilter = "all"
+): Promise<PaginatedUnitsResponse> => {
   const url = `${API_URL}/units/${filter}/content`;
 
-  return fetch(url)
+  return fetch(url, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "ngrok-skip-browser-warning": "true", // <-- LÍNEA AÑADIDA
+    },
+  })
     .then(handleJsonResponse)
     .catch((error) => {
-      // Relanzamos el error para que el componente que llama lo pueda capturar
       throw error;
     });
 };
@@ -65,17 +77,17 @@ export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
   const url = `${API_URL}/units`;
 
   return fetch(url, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
-    body: JSON.stringify(unitData)
+    body: JSON.stringify(unitData),
   })
     .then(handleJsonResponse)
     .then((response) => {
       // Soporta si la API devuelve el objeto anidado en 'data' o directamente
-      return response.data ?? response; 
+      return response.data ?? response;
     })
     .catch((error) => {
       throw error;
@@ -85,16 +97,19 @@ export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
 /**
  * ✏️ ACTUALIZAR (PUT/PATCH) una unit existente
  */
-export const updateUnit = (id: string, unitData: UpdateUnitDTO): Promise<Unit> => {
+export const updateUnit = (
+  id: string,
+  unitData: UpdateUnitDTO
+): Promise<Unit> => {
   const url = `${API_URL}/units/${id}`;
 
   return fetch(url, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
-    body: JSON.stringify(unitData)
+    body: JSON.stringify(unitData),
   })
     .then(handleJsonResponse)
     .then((response) => {
@@ -108,13 +123,14 @@ export const updateUnit = (id: string, unitData: UpdateUnitDTO): Promise<Unit> =
 /**
  * 🗑️ BORRAR (DELETE) una unit (Soft Delete)
  */
-export const deleteUnit = (id: string): Promise<void> => {
+export const banUnit = (id: string): Promise<void> => {
   const url = `${API_URL}/units/${id}`;
 
   return fetch(url, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: {
-      'Accept': 'application/json',
+      Accept: "application/json",
+      "ngrok-skip-browser-warning": "true", 
     },
   })
     .then(handleEmptyResponse)
@@ -130,9 +146,25 @@ export const restoreUnit = (id: string): Promise<void> => {
   const url = `${API_URL}/units/${id}/restore`;
 
   return fetch(url, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Accept': 'application/json',
+      Accept: "application/json",
+    },
+  })
+    .then(handleEmptyResponse)
+    .catch((error) => {
+      throw error;
+    });
+};
+
+export const forceDeleteUnit = (id: string | number): Promise<void> => {
+  const url = `${API_URL}/units/${id}/force-delete`;
+
+  return fetch(url, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      "ngrok-skip-browser-warning": "true",
     },
   })
     .then(handleEmptyResponse)
