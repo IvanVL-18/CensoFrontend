@@ -1,0 +1,47 @@
+
+@font-face {
+  font-family: 'GMX';
+  src: url('./assets/fonts/ttf/GMX-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('./assets/fonts/montserrat/Montserrat-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('./assets/fonts/montserrat/Montserrat-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('./assets/fonts/montserrat/Montserrat-Italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+}
+
+:root {
+  /* Colors */
+    --pantone-7421: #691B31; 
+    --pantone-468: #DDC9A3;  
+    --pantone-cool-gray-7: #98989A; 
+    --pantone-7420: #A02142;  
+    --pantone-465: #BC955B;  
+    --pantone-424: #6F7271; 
+    
+    /* Gradient with 3 colors */
+  --three-color-gradient: linear-gradient(to right, #B49060, #C3A67C, #D4C09B);
+
+  /* Tipography */
+  
+    --primary-font: 'GMX', sans-serif;
+    --secondary-font: 'Montserrat', sans-serif; 
+
+}

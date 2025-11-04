@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+     "start": "vite", 
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/montserrat": "^5.2.8",
     "@headlessui/react": "^2.2.9",
     "@vitejs/plugin-react": "^5.0.4",
     "clsx": "^2.1.1",
