@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
-// --- NUEVO ---: Importamos el servicio de creación
 import { getUnits, createUnit, updateUnit,banUnit, restoreUnit,forceDeleteUnit, type UnitFilter } from "./units.service";
 import type {
   Unit,
@@ -39,11 +38,10 @@ export function useUnits() {
     setViewingUnit(null);
   }, []);
 
-  // --- NUEVO: Estado para el Modal ---
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
-  // --- NUEVO: Estado para forzar recarga ---
   // (Esto nos permite recargar la lista después de crear un item)
   const [reloadToken, setReloadToken] = useState(0);
   const reloadUnits = useCallback(() => setReloadToken((t) => t + 1), []);
@@ -77,7 +75,7 @@ export function useUnits() {
       .finally(() => {
         setLoading(false);
       });
-  }, [filter, reloadToken]); // --- MODIFICADO: Se recarga también con reloadToken
+  }, [filter, reloadToken]); 
 
   // 2. Función para paginación
   const loadUnitsByUrl = useCallback((url: string) => {
@@ -157,7 +155,7 @@ export function useUnits() {
     return sortableItems;
   }, [filteredUnits, sortConfig]);
 
-  // --- NUEVAS FUNCIONES (Acciones CRUD) ---
+  // (Acciones CRUD) ---
 
   // MODIFICADO: Abre el modal
   const handleAddClick = useCallback(() => {
@@ -205,14 +203,14 @@ export function useUnits() {
         setIsSubmitting(false);
       }
     },
-    [reloadUnits, editingUnit] // <--- AÑADIR 'editingUnit' A LAS DEPENDENCIAS
+    [reloadUnits, editingUnit] 
   );
 
   const handleConfirmModalClose = useCallback(() => {
     setIsConfirmModalOpen(false);
     setActionUnit(null);
     setActionType(null);
-    setModalError(null); // Limpia error
+    setModalError(null); 
   }, []);
 
   const handleConfirmAction = useCallback(async () => {
@@ -226,13 +224,13 @@ export function useUnits() {
         await banUnit(actionUnit.id);
       } else if (actionType === 'restore') {
         await restoreUnit(actionUnit.id);
-      } else if (actionType === 'delete') { // <--- AÑADIR ESTE BLOQUE
+      } else if (actionType === 'delete') { 
         await forceDeleteUnit(actionUnit.id);
       }
 
       // ¡Éxito!
-      handleConfirmModalClose(); // Cierra el modal
-      reloadUnits();             // Recarga los datos
+      handleConfirmModalClose(); 
+      reloadUnits();             
 
     } catch (err) {
       console.error("Error al procesar la acción:", err);
@@ -240,10 +238,9 @@ export function useUnits() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [actionUnit, actionType, reloadUnits, handleConfirmModalClose]); // <-- Las dependencias están bien
+  }, [actionUnit, actionType, reloadUnits, handleConfirmModalClose]);
   
 
-  // --- Placeholders para el futuro ---
  const onView = useCallback((unit: Unit) => {
     setViewingUnit(unit);
     setIsViewModalOpen(true);
@@ -313,8 +310,8 @@ export function useUnits() {
 
     // Controladores de acciones (CRUD)
     handleAddClick,
-    handleModalClose, // --- NUEVO ---
-    handleModalSave,  // --- NUEVO ---
+    handleModalClose, 
+    handleModalSave,  
     onView,
     onEdit,
     onBan,

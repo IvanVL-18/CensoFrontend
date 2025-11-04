@@ -109,14 +109,14 @@ export default function Units() {
           onPageClick={handlePageClick}
         />
       </div>
-
+      
       {/* --- MUEVE ESTO AQUÍ --- */}
       {/* El modal se renderiza fuera del div p-4 para que el overlay funcione correctamente */}
       <UnitModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
         error={modalError}
-        title={modalTitle} // <--- Aquí va el título dinámico
+        title={modalTitle} 
         initialName={modalInitialName}
         onClose={handleModalClose}
         onSave={handleModalSave}

@@ -47,7 +47,7 @@ export function ConfirmModal({
       </div>
 
       {/* 2. Contenedor del Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-[#000000ab]  z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
           
           {/* Cabecera del Modal (Roja como el otro modal) */}

@@ -19,7 +19,7 @@ export default function Modal({ open, title, onClose, children, widthClass = "ma
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-[#000000ab]  z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" onClick={onClose} aria-hidden />
       <div className={`relative w-full ${widthClass} rounded-xl bg-white shadow-xl`}>
         <div className="flex items-center justify-between rounded-t-xl bg-neutral-800 text-white px-4 py-3">

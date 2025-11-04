@@ -9,9 +9,7 @@ const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type UnitFilter = "all" | "active" | "inactive";
 
-/**
- * ⚙️ Helper para manejar respuestas JSON
- */
+
 const handleJsonResponse = async (response: Response) => {
   const text = await response.text(); // leer como texto por si no es JSON
 
@@ -61,7 +59,7 @@ export const getUnits = (
     method: "GET",
     headers: {
       Accept: "application/json",
-      "ngrok-skip-browser-warning": "true", // <-- LÍNEA AÑADIDA
+      "ngrok-skip-browser-warning": "true", 
     },
   })
     .then(handleJsonResponse)

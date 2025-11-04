@@ -68,7 +68,17 @@ export function UnitsTable({
           <tr>
             {/* 1. Columna "No." */}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-              No.
+              <button
+                onClick={() => onSort("id")} // Conectado a la prop onSort
+                className="
+                  flex items-center space-x-1     
+                  text-xs font-medium text-gray-500 uppercase tracking-wider
+                  hover:text-opacity-75 transition-colors
+                "
+              >
+                <span>No°</span>
+                <IconSort size={16} strokeWidth={2.5} />
+              </button>
             </th>
 
             {/* 2. Columna "Nombre" */}
