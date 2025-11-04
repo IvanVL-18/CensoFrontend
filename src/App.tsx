@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route, Navigate } from "react-router-dom";
 
-function App() {
-  const [count, setCount] = useState(0)
+// Páginas base
+import LoginPage from "./pages/login/page/LoginPage";
+import HomePage from "./pages/home/page/HomePage";
+import DashboardPage from "./pages/deshboard/page/DashboardPage";
+import CensosPage from "./pages/census/page/CensosPage";
+import ChartsPage from "./pages/grapher/page/ChartsPage";
+import FiscalPage from "./pages/fiscal-years/page/FiscalPage";
+import SettingsPage from "./pages/settings/page/SettingsPage";
 
+import DashboardLayout from "./components/DashboardLayout";
+
+// Features
+import UsersPage from "./pages/users/page/UsersPage";
+import InstitutionsPage from "./pages/institutions/page/InstitutionsPage";
+
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Routes>
+      {/* Ruta pública */}
+      <Route path="/login" element={<LoginPage />} />
 
-export default App
+      {/* Área autenticada (usa layout con sidebar/topbar) */}
+      <Route element={<DashboardLayout />}>
+        <Route path="/" element={<Navigate to="/inicio" replace />} />
+        <Route path="/inicio" element={<HomePage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/usuarios" element={<UsersPage />} />
+        <Route path="/instituciones" element={<InstitutionsPage />} />
+        <Route path="/censos" element={<CensosPage />} />
+        <Route path="/graficador" element={<ChartsPage />} />
+        <Route path="/ejercicios-fiscales" element={<FiscalPage />} />
+        <Route path="/ajustes" element={<SettingsPage />} />
+      </Route>
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/inicio" replace />} />
+    </Routes>
+  );
+}
