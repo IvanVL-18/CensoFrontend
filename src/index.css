@@ -16,4 +16,21 @@
   }
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(10px); opacity: 0.9; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@layer utilities {
+  .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
+  .animate-slideIn { animation: slideIn 0.25s ease-out; }
+}
+
+
+
 

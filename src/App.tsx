@@ -1,26 +1,28 @@
-// src/App.tsx
 import { Routes, Route, Navigate } from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
 
-// Layout y páginas del dashboard
-import DashboardLayout from "./layouts/DashboardLayout";
-import HomePage from "./pages/HomePage";
-import DashboardPage from "./pages/DashboardPage";
-import UsersPage from "./pages/UsersPage";
-import InstitutionsPage from "./pages/InstitutionsPage";
-import CensosPage from "./pages/CensosPage";
-import ChartsPage from "./pages/ChartsPage";
-import FiscalPage from "./pages/FiscalPage";
-import SettingsPage from "./pages/SettingsPage";
+// Páginas base
+import LoginPage from "./pages/login/page/LoginPage";
+import HomePage from "./pages/home/page/HomePage";
+import DashboardPage from "./pages/deshboard/page/DashboardPage";
+import CensosPage from "./pages/census/page/CensosPage";
+import ChartsPage from "./pages/grapher/page/ChartsPage";
+import FiscalPage from "./pages/fiscal-years/page/FiscalPage";
+import SettingsPage from "./pages/settings/page/SettingsPage";
+
+import DashboardLayout from "./components/DashboardLayout";
+
+// Features
+import UsersPage from "./pages/users/page/UsersPage";
+import InstitutionsPage from "./pages/institutions/page/InstitutionsPage";
 import Units from "./pages/Units/units";
 
 export default function App() {
   return (
     <Routes>
-      {/* Login independiente */}
+      {/* Ruta pública */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* Área autenticada con layout (sidebar + topbar) */}
+      {/* Área autenticada (usa layout con sidebar/topbar) */}
       <Route element={<DashboardLayout />}>
         <Route path="/" element={<Navigate to="/inicio" replace />} />
         <Route path="/inicio" element={<HomePage />} />
@@ -36,6 +38,5 @@ export default function App() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>
-    
   );
 }
