@@ -4,7 +4,7 @@ export default function Footer() {
       {/* 🔹 Franja superior con logos */}
       <section className="mt-16 bg-[#FFFFFF]/60 backdrop-blur-sm flex justify-center items-center gap-20 py-2 border-t border-transparent">
         <img
-          src="/public/logo-inegi.png"
+          src="/logoInegi.png"
           alt="Logo INGE"
           className="h-7 md:h-9 object-contain"
         />
@@ -23,7 +23,7 @@ export default function Footer() {
           {/* Logo izquierdo */}
           <div className="flex justify-center md:justify-start">
             <img
-              src="/public/logo-hidalgo.png"
+              src="/logohidalgo.svg"
               alt="Escudo del Estado de Hidalgo"
               className="h-42 object-contain"
             />

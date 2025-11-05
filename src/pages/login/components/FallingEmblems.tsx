@@ -22,7 +22,7 @@ export default function FallingEmblems() {
       {DROPS.map((d, i) => (
         <img
           key={i}
-          src="/public/estrella.png" // ← tu mini-logo
+          src="/public/estrella.svg" // ← tu mini-logo
           alt=""
           className={[
             "absolute object-contain opacity-70 animate-[zoomIn_4s_ease-in-out_infinite]",

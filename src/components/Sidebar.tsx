@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  Package
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -25,6 +26,7 @@ const items = [
   { to: "/graficador", icon: BarChart3, label: "Graficador" },
   { to: "/ejercicios-fiscales", icon: CalendarRange, label: "Ejercicios Fiscales" },
   { to: "/ajustes", icon: Settings, label: "Ajustes" },
+  { to: "/Unidades", icon: Package, label: "Modulos" },
 ];
 
 export default function Sidebar({ open, onToggle }: Props) {
@@ -40,12 +42,12 @@ export default function Sidebar({ open, onToggle }: Props) {
     <aside
       className={clsx(
         "h-screen sticky top-0 z-30 bg-[#5F0F1B] text-white",
-        open ? "w-55" : "w-30"
+        open ? "w-55" : "w-22"
       )}
     >
       <div className="h-14 flex items-center justify-between px 2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <img src="/estrella.png" className="h-12 w-14" alt="Escudo" />
+          <img src="/estrella.svg" className="h-12 w-14" alt="Escudo" />
           <div
             className={clsx(
               "font-semibold whitespace-nowrap truncate pr-2",
