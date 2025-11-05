@@ -12,7 +12,7 @@ export default function WelcomeCard({
   title = "Bienvenido al Sistema de Censos del Estado de Hidalgo",
   subtitle = "Plataforma oficial para la gestión, registro y análisis de censos.",
   userName,
-  heroSrc = "/logo-inegi.svg", 
+  heroSrc = "/logoInegi.png", 
 }: Props) {
   return (
     <section className="relative overflow-hidden rounded-2xl bg-white shadow-[0_8px_28px_rgba(0,0,0,.08)]">
@@ -43,7 +43,7 @@ export default function WelcomeCard({
               <img
                 src={heroSrc} 
                 alt="lustración del Estado de Hidalgo"
-                className="h-full w-full object-contain md:object-cover"
+                className="h-full w-full object-contain"
               />
             ) : (
               <div className="h-full w-full grid place-items-center text-neutral-400 text-sm">
