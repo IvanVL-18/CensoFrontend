@@ -53,7 +53,7 @@ const handleEmptyResponse = async (response: Response) => {
 export const getUnits = (
   filter: UnitFilter = "all"
 ): Promise<PaginatedUnitsResponse> => {
-  const url = `${API_URL}/units/${filter}/content`;
+  const url = `${API_URL}/sections/${filter}/content`;
 
   return fetch(url, {
     method: "GET",
@@ -72,7 +72,7 @@ export const getUnits = (
  * ➕ CREAR (POST) una nueva unit
  */
 export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
-  const url = `${API_URL}/units`;
+  const url = `${API_URL}/sections`;
 
   return fetch(url, {
     method: "POST",
@@ -99,7 +99,7 @@ export const updateUnit = (
   id: string,
   unitData: UpdateUnitDTO
 ): Promise<Unit> => {
-  const url = `${API_URL}/units/${id}`;
+  const url = `${API_URL}/sections/${id}`;
 
   return fetch(url, {
     method: "PUT",
@@ -122,7 +122,7 @@ export const updateUnit = (
  * 🗑️ BORRAR (DELETE) una unit (Soft Delete)
  */
 export const banUnit = (id: string): Promise<void> => {
-  const url = `${API_URL}/units/${id}`;
+  const url = `${API_URL}/sections/${id}`;
 
   return fetch(url, {
     method: "DELETE",
@@ -141,7 +141,7 @@ export const banUnit = (id: string): Promise<void> => {
  * ♻️ RESTAURAR (POST) una unit borrada
  */
 export const restoreUnit = (id: string): Promise<void> => {
-  const url = `${API_URL}/units/${id}/restore`;
+  const url = `${API_URL}/sections/${id}/restore`;
 
   return fetch(url, {
     method: "POST",
@@ -156,7 +156,7 @@ export const restoreUnit = (id: string): Promise<void> => {
 };
 
 export const forceDeleteUnit = (id: string | number): Promise<void> => {
-  const url = `${API_URL}/units/${id}/force-delete`;
+  const url = `${API_URL}/sections/${id}/force-delete`;
 
   return fetch(url, {
     method: "DELETE",

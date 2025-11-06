@@ -127,7 +127,7 @@ export function UnitsTable({
           {!loading && !error && units.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                No se encontraron Modulos.
+                No se encontraron Secciones.
               </td>
             </tr>
           )}

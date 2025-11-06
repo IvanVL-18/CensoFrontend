@@ -74,7 +74,7 @@ export function useUnits() {
       })
       .catch((err) => {
         console.error(err);
-        setError(`Error al cargar los Modulos: ${err.message}`);
+        setError(`Error al cargar los Secciones: ${err.message}`);
       })
       .finally(() => {
         setLoading(false);
