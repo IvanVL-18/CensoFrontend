@@ -11,7 +11,8 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Package
+  Package,
+  Paperclip 
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -27,6 +28,7 @@ const items = [
   { to: "/ejercicios-fiscales", icon: CalendarRange, label: "Ejercicios Fiscales" },
   { to: "/ajustes", icon: Settings, label: "Ajustes" },
   { to: "/Unidades", icon: Package, label: "Modulos" },
+  { to: "/Secciones", icon: Paperclip, label: "Secciones" },
 ];
 
 export default function Sidebar({ open, onToggle }: Props) {
