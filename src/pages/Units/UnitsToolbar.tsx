@@ -44,7 +44,7 @@ export function UnitsToolbar({
   return (
     <>
       {/* --- Cabecera: Título y Botón --- */}
-      <div className="flex justify-between items-center p-4 bg-red-900">
+      <div className="flex justify-between items-center p-4 bg-[var(--pantone-7421)]">
         <h1 className="text-xl md:text-2xl font-bold text-white">Modulos</h1>
         <button
           onClick={onAddClick} // Conectamos el evento

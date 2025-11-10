@@ -41,7 +41,7 @@ const EncuestadosTable = ({ users }: { users: User[] }) => {
 
       {/* Tabla de Encuestados */}
       <table className="w-full table-auto border-collapse text-left">
-        <thead className="bg-[#5F0F1B] text-white">
+        <thead className="bg-[var(--pantone-7421)] text-white">
           <tr>
             <th className="px-4 py-2">Avatar</th>
             <th className="px-4 py-2">Nombre Completo</th>

@@ -24,8 +24,8 @@ export default function WelcomeCard({
                <h2 className="text-2xl md:text-3xl font-extrabold leading-tight text-[#5F0F1B]" style={{ fontFamily: 'var(--primary-font)' }}>
                 {title}
               </h2>
-              <p className="text-sm md:text-base text-neutral-600">
-                {subtitle} {userName ? <span className="font-medium text-neutral-700">| {userName}</span> : null}
+              <p className="text-sm md:text-base text-neutral-600"  style={{ fontFamily: 'var(--secondary-font)' }}>
+                {subtitle} {userName ? <span className="font-medium text-neutral-700" >| {userName}</span> : null}
               </p>
             </div>
           </div>
