@@ -1,9 +1,12 @@
+import '/src/assets/global-variables.css';
+import { BarChart3, Building2, Users } from "lucide-react";
+
 type Props = {
   title?: string;
   subtitle?: string;
   userName?: string;
   onPrimaryClick?: () => void;
-  heroSrc?: string;   
+  heroSrc?: string;  
 };
 
 export default function WelcomeCard({
@@ -18,7 +21,7 @@ export default function WelcomeCard({
         <div className="md:col-span-2 flex flex-col gap-6">
           <div className="flex items-center gap-4">
             <div className="space-y-1">
-              <h2 className="text-2xl md:text-3xl font-extrabold leading-tight text-[#5F0F1B]">
+               <h2 className="text-2xl md:text-3xl font-extrabold leading-tight text-[#5F0F1B]" style={{ fontFamily: 'var(--primary-font)' }}>
                 {title}
               </h2>
               <p className="text-sm md:text-base text-neutral-600">

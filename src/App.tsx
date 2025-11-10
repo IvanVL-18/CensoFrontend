@@ -13,6 +13,7 @@ import DashboardLayout from "./components/DashboardLayout";
 
 import UsersPage from "./pages/users/page/UsersPage";
 import Units from "./pages/Units/units";
+import Section from "./pages/Section/Section";
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/ejercicios-fiscales" element={<FiscalPage />} />
         <Route path="/ajustes" element={<SettingsPage />} />
         <Route path="/Unidades" element={<Units />} />
+        <Route path="/Secciones" element={<Section/>} />
       </Route>
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
