@@ -1,35 +1,65 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { Meta, PaginatedUnitsResponse } from "./units.interfaces"; // Ajusta la ruta
 
-type PaginationProps = {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-};
+// --- Definición de Props ---
 
-const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) => {
+interface PaginationProps {
+  meta: Meta | null;
+  links: PaginatedUnitsResponse["links"] | null;
+  loading: boolean;
+  error: string | null;
+  onPageClick: (url: string | null) => void;
+}
+
+// --- Componente ---
+
+export function Pagination({
+  meta,
+  links,
+  loading,
+  error,
+  onPageClick,
+}: PaginationProps) {
+  // No mostrar nada si está cargando, hay un error, o no hay datos de paginación
+  if (loading || error || !meta || !links) {
+    return null;
+  }
+
   return (
-    <div className="flex items-center justify-center gap-2 mt-4">
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage <= 1}
-        className="p-2 rounded-full bg-[#5F0F1B] text-white disabled:bg-[#ddd]"
-      >
-        <ChevronLeft size={18} />
-      </button>
+    <div className="flex flex-col md:flex-row justify-between items-center mt-4">
+      <div className="text-sm text-gray-700 mb-2 md:mb-0">
+        Mostrando <span className="font-medium">{meta.from}</span> a{" "}
+        <span className="font-medium">{meta.to}</span> de{" "}
+        <span className="font-medium">{meta.total}</span> resultados
+      </div>
 
-      <span className="text-sm text-[#5F0F1B]">
-        Página {currentPage} de {totalPages}
-      </span>
-
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage >= totalPages}
-        className="p-2 rounded-full bg-[#5F0F1B] text-white disabled:bg-[#ddd]"
+      <nav
+        className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+        aria-label="Pagination"
       >
-        <ChevronRight size={18} />
-      </button>
+        {meta.links.map((link: Meta["links"][number], index: number) => (
+          <button
+            key={index}
+            onClick={() => onPageClick(link.url)} // Conectado a la prop
+            disabled={!link.url || link.active}
+            dangerouslySetInnerHTML={{ __html: link.label }}
+            className={`
+                relative inline-flex items-center px-4 py-2 border text-sm font-medium
+                ${
+                  link.active
+                    ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                    : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                }
+                ${
+                  !link.url
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : ""
+                }
+                ${index === 0 ? "rounded-l-md" : ""}
+                ${index === meta.links.length - 1 ? "rounded-r-md" : ""}
+              `}
+          />
+        ))}
+      </nav>
     </div>
   );
-};
-
-export default Pagination;
+}

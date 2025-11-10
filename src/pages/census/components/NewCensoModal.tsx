@@ -1,4 +1,3 @@
-import { CalendarDays } from "lucide-react";
 import { useState, useEffect } from "react";
 import UiModal from "./UiModal";
 
@@ -50,13 +49,13 @@ export default function NewCensoModal({
       description: form.description.trim(),
       startDate: form.startDate,
       endDate: form.endDate,
-    active: form.active,
+      active: form.active,
     });
     onClose();
   };
 
   const inputBase =
-    "h-10 w-full rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-[#B49060]";
+    "h-10 w-full rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-[#506C7F] text-sm";
 
   return (
     <UiModal
@@ -67,21 +66,21 @@ export default function NewCensoModal({
         <>
           <button
             onClick={onClose}
-            className="px-4 h-9 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="px-4 h-9 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 focus:outline-none"
           >
             Cancelar
           </button>
           <button
             onClick={save}
             disabled={!valid}
-            className="px-4 h-9 rounded-md text-white disabled:opacity-50 bg-gradient-to-r from-[#B49060] via-[#C3A67C] to-[#D4C09B] shadow hover:brightness-95"
+            className="px-4 h-9 rounded-md text-white disabled:opacity-50 bg-gradient-to-r from-[#506C7F] to-[#3E4C59] shadow-md hover:brightness-95"
           >
             Aceptar
           </button>
         </>
       }
     >
-      {/* Subtítulo seccion */}
+      {/* Subtítulo sección */}
       <div className="text-center text-gray-800 font-semibold mb-4">
         Información del Cuestionario
       </div>
@@ -120,39 +119,33 @@ export default function NewCensoModal({
           <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
           <textarea
             rows={3}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#B49060]"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#506C7F]"
             placeholder="Descripción"
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
           />
         </div>
 
-        {/* Fechas con icono al lado derecho estilo maqueta */}
+        {/* Fechas */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha inicio</label>
             <input
               type="date"
-              className={`${inputBase} pr-10`}
+              className={inputBase}
               value={form.startDate}
               onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
             />
-            <div className="absolute right-0 bottom-0 top-[26px] w-9 grid place-items-center rounded-r-md bg-[#C3A67C]">
-              <CalendarDays size={18} className="text-white" />
-            </div>
           </div>
 
-          <div className="relative">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de límite</label>
             <input
               type="date"
-              className={`${inputBase} pr-10`}
+              className={inputBase}
               value={form.endDate}
               onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
             />
-            <div className="absolute right-0 bottom-0 top-[26px] w-9 grid place-items-center rounded-r-md bg-[#C3A67C]">
-              <CalendarDays size={18} className="text-white" />
-            </div>
           </div>
         </div>
 

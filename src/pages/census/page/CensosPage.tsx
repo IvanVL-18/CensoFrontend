@@ -1,56 +1,57 @@
-
+import { useMemo, useState } from "react";
 import CensoCard, { type Censo } from "../components/CensoCard";
 import Pagination from "../components/Pagination";
 import NewCensoModal from "../components/NewCensoModal";
 import NewCensoButton from "../components/NewCensoButton";
-import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import SearchBar from "../components/SearchBar"; // Importamos el SearchBar
 
 const MOCK: Censo[] = [
-  // ...tus mocks
+  // Tus mocks aquí
 ];
 
 export default function CensosPage() {
   const [items, setItems] = useState<Censo[]>(MOCK);
+  const [q, setQ] = useState(""); // Estado para la búsqueda
 
-  // 🔎 búsqueda
-  const [q, setQ] = useState("");
-
-  // 📄 paginación según tu componente
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(6); // ← usa lo que quieras por default
-
-  // ➕ modal crear
-  const [openCreate, setOpenCreate] = useState(false);
-
-  // Filtrado
+  // Filtrado de los items basado en la búsqueda
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return items;
     return items.filter((c) => c.name.toLowerCase().includes(s));
   }, [items, q]);
 
-  // Totales p/ Pagination
-  const total = filtered.length;
+  // Paginación
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(6);
 
-  // Slice de la página actual
   const start = (page - 1) * perPage;
   const end = start + perPage;
   const pageItems = filtered.slice(start, end);
 
-  // Handlers Pagination (coinciden con tu API)
+  const total = filtered.length;
+
   const onChangePage = (p: number) => setPage(p);
   const onChangePerPage = (pp: number) => {
     setPerPage(pp);
-    setPage(1); // reset a la primera cuando cambia el tamaño de página
+    setPage(1); // Reset a la primera página cuando cambie el tamaño de página
   };
 
-  // Crear (ejemplo local)
+  const handleSearchChange = (query: string) => {
+    setQ(query);
+    setPage(1); // Reiniciar la página al cambiar la búsqueda
+  };
+
+  const [openCreate, setOpenCreate] = useState(false);
+
   const handleCreate = (p: {
-    name: string; year: number; description: string;
-    startDate: string; endDate: string; active: boolean;
+    name: string;
+    year: number;
+    description: string;
+    startDate: string;
+    endDate: string;
+    active: boolean;
   }) => {
-    const nextId = (items.length ? Math.max(...items.map(i => i.id)) : 0) + 1;
+    const nextId = (items.length ? Math.max(...items.map((i) => i.id)) : 0) + 1;
     const nuevo: Censo = {
       id: nextId,
       name: p.name,
@@ -60,9 +61,9 @@ export default function CensosPage() {
       endDate: p.endDate,
       active: p.active,
     };
-    setItems(prev => [nuevo, ...prev]);
-    setQ("");
-    setPage(1);
+    setItems((prev) => [nuevo, ...prev]);
+    setQ(""); // Limpiar la búsqueda
+    setPage(1); // Reset a la primera página
   };
 
   return (
@@ -73,41 +74,32 @@ export default function CensosPage() {
           <h2 className="text-2xl font-bold">Censos</h2>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative w-full md:w-72">
-              <input
-                placeholder="Buscar"
-                value={q}
-                onChange={(e) => { setQ(e.target.value); setPage(1); }}
-                className="w-full h-10 rounded-md pl-10 pr-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
-              />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={18} />
-            </div>
-
+            <SearchBar
+              searchQuery={q}
+              onSearchChange={handleSearchChange} // Función que maneja el cambio
+            />
             <NewCensoButton onClick={() => setOpenCreate(true)} />
           </div>
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Grid de Censos */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {pageItems.map((c) => (
           <CensoCard key={c.id} censo={c} onView={(id) => console.log("Ver censo", id)} />
         ))}
       </div>
 
-      {/* 📟 Pagination: usa tus props exactas */}
+      {/* Paginación */}
       <div className="flex justify-center">
         <Pagination
-          page={page}
-          perPage={perPage}
-          total={total}
-          onChangePage={onChangePage}
-          onChangePerPage={onChangePerPage}
-          perPageOptions={[6, 9, 12]} // opcional
+          currentPage={page}
+          totalPages={Math.ceil(total / perPage)}
+          onPageChange={onChangePage}
         />
       </div>
 
-      {/* Modal crear */}
+      {/* Modal para crear un nuevo Censo */}
       <NewCensoModal
         open={openCreate}
         onClose={() => setOpenCreate(false)}
