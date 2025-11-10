@@ -1,6 +1,6 @@
 export type User = {
   id: number;
-  avatar: string;        // requerido (quieres avatar)
+  avatar: string;        
   fullName: string;
   role: string;
   institution: string;
