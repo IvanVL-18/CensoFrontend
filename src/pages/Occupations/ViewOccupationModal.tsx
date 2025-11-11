@@ -1,11 +1,11 @@
 import { X } from "lucide-react";
-// Importa tu interfaz 'Unit' desde donde la tengas
-import type { Unit } from "./Occupations.interfaces";
+// Importa tu interfaz 'Occupation' desde donde la tengas
+import type { Occupation } from "./Occupations.interfaces";
 
-interface ViewUnitModalProps {
+interface ViewOccupationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  unit: Unit | null; // El módulo que vamos a mostrar
+  occupation: Occupation | null; // La ocupación que vamos a mostrar
 }
 
 /**
@@ -44,9 +44,9 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewUnitModal({ isOpen, onClose, unit }: ViewUnitModalProps) {
+export function ViewOccupationModal({ isOpen, onClose, occupation }: ViewOccupationModalProps) {
   // Si no está abierto o no hay una unidad, no renderiza nada
-  if (!isOpen || !unit) {
+  if (!isOpen || !occupation) {
     return null;
   }
 
@@ -64,7 +64,7 @@ export function ViewUnitModal({ isOpen, onClose, unit }: ViewUnitModalProps) {
           
           {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">Detalle del Módulo</h2>
+            <h2 className="text-xl font-bold text-white">Detalle de la Ocupación</h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300"
@@ -77,16 +77,16 @@ export function ViewUnitModal({ isOpen, onClose, unit }: ViewUnitModalProps) {
           {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
             <DetailRow 
-              label="Nombre del módulo:" 
-              value={unit.name} 
+              label="Nombre de la Ocupación:" 
+              value={occupation.name} 
             />
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(unit.created_at)} // Asumiendo que se llama así
+              value={formatDate(occupation.created_at)} // Asumiendo que se llama así
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(unit.deleted_at)} // Asumiendo que se llama así
+              value={formatDate(occupation.deleted_at)} // Asumiendo que se llama así
             />
           </div>
 

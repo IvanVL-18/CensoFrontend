@@ -7,7 +7,7 @@ import {
   Ban,
   type LucideProps,
 } from "lucide-react";
-import type { Unit, Meta } from "./occupations.interfaces"; // Asegúrate que la ruta sea correcta
+import type { Occupation, Meta } from "./Occupations.interfaces"; // Asegúrate que la ruta sea correcta
 
 // --- Definiciones de Iconos (usados solo en la tabla) ---
 
@@ -33,24 +33,24 @@ const IconBan = (props: LucideProps) => (
 
 // --- Definición de Props ---
 
-interface UnitsTableProps {
-  units: Unit[]; // Recibe las unidades YA filtradas y ordenadas
+interface OccupationsTableProps {
+  occupation: Occupation[]; // Recibe las ocupaciones YA filtradas y ordenadas
   meta: Meta | null;
   loading: boolean;
   error: string | null;
-  onSort: (key: keyof Unit) => void;
+  onSort: (key: keyof Occupation) => void;
   // Funciones para manejar las acciones
-  onView: (unit: Unit) => void;
-  onEdit: (unit: Unit) => void;
-  onBan: (unit: Unit) => void;
-  onRestore: (unit: Unit) => void;
-  onDelete: (unit: Unit) => void;
+  onView: (occupation: Occupation) => void;
+  onEdit: (occupation: Occupation) => void;
+  onBan: (occupation: Occupation) => void;
+  onRestore: (occupation: Occupation) => void;
+  onDelete: (occupation: Occupation) => void;
 }
 
 // --- Componente ---
 
-export function UnitsTable({
-  units,
+export function OccupationsTable({
+  occupation: occupations,
   meta,
   loading,
   error,
@@ -60,7 +60,7 @@ export function UnitsTable({
   onBan,
   onRestore,
   onDelete,
-}: UnitsTableProps) {
+}: OccupationsTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -124,10 +124,10 @@ export function UnitsTable({
           )}
 
           {/* --- Estado Vacío --- */}
-          {!loading && !error && units.length === 0 && (
+          {!loading && !error && occupations.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                No se encontraron Modulos.
+                No se encontraron Ocupaciones.
               </td>
             </tr>
           )}
@@ -135,26 +135,26 @@ export function UnitsTable({
           {/* --- Mapeo de datos --- */}
           {!loading &&
             !error &&
-            units.map((unit, index) => (
-              <tr key={unit.id} className="hover:bg-gray-50">
+            occupations.map((occupation, index) => (
+              <tr key={occupation.id} className="hover:bg-gray-50">
                 {/* Celda "No." */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {meta ? meta.from + index : unit.id}
+                  {meta ? meta.from + index : occupation.id}
                 </td>
 
                 {/* Celda "Nombre" */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {unit.name}
+                  {occupation.name}
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
-                  {!unit.deleted_at ? (
+                  {!occupation.deleted_at ? (
                     <>
                       {/* --- Botón VER (Activo) --- */}
                       <button
-                        title="Ver Modulo"
-                        onClick={() => onView(unit)} // Conectado a prop
+                        title="Ver Ocupación"
+                        onClick={() => onView(occupation)} // Conectado a prop
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -167,8 +167,8 @@ export function UnitsTable({
 
                       {/* --- Botón EDITAR (Activo) --- */}
                       <button
-                        title="Editar Modulo"
-                        onClick={() => onEdit(unit)} // Conectado a prop
+                        title="Editar Ocupación"
+                        onClick={() => onEdit(occupation)} // Conectado a prop
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#1b2469] hover:text-white 
@@ -181,8 +181,8 @@ export function UnitsTable({
 
                       {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
-                        title="Desactivar Modulo"
-                        onClick={() => onBan(unit)} // Conectado a prop
+                        title="Desactivar Ocupación"
+                        onClick={() => onBan(occupation)} // Conectado a prop
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 
@@ -197,8 +197,8 @@ export function UnitsTable({
                     <>
                       {/* --- Botón VER (Inactivo) --- */}
                       <button
-                        title="Ver Modulo"
-                        onClick={() => onView(unit)} // Conectado a prop
+                        title="Ver Ocupación"
+                        onClick={() => onView(occupation)} // Conectado a prop
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -211,8 +211,8 @@ export function UnitsTable({
 
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
-                        title="Restaurar Modulo"
-                        onClick={() => onRestore(unit)} // Conectado a prop
+                        title="Restaurar Ocupación"
+                        onClick={() => onRestore(occupation)} // Conectado a prop
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#1b6939] hover:text-white 
@@ -226,7 +226,7 @@ export function UnitsTable({
                       {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
                       <button
                         title="Eliminar Permanentemente"
-                        onClick={() => onDelete(unit)} // Conectado a prop
+                        onClick={() => onDelete(occupation)} // Conectado a prop
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 

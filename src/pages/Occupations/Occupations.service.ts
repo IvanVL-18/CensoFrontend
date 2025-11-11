@@ -1,13 +1,14 @@
 import type {
-  Unit,
-  PaginatedUnitsResponse,
-  CreateUnitDTO,
-  UpdateUnitDTO,
-} from "./occupations.interfaces";
+  Occupation,
+  PaginatedOccupationsResponse,
+  CreateOccupationDTO,
+  Institution,
+  UpdateOccupationDTO,
+} from "./Occupations.interfaces";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
-export type UnitFilter = "all" | "active" | "inactive";
+export type OccupationFilter = "all" | "active" | "inactive";
 
 
 const handleJsonResponse = async (response: Response) => {
@@ -48,11 +49,11 @@ const handleEmptyResponse = async (response: Response) => {
 };
 
 /**
- * 📥 OBTENER (GET) lista de units con filtro y paginación
+ * 📥 OBTENER (GET) lista de occupations con filtro y paginación
  */
-export const getUnits = (
-  filter: UnitFilter = "all"
-): Promise<PaginatedUnitsResponse> => {
+export const getOccupations = (
+  filter: OccupationFilter = "all"
+): Promise<PaginatedOccupationsResponse> => {
   const url = `${API_URL}/occupations/${filter}/content`;
 
   return fetch(url, {
@@ -69,9 +70,9 @@ export const getUnits = (
 };
 
 /**
- * ➕ CREAR (POST) una nueva unit
+ * ➕ CREAR (POST) una nueva occupation
  */
-export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
+export const createOccupation = (occupationData: CreateOccupationDTO): Promise<Occupation> => {
   const url = `${API_URL}/occupations`;
 
   return fetch(url, {
@@ -80,7 +81,7 @@ export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify(unitData),
+    body: JSON.stringify(occupationData),
   })
     .then(handleJsonResponse)
     .then((response) => {
@@ -93,12 +94,12 @@ export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
 };
 
 /**
- * ✏️ ACTUALIZAR (PUT/PATCH) una unit existente
+ * ✏️ ACTUALIZAR (PUT/PATCH) una occupation existente
  */
-export const updateUnit = (
+export const updateOccupation = (
   id: string,
-  unitData: UpdateUnitDTO
-): Promise<Unit> => {
+  occupationData: UpdateOccupationDTO
+): Promise<Occupation> => {
   const url = `${API_URL}/occupations/${id}`;
 
   return fetch(url, {
@@ -107,7 +108,7 @@ export const updateUnit = (
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify(unitData),
+    body: JSON.stringify(occupationData),
   })
     .then(handleJsonResponse)
     .then((response) => {
@@ -119,9 +120,9 @@ export const updateUnit = (
 };
 
 /**
- * 🗑️ BORRAR (DELETE) una unit (Soft Delete)
+ * 🗑️ BORRAR (DELETE) una occupation (Soft Delete)
  */
-export const banUnit = (id: string): Promise<void> => {
+export const banOccupation = (id: string): Promise<void> => {
   const url = `${API_URL}/occupations/${id}`;
 
   return fetch(url, {
@@ -138,9 +139,9 @@ export const banUnit = (id: string): Promise<void> => {
 };
 
 /**
- * ♻️ RESTAURAR (POST) una unit borrada
+ * ♻️ RESTAURAR (POST) una occupation borrada
  */
-export const restoreUnit = (id: string): Promise<void> => {
+export const restoreOccupation = (id: string): Promise<void> => {
   const url = `${API_URL}/occupations/${id}/restore`;
 
   return fetch(url, {
@@ -155,7 +156,7 @@ export const restoreUnit = (id: string): Promise<void> => {
     });
 };
 
-export const forceDeleteUnit = (id: string | number): Promise<void> => {
+export const forceDeleteOccupation = (id: string | number): Promise<void> => {
   const url = `${API_URL}/occupations/${id}/force-delete`;
 
   return fetch(url, {
@@ -172,7 +173,7 @@ export const forceDeleteUnit = (id: string | number): Promise<void> => {
 };
 
 // 📥 OBTENER (GET) lista de instituciones
-export const getInstitutions = (): Promise<{ id: string, name: string }[]> => {
+export const getInstitutions = (): Promise<Institution[]> => {
   const url = `${API_URL}/institutions`;
 
   return fetch(url, {
@@ -187,4 +188,3 @@ export const getInstitutions = (): Promise<{ id: string, name: string }[]> => {
       throw error;
     });
 };
-

@@ -5,7 +5,7 @@ import {
   CirclePlus,
   type LucideProps,
 } from "lucide-react";
-import type { UnitFilter } from "./occupations.service"; 
+import type { OccupationFilter } from "./Occupations.service"; 
 
 // --- Definiciones de Iconos (usados solo en este componente) ---
 
@@ -24,8 +24,8 @@ const IconCirclePlus = (props: LucideProps) => (
 
 // --- Definición de Props ---
 
-interface UnitsToolbarProps {
-  filter: UnitFilter;
+interface OccupationsToolbarProps {
+  filter: OccupationFilter;
   searchTerm: string;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -37,7 +37,7 @@ interface UnitsToolbarProps {
 
 // --- Componente ---
 
-export function UnitsToolbar({
+export function OccupationsToolbar({
   filter,
   searchTerm,
   onFilterChange,
@@ -46,7 +46,7 @@ export function UnitsToolbar({
   institutions,
   onInstitutionChange, // Recibimos el evento para el cambio de institución
   selectedInstitution, // Estado de la institución seleccionada
-}: UnitsToolbarProps) {
+}: OccupationsToolbarProps) {
   return (
     <>
       {/* --- Cabecera: Título y Botón --- */}
@@ -77,14 +77,14 @@ export function UnitsToolbar({
               group-active:w-auto group-active:ml-2 group-active:opacity-100
             "
           >
-            Agregar Modulo
+            Agregar Ocupación
           </span>
         </button>
       </div>
 
       {/* --- Filtros: Dropdown y Búsqueda (Dentro del div .p-4 del padre) --- */}
       {/* NOTA: Este div se renderizará *dentro* del <div className="p-4"> 
-        del componente Units.tsx principal. 
+        del componente Occupations.tsx principal. 
       */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 px-4 pt-4">
         {/* Dropdown */}

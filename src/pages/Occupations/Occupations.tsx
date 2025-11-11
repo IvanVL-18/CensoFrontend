@@ -1,24 +1,15 @@
-// src/components/units.tsx (Corregido con el Patrón de Contexto)
+// src/components/occupation.tsx (Corregido con el Patrón de Contexto)
 
-import { useUnits } from "./useOccupation";
-import { UnitsToolbar } from "./OccupationsToolbar"; // Debería ser OccupationsToolbar
-import { UnitsTable } from "./OccupationsTable";
+import { useOccupations } from "./useOccupation";
+import { OccupationsToolbar } from "./OccupationsToolbar";
+import { OccupationsTable } from "./OccupationsTable";
 import { Pagination } from "./Pagination";
-import { UnitModal } from "./OccupationsModal";
+import { OccupationModal } from "./OccupationsModal";
 import { ConfirmModal } from "./ConfirmModal";
-import { ViewUnitModal } from "./ViewOccupationModal"; 
+import { ViewOccupationModal } from "./ViewOccupationModal"; 
 // <--- Tus imports están perfectos
 import { ToastProvider, useToast } from "../../context/ToastContext"; 
 import { Toast } from "../../components/Toast";
-import { useState, type ChangeEvent } from "react";
-
-// CORRECCIÓN 1: Simular la obtención de instituciones.
-// En un caso real, esto vendría de una llamada a la API, probablemente dentro de tu hook `useUnits`.
-const MOCK_INSTITUTIONS = [
-  { id: '1', name: 'Institución de Prueba 1' },
-  { id: '2', name: 'Institución de Prueba 2' },
-];
-
 
 // ---
 // 1. Contenedor de Toasts
@@ -46,11 +37,11 @@ function ToastContainer() {
 // 2. Componente Interno para el Contenido de la Página
 //    (Este componente contiene TODO tu código anterior)
 // ---
-function UnitsPageContent() {
+function OccupationsPageContent() {
   const {
     loading,
     error,
-    sortedUnits,
+    sortedOccupations,
     meta,
     links,
     filter,
@@ -58,12 +49,15 @@ function UnitsPageContent() {
     isModalOpen,
     isSubmitting,
     modalError,
-    editingUnit,
+    editingOccupation,
     isConfirmModalOpen,
-    actionUnit,
+    actionOccupation,
     actionType,
     isViewModalOpen,
-    viewingUnit,
+    viewingOccupation,
+    institutions,
+    selectedInstitution,
+    handleInstitutionChange,
     handleFilterChange,
     handleSearchChange,
     handleSort,
@@ -79,23 +73,16 @@ function UnitsPageContent() {
     handleViewModalClose,
     handleConfirmModalClose, 
     handleConfirmAction,
-  } = useUnits(); // <--- Ahora esta llamada es SEGURA porque está DENTRO del Provider
+  } = useOccupations(); // <--- Ahora esta llamada es SEGURA porque está DENTRO del Provider
 
-  // CORRECCIÓN 2: El estado para el *filtro* de institución en la toolbar.
-  const [selectedInstitution, setSelectedInstitution] = useState('');
+  // Si 'editingOccupation' tiene datos, el título es "Editar". Si no, "Agregar".
+  const modalTitle = editingOccupation ? "Editar Ocupación" : "Agregar Ocupación";
 
-  // Si 'editingUnit' tiene datos, el título es "Editar". Si no, "Agregar".
-  const modalTitle = editingUnit ? "Editar Ocupación" : "Agregar Ocupación";
+  // Si 'editingOccupation' tiene datos, pasamos el nombre. Si no, pasamos "".
+  const modalInitialName = editingOccupation ? editingOccupation.name : "";
 
-  // Si 'editingUnit' tiene datos, pasamos el nombre. Si no, pasamos "".
-  const modalInitialName = editingUnit ? editingUnit.name : "";
-  // CORRECCIÓN 3: Pasamos el ID de la institución al modal para la edición.
-  const modalInitialInstitutionId = editingUnit ? editingUnit.institution_id : "";
-
-  const handleInstitutionChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedInstitution(e.target.value);
-    // Aquí podrías agregar lógica para filtrar las ocupaciones por institución si lo necesitas.
-  };
+  // Si 'editingOccupation' tiene datos, pasamos el ID de su institución. Si no, pasamos "".
+  const modalInitialInstitutionId = editingOccupation ? editingOccupation.institution_id : "";
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -104,17 +91,17 @@ function UnitsPageContent() {
   let confirmButtonColor: 'danger' | 'primary' = 'danger';
   if (actionType === 'ban') {
     confirmTitle = "Desactivar Ocupación";
-    confirmMessage = `¿Estás seguro de que quieres desactivar la ocupación "${actionUnit?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres desactivar la ocupación "${actionOccupation?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (actionType === 'restore') {
     confirmTitle = "Restaurar Ocupación";
-    confirmMessage = `¿Estás seguro de que quieres restaurar la ocupación "${actionUnit?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres restaurar la ocupación "${actionOccupation?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (actionType === 'delete') {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la ocupación "${actionUnit?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la ocupación "${actionOccupation?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -126,26 +113,26 @@ function UnitsPageContent() {
       <ToastContainer />
       
       {/* --- Cabecera y Filtros --- */}
-      <UnitsToolbar
+      <OccupationsToolbar
         filter={filter}
         searchTerm={searchTerm}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
         onAddClick={handleAddClick}
-        // CORRECCIÓN 4: Pasamos la lista de instituciones y el estado del filtro.
-        institutions={MOCK_INSTITUTIONS}
-        onInstitutionChange={handleInstitutionChange}  // Pasar la función
-        selectedInstitution={selectedInstitution} 
+        // --- Props añadidas ---
+        institutions={institutions}
+        selectedInstitution={selectedInstitution}
+        onInstitutionChange={handleInstitutionChange}
       />
 
       {/* --- Contenido Principal (Tabla y Paginación) --- */}
       <div className="p-4">
         
         {/* --- Tabla de datos --- */}
-        <UnitsTable
+        <OccupationsTable
           loading={loading}
           error={error}
-          units={sortedUnits}
+          occupation={sortedOccupations}
           meta={meta}
           onSort={handleSort}
           onView={onView}
@@ -165,18 +152,16 @@ function UnitsPageContent() {
         />
       </div>
       
-
-      
       {/* --- Modales --- */}
-      <UnitModal
+      <OccupationModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
         error={modalError}
         title={modalTitle} 
-        // CORRECCIÓN 5: Pasamos las props correctas al modal.
         initialName={modalInitialName}
+        // --- Props añadidas ---
         initialInstitutionId={modalInitialInstitutionId}
-        institutions={MOCK_INSTITUTIONS} 
+        institutions={institutions}
         onClose={handleModalClose}
         onSave={handleModalSave}
       />
@@ -193,9 +178,9 @@ function UnitsPageContent() {
         onConfirm={handleConfirmAction}
       />
 
-      <ViewUnitModal
+      <ViewOccupationModal
         isOpen={isViewModalOpen}
-        unit={viewingUnit}
+        occupation={viewingOccupation}
         onClose={handleViewModalClose}
       />
     </div>
@@ -209,7 +194,7 @@ function UnitsPageContent() {
 export default function Occupations() {
   return (
     <ToastProvider>
-      <UnitsPageContent />
+      <OccupationsPageContent />
     </ToastProvider>
   );
 }

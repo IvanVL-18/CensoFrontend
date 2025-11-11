@@ -1,10 +1,10 @@
-import type { Meta, PaginatedUnitsResponse } from "./occupations.interfaces"; // Ajusta la ruta
+import type { Meta, PaginatedOccupationsResponse } from "./Occupations.interfaces"; // Ajusta la ruta
 
 // --- Definición de Props ---
 
 interface PaginationProps {
   meta: Meta | null;
-  links: PaginatedUnitsResponse["links"] | null;
+  links: PaginatedOccupationsResponse["links"] | null;
   loading: boolean;
   error: string | null;
   onPageClick: (url: string | null) => void;

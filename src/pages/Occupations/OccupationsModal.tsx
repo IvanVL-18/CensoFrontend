@@ -1,12 +1,12 @@
-// src/components/UnitModal.tsx (Actualizado)
+// src/pages/Occupations/OccupationsModal.tsx
 
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 // <--- CAMBIO 1: Importamos la validación y el nuevo componente
-import { validateUnit } from "../../utils/validation"; // Ajusta la ruta si es necesario
-import { FormErrors } from "./FormErrors"; // Ajusta la ruta si es necesario
+import { validateOccupation } from "../../utils/validation"; 
+import { FormErrors } from "./FormErrors"; 
 
-interface UnitModalProps {
+interface OccupationModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null; // Error del SERVIDOR (ej: "unique")
@@ -18,7 +18,7 @@ interface UnitModalProps {
   onSave: (name: string, institution_id: string) => void;
 }
 
-export function UnitModal({
+export function OccupationModal({
   isOpen,
   isSubmitting,
   error,
@@ -28,7 +28,7 @@ export function UnitModal({
   institutions, // Recibimos la lista de instituciones
   onClose,
   onSave,
-}: UnitModalProps) {
+}: OccupationModalProps) {
   const [name, setName] = useState(initialName);
   const [selectedInstitution, setSelectedInstitution] = useState(initialInstitutionId);
   
@@ -39,26 +39,26 @@ export function UnitModal({
     if (isOpen) {
       setName(initialName);
       setSelectedInstitution(initialInstitutionId);
-      // <--- CAMBIO 3: Validamos el estado inicial al abrir
-      const initialErrors = validateUnit({ name: initialName });
-      // Si el nombre inicial es vacío (al "Crear"), la Regla 1 (required) se activará.
-      // Los mostraremos de inmediato.
-      setFormErrors(initialErrors);
+      // Limpiamos los errores al abrir el modal
+      setFormErrors([]);
     }
-  }, [isOpen, initialName]);
+  }, [isOpen, initialName, initialInstitutionId]);
 
 
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    // <--- CAMBIO 4: Re-validamos antes de enviar
-    const validationErrors = validateUnit({ name });
+    // Re-validamos nombre e institución antes de enviar
+    const validationErrors = validateOccupation({
+      name,
+      institution_id: selectedInstitution,
+    });
     setFormErrors(validationErrors); // Muestra errores si los hay
 
     // Si el array de errores está vacío, podemos enviar
     if (validationErrors.length === 0) {
-      onSave(name, selectedInstitution);
+      onSave(name, selectedInstitution || "");
     }
   };
 
@@ -67,13 +67,21 @@ export function UnitModal({
     const newName = e.target.value;
     setName(newName);
     
-    // Validamos en CADA cambio y actualizamos el estado de errores
-    const validationErrors = validateUnit({ name: newName });
+    // Validamos en CADA cambio del nombre y actualizamos el estado de errores
+    const validationErrors = validateOccupation({
+      name: newName,
+      institution_id: selectedInstitution,
+    });
     setFormErrors(validationErrors);
   };
 
   const handleInstitutionChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedInstitution(e.target.value);  
+    const newInstitutionId = e.target.value;
+    setSelectedInstitution(newInstitutionId);
+
+    // Validamos también al cambiar la institución
+    const validationErrors = validateOccupation({ name, institution_id: newInstitutionId });
+    setFormErrors(validationErrors);
   };
 
   
@@ -109,14 +117,14 @@ export function UnitModal({
           <form onSubmit={handleSubmit} noValidate> {/* Añadido noValidate para prevenir validación HTML5 */}
             <div className="p-6">
               <label
-                htmlFor="unitName"
+                htmlFor="occupationName"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Nombre del modulo:
+                Nombre de la Ocupación:
               </label>
               <input
                 type="text"
-                id="unitName"
+                id="occupationName"
                 value={name}
                 // <--- CAMBIO 7: Usamos la nueva función de 'onChange'
                 onChange={handleNameChange}
@@ -155,10 +163,6 @@ export function UnitModal({
                   </option>
                 ))}
               </select>
-
-              <div id="form-errors-client">
-                <FormErrors errors={formErrors} />
-              </div>
 
               {/* <--- CAMBIO 9: Mostramos errores del CLIENTE */ ''}
               <div id="form-errors-client">

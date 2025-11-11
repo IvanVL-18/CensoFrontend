@@ -1,13 +1,19 @@
-// src/pages/Units/units.interfaces.ts
+// src/pages/Occupations/occupations.interfaces.ts
 
-// Esta es la interfaz para cada objeto 'Unit' dentro del array 'data'
-export interface Unit {
+// Esta es la interfaz para cada objeto 'occupation' dentro del array 'data'
+export interface Occupation {
   id: string; // Es un string encriptado
   name: string;
   institution_id : string;
   created_at: string;
   updated_at: string;
   deleted_at: string; // <-- CORRECCIÓN 1: '?' lo hace opcional (puede no existir)
+}
+
+// Interfaz para una Institución
+export interface Institution {
+  id: string;
+  name: string;
 }
 
 // --- Interaces para la paginación ---
@@ -33,8 +39,8 @@ export interface Meta {
 }
 
 // Esta es la interfaz para la respuesta COMPLETA de la API (con paginación)
-export interface PaginatedUnitsResponse {
-  data: Unit[];
+export interface PaginatedOccupationsResponse {
+  data: Occupation[];
   links: {
     first: string | null;
     last: string | null;
@@ -45,12 +51,12 @@ export interface PaginatedUnitsResponse {
 }
 
 // Esta es la interfaz para crear una nueva unidad
-export interface CreateUnitDTO {
+export interface CreateOccupationDTO {
   name: string;
   institution_id: string;
   // Agrega aquí otros campos que necesites para crear
 }
 
 // Esta es la interfaz para actualizar (opcional, pero útil)
-// 'Partial' hace que todos los campos de CreateUnitDTO (como 'name') sean opcionales
-export type UpdateUnitDTO = Partial<CreateUnitDTO>;
+// 'Partial' hace que todos los campos de CreateOccupationDTO (como 'name') sean opcionales
+export type UpdateOccupationDTO = Partial<CreateOccupationDTO>;
