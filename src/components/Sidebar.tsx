@@ -12,7 +12,8 @@ import {
   ChevronRight,
   LogOut,
   Package,
-  Paperclip 
+  Paperclip,
+  Briefcase,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -29,6 +30,7 @@ const items = [
   { to: "/ajustes", icon: Settings, label: "Ajustes" },
   { to: "/Unidades", icon: Package, label: "Modulos" },
   { to: "/Secciones", icon: Paperclip, label: "Secciones" },
+  { to: "/Ocupaciones", icon: Briefcase, label: "Ocupaciones" },
 ];
 
 export default function Sidebar({ open, onToggle }: Props) {
