@@ -88,19 +88,9 @@ export function InstitutionsTable({
               </button>
             </th>
 
-            {/* 3. Columna "Municipio" */}
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-              Municipio
-            </th>
-
             {/* 4. Columna "Geocódigo" */}
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
               Geocódigo
-            </th>
-
-            {/* 5. Columna "Tipo" */}
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-              Tipo
             </th>
 
             {/* 6. Columna "Opciones" */}
@@ -113,7 +103,7 @@ export function InstitutionsTable({
           {/* --- Estados de Carga y Error --- */}
           {loading && (
             <tr>
-              <td colSpan={7} className="text-center p-6 text-gray-500">
+              <td colSpan={5} className="text-center p-6 text-gray-500">
                 Cargando...
               </td>
             </tr>
@@ -122,7 +112,7 @@ export function InstitutionsTable({
           {error && (
             <tr>
               <td
-                colSpan={7}
+                colSpan={5}
                 className="text-center p-6 text-red-600 font-semibold"
               >
                 {error}
@@ -133,7 +123,7 @@ export function InstitutionsTable({
           {/* --- Estado Vacío --- */}
           {!loading && !error && units.length === 0 && (
             <tr>
-              <td colSpan={7} className="text-center p-6 text-gray-500">
+              <td colSpan={5} className="text-center p-6 text-gray-500">
                 No se encontraron Instituciones.
               </td>
             </tr>
@@ -154,19 +144,9 @@ export function InstitutionsTable({
                   {unit.name}
                 </td>
 
-                {/* Celda "Municipio" */}
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {unit.municipality}
-                </td>
-
                 {/* Celda "Geocódigo" */}
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                   {unit.geocode}
-                </td>
-
-                {/* Celda "Tipo" */}
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {unit.typeinst}
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}

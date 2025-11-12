@@ -76,10 +76,13 @@ export function ViewUnitModal({ isOpen, onClose, unit }: ViewUnitModalProps) {
 
           {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
-            <DetailRow 
-              label="Nombre del módulo:" 
-              value={unit.name} 
-            />
+            <DetailRow label="Nombre de la Institución:" value={unit.name} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <DetailRow label="Municipio:" value={unit.municipality} />
+              <DetailRow label="Tipo:" value={unit.typeinst} />
+            </div>
+            <DetailRow label="Geocódigo:" value={unit.geocode} />
+            <hr />
             <DetailRow 
               label="Fecha de creación:" 
               value={formatDate(unit.created_at)} // Asumiendo que se llama así
