@@ -5,9 +5,10 @@ import {
   Trash2,
   CircleArrowUp,
   Ban,
+  Building,
   type LucideProps,
 } from "lucide-react";
-import type { Occupation, Meta } from "./Occupations.interfaces"; // Asegúrate que la ruta sea correcta
+import type { Occupation, Meta} from "./Occupations.interfaces"; // Asegúrate que la ruta sea correcta
 
 // --- Definiciones de Iconos (usados solo en la tabla) ---
 
@@ -27,8 +28,10 @@ const IconDelete = (props: LucideProps) => (
 const IconCircleArrowUp = (props: LucideProps) => (
   <CircleArrowUp {...defaultProps} {...props} />
 );
-const IconBan = (props: LucideProps) => (
-  <Ban {...defaultProps} {...props} />
+const IconBan = (props: LucideProps) => <Ban {...defaultProps} {...props} />;
+
+const IconBuilding = (props: LucideProps) => (
+  <Building {...defaultProps} {...props} />
 );
 
 // --- Definición de Props ---
@@ -38,7 +41,7 @@ interface OccupationsTableProps {
   meta: Meta | null;
   loading: boolean;
   error: string | null;
-  onSort: (key: keyof Occupation) => void;
+  onSort: (key: keyof Occupation | 'institution_name') => void;
   // Funciones para manejar las acciones
   onView: (occupation: Occupation) => void;
   onEdit: (occupation: Occupation) => void;
@@ -82,7 +85,7 @@ export function OccupationsTable({
             </th>
 
             {/* 2. Columna "Nombre" */}
-            <th className="px-6 py-3 text-left w-full">
+            <th className="px-6 py-3 text-left w-1/2">
               <button
                 onClick={() => onSort("name")} // Conectado a la prop onSort
                 className="
@@ -92,6 +95,22 @@ export function OccupationsTable({
                 "
               >
                 <span>Nombre</span>
+                <IconSort size={16} strokeWidth={2.5} />
+              </button>
+            </th>
+
+            {/* Nueva Columna "Institución" */}
+            <th className="px-6 py-3 text-left w-1/2">
+              <button
+                onClick={() => onSort("institution_name")}
+                className="
+                  flex items-center space-x-1     
+                  text-xs font-medium text-gray-500 uppercase tracking-wider
+                  hover:text-opacity-75 transition-colors
+                "
+              >
+                <IconBuilding size={16} strokeWidth={2.5} className="mr-1" />
+                <span>Institución</span>
                 <IconSort size={16} strokeWidth={2.5} />
               </button>
             </th>
@@ -106,7 +125,7 @@ export function OccupationsTable({
           {/* --- Estados de Carga y Error --- */}
           {loading && (
             <tr>
-              <td colSpan={3} className="text-center p-6 text-gray-500">
+              <td colSpan={4} className="text-center p-6 text-gray-500">
                 Cargando...
               </td>
             </tr>
@@ -115,7 +134,7 @@ export function OccupationsTable({
           {error && (
             <tr>
               <td
-                colSpan={3}
+                colSpan={4}
                 className="text-center p-6 text-red-600 font-semibold"
               >
                 {error}
@@ -126,7 +145,7 @@ export function OccupationsTable({
           {/* --- Estado Vacío --- */}
           {!loading && !error && occupations.length === 0 && (
             <tr>
-              <td colSpan={3} className="text-center p-6 text-gray-500">
+              <td colSpan={4} className="text-center p-6 text-gray-500">
                 No se encontraron Ocupaciones.
               </td>
             </tr>
@@ -145,6 +164,11 @@ export function OccupationsTable({
                 {/* Celda "Nombre" */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {occupation.name}
+                </td>
+
+                {/* Celda para el nombre de la Institución */}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  {occupation.institution_name ?? "Sin institución"}
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}

@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 // Importa tu interfaz 'Occupation' desde donde la tengas
-import type { Occupation } from "./Occupations.interfaces";
+import type { Occupation} from "./Occupations.interfaces";
 
 interface ViewOccupationModalProps {
   isOpen: boolean;
@@ -44,7 +44,11 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewOccupationModal({ isOpen, onClose, occupation }: ViewOccupationModalProps) {
+export function ViewOccupationModal({
+  isOpen,
+  onClose,
+  occupation,
+}: ViewOccupationModalProps) {
   // Si no está abierto o no hay una unidad, no renderiza nada
   if (!isOpen || !occupation) {
     return null;
@@ -79,6 +83,10 @@ export function ViewOccupationModal({ isOpen, onClose, occupation }: ViewOccupat
             <DetailRow 
               label="Nombre de la Ocupación:" 
               value={occupation.name} 
+            />
+            <DetailRow 
+              label="Institución:" 
+              value={occupation.institution_name ?? "Sin institución"}
             />
             <DetailRow 
               label="Fecha de creación:" 

@@ -30,9 +30,6 @@ interface OccupationsToolbarProps {
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void; // Prop para el botón "Agregar"
-   institutions: { id: string, name: string }[]; // Lista de instituciones
-  onInstitutionChange: (e: ChangeEvent<HTMLSelectElement>) => void; // Prop para manejar el cambio de institución
-  selectedInstitution: string;
 }
 
 // --- Componente ---
@@ -43,9 +40,6 @@ export function OccupationsToolbar({
   onFilterChange,
   onSearchChange,
   onAddClick, // Recibimos la prop
-  institutions,
-  onInstitutionChange, // Recibimos el evento para el cambio de institución
-  selectedInstitution, // Estado de la institución seleccionada
 }: OccupationsToolbarProps) {
   return (
     <>
@@ -99,25 +93,6 @@ export function OccupationsToolbar({
             <option value="inactive">Inactivos</option>
           </select>
           <div className="absolute inset-y-0 right-0  flex items-center px-3 bg-[#D4C09B]  rounded-r-lg pointer-events-none">
-            <ChevronDown className="w-5 h-5 text-black" />
-          </div>
-        </div>
-
-         {/* Dropdown de Instituciones */}
-        <div className="w-full md:w-auto relative">
-          <select
-            value={selectedInstitution}
-            onChange={onInstitutionChange} 
-            className="bg-white border border-gray-300 rounded-lg p-2 w-full md:w-48 appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
-          >
-            <option value="">Seleccionar Institución</option>
-            {institutions.map((institution) => (
-              <option key={institution.id} value={institution.id}>
-                {institution.name}
-              </option>
-            ))}
-          </select>
-          <div className="absolute inset-y-0 right-0 flex items-center px-3 bg-[#D4C09B] rounded-r-lg pointer-events-none">
             <ChevronDown className="w-5 h-5 text-black" />
           </div>
         </div>

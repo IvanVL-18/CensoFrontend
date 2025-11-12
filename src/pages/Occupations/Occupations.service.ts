@@ -52,9 +52,15 @@ const handleEmptyResponse = async (response: Response) => {
  * 📥 OBTENER (GET) lista de occupations con filtro y paginación
  */
 export const getOccupations = (
-  filter: OccupationFilter = "all"
+  filter: OccupationFilter = "all",
+  sortConfig: { key: string; direction: string }
 ): Promise<PaginatedOccupationsResponse> => {
-  const url = `${API_URL}/occupations/${filter}/content`;
+  const params = new URLSearchParams({
+    sort: sortConfig.key,
+    dir: sortConfig.direction === 'ascending' ? 'asc' : 'desc',
+  });
+
+  const url = `${API_URL}/occupations/${filter}/content?${params.toString()}`;
 
   return fetch(url, {
     method: "GET",

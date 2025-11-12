@@ -1,6 +1,6 @@
 // src/components/occupation.tsx (Corregido con el Patrón de Contexto)
 
-import { useOccupations } from "./useOccupation";
+import { useOccupations } from "./useOccupation"; // <-- Añadido useMemo
 import { OccupationsToolbar } from "./OccupationsToolbar";
 import { OccupationsTable } from "./OccupationsTable";
 import { Pagination } from "./Pagination";
@@ -10,6 +10,7 @@ import { ViewOccupationModal } from "./ViewOccupationModal";
 // <--- Tus imports están perfectos
 import { ToastProvider, useToast } from "../../context/ToastContext"; 
 import { Toast } from "../../components/Toast";
+
 
 // ---
 // 1. Contenedor de Toasts
@@ -56,8 +57,6 @@ function OccupationsPageContent() {
     isViewModalOpen,
     viewingOccupation,
     institutions,
-    selectedInstitution,
-    handleInstitutionChange,
     handleFilterChange,
     handleSearchChange,
     handleSort,
@@ -119,10 +118,6 @@ function OccupationsPageContent() {
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
         onAddClick={handleAddClick}
-        // --- Props añadidas ---
-        institutions={institutions}
-        selectedInstitution={selectedInstitution}
-        onInstitutionChange={handleInstitutionChange}
       />
 
       {/* --- Contenido Principal (Tabla y Paginación) --- */}

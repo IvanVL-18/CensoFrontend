@@ -12,7 +12,7 @@ import type {
 } from "./Occupations.interfaces";
 
 type SortConfig = {
-  key: keyof Occupation;
+  key: keyof Occupation | 'institution_name';
   direction: "ascending" | "descending";
 };
 
@@ -30,7 +30,6 @@ export function useOccupations() {
   // --- Estados de filtros y orden ---
   const [filter, setFilter] = useState<OccupationFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedInstitution, setSelectedInstitution] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "name",
     direction: "ascending",
@@ -68,7 +67,7 @@ export function useOccupations() {
   // 1. Efecto para cargar datos
   useEffect(() => {
     setLoading(true); // Inicia la carga para las ocupaciones
-    getOccupations(filter)
+    getOccupations(filter, sortConfig)
       .then((response) => {
         setOccupations(response.data);
         setLinks(response.links);
@@ -94,7 +93,7 @@ export function useOccupations() {
         // Podrías establecer un error específico para las instituciones si lo deseas
         setError(`Error al cargar las Instituciones: ${err.message}`);
       });
-  }, [filter, reloadToken]);
+  }, [filter, reloadToken, sortConfig]);
 
   // 2. Función para paginación
   const loadOccupationsByUrl = useCallback((url: string) => {
@@ -122,10 +121,6 @@ export function useOccupations() {
     setFilter(e.target.value as OccupationFilter);
   }, []);
 
-  const handleInstitutionChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedInstitution(e.target.value);
-  }, []);
-
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   }, []);
@@ -139,7 +134,7 @@ export function useOccupations() {
     [loadOccupationsByUrl]
   );
 
-  const handleSort = useCallback((key: keyof Occupation) => {
+  const handleSort = useCallback((key: keyof Occupation | 'institution_name') => {
     setSortConfig((currentConfig) => {
       let direction: "ascending" | "descending" = "ascending";
       if (
@@ -157,30 +152,14 @@ export function useOccupations() {
     return occupations
       .filter((occupation) =>
         occupation.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .filter((occupation) =>
-        selectedInstitution ? occupation.institution_id === selectedInstitution : true
       );
-  }, [occupations, searchTerm, selectedInstitution]);
+  }, [occupations, searchTerm]);
 
+  // El backend ahora se encarga de ordenar, por lo que solo necesitamos filtrar.
   const sortedOccupations = useMemo(() => {
-    let sortableItems = [...filteredOccupations];
-    sortableItems.sort((a, b) => {
-      // ... (lógica de ordenamiento sin cambios)
-      const valA = a[sortConfig.key];
-      const valB = b[sortConfig.key];
-      if (valA == null) return 1;
-      if (valB == null) return -1;
-      if (valA < valB) {
-        return sortConfig.direction === "ascending" ? -1 : 1;
-      }
-      if (valA > valB) {
-        return sortConfig.direction === "ascending" ? 1 : -1;
-      }
-      return 0;
-    });
-    return sortableItems;
-  }, [filteredOccupations, sortConfig]);
+    // La API ya devuelve los datos ordenados, solo aplicamos el filtro de búsqueda local.
+    return filteredOccupations;
+  }, [filteredOccupations]);
 
   // (Acciones CRUD) ---
 
@@ -337,8 +316,6 @@ const handleConfirmAction = useCallback(async () => {
     filter,
     searchTerm,
     institutions,
-    selectedInstitution,
-    handleInstitutionChange,
 
     isConfirmModalOpen,
     actionOccupation,

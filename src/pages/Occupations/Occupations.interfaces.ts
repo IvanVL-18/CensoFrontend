@@ -5,6 +5,8 @@ export interface Occupation {
   id: string; // Es un string encriptado
   name: string;
   institution_id : string;
+  institution_name?: string; // <-- Añadido como opcional
+  institution_eid?: string; // <-- Añadido como opcional
   created_at: string;
   updated_at: string;
   deleted_at: string; // <-- CORRECCIÓN 1: '?' lo hace opcional (puede no existir)
