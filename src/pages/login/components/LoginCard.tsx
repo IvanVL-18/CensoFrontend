@@ -1,40 +1,75 @@
-import InputField from "../../../components/InputField"
-import ActionButtons from "./ActionButtons"
-import ForgotPasswordLink from "./ForgotPasswordLink"
-import { useState } from "react"
+import { User, Lock, UserPlus } from "lucide-react";
+import { useState } from "react";
 
 export default function LoginCard() {
-  const [user, setUser] = useState("")
-  const [pass, setPass] = useState("")
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => { 
-    e.preventDefault()
-
-  }
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Usuario:", username);
+    console.log("Contraseña:", password);
+  };
 
   return (
-    <div className="w-[400px] max-w-[92vw] rounded-xl bg-white/98 shadow-xl text-[#2b2b2b]">
-      <div className="p-6">
-        <h2 className="font-semibold mb-3">Usuario:</h2>
-        <form onSubmit={handleLogin} className="space-y-3">
-          <InputField
-            icon="@"
-            type="text"
-            placeholder="Ingresar usuario"
-            value={user}
-            onChange={(e) => setUser(e.target.value)}
-          />
-          <InputField
-            icon="*"
-            type="password"
-            placeholder="Contraseña"
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
-          />
-          <ActionButtons onLogin={handleLogin} />
-          <ForgotPasswordLink />
-        </form>
-      </div>
+    <div className="bg-[#A02142]/26 p-8 rounded-2xl shadow-lg w-[90%] max-w-md border border-[#691B31]/30">
+      <form onSubmit={handleLogin} className="flex flex-col gap-6 text-[#5b132b]">
+        <div>
+          <label className="block text-sm font-semibold text-white mb-2">
+            Usuario
+          </label>
+          <div className="flex items-center bg-[#DDC9A3]/30 rounded-xl px-3 py-2">
+            <User className="text-white mr-2" size={18} />
+            <input
+              type="text"
+              placeholder="Ingrese su usuario"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="bg-transparent outline-none w-full text-white placeholder-gray-300"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-white mb-2">
+            Contraseña
+          </label>
+          <div className="flex items-center bg-[#DDC9A3]/30 rounded-xl px-3 py-2">
+            <Lock className="text-white mr-2" size={18} />
+            <input
+              type="password"
+              placeholder="Ingrese su contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="bg-transparent outline-none w-full text-white placeholder-gray-300"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row items-center justify-between text-sm">
+          <button
+            type="button"
+            className="text-white hover:text-[#DDC9A3] transition-colors"
+          >
+            ¿Olvidó su contraseña?
+          </button>
+          <button
+            type="button"
+            className="flex items-center gap-1 text-white hover:text-[#DDC9A3] transition-colors"
+          >
+            <UserPlus size={16} /> Agregar usuario
+          </button>
+        </div>
+
+        <button
+          type="submit"
+          className="mt-6 bg-white hover:bg-[#DDC9A3] text-[#691b31] font-bold py-2 rounded-xl transition-colors"
+        >
+          Acceder
+        </button>
+      </form>
     </div>
-  )
+  );
 }
