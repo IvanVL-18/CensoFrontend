@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import UiModal from "./UiModal";
+import UiModal from "./UiModal"; // Tu UiModal.tsx modificado
 
 type Payload = {
   name: string;
@@ -9,6 +9,11 @@ type Payload = {
   endDate: string;
   active: boolean;
 };
+
+// 🍷 Paleta de colores: Vino tinto y Taupe/Marrón Cálido
+const PRIMARY_COLOR_VINO = "#691B31"; // Vino tinto (El color de tu barra original)
+const FOCUS_RING_COLOR = "focus:ring-red-800"; // Rojo oscuro/Vino para el anillo de enfoque
+const BUTTON_VINO_CLASSES = `bg-[${PRIMARY_COLOR_VINO}] hover:bg-[#521526]`; // Clases del botón Vino
 
 export default function NewCensoModal({
   open,
@@ -30,10 +35,18 @@ export default function NewCensoModal({
 
   useEffect(() => {
     if (open) {
-      setForm({ name: "", year: new Date().getFullYear(), description: "", startDate: "", endDate: "", active: true });
+      setForm({
+        name: "",
+        year: new Date().getFullYear(),
+        description: "",
+        startDate: "",
+        endDate: "",
+        active: true,
+      });
     }
   }, [open]);
 
+  // Validación (manteniéndola igual)
   const valid =
     form.name.trim().length >= 3 &&
     typeof form.year === "number" &&
@@ -54,115 +67,118 @@ export default function NewCensoModal({
     onClose();
   };
 
-  const inputBase =
-    "h-10 w-full rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-[#506C7F] text-sm";
+  // ☕ Estilo base para inputs: color de enfoque Vino y borde cálido (taupe/gray-300)
+  const inputBase = `h-11 w-full rounded-md border border-gray-300 bg-white px-4 text-base text-gray-800 shadow-sm focus:outline-none focus:border-[${PRIMARY_COLOR_VINO}] focus:ring-1 ${FOCUS_RING_COLOR} transition-all duration-200 placeholder-gray-400`;
+
+  // Etiqueta para mantener el tono cálido
+  const labelBase = "block text-sm font-medium text-gray-700 mb-2";
 
   return (
     <UiModal
       open={open}
       onClose={onClose}
-      title="Agregar Nuevo Censo"
+      title="Crea un Nuevo Censo" // Título ligeramente modificado
+      hideCloseButton={true} 
+      maxWidth="max-w-md" 
       footer={
-        <>
+        <div className="flex justify-end gap-3 w-full"> 
           <button
             onClick={onClose}
-            className="px-4 h-9 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 focus:outline-none"
+            className="px-6 py-2 rounded-md text-sm font-semibold text-gray-700 bg-gray-100 border border-gray-300 shadow-sm hover:bg-gray-200 transition duration-200"
           >
             Cancelar
           </button>
           <button
             onClick={save}
             disabled={!valid}
-            className="px-4 h-9 rounded-md text-white disabled:opacity-50 bg-gradient-to-r from-[#506C7F] to-[#3E4C59] shadow-md hover:brightness-95"
+            // Botón de guardar en color Vino tinto
+            className={`px-6 py-2 rounded-md text-sm font-semibold text-white shadow-md ${BUTTON_VINO_CLASSES} disabled:opacity-50 transition duration-200`}
+            style={{ boxShadow: `0 4px 6px -1px rgba(105, 27, 49, 0.3), 0 2px 4px -2px rgba(105, 27, 49, 0.3)` }} // Sombra del color Vino
           >
-            Aceptar
+            Guardar Censo
           </button>
-        </>
+        </div>
       }
     >
-      {/* Subtítulo sección */}
-      <div className="text-center text-gray-800 font-semibold mb-4">
-        Información del Cuestionario
-      </div>
-
-      {/* Formulario */}
-      <div className="grid grid-cols-1 gap-4">
-        {/* Nombre + Año */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-            <input
-              className={inputBase}
-              placeholder="Nombre"
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
-            <input
-              className={inputBase}
-              placeholder="Año"
-              inputMode="numeric"
-              maxLength={4}
-              value={form.year}
-              onChange={(e) => {
-                const v = e.target.value.replace(/\D/g, "").slice(0, 4);
-                setForm((f) => ({ ...f, year: v ? Number(v) : "" }));
-              }}
-            />
-          </div>
+      <div className="space-y-6"> 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+            {/* Nombre del Censo */}
+            <div>
+              <label className={labelBase}>Nombre del Censo</label>
+              <input
+                className={inputBase}
+                placeholder="Ej: Censo Poblacional 2024"
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              />
+            </div>
+            {/* Año */}
+            <div>
+              <label className={labelBase}>Año</label>
+              <input
+                className={inputBase}
+                placeholder="20XX"
+                inputMode="numeric"
+                maxLength={4}
+                value={form.year}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                  setForm((f) => ({ ...f, year: v ? Number(v) : "" }));
+                }}
+              />
+            </div>
+            {/* Fecha de inicio */}
+            <div>
+              <label className={labelBase}>Fecha de inicio</label>
+              <input
+                type="date"
+                className={inputBase}
+                value={form.startDate}
+                onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
+              />
+            </div>
+            {/* Fecha de finalización */}
+            <div>
+              <label className={labelBase}>Fecha de finalización</label>
+              <input
+                type="date"
+                className={inputBase}
+                value={form.endDate}
+                onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
+              />
+            </div>
         </div>
 
         {/* Descripción */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <label className={labelBase}>Descripción (Opcional)</label>
           <textarea
-            rows={3}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#506C7F]"
-            placeholder="Descripción"
+            rows={4} 
+            className={`w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-base shadow-sm focus:outline-none focus:border-[${PRIMARY_COLOR_VINO}] focus:ring-1 ${FOCUS_RING_COLOR} placeholder-gray-400`}
+            placeholder="Breve descripción del censo, objetivos y metodología..."
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
           />
         </div>
-
-        {/* Fechas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha inicio</label>
-            <input
-              type="date"
-              className={inputBase}
-              value={form.startDate}
-              onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de límite</label>
-            <input
-              type="date"
-              className={inputBase}
-              value={form.endDate}
-              onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
-            />
-          </div>
-        </div>
-
-        {/* Activo */}
-        <div className="flex items-center gap-3 mt-1">
-          <span className="text-sm text-gray-700">Activo</span>
+        
+        {/* Activo (Toggle Vino) */}
+        <div className="flex items-center justify-between pt-2">
+          <label htmlFor="active-toggle" className="text-base font-medium text-gray-800">
+            Censo Activo
+          </label>
+          
           <button
+            id="active-toggle"
             type="button"
             onClick={() => setForm((f) => ({ ...f, active: !f.active }))}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-              form.active ? "bg-emerald-500" : "bg-gray-300"
+            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 ${
+              form.active ? `bg-[${PRIMARY_COLOR_VINO}]` : "bg-gray-400"
             }`}
             aria-pressed={form.active}
-            aria-label="Cambiar activo"
+            aria-label="Cambiar estado activo"
           >
             <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-all duration-200 ${
                 form.active ? "translate-x-6" : "translate-x-1"
               }`}
             />

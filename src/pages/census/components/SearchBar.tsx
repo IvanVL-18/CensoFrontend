@@ -22,6 +22,7 @@ const SearchBar = ({ searchQuery, onSearchChange, onSubmit }: SearchBarProps) =>
         hover:shadow-md
       "
     >
+      {/* Campo de texto */}
       <input
         type="text"
         placeholder="Buscar..."
@@ -40,6 +41,7 @@ const SearchBar = ({ searchQuery, onSearchChange, onSubmit }: SearchBarProps) =>
         "
       />
 
+      {/* Botón de búsqueda */}
       <button
         onClick={onSubmit}
         aria-label="Buscar"
