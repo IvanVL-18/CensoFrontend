@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
 import { getUnits, createUnit, updateUnit,banUnit, restoreUnit,forceDeleteUnit, type UnitFilter } from "./units.service";
+import { useToast } from "../../context/ToastContext"; // <--- 1. IMPORTAR
+
 import type {
   Unit,
   PaginatedUnitsResponse,
@@ -15,6 +17,8 @@ type SortConfig = {
 
 export function useUnits() {
   // --- Estados de datos ---
+  const { addToast } = useToast(); 
+
   const [units, setUnits] = useState<Unit[]>([]);
   const [links, setLinks] = useState<PaginatedUnitsResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
@@ -184,11 +188,13 @@ export function useUnits() {
           // (Asumiendo que tu DTO es solo { name })
           const unitData: UpdateUnitDTO = { name }; 
           await updateUnit(editingUnit.id, unitData);
+          addToast("Módulo actualizado con éxito.", "success");
 
         } else {
           // --- LÓGICA DE CREAR (la que ya tenías) ---
           const unitData: CreateUnitDTO = { name };
           await createUnit(unitData);
+          addToast("Módulo creado con éxito.", "success");
         }
 
         // ¡Éxito!
@@ -203,7 +209,7 @@ export function useUnits() {
         setIsSubmitting(false);
       }
     },
-    [reloadUnits, editingUnit] 
+    [reloadUnits, editingUnit,addToast] 
   );
 
   const handleConfirmModalClose = useCallback(() => {
@@ -213,32 +219,46 @@ export function useUnits() {
     setModalError(null); 
   }, []);
 
-  const handleConfirmAction = useCallback(async () => {
+const handleConfirmAction = useCallback(async () => {
     if (!actionUnit || !actionType) return;
 
     setIsSubmitting(true);
     setModalError(null);
 
     try {
+      let successMessage = "";
+      let toastType: "success" | "danger" | "warning" = "success";
+
       if (actionType === 'ban') {
         await banUnit(actionUnit.id);
+        successMessage = `Módulo "${actionUnit.name}" desactivado.`;
+        toastType = "warning"; // Usamos 'warning' (naranja) para desactivar
+
       } else if (actionType === 'restore') {
         await restoreUnit(actionUnit.id);
+        successMessage = `Módulo "${actionUnit.name}" restaurado.`;
+        toastType = "success";
+
       } else if (actionType === 'delete') { 
         await forceDeleteUnit(actionUnit.id);
+        successMessage = `Módulo "${actionUnit.name}" eliminado permanentemente.`;
+        toastType = "danger";
       }
 
       // ¡Éxito!
       handleConfirmModalClose(); 
-      reloadUnits();             
+      reloadUnits();
+      addToast(successMessage, toastType); // <--- 3. AÑADIR TOAST
 
     } catch (err) {
       console.error("Error al procesar la acción:", err);
-      setModalError((err as Error).message || "Ocurrió un error");
+      const errorMessage = (err as Error).message || "Ocurrió un error";
+      setModalError(errorMessage);
+      addToast(`Error: ${errorMessage}`, "danger"); // <--- 3. AÑADIR TOAST DE ERROR
     } finally {
       setIsSubmitting(false);
     }
-  }, [actionUnit, actionType, reloadUnits, handleConfirmModalClose]);
+  }, [actionUnit, actionType, reloadUnits, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
   
 
  const onView = useCallback((unit: Unit) => {

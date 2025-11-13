@@ -1,10 +1,12 @@
+import '/src/assets/global-variables.css';
+import { BarChart3, Building2, Users } from "lucide-react";
+
 type Props = {
   title?: string;
   subtitle?: string;
   userName?: string;
   onPrimaryClick?: () => void;
-  heroSrc?: string;
-  heroSrc2?: string;
+  heroSrc?: string;  
 };
 
 export default function WelcomeCard({
