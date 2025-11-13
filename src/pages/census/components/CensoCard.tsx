@@ -65,5 +65,5 @@ export default function CensoCard({ censo, onView }: { censo: Censo; onView: (id
         </button>
       </div>
     </div>
-  );
+  ); 
 }
