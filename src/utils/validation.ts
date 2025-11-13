@@ -1,37 +1,48 @@
-// src/utils/validation.ts
+// src/utils/validation.ts (Corregido de nuevo)
 
-/**
- * Valida los datos para crear o actualizar un Módulo (Unit).
- * @param data - Objeto con el nombre del módulo.
- * @returns Un array de strings con los mensajes de error. Array vacío si es válido.
- */
-export function validateUnit(data: { name: string }): string[] {
-  const errors: string[] = [];
-
-  if (!data.name.trim()) {
-    errors.push("El nombre del módulo es obligatorio.");
-  }
-
-  return errors;
+// Definimos los tipos de datos que esperamos del formulario
+interface UnitFormData {
+  name: string;
 }
 
 /**
- * Valida los datos para crear o actualizar una Ocupación (Occupation).
- * @param data - Objeto con el nombre de la ocupación y el ID de la institución.
- * @returns Un array de strings con los mensajes de error. Array vacío si es válido.
+ * Valida los datos del formulario de la Unidad, replicando las reglas del backend.
+ * Recibe un objeto con los datos y devuelve un ARRAY de strings con los mensajes de error.
+ * Si no hay errores, devuelve un array vacío.
  */
-export function validateOccupation(data: { name: string, institution_id?: string | null }): string[] {
+export function validateUnit(data: UnitFormData): string[] {
   const errors: string[] = [];
+  const name = data.name.trim(); // Usamos trim para las validaciones
 
-  if (!data.name.trim()) {
-    errors.push("El nombre de la ocupación es obligatorio.");
-  } else if (data.name.trim().length < 5) {
+  // Regla 1: 'name.required' (Transcripción)
+  if (name === "") {
+    errors.push("El nombre es obligatorio.");
+    return errors; 
+  }
+
+  // Regla 2: 'name.min' (Transcripción)
+  if (name.length < 5) {
     errors.push("El nombre debe tener al menos 5 caracteres.");
   }
 
-  if (!data.institution_id) {
-    errors.push("Debe seleccionar una institución.");
+  // Regla 3: 'name.max' (Transcripción)
+  if (name.length > 45) {
+    errors.push("El nombre no puede exceder los 45 caracteres.");
   }
+
+  // Regla 4: 'name.regex' (Transcripción)
+  
+  // <--- CORRECCIÓN AQUÍ ---
+  // Se quitaron los escapes innecesarios (\', \.)
+  // y se movió el guion (-) al final de la clase para que no requiera escape.
+  const regex = /^[\p{L}\p{M}\p{N}\s'.,-]+$/u;
+  
+  if (!regex.test(data.name)) { // Aquí usamos data.name (sin trim)
+    errors.push("El campo nombre no puede contener emojis ni símbolos especiales.");
+  }
+
+  // Regla 5: 'name.unique' -> Esta NO se puede transcribir.
+  // Se validará en el servidor al momento de guardar.
 
   return errors;
 }

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
-// <--- CAMBIO 1: Importamos la validación y el nuevo componente
-import { validateOccupation } from "../../utils/validation"; 
+// <--- CAMBIO 1: Importamos la validación desde su nuevo archivo
+import { validateOccupation } from "../../utils/validation.occupation"; 
 import { FormErrors } from "./FormErrors"; 
 
 interface OccupationModalProps {
