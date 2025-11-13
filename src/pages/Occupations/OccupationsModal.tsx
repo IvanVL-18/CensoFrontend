@@ -10,7 +10,7 @@ interface OccupationModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null; // Error del SERVIDOR (ej: "unique")
-  title: string;
+  title: string; 
   initialName?: string;
   initialInstitutionId?: string;
   institutions: { id: string, name: string }[];
