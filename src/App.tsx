@@ -11,9 +11,7 @@ import SettingsPage from "./pages/settings/page/SettingsPage";
 
 import DashboardLayout from "./components/DashboardLayout";
 
-// Features
 import UsersPage from "./pages/users/page/UsersPage";
-import InstitutionsPage from "./pages/institutions/page/InstitutionsPage";
 import Units from "./pages/Units/units";
 import Section from "./pages/Section/Section";
 import Occupations from "./pages/Occupations/occupations";
@@ -30,7 +28,6 @@ export default function App() {
         <Route path="/inicio" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/usuarios" element={<UsersPage />} />
-        <Route path="/instituciones" element={<InstitutionsPage />} />
         <Route path="/censos" element={<CensosPage />} />
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/ejercicios-fiscales" element={<FiscalPage />} />

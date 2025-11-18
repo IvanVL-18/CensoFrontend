@@ -2,36 +2,27 @@ export default function Footer() {
   return (
     <>
       {/* 🔹 Franja superior con logos */}
-      <section className="mt-16 bg-[#FFFFFF]/60 backdrop-blur-sm flex justify-center items-center gap-20 py-2 border-t border-transparent">
-        <img
-          src="/logoInegi.png"
-          alt="Logo INGE"
-          className="h-7 md:h-9 object-contain"
-        />
-        <img
-          src="/public/logo-snieg.png"
-          alt="Logo SGEIN"
-          className="h-12 md:h-14 object-contain"
-        />
+      <section className="mt-25 bg-[#DDC9A3] backdrop-blur-sm flex justify-center items-center py-2">
+        <h1 className="text-[#691B31] font-semibold mb-1 text-base">Dirección General de Tecnologías de la Información / Dirección De Desarrollo de Sistemas</h1>
       </section>
 
 
       {/* 🔹 Cuerpo del footer */}
-      <footer className="bg-[#420c1a] text-white py-8">
+      <footer className="bg-[#691B31] text-white py-8">
         <div className="max-w-screen-xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-center md:text-left">
 
           {/* Logo izquierdo */}
           <div className="flex justify-center md:justify-start">
             <img
-              src="/logohidalgo.svg"
+              src="/logohidalgo.sv"
               alt="Escudo del Estado de Hidalgo"
-              className="h-42 object-contain"
+              className="h-30 object-contain"
             />
           </div>
 
           {/* Sección de contacto */}
           <div>
-            <h3 className="text-[#decba4] font-semibold mb-2 text-base">Ubicación</h3>
+            <h3 className="text-[#C79D63] font-semibold mb-2 text-base">Ubicación</h3>
             <p className="text-sm leading-relaxed text-[#f3e9da]">
               CITNOVA | EDIFICIO INNOVACIÓN<br />
               Boulevard Circuito La Concepción #3<br />
@@ -42,7 +33,7 @@ export default function Footer() {
 
           {/* Redes sociales */}
           <div className="flex flex-col items-center md:items-end gap-3">
-            <span className="text-[#decba4] font-semibold">Síguenos en</span>
+            <span className="text-[#C79D63] font-semibold">Síguenos en</span>
             <div className="flex gap-4">
               <a
                 href="https://facebook.com"

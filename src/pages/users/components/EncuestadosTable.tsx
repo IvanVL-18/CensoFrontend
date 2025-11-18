@@ -1,88 +1,125 @@
-import { useState } from "react";
-import { Trash2, Edit2, Eye } from "lucide-react"; // Iconos de Lucide
-import NewEncuestadoButton from "./NewEncuestadoButton"; // Asegúrate de importar el botón
-import SearchBar from "./SearchBar"; // Asegúrate de importar SearchBar
-import Pagination from "./Pagination"; // Importamos el componente Pagination
+import { MoreVertical } from "lucide-react";
+import clsx from "clsx";
 
-type User = {
-  id: number;
-  fullName: string;
-  institution: string;
+export type Encuestado = {
+  id: string | number;
+  name: string;
+  curp: string;
+  municipio: string;
+  status: "Activo" | "Inactivo";
 };
 
-const EncuestadosTable = ({ users }: { users: User[] }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5; // Cantidad de usuarios por página
+type SortKey = keyof Pick<Encuestado, "name" | "curp" | "municipio" | "status">;
 
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-  };
+type Props = {
+  rows: Encuestado[];
+  loading?: boolean;
+  onView?: (id: string | number) => void;
+  onEdit?: (id: string | number) => void;
+  onDelete?: (id: string | number) => void;
+};
 
-  const filteredUsers = users.filter((user) =>
-    user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+export default function EncuestadosTable({
+  rows,
+  loading,
+  onView,
+  onEdit,
+  onDelete,
+}: Props) {
+  const headCell = (label: string, k?: SortKey) => (
+    <th
+      className={clsx(
+        "px-4 py-3 text-left text-[13px] font-semibold text-[#3b2a2e]",
+        k && "cursor-default"
+      )}
+      scope="col"
+    >
+      {label}
+    </th>
   );
 
-  // Paginar los usuarios
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-black/5 bg-white p-6">
+        <div className="h-4 w-40 bg-black/5 rounded animate-pulse mb-4" />
+        <div className="space-y-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-10 bg-black/5/50 rounded animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-  // Función para cambiar de página
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  if (!rows.length) {
+    return (
+      <div className="rounded-xl border border-black/5 bg-white p-12 text-center">
+        <p className="text-[#3b2a2e] font-medium">Sin encuestados</p>
+        <p className="text-sm text-[#3b2a2e]/70">
+          Selecciona filtros o agrega nuevos registros.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      {/* Filtro y Botón Nuevo */}
-      <div className="flex justify-between mb-4 items-center">
-        <SearchBar searchQuery={searchQuery} onSearchChange={handleSearchChange} />
-        <NewEncuestadoButton onClick={() => console.log("Nuevo Encuestado")} />
-      </div>
-
-      {/* Tabla de Encuestados */}
-      <table className="w-full table-auto border-collapse text-left">
-        <thead className="bg-[#5F0F1B] text-white">
+    <div className="overflow-hidden rounded-xl border border-black/5 bg-white">
+      <table className="w-full border-collapse">
+        <thead className="bg-[#F5F1EA]">
           <tr>
-            <th className="px-4 py-2">Avatar</th>
-            <th className="px-4 py-2">Nombre Completo</th>
-            <th className="px-4 py-2">Rol</th>
-            <th className="px-4 py-2">Institución</th>
-            <th className="px-4 py-2">Acciones</th>
+            {headCell("Nombre")}
+            {headCell("CURP")}
+            {headCell("Municipio")}
+            {headCell("Estatus")}
+            <th className="px-4 py-3 text-right text-[13px] font-semibold text-[#3b2a2e]">
+              Acciones
+            </th>
           </tr>
         </thead>
         <tbody>
-          {currentUsers.map((user) => (
-            <tr key={user.id}>
-              <td className="px-4 py-2">
-                <img src="/avatar-placeholder.jpg" alt="Avatar" className="h-8 w-8 rounded-full" />
+          {rows.map((r) => (
+            <tr
+              key={r.id}
+              className="border-t border-black/5 hover:bg-black/5/10"
+            >
+              <td className="px-4 py-3 text-[13px] text-[#3b2a2e]">{r.name}</td>
+              <td className="px-4 py-3 text-[13px] text-[#3b2a2e] tracking-wide">
+                {r.curp}
               </td>
-              <td className="px-4 py-2">{user.fullName}</td>
-              <td className="px-4 py-2">Encuestado</td>
-              <td className="px-4 py-2">{user.institution}</td>
-              <td className="px-4 py-2 flex gap-2">
-                <button className="p-2 text-[#5F0F1B] hover:bg-[#5F0F1B]/20 rounded-full">
-                  <Eye size={18} />
-                </button>
-                <button className="p-2 text-[#5F0F1B] hover:bg-[#5F0F1B]/20 rounded-full">
-                  <Edit2 size={18} />
-                </button>
-                <button className="p-2 text-[#5F0F1B] hover:bg-[#5F0F1B]/20 rounded-full">
-                  <Trash2 size={18} />
-                </button>
+              <td className="px-4 py-3 text-[13px] text-[#3b2a2e]">
+                {r.municipio}
+              </td>
+              <td className="px-4 py-3">
+                <span
+                  className={clsx(
+                    "inline-flex items-center rounded-full px-2 py-0.5 text-[12px]",
+                    r.status === "Activo"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-gray-100 text-gray-600"
+                  )}
+                >
+                  {r.status}
+                </span>
+              </td>
+              <td className="px-2 py-2">
+                <div className="flex justify-end">
+                  <button
+                    className="rounded-md p-2 hover:bg-black/5"
+                    aria-label="Acciones"
+                  >
+                    <MoreVertical className="size-4" />
+                  </button>
+                </div>
+                <div className="sr-only">
+                  <button onClick={() => onView?.(r.id)}>Ver</button>
+                  <button onClick={() => onEdit?.(r.id)}>Editar</button>
+                  <button onClick={() => onDelete?.(r.id)}>Eliminar</button>
+                </div>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-
-      {/* Paginación */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={Math.ceil(filteredUsers.length / usersPerPage)}
-        onPageChange={paginate}
-      />
     </div>
   );
-};
-
-export default EncuestadosTable;
+}
