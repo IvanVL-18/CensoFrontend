@@ -1,17 +1,25 @@
 import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
-import { getUnits, createUnit, updateUnit,banUnit, restoreUnit,forceDeleteUnit, type UnitFilter } from "./Institutions.service";
+import { 
+  getInstitutions, 
+  createInstitution, 
+  updateInstitution,
+  banInstitution, 
+  restoreInstitution,
+  forceDeleteInstitution, 
+  type InstitutionFilter 
+} from "./Institutions.service";
 import { useToast } from "../../context/ToastContext"; // <--- 1. IMPORTAR
 
 import type {
-  Unit,
-  PaginatedUnitsResponse,
+  Institution,
+  PaginatedInstitutionsResponse,
   Meta,
   CreateInstitutionDTO,
-  UpdateUnitDTO,
+  UpdateInstitutionDTO,
 } from "./Institutions.interfaces";
 
 type SortConfig = {
-  key: keyof Unit;
+  key: keyof Institution;
   direction: "ascending" | "descending";
 };
 
@@ -19,14 +27,14 @@ export function useInstitutions() {
   // --- Estados de datos ---
   const { addToast } = useToast(); 
 
-  const [institutions, setInstitutions] = useState<Unit[]>([]);
-  const [links, setLinks] = useState<PaginatedUnitsResponse["links"] | null>(null);
+  const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [links, setLinks] = useState<PaginatedInstitutionsResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // --- Estados de filtros y orden ---
-  const [filter, setFilter] = useState<UnitFilter>("all");
+  const [filter, setFilter] = useState<InstitutionFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "created_at",
@@ -35,11 +43,11 @@ export function useInstitutions() {
   });
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingInstitution, setViewingInstitution] = useState<Unit | null>(null);
+  const [viewingInstitution, setViewingInstitution] = useState<Institution | null>(null);
   
   // --- Estado para el Modal del Mapa ---
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
-  const [mapInstitution, setMapInstitution] = useState<Unit | null>(null);
+  const [mapInstitution, setMapInstitution] = useState<Institution | null>(null);
 
   const handleViewModalClose = useCallback(() => {
     setIsViewModalOpen(false);
@@ -53,19 +61,19 @@ export function useInstitutions() {
   // (Esto nos permite recargar la lista después de crear un item)
   const [reloadToken, setReloadToken] = useState(0);
   const reloadInstitutions = useCallback(() => setReloadToken((t) => t + 1), []);
-  // Guardará la unidad que estamos editando
-  const [editingInstitution, setEditingInstitution] = useState<Unit | null>(null);
+  // Guardará la institución que estamos editando
+  const [editingInstitution, setEditingInstitution] = useState<Institution | null>(null);
 
   // --- 2. NUEVOS ESTADOS PARA EL MODAL DE CONFIRMACIÓN ---
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  // Guardará la unidad que queremos desactivar, restaurar o eliminar
-  const [actionInstitution, setActionInstitution] = useState<Unit | null>(null);
+  // Guardará la institución que queremos desactivar, restaurar o eliminar
+  const [actionInstitution, setActionInstitution] = useState<Institution | null>(null);
   // Guardará qué acción estamos por confirmar
   const [actionType, setActionType] = useState<'ban' | 'restore' | 'delete' | null>(null);
 
   // --- Manejadores para el Modal del Mapa ---
-  const onShowMap = (unit: Unit) => {
-    setMapInstitution(unit);
+  const onShowMap = (institution: Institution) => {
+    setMapInstitution(institution);
     setIsMapModalOpen(true);
   };
 
@@ -79,7 +87,7 @@ export function useInstitutions() {
   // 1. Efecto para cargar datos
   useEffect(() => {
     setLoading(true);
-    getUnits(filter)
+    getInstitutions(filter)
       .then((response) => {
         setInstitutions(response.data);
         setLinks(response.links);
@@ -96,10 +104,10 @@ export function useInstitutions() {
   }, [filter, reloadToken]); 
 
   // 2. Función para paginación
-  const loadUnitsByUrl = useCallback((url: string) => {
+  const loadInstitutionsByUrl = useCallback((url: string) => {
     setLoading(true);
     fetch(url)
-      .then((res) => res.json() as Promise<PaginatedUnitsResponse>)
+      .then((res) => res.json() as Promise<PaginatedInstitutionsResponse>)
       .then((response) => {
         setInstitutions(response.data);
         setLinks(response.links);
@@ -118,7 +126,7 @@ export function useInstitutions() {
   // --- Controladores de Eventos (Filtros, Paginación) ---
 
   const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setFilter(e.target.value as UnitFilter);
+    setFilter(e.target.value as InstitutionFilter);
   }, []);
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -128,13 +136,13 @@ export function useInstitutions() {
   const handlePageClick = useCallback(
     (url: string | null) => {
       if (url) {
-        loadUnitsByUrl(url);
+        loadInstitutionsByUrl(url);
       }
     },
-    [loadUnitsByUrl]
+    [loadInstitutionsByUrl]
   );
 
-  const handleSort = useCallback((key: keyof Unit) => {
+  const handleSort = useCallback((key: keyof Institution) => {
     setSortConfig((currentConfig) => {
       let direction: "ascending" | "descending" = "ascending";
       if (
@@ -148,14 +156,14 @@ export function useInstitutions() {
   }, []);
 
   // --- Lógica de Memoización (Datos Computados) ---
-  const filteredUnits = useMemo(() => {
-    return institutions.filter((unit) =>
-      unit.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredInstitutions = useMemo(() => {
+    return institutions.filter((institution) =>
+      institution.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [institutions, searchTerm]);
 
-  const sortedUnits = useMemo(() => {
-    let sortableItems = [...filteredUnits];
+  const sortedInstitutions = useMemo(() => {
+    let sortableItems = [...filteredInstitutions];
     sortableItems.sort((a, b) => {
       // ... (lógica de ordenamiento sin cambios)
       const valA = a[sortConfig.key];
@@ -171,7 +179,7 @@ export function useInstitutions() {
       return 0;
     });
     return sortableItems;
-  }, [filteredUnits, sortConfig]);
+  }, [filteredInstitutions, sortConfig]);
 
   // (Acciones CRUD) ---
 
@@ -199,14 +207,13 @@ export function useInstitutions() {
       try {
         if (editingInstitution) {
           // --- LÓGICA DE ACTUALIZAR ---
-          // (Asumiendo que tu DTO es solo { name })
-          const dataToUpdate: UpdateUnitDTO = institutionData; 
-          await updateUnit(editingInstitution.id, dataToUpdate);
+          const dataToUpdate: UpdateInstitutionDTO = institutionData; 
+          await updateInstitution(editingInstitution.id, dataToUpdate);
           addToast("Institución actualizada con éxito.", "success");
 
         } else {
           // --- LÓGICA DE CREAR (la que ya tenías) ---
-          await createUnit(institutionData);
+          await createInstitution(institutionData);
           addToast("Institución creada con éxito.", "success");
         }
 
@@ -245,17 +252,17 @@ export function useInstitutions() {
       let toastType: "success" | "danger" | "warning" = "success";
 
       if (actionType === 'ban') {
-        await banUnit(actionInstitution.id);
+        await banInstitution(actionInstitution.id);
         successMessage = `Institución "${actionInstitution.name}" desactivada.`;
         toastType = "warning"; // Usamos 'warning' (naranja) para desactivar
 
       } else if (actionType === 'restore') {
-        await restoreUnit(actionInstitution.id);
+        await restoreInstitution(actionInstitution.id);
         successMessage = `Institución "${actionInstitution.name}" restaurada.`;
         toastType = "success";
 
       } else if (actionType === 'delete') { 
-        await forceDeleteUnit(actionInstitution.id);
+        await forceDeleteInstitution(actionInstitution.id);
         successMessage = `Institución "${actionInstitution.name}" eliminada permanentemente.`;
         toastType = "danger";
       }
@@ -276,33 +283,33 @@ export function useInstitutions() {
   }, [actionInstitution, actionType, reloadInstitutions, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
   
 
- const onView = useCallback((unit: Unit) => {
-    setViewingInstitution(unit);
+ const onView = useCallback((institution: Institution) => {
+    setViewingInstitution(institution);
     setIsViewModalOpen(true);
   }, []);
 
-  const onEdit = useCallback((unit: Unit) => {
-    setEditingInstitution(unit); // <--- Guarda la unidad a editar
+  const onEdit = useCallback((institution: Institution) => {
+    setEditingInstitution(institution); // <--- Guarda la institución a editar
     setModalError(null);
     setIsModalOpen(true); // <--- Abre el modal
   }, []);
 
-  const onBan = useCallback((unit: Unit) => {
-    setActionInstitution(unit);
+  const onBan = useCallback((institution: Institution) => {
+    setActionInstitution(institution);
     setActionType('ban');
     setIsConfirmModalOpen(true); // Abre el modal de confirmación
     setModalError(null);
   }, []);
 
-  const onRestore = useCallback((unit: Unit) => {
-    setActionInstitution(unit);
+  const onRestore = useCallback((institution: Institution) => {
+    setActionInstitution(institution);
     setActionType('restore');
     setIsConfirmModalOpen(true);
     setModalError(null);
   }, []);
 
-  const onDelete = useCallback((unit: Unit) => {
-  setActionInstitution(unit);
+  const onDelete = useCallback((institution: Institution) => {
+  setActionInstitution(institution);
   setActionType('delete'); // <--- Esto le dice al modal qué textos mostrar
   setIsConfirmModalOpen(true);
   setModalError(null);
@@ -317,7 +324,7 @@ export function useInstitutions() {
     error,
     
     // Datos
-    sortedUnits,
+    sortedInstitutions,
     meta,
     links,
     

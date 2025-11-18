@@ -5,7 +5,7 @@ import type { Institution } from "./Institutions.interfaces";
 interface ViewInstitutionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  unit: Institution | null; // La institución que vamos a mostrar
+  institution: Institution | null; // La institución que vamos a mostrar
 }
 
 /**
@@ -44,9 +44,9 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewInstitutionModal({ isOpen, onClose, unit }: ViewInstitutionModalProps) {
+export function ViewInstitutionModal({ isOpen, onClose, institution }: ViewInstitutionModalProps) {
   // Si no está abierto o no hay una unidad, no renderiza nada
-  if (!isOpen || !unit) {
+  if (!isOpen || !institution) {
     return null;
   }
 
@@ -76,20 +76,20 @@ export function ViewInstitutionModal({ isOpen, onClose, unit }: ViewInstitutionM
 
           {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
-            <DetailRow label="Nombre de la Institución:" value={unit.name} />
+            <DetailRow label="Nombre de la Institución:" value={institution.name} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DetailRow label="Municipio:" value={unit.municipality} />
-              <DetailRow label="Tipo:" value={unit.typeinst} />
+              <DetailRow label="Municipio:" value={institution.municipality} />
+              <DetailRow label="Tipo:" value={institution.typeinst} />
             </div>
-            <DetailRow label="Geocódigo:" value={unit.geocode} />
+            <DetailRow label="Geocódigo:" value={institution.geocode} />
             <hr />
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(unit.created_at)} // Asumiendo que se llama así
+              value={formatDate(institution.created_at)} // Asumiendo que se llama así
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(unit.deleted_at)} // Asumiendo que se llama así
+              value={formatDate(institution.deleted_at)} // Asumiendo que se llama así
             />
           </div>
 

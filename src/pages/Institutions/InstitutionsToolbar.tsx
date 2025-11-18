@@ -5,7 +5,7 @@ import {
   CirclePlus,
   type LucideProps,
 } from "lucide-react";
-import type { UnitFilter as InstitutionFilter } from "./Institutions.service"; // Asegúrate que la ruta sea correcta
+import type { InstitutionFilter as InstitutionFilter } from "./Institutions.service"; // Asegúrate que la ruta sea correcta
 
 // --- Definiciones de Iconos (usados solo en este componente) ---
 

@@ -1,61 +1,59 @@
-// src/pages/Institutions/Institutions.interfaces.ts
+// Este archivo define las estructuras de datos (interfaces) para el módulo de Instituciones.
 
-// Esta es la interfaz para cada objeto 'Institution' dentro del array 'data'
-// Asegúrate de que las propiedades de 'CreateInstitutionDTO' sean coherentes con las de 'Institution'
+/**
+ * Representa una única institución, tal como viene de la API.
+ */
 export interface Institution {
   id: string;
   name: string;
-  municipality: string; // Agregado 'municipality'
-  geocode: string; // Agregado 'geocode'
-  typeinst: string; // Agregado 'typeinst'
-  created_at: string;
-  deleted_at: string | null;
-}
-
-// Interfaz para la creación de una institución
-// Asegúrate de que 'CreateInstitutionDTO' esté bien definida con todas las propiedades necesarias
-export interface CreateInstitutionDTO {
-  name: string;
-  municipality: string;  // Asegúrate de que estas propiedades existan
+  municipality: string;
   geocode: string;
   typeinst: string;
-  // No se necesitan más propiedades para la creación según el DTO
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null; // Puede ser null si la institución está activa
 }
 
-// Para actualizar (opcional) podemos usar 'Partial'
-export type UpdateInstitutionDTO = Partial<CreateInstitutionDTO>;
-
-
-// --- Interaces para la paginación ---
-
-// Esta es la interfaz para los links DENTRO del objeto 'meta'
-export interface MetaLink {
-  url: string | null;
-  label: string;
-  page: number | null;
-  active: boolean;
-}
-
-// Esta es la interfaz para el objeto 'meta' (ajustado a tu API)
+/**
+ * Define la estructura de los metadatos de paginación que vienen de Laravel.
+ */
 export interface Meta {
-  total: number[];
-  per_page: number[];
-  current_page: number[];
-  last_page: number[];
+  current_page: number;
   from: number;
-  links: MetaLink[]; // <-- Faltaba este array de links
+  last_page: number;
+  links: {
+    url: string | null;
+    label: string;
+    active: boolean;
+  }[];
   path: string;
+  per_page: number;
   to: number;
+  total: number;
 }
 
-// Esta es la interfaz para la respuesta COMPLETA de la API (con paginación)
+/**
+ * Representa la respuesta completa de la API cuando se piden instituciones paginadas.
+ */
 export interface PaginatedInstitutionsResponse {
   data: Institution[];
   links: {
-    first: string | null;
-    last: string | null;
+    first: string;
+    last: string;
     prev: string | null;
     next: string | null;
   };
-  meta: Meta; // <-- CORRECCIÓN 2: Usamos la interfaz Meta corregida
+  meta: Meta;
 }
+
+/**
+ * DTO (Data Transfer Object) para crear una nueva institución.
+ * No incluye 'id', 'created_at', etc., porque son generados por el servidor.
+ */
+export type CreateInstitutionDTO = Omit<Institution, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>;
+
+/**
+ * DTO para actualizar una institución. Es similar a Create, pero puede ser parcial.
+ * `Partial` hace que todas las propiedades sean opcionales.
+ */
+export type UpdateInstitutionDTO = Partial<CreateInstitutionDTO>;

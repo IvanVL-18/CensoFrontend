@@ -1,13 +1,13 @@
 import type {
-  Unit,
-  PaginatedUnitsResponse,
+  Institution,
+  PaginatedInstitutionsResponse,
   CreateInstitutionDTO,
-  UpdateUnitDTO,
+  UpdateInstitutionDTO,
 } from "./Institutions.interfaces";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
-export type UnitFilter = "all" | "active" | "inactive";
+export type InstitutionFilter = "all" | "active" | "inactive";
 
 // Función para manejar la respuesta JSON de la API
 const handleJsonResponse = async (response: Response) => {
@@ -41,9 +41,9 @@ const handleEmptyResponse = async (response: Response) => {
 };
 
 // Obtener (GET) lista de units con filtro y paginación
-export const getUnits = (
-  filter: UnitFilter = "all"
-): Promise<PaginatedUnitsResponse> => {
+export const getInstitutions = (
+  filter: InstitutionFilter = "all"
+): Promise<PaginatedInstitutionsResponse> => {
   const url = `${API_URL}/institutions/${filter}/content`;
 
   return fetch(url, {
@@ -65,7 +65,7 @@ export const getUnits = (
 };
 
 // Crear (POST) una nueva unit
-export const createUnit = (unitData: CreateInstitutionDTO): Promise<Unit> => {
+export const createInstitution = (institutionData: CreateInstitutionDTO): Promise<Institution> => {
   const url = `${API_URL}/institutions`;
 
   return fetch(url, {
@@ -74,7 +74,7 @@ export const createUnit = (unitData: CreateInstitutionDTO): Promise<Unit> => {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify(unitData),
+    body: JSON.stringify(institutionData),
   })
     .then(handleJsonResponse)
     .then((response) => {
@@ -86,13 +86,13 @@ export const createUnit = (unitData: CreateInstitutionDTO): Promise<Unit> => {
 };
 
 // Alias para saveUnit (si prefieres usar 'saveUnit' en vez de 'createUnit')
-export const saveUnit = createUnit;
+export const saveInstitution = createInstitution;
 
 // Actualizar (PUT/PATCH) una unit existente
-export const updateUnit = (
+export const updateInstitution = (
   id: string,
-  unitData: UpdateUnitDTO
-): Promise<Unit> => {
+  InstitutionData: UpdateInstitutionDTO
+): Promise<Institution> => {
   const url = `${API_URL}/institutions/${id}`;
 
   return fetch(url, {
@@ -101,7 +101,7 @@ export const updateUnit = (
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify(unitData),
+    body: JSON.stringify(InstitutionData),
   })
     .then(handleJsonResponse)
     .then((response) => {
@@ -113,7 +113,7 @@ export const updateUnit = (
 };
 
 // Borrar (DELETE) una unit (Soft Delete)
-export const banUnit = (id: string): Promise<void> => {
+export const banInstitution = (id: string): Promise<void> => {
   const url = `${API_URL}/institutions/${id}`;
 
   return fetch(url, {
@@ -129,7 +129,7 @@ export const banUnit = (id: string): Promise<void> => {
 };
 
 // Restaurar (POST) una unit borrada
-export const restoreUnit = (id: string): Promise<void> => {
+export const restoreInstitution = (id: string): Promise<void> => {
   const url = `${API_URL}/institutions/${id}/restore`;
 
   return fetch(url, {
@@ -145,7 +145,7 @@ export const restoreUnit = (id: string): Promise<void> => {
 };
 
 // Eliminar (DELETE) una unit (Force Delete)
-export const forceDeleteUnit = (id: string | number): Promise<void> => {
+export const forceDeleteInstitution = (id: string | number): Promise<void> => {
   const url = `${API_URL}/institutions/${id}/force-delete`;
 
   return fetch(url, {

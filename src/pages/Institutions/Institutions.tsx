@@ -31,11 +31,10 @@ function ToastContainer() {
 
 // --- 2. Componente Interno para el Contenido de la Página ---
 function InstitutionsPageContent() {
-  const hook = useInstitutions();
   const {
     loading,
     error,
-    sortedUnits: sortedInstitutions,
+    sortedInstitutions,
     meta: paginationMeta,
     links,
     filter,
@@ -68,7 +67,7 @@ function InstitutionsPageContent() {
     handleConfirmModalClose,
     handleMapModalClose,
     handleConfirmAction,
-  } = hook;
+  } = useInstitutions();
 
   // Si 'editingInstitution' tiene datos, el título es "Editar". Si no, "Agregar".
   const modalTitle = editingInstitution ? "Editar Institución" : "Agregar Institución";
@@ -169,7 +168,7 @@ function InstitutionsPageContent() {
 
       <ViewInstitutionModal
         isOpen={isViewModalOpen}
-        unit={viewingInstitution}
+        institution={viewingInstitution}
         onClose={handleViewModalClose}
       />
 
