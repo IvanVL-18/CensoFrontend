@@ -5,6 +5,7 @@ import { Pagination } from "./Pagination";
 import { InstitutionModal } from "./InstitutionsModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { ViewUnitModal } from "./ViewInstitutionsModal";
+import { MapModal } from "./MapModal"; // <-- Importamos el nuevo modal
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
@@ -48,12 +49,15 @@ function UnitsPageContent() {
     actionType,
     isViewModalOpen,
     viewingInstitution,
+    isMapModalOpen,
+    mapInstitution,
     handleFilterChange,
     handleSearchChange,
     handleSort,
     handlePageClick,
     handleAddClick,
     handleModalClose,
+    onShowMap,
     handleModalSave,
     onView,
     onEdit,
@@ -62,6 +66,7 @@ function UnitsPageContent() {
     onDelete,
     handleViewModalClose,
     handleConfirmModalClose,
+    handleMapModalClose,
     handleConfirmAction,
   } = hook;
 
@@ -118,6 +123,7 @@ function UnitsPageContent() {
           units={sortedUnits}
           meta={meta}
           onSort={handleSort}
+          onShowMap={onShowMap} // <-- Pasamos la nueva función
           onView={onView}
           onEdit={onEdit}
           onBan={onBan}
@@ -165,6 +171,14 @@ function UnitsPageContent() {
         isOpen={isViewModalOpen}
         unit={viewingInstitution}
         onClose={handleViewModalClose}
+      />
+
+      <MapModal
+        isOpen={isMapModalOpen}
+        onClose={handleMapModalClose}
+        geocode={mapInstitution?.geocode || null}
+        municipality={mapInstitution?.municipality || null}
+        institutionName={mapInstitution?.name || null}
       />
     </div>
   );

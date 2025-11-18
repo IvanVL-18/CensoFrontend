@@ -90,10 +90,8 @@ export function validateInstitution(data: InstitutionFormData): string[] {
   // Validación para 'geocode'
   if (!geocode.trim()) {
     errors.push("El geocódigo es obligatorio.");
-  } else if (!/^\d{5}$/.test(geocode.trim())) {
-    errors.push("El geocódigo solo debe contener números almenos 5 digitos");
-  } else if (geocode.trim().length !== 5) {
-    errors.push("El geocódigo debe tener exactamente 5 dígitos.");
+  } else if (!/^\d+$/.test(geocode.trim())) {
+    errors.push("El geocódigo solo debe contener números.");
   }
 
   // Validación para 'typeinst'

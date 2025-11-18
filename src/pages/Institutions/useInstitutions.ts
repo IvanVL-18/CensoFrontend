@@ -37,6 +37,10 @@ export function useInstitutions() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingInstitution, setViewingInstitution] = useState<Unit | null>(null);
   
+  // --- Estado para el Modal del Mapa ---
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [mapInstitution, setMapInstitution] = useState<Unit | null>(null);
+
   const handleViewModalClose = useCallback(() => {
     setIsViewModalOpen(false);
     setViewingInstitution(null);
@@ -59,6 +63,16 @@ export function useInstitutions() {
   // Guardará qué acción estamos por confirmar
   const [actionType, setActionType] = useState<'ban' | 'restore' | 'delete' | null>(null);
 
+  // --- Manejadores para el Modal del Mapa ---
+  const onShowMap = (unit: Unit) => {
+    setMapInstitution(unit);
+    setIsMapModalOpen(true);
+  };
+
+  const handleMapModalClose = () => {
+    setIsMapModalOpen(false);
+    setMapInstitution(null);
+  };
   
   // --- Lógica de Carga de Datos ---
 
@@ -322,6 +336,8 @@ export function useInstitutions() {
     editingInstitution,
     isViewModalOpen,
     viewingInstitution,
+    isMapModalOpen,
+    mapInstitution,
 
     // Controladores (Filtros, Paginación)
     handleFilterChange,
@@ -331,15 +347,17 @@ export function useInstitutions() {
 
     // Controladores de acciones (CRUD)
     handleAddClick,
-    handleModalClose, 
-    handleModalSave,  
+    handleModalClose,
+    handleModalSave,
+    onShowMap,
     onView,
     onEdit,
     onBan,
     onRestore,
     onDelete,
-    handleConfirmModalClose, 
+    handleConfirmModalClose,
     handleConfirmAction,
-    handleViewModalClose
+    handleViewModalClose,
+    handleMapModalClose,
   };
 }

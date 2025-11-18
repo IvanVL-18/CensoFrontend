@@ -148,16 +148,16 @@ export function InstitutionModal({
               {/* Geocódigo */}
               <label
                 htmlFor="geocode"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 mt-4 mb-2"
               >
-                Geocódigo:
+                Código Postal / Geocódigo:
               </label>
               <input
-                type="text"
+                type="text" // Aseguramos que sea de tipo texto
                 id="geocode"
                 value={geocode}
                 onChange={handleInputChange}
-                placeholder="Ingresar geocódigo..."
+                placeholder="Ingresar código..."
                 className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('geocódigo')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
                 disabled={isSubmitting}
                 aria-invalid={formErrors.some(e => e.toLowerCase().includes('geocódigo')) ? "true" : "false"}

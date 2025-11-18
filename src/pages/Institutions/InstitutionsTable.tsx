@@ -5,6 +5,7 @@ import {
   Trash2,
   CircleArrowUp,
   Ban,
+  MapPin, // <-- Importamos el nuevo ícono
   type LucideProps,
 } from "lucide-react";
 import type { Unit, Meta } from "./Institutions.interfaces"; // Asegúrate que la ruta sea correcta
@@ -27,6 +28,7 @@ const IconDelete = (props: LucideProps) => (
 const IconCircleArrowUp = (props: LucideProps) => (
   <CircleArrowUp {...defaultProps} {...props} />
 );
+const IconMap = (props: LucideProps) => <MapPin {...defaultProps} {...props} />;
 const IconBan = (props: LucideProps) => (
   <Ban {...defaultProps} {...props} />
 );
@@ -40,6 +42,7 @@ interface UnitsTableProps {
   error: string | null;
   onSort: (key: keyof Unit) => void;
   // Funciones para manejar las acciones
+  onShowMap: (unit: Unit) => void; // <-- Nueva prop para el mapa
   onView: (unit: Unit) => void;
   onEdit: (unit: Unit) => void;
   onBan: (unit: Unit) => void;
@@ -55,6 +58,7 @@ export function InstitutionsTable({
   loading,
   error,
   onSort,
+  onShowMap,
   onView,
   onEdit,
   onBan,
@@ -89,8 +93,8 @@ export function InstitutionsTable({
             </th>
 
             {/* 4. Columna "Geocódigo" */}
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-              Geocódigo
+            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+              Ubicación
             </th>
 
             {/* 6. Columna "Opciones" */}
@@ -145,8 +149,14 @@ export function InstitutionsTable({
                 </td>
 
                 {/* Celda "Geocódigo" */}
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {unit.geocode}
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                  <button
+                    title="Ver en Mapa"
+                    onClick={() => onShowMap(unit)}
+                    className="bg-white text-[#691b31] hover:bg-sky-700 hover:text-white active:bg-sky-900 active:text-white p-2 rounded-lg leading-none transition-colors"
+                  >
+                    <IconMap />
+                  </button>
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}
