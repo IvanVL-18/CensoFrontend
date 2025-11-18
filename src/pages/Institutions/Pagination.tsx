@@ -1,10 +1,10 @@
-import type { Meta, PaginatedUnitsResponse } from "./Institutions.interfaces"; // Ajusta la ruta
+import type { Meta, PaginatedInstitutionsResponse } from "./Institutions.interfaces"; // Ajusta la ruta
 
 // --- Definición de Props ---
 
 interface PaginationProps {
   meta: Meta | null;
-  links: PaginatedUnitsResponse["links"] | null;
+  links: PaginatedInstitutionsResponse["links"] | null;
   loading: boolean;
   error: string | null;
   onPageClick: (url: string | null) => void;

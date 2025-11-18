@@ -75,7 +75,7 @@ export function InstitutionModal({
   // Manejador para cambios en los campos del formulario
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    if (id === "unitName") setName(value);
+    if (id === "institutionName") setName(value);
     if (id === "municipality") setMunicipality(value);
     if (id === "geocode") setGeocode(value);
     if (id === "typeinst") setTypeinst(value);
@@ -108,14 +108,14 @@ export function InstitutionModal({
             <div className="p-6">
               {/* Nombre del módulo */}
               <label
-                htmlFor="unitName"
+                htmlFor="institutionName"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Nombre de la Institución:
               </label>
               <input
                 type="text"
-                id="unitName"
+                id="institutionName"
                 value={name}
                 onChange={handleInputChange}
                 placeholder="Ingresar nombre..."

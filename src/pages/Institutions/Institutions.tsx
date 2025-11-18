@@ -1,10 +1,10 @@
 import { useInstitutions } from "./useInstitutions";
-import { UnitsToolbar } from "./InstitutionsToolbar";
+import { InstitutionsToolbar } from "./InstitutionsToolbar";
 import { InstitutionsTable } from "./InstitutionsTable";
 import { Pagination } from "./Pagination";
 import { InstitutionModal } from "./InstitutionsModal";
 import { ConfirmModal } from "./ConfirmModal";
-import { ViewUnitModal } from "./ViewInstitutionsModal";
+import { ViewInstitutionModal } from "./ViewInstitutionsModal";
 import { MapModal } from "./MapModal"; // <-- Importamos el nuevo modal
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
@@ -30,13 +30,13 @@ function ToastContainer() {
 }
 
 // --- 2. Componente Interno para el Contenido de la Página ---
-function UnitsPageContent() {
+function InstitutionsPageContent() {
   const hook = useInstitutions();
   const {
     loading,
     error,
-    sortedUnits,
-    meta,
+    sortedUnits: sortedInstitutions,
+    meta: paginationMeta,
     links,
     filter,
     searchTerm,
@@ -70,7 +70,7 @@ function UnitsPageContent() {
     handleConfirmAction,
   } = hook;
 
-  // Si 'editingUnit' tiene datos, el título es "Editar". Si no, "Agregar".
+  // Si 'editingInstitution' tiene datos, el título es "Editar". Si no, "Agregar".
   const modalTitle = editingInstitution ? "Editar Institución" : "Agregar Institución";
   const initialName = editingInstitution ? editingInstitution.name : "";
   const initialMunicipality = editingInstitution ? editingInstitution.municipality : "";
@@ -83,18 +83,18 @@ function UnitsPageContent() {
   let confirmButtonColor: 'danger' | 'primary' = 'danger';
 
   if (actionType === 'ban') {
-    confirmTitle = "Desactivar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${actionInstitution?.name}"?`;
+    confirmTitle = "Desactivar Institución";
+    confirmMessage = `¿Estás seguro de que quieres desactivar la institución "${actionInstitution?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (actionType === 'restore') {
-    confirmTitle = "Restaurar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${actionInstitution?.name}"?`;
+    confirmTitle = "Restaurar Institución";
+    confirmMessage = `¿Estás seguro de que quieres restaurar la institución "${actionInstitution?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (actionType === 'delete') {
-    confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${actionInstitution?.name}"? Esta acción no se puede deshacer.`;
+    confirmTitle = "Eliminar Institución Permanentemente";
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la institución "${actionInstitution?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -106,7 +106,7 @@ function UnitsPageContent() {
       <ToastContainer />
 
       {/* Cabecera y Filtros */}
-      <UnitsToolbar
+      <InstitutionsToolbar
         filter={filter}
         searchTerm={searchTerm}
         onFilterChange={handleFilterChange}
@@ -120,8 +120,8 @@ function UnitsPageContent() {
         <InstitutionsTable
           loading={loading}
           error={error}
-          units={sortedUnits}
-          meta={meta}
+          institutions={sortedInstitutions}
+          meta={paginationMeta}
           onSort={handleSort}
           onShowMap={onShowMap} // <-- Pasamos la nueva función
           onView={onView}
@@ -133,7 +133,7 @@ function UnitsPageContent() {
 
         {/* Paginación */}
         <Pagination
-          meta={meta}
+          meta={paginationMeta}
           links={links}
           loading={loading}
           error={error}
@@ -167,7 +167,7 @@ function UnitsPageContent() {
         onConfirm={handleConfirmAction}
       />
 
-      <ViewUnitModal
+      <ViewInstitutionModal
         isOpen={isViewModalOpen}
         unit={viewingInstitution}
         onClose={handleViewModalClose}
@@ -188,7 +188,7 @@ function UnitsPageContent() {
 export default function Institutions() {
   return (
     <ToastProvider>
-      <UnitsPageContent />
+      <InstitutionsPageContent />
     </ToastProvider>
   );
 }

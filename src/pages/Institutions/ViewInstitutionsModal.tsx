@@ -1,11 +1,11 @@
 import { X } from "lucide-react";
-// Importa tu interfaz 'Unit' desde donde la tengas
-import type { Unit } from "./Institutions.interfaces";
+// Importa tu interfaz 'Institution' desde donde la tengas
+import type { Institution } from "./Institutions.interfaces";
 
-interface ViewUnitModalProps {
+interface ViewInstitutionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  unit: Unit | null; // El módulo que vamos a mostrar
+  unit: Institution | null; // La institución que vamos a mostrar
 }
 
 /**
@@ -44,7 +44,7 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewUnitModal({ isOpen, onClose, unit }: ViewUnitModalProps) {
+export function ViewInstitutionModal({ isOpen, onClose, unit }: ViewInstitutionModalProps) {
   // Si no está abierto o no hay una unidad, no renderiza nada
   if (!isOpen || !unit) {
     return null;

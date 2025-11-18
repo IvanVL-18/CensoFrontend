@@ -1,8 +1,8 @@
-// src/pages/Units/units.interfaces.ts
+// src/pages/Institutions/Institutions.interfaces.ts
 
-// Esta es la interfaz para cada objeto 'Unit' dentro del array 'data'
-// Asegúrate de que las propiedades de 'CreateInstitutionDTO' sean coherentes con las de 'Unit'
-export interface Unit {
+// Esta es la interfaz para cada objeto 'Institution' dentro del array 'data'
+// Asegúrate de que las propiedades de 'CreateInstitutionDTO' sean coherentes con las de 'Institution'
+export interface Institution {
   id: string;
   name: string;
   municipality: string; // Agregado 'municipality'
@@ -12,7 +12,7 @@ export interface Unit {
   deleted_at: string | null;
 }
 
-// Interfaz para la creación de una unidad
+// Interfaz para la creación de una institución
 // Asegúrate de que 'CreateInstitutionDTO' esté bien definida con todas las propiedades necesarias
 export interface CreateInstitutionDTO {
   name: string;
@@ -23,7 +23,7 @@ export interface CreateInstitutionDTO {
 }
 
 // Para actualizar (opcional) podemos usar 'Partial'
-export type UpdateUnitDTO = Partial<CreateInstitutionDTO>;
+export type UpdateInstitutionDTO = Partial<CreateInstitutionDTO>;
 
 
 // --- Interaces para la paginación ---
@@ -49,8 +49,8 @@ export interface Meta {
 }
 
 // Esta es la interfaz para la respuesta COMPLETA de la API (con paginación)
-export interface PaginatedUnitsResponse {
-  data: Unit[];
+export interface PaginatedInstitutionsResponse {
+  data: Institution[];
   links: {
     first: string | null;
     last: string | null;

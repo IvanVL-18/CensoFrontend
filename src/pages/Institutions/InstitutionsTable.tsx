@@ -8,7 +8,7 @@ import {
   MapPin, // <-- Importamos el nuevo ícono
   type LucideProps,
 } from "lucide-react";
-import type { Unit, Meta } from "./Institutions.interfaces"; // Asegúrate que la ruta sea correcta
+import type { Institution, Meta } from "./Institutions.interfaces"; // Asegúrate que la ruta sea correcta
 
 // --- Definiciones de Iconos (usados solo en la tabla) ---
 
@@ -35,25 +35,25 @@ const IconBan = (props: LucideProps) => (
 
 // --- Definición de Props ---
 
-interface UnitsTableProps {
-  units: Unit[]; // Recibe las unidades YA filtradas y ordenadas
+interface InstitutionsTableProps {
+  institutions: Institution[]; // Recibe las instituciones YA filtradas y ordenadas
   meta: Meta | null;
   loading: boolean;
   error: string | null;
-  onSort: (key: keyof Unit) => void;
+  onSort: (key: keyof Institution) => void;
   // Funciones para manejar las acciones
-  onShowMap: (unit: Unit) => void; // <-- Nueva prop para el mapa
-  onView: (unit: Unit) => void;
-  onEdit: (unit: Unit) => void;
-  onBan: (unit: Unit) => void;
-  onRestore: (unit: Unit) => void;
-  onDelete: (unit: Unit) => void;
+  onShowMap: (institution: Institution) => void; // <-- Nueva prop para el mapa
+  onView: (institution: Institution) => void;
+  onEdit: (institution: Institution) => void;
+  onBan: (institution: Institution) => void;
+  onRestore: (institution: Institution) => void;
+  onDelete: (institution: Institution) => void;
 }
 
 // --- Componente ---
 
 export function InstitutionsTable({
-  units,
+  institutions,
   meta,
   loading,
   error,
@@ -64,7 +64,7 @@ export function InstitutionsTable({
   onBan,
   onRestore,
   onDelete,
-}: UnitsTableProps) {
+}: InstitutionsTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -125,7 +125,7 @@ export function InstitutionsTable({
           )}
 
           {/* --- Estado Vacío --- */}
-          {!loading && !error && units.length === 0 && (
+          {!loading && !error && institutions.length === 0 && (
             <tr>
               <td colSpan={5} className="text-center p-6 text-gray-500">
                 No se encontraron Instituciones.
@@ -136,23 +136,23 @@ export function InstitutionsTable({
           {/* --- Mapeo de datos --- */}
           {!loading &&
             !error &&
-            units.map((unit, index) => (
-              <tr key={unit.id} className="hover:bg-gray-50">
+            institutions.map((institution, index) => (
+              <tr key={institution.id} className="hover:bg-gray-50">
                 {/* Celda "No." */}
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {meta ? meta.from + index : unit.id}
+                  {meta ? meta.from + index : institution.id}
                 </td>
 
                 {/* Celda "Nombre" */}
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {unit.name}
+                  {institution.name}
                 </td>
 
                 {/* Celda "Geocódigo" */}
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                   <button
                     title="Ver en Mapa"
-                    onClick={() => onShowMap(unit)}
+                    onClick={() => onShowMap(institution)}
                     className="bg-white text-[#691b31] hover:bg-sky-700 hover:text-white active:bg-sky-900 active:text-white p-2 rounded-lg leading-none transition-colors"
                   >
                     <IconMap />
@@ -161,12 +161,12 @@ export function InstitutionsTable({
 
                 {/* Celda "Opciones" con lógica condicional */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
-                  {!unit.deleted_at ? (
+                  {!institution.deleted_at ? (
                     <>
                       {/* --- Botón VER (Activo) --- */}
                       <button
                         title="Ver Institución"
-                        onClick={() => onView(unit)} // Conectado a prop
+                        onClick={() => onView(institution)} // Conectado a prop
                         className="bg-white text-[#691b31] hover:bg-[#9d7e43] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
                       >
                         <IconView />
@@ -175,7 +175,7 @@ export function InstitutionsTable({
                       {/* --- Botón EDITAR (Activo) --- */}
                       <button
                         title="Editar Institución"
-                        onClick={() => onEdit(unit)} // Conectado a prop
+                        onClick={() => onEdit(institution)} // Conectado a prop
                         className="bg-white text-[#691b31] hover:bg-[#1b2469] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
                       >
                         <IconEdit />
@@ -184,7 +184,7 @@ export function InstitutionsTable({
                       {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
                         title="Desactivar Institución"
-                        onClick={() => onBan(unit)} // Conectado a prop
+                        onClick={() => onBan(institution)} // Conectado a prop
                         className="bg-white text-[#691b31] hover:bg-[#691b31] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
                       >
                         <IconBan />
@@ -195,7 +195,7 @@ export function InstitutionsTable({
                       {/* --- Botón VER (Inactivo) --- */}
                       <button
                         title="Ver Institución"
-                        onClick={() => onView(unit)} // Conectado a prop
+                        onClick={() => onView(institution)} // Conectado a prop
                         className="bg-white text-[#691b31] hover:bg-[#9d7e43] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
                       >
                         <IconView />
@@ -204,7 +204,7 @@ export function InstitutionsTable({
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
                         title="Restaurar Institución"
-                        onClick={() => onRestore(unit)} // Conectado a prop
+                        onClick={() => onRestore(institution)} // Conectado a prop
                         className="bg-white text-[#691b31] hover:bg-[#1b6939] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
                       >
                         <IconCircleArrowUp />
@@ -213,7 +213,7 @@ export function InstitutionsTable({
                       {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
                       <button
                         title="Eliminar Permanentemente"
-                        onClick={() => onDelete(unit)} // Conectado a prop
+                        onClick={() => onDelete(institution)} // Conectado a prop
                         className="bg-white text-[#691b31] hover:bg-[#691b31] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
                       >
                         <IconDelete />
