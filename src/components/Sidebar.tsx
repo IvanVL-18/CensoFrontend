@@ -18,6 +18,8 @@ const items = [
   { to: "/graficador", icon: BarChart3, label: "Graficador" },
   { to: "/ejercicios-fiscales", icon: CalendarRange, label: "Ejercicios Fiscales" },
   { to: "/Unidades", icon: Package, label: "Modulos" },
+  { to: "/Secciones", icon: Paperclip, label: "Secciones" },
+  { to: "/Ocupaciones", icon: Briefcase, label: "Ocupaciones" },
   { to: "/ajustes", icon: Settings, label: "Ajustes" },
 ];
 

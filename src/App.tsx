@@ -14,6 +14,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import UsersPage from "./pages/users/page/UsersPage";
 import Units from "./pages/Units/units";
 import Section from "./pages/Section/Section";
+import Occupations from "./pages/Occupations/occupations";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/ajustes" element={<SettingsPage />} />
         <Route path="/Unidades" element={<Units />} />
         <Route path="/Secciones" element={<Section/>} />
+         <Route path="/Ocupaciones" element={<Occupations />} />
       </Route>
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
