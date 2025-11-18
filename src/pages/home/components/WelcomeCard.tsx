@@ -3,52 +3,52 @@ type Props = {
   subtitle?: string;
   userName?: string;
   onPrimaryClick?: () => void;
-  heroSrc?: string;
-  heroSrc2?: string;
+  logoSrc?: string;
 };
 
 export default function WelcomeCard({
-  title = "Bienvenido al Sistema de Censos del Estado de Hidalgo",
-  subtitle = "Plataforma oficial para la gestión, registro y análisis de censos.",
+  title = "Sistema de Censos del Estado de Hidalgo",
+  subtitle = "Plataforma oficial para la gestión y análisis de censos",
   userName,
-  heroSrc = "/logo-inegi.png",
-  heroSrc2 = "/SNIEG.png",
+  logoSrc = "/Estrella_header.svg",
 }: Props) {
   return (
-    <section className="rounded-2xl border border-neutral-200 bg-white/30 p-10 text-center">
-      <div className="flex items-center justify-center gap-14 mb-8">
+    <section
+      className="
+        relative overflow-hidden
+        rounded-2xl border border-neutral-200
+        bg-white/80
+        px-8 py-10 md:px-12 md:py-12
+        text-center
+        shadow-sm
+        space-y-6
+      "
+    >
+      <div className="flex justify-center mt-2">
         <img
-          src={heroSrc}
-          alt="Logo 1"
-          className="h-15 w-auto object-contain"
-          draggable={false}
-        />
-
-        <div className="h-15 w-[1px] bg-neutral-300" />
-
-        <img
-          src={heroSrc2}
-          alt="Logo 2"
-          className="h-25 w-auto object-contain"
+          src={logoSrc}
+          alt="Logo institucional"
+          className="h-14 md:h-40 w-auto object-contain"
           draggable={false}
         />
       </div>
-
-      <div className="h-[1px] w-full bg-neutral-300 mb-10" />
-
-      {/* --- TEXTO CENTRADO --- */}
-      <h1 className="text-[30px] md:text-[40px] font-extrabold text-[#5F0F1B] leading-tight">
-        {title}
-      </h1>
-
-      <p className="mt-4 text-[17px] md:text-[19px] text-neutral-700 leading-relaxed">
-        {subtitle}
-        {userName && (
-          <span className="ml-1 text-[#5F0F1B] font-semibold">
-            | {userName}
-          </span>
-        )}
+      <p className="text-[11px] md:text-[15px] tracking-[0.28em] uppercase text-neutral-500 flex items-center justify-center gap-3">
+        <span className="hidden md:inline-block h-px w-8 bg-neutral-300" />
+        Bienvenidos{userName ? ` · ${userName}` : ""}
+        <span className="hidden md:inline-block h-px w-8 bg-neutral-300" />
       </p>
+
+      <div className="space-y-3 max-w-3xl mx-auto">
+        <h1 className="text-[26px] md:text-[34px] lg:text-[38px] font-semibold text-[#5F0F1B] leading-tight">
+          {title}
+        </h1>
+
+        <p className="text-[13px] md:text-[16px] text-neutral-600 leading-relaxed">
+          {subtitle}
+        </p>
+      </div>
+
+      <div className="h-px w-full max-w-4xl mx-auto bg-neutral-200 mt-2" />
     </section>
   );
 }

@@ -12,13 +12,13 @@ export default function LoginCard() {
   };
 
   return (
-    <div className="bg-[#A02142]/26 p-8 rounded-2xl shadow-lg w-[90%] max-w-md border border-[#691B31]/30">
+    <div className="bg-[#691B31]/90 p-8 rounded-2xl shadow-lg w-[90%] max-w-md border border-[#691B31]/30">
       <form onSubmit={handleLogin} className="flex flex-col gap-6 text-[#5b132b]">
         <div>
           <label className="block text-sm font-semibold text-white mb-2">
             Usuario
           </label>
-          <div className="flex items-center bg-[#DDC9A3]/30 rounded-xl px-3 py-2">
+          <div className="flex items-center bg-[#FFFFFF]/60 rounded-xl px-3 py-2">
             <User className="text-white mr-2" size={18} />
             <input
               type="text"
@@ -35,7 +35,7 @@ export default function LoginCard() {
           <label className="block text-sm font-semibold text-white mb-2">
             Contraseña
           </label>
-          <div className="flex items-center bg-[#DDC9A3]/30 rounded-xl px-3 py-2">
+          <div className="flex items-center bg-[#FFFFFF]/60 rounded-xl px-3 py-2">
             <Lock className="text-white mr-2" size={18} />
             <input
               type="password"

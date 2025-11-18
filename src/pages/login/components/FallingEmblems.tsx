@@ -28,7 +28,7 @@ export default function FallingEmblems() {
       {DROPS.map((d, i) => (
         <img
           key={i}
-          src="/estrella.svg"
+          src="/Estrella_header.sv"
           alt=""
           className={[
             "absolute object-contain opacity-70 animate-[zoomIn_4s_ease-in-out_infinite] animate-fall", // Mantengo ambas animaciones
