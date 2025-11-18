@@ -1,7 +1,19 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
-  Home, LayoutDashboard, Users, Landmark, ClipboardList, BarChart3,
-  CalendarRange, Settings, ChevronLeft, ChevronRight, LogOut, Package
+  Home,
+  LayoutDashboard,
+  Users,
+  Landmark,
+  ClipboardList, 
+  BarChart3,
+  CalendarRange, 
+  Settings, 
+  ChevronLeft, 
+  ChevronRight, 
+  LogOut, 
+  Package,
+  Paperclip,
+  Briefcase
 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
