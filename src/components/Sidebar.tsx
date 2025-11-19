@@ -11,6 +11,16 @@ import {
   LogOut,
   Package,
   Menu,
+  ClipboardList, 
+  BarChart3,
+  CalendarRange, 
+  Settings, 
+  ChevronLeft, 
+  ChevronRight, 
+  LogOut, 
+  Package,
+  Paperclip,
+  Briefcase
 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
@@ -27,6 +37,8 @@ const items = [
   { to: "/graficador", icon: BarChart3, label: "Graficador" }, // especial
   { to: "/ejercicios-fiscales", icon: CalendarRange,label: "Ejercicios Fiscales",},
   { to: "/Unidades", icon: Package, label: "Modulos" },
+  { to: "/Secciones", icon: Paperclip, label: "Secciones" },
+  { to: "/Ocupaciones", icon: Briefcase, label: "Ocupaciones" },
   { to: "/ajustes", icon: Settings, label: "Ajustes" },
 ];
 
