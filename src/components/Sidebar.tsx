@@ -10,7 +10,7 @@ import {
   Settings,
   LogOut,
   Package,
-  Menu, 
+  Menu,
 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
@@ -25,11 +25,7 @@ const items = [
   { to: "/instituciones", icon: Landmark, label: "Instituciones" },
   { to: "/censos", icon: ClipboardList, label: "Censos" },
   { to: "/graficador", icon: BarChart3, label: "Graficador" }, // especial
-  {
-    to: "/ejercicios-fiscales",
-    icon: CalendarRange,
-    label: "Ejercicios Fiscales",
-  },
+  { to: "/ejercicios-fiscales", icon: CalendarRange,label: "Ejercicios Fiscales",},
   { to: "/Unidades", icon: Package, label: "Modulos" },
   { to: "/ajustes", icon: Settings, label: "Ajustes" },
 ];
@@ -61,7 +57,6 @@ export default function Sidebar({ open, onToggle }: Props) {
     };
   }, []);
 
-
   useEffect(() => {
     if (!location.pathname.startsWith("/graficador")) {
       setChartsMenuOpen(false);
@@ -78,7 +73,7 @@ export default function Sidebar({ open, onToggle }: Props) {
     <aside
       className={clsx(
         "h-screen sticky top-0 z-30 bg-[#5F0F1B] text-white",
-        open ? "w-50" : "w-20"       //tamaño de menú
+        open ? "w-50" : "w-20" //tamaño de menú
       )}
     >
       <div className="h-16 flex items-center gap-2 px-6">
