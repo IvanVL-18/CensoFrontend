@@ -12,37 +12,40 @@ export default function LoginCard() {
   };
 
   return (
-    <div className="bg-[#A02142]/26 p-8 rounded-2xl shadow-lg w-[90%] max-w-md border border-[#691B31]/30">
-      <form onSubmit={handleLogin} className="flex flex-col gap-6 text-[#5b132b]">
+    <div className="bg-[#FFFFFF]/80 p-8 rounded-2xl shadow-lg w-[90%] max-w-md border border-[#691B31]/40">
+      <form onSubmit={handleLogin} className="flex flex-col gap-6 text-[#691B31]">
+        
+        {/* Usuario */}
         <div>
-          <label className="block text-sm font-semibold text-white mb-2">
+          <label className="block text-sm font-semibold mb-2">
             Usuario
           </label>
-          <div className="flex items-center bg-[#DDC9A3]/30 rounded-xl px-3 py-2">
-            <User className="text-white mr-2" size={18} />
+          <div className="flex items-center border border-[#FFFFFF] rounded-xl px-3 py-2 bg-white">
+            <User className="text-[#691B31] mr-2" size={18} />
             <input
               type="text"
               placeholder="Ingrese su usuario"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="bg-transparent outline-none w-full text-white placeholder-gray-300"
+              className="bg-transparent outline-none w-full text-[#691B31] placeholder-[#691B31]/40"
               required
             />
           </div>
         </div>
 
+        {/* Contraseña */}
         <div>
-          <label className="block text-sm font-semibold text-white mb-2">
+          <label className="block text-sm font-semibold mb-2">
             Contraseña
           </label>
-          <div className="flex items-center bg-[#DDC9A3]/30 rounded-xl px-3 py-2">
-            <Lock className="text-white mr-2" size={18} />
+          <div className="flex items-center border border-[#FFFFFF] rounded-xl px-3 py-2 bg-white">
+            <Lock className="text-[#691B31] mr-2" size={18} />
             <input
               type="password"
               placeholder="Ingrese su contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="bg-transparent outline-none w-full text-white placeholder-gray-300"
+              className="bg-transparent outline-none w-full text-[#691B31] placeholder-[#691B31]/40"
               required
             />
           </div>
@@ -51,13 +54,13 @@ export default function LoginCard() {
         <div className="flex flex-col md:flex-row items-center justify-between text-sm">
           <button
             type="button"
-            className="text-white hover:text-[#DDC9A3] transition-colors"
+            className="text-[#691B31] hover:text-[#5b132b]/50 transition-colors"
           >
             ¿Olvidó su contraseña?
           </button>
           <button
             type="button"
-            className="flex items-center gap-1 text-white hover:text-[#DDC9A3] transition-colors"
+            className="flex items-center gap-1 text-[#691B31] hover:text-[#5b132b]/50 transition-colors"
           >
             <UserPlus size={16} /> Agregar usuario
           </button>
@@ -65,7 +68,7 @@ export default function LoginCard() {
 
         <button
           type="submit"
-          className="mt-6 bg-white hover:bg-[#DDC9A3] text-[#691b31] font-bold py-2 rounded-xl transition-colors"
+          className="mt-6 bg-[#691B31] hover:bg-[#DDC9A3] text-white font-bold py-2 rounded-xl transition-colors hover:text-[#691B31]"
         >
           Acceder
         </button>

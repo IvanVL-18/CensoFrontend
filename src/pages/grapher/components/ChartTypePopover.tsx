@@ -1,34 +1,33 @@
-import { Users, ShieldCheck, Briefcase, ChevronLeft } from "lucide-react";
+import { PieChart, BarChart3, ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 
-type UserKind = "encuestados" | "administracion" | "managers";
+type ChartKind = "general" | "cuestionario";
 
-const OPTIONS: Array<{ key: UserKind; label: string; Icon: any }> = [
-  { key: "encuestados", label: "Encuestados", Icon: Users },
-  { key: "administracion", label: "Administración", Icon: ShieldCheck },
-  { key: "managers", label: "Managers", Icon: Briefcase },
+const OPTIONS: Array<{ key: ChartKind; label: string; Icon: any }> = [
+  { key: "general", label: "General", Icon: PieChart },
+  { key: "cuestionario", label: "Cuestionario", Icon: BarChart3 },
 ];
 
-// en UserTypePopover props:
 type Props = {
   className?: string;
-  onNavigate?: () => void; // <-- agrega esto
+  onNavigate?: () => void;
 };
 
-export default function UserTypePopover({ className, onNavigate }: Props) {
+export default function ChartTypePopover({ className, onNavigate }: Props) {
   const navigate = useNavigate();
 
-  const go = (k: UserKind) => {
+  const go = (k: ChartKind) => {
     onNavigate?.();
-    navigate(`/usuarios?tipo=${k}`); // o /usuarios/${k}
+    // Puedes usar query param o ruta dinámica, aquí uso query:
+    navigate(`/graficador?tipo=${k}`);
   };
 
   return (
     <div
       role="menu"
       className={clsx(
-        "w-40 rounded-xl border border-black/5 bg-[#F5F1EA] shadow-[0_6px_20px_rgba(0,0,0,0.15)]",
+        "w-44 rounded-xl border border-black/5 bg-[#F5F1EA] shadow-[0_6px_20px_rgba(0,0,0,0.15)]",
         "backdrop-blur-sm",
         className
       )}
@@ -36,7 +35,7 @@ export default function UserTypePopover({ className, onNavigate }: Props) {
       {/* Header del popover */}
       <div className="flex items-center gap-2 px-3 py-2 text-[13px] text-[#5F0F1B]/80 border-b border-black/5">
         <ChevronLeft className="size-3.5 opacity-60" />
-        <span className="font-semibold">Tipos de usuarios</span>
+        <span className="font-semibold">Tipos de gráfica</span>
       </div>
 
       {/* Lista de opciones */}
