@@ -4,7 +4,7 @@ import GraphicsSection from "../components/GraphicsSection";
 
 const DashboardPage = () => {
   return (
-    <div className="p-6">
+    <div>
       <HeaderSection />
 
       <div className="flex flex-col lg:flex-row gap-13 mt-10">

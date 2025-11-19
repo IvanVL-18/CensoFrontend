@@ -18,7 +18,7 @@ export default function DashboardLayout() {
       <Sidebar open={open} onToggle={() => setOpen(o => !o)} />
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar />
-        <main className="px-20 pt-10 pb-6">
+        <main className="px-5 pt-5 pb-6">
           <div className="mb-4">
             <Breadcrumbs pathname={location.pathname}/>
           </div>

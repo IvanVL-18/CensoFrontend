@@ -7,19 +7,64 @@ type Drop = {
 
 const DROPS: Drop[] = [
   // Izquierda
-  { left: "2%", top: "1%", size: "h-12 md:h-16", delay: "[animation-delay:0s]" },
-  { left: "22%", top: "70%", size: "h-10 md:h-14", delay: "[animation-delay:0.6s]" },
-  { left: "12%", top: "35%", size: "h-12 md:h-14", delay: "[animation-delay:0.2s]" },
-  { left: "28%", top: "18%", size: "h-12 md:h-14", delay: "[animation-delay:0.3s]" },
-  { left: "7%", top: "85%", size: "h-10 md:h-14", delay: "[animation-delay:1s]" },
+  { left: "2%", top: "1%", size: "h-6 md:h-8", delay: "[animation-delay:0s]" },
+  {
+    left: "22%",
+    top: "70%",
+    size: "h-6 md:h-8",
+    delay: "[animation-delay:0.6s]",
+  },
+  {
+    left: "12%",
+    top: "35%",
+    size: "h-6 md:h-8",
+    delay: "[animation-delay:0.2s]",
+  },
+  {
+    left: "28%",
+    top: "18%",
+    size: "h-6 md:h-8",
+    delay: "[animation-delay:0.3s]",
+  },
+  { left: "7%", top: "85%", size: "h-6 md:h-8", delay: "[animation-delay:1s]" },
 
   // Derecha
-  { left: "67%", top: "30%", size: "h-10 md:h-12", delay: "[animation-delay:0.6s]" },
-  { left: "80%", top: "52%", size: "h-12 md:h-16", delay: "[animation-delay:0.6s]" },
-  { left: "95%", top: "25%", size: "h-10 md:h-12", delay: "[animation-delay:0.6s]" },
-  { left: "80%", top: "5%", size: "h-10 md:h-14", delay: "[animation-delay:0.6s]" },
-  { left: "90%", top: "80%", size: "h-14 md:h-18", delay: "[animation-delay:0.4s]" },
-  { left: "70%", top: "80%", size: "h-10 md:h-14", delay: "[animation-delay:0.4s]" },
+  {
+    left: "67%",
+    top: "30%",
+    size: "h-6 md:h-8",
+    delay: "[animation-delay:0.6s]",
+  },
+  {
+    left: "80%",
+    top: "52%",
+    size: "h-6 md:h-8",
+    delay: "[animation-delay:0.6s]",
+  },
+  {
+    left: "95%",
+    top: "25%",
+    size: "h-6 md:h-8",
+    delay: "[animation-delay:0.6s]",
+  },
+  {
+    left: "80%",
+    top: "5%",
+    size: "h-6 md:h-8",
+    delay: "[animation-delay:0.6s]",
+  },
+  {
+    left: "90%",
+    top: "80%",
+    size: "h-6 md:h-8",
+    delay: "[animation-delay:0.4s]",
+  },
+  {
+    left: "70%",
+    top: "80%",
+    size: "h-6 md:h-8",
+    delay: "[animation-delay:0.4s]",
+  },
 ];
 
 export default function FallingEmblems() {
@@ -28,10 +73,10 @@ export default function FallingEmblems() {
       {DROPS.map((d, i) => (
         <img
           key={i}
-          src="/estrella.svg"
+          src="/Estrella_header.sg"
           alt=""
           className={[
-            "absolute object-contain opacity-70 animate-[zoomIn_4s_ease-in-out_infinite] animate-fall", // Mantengo ambas animaciones
+            "absolute object-contain opacity-70 animate-[zoomIn_4s_ease-in-out_infinite] animate-fall",
             d.size,
             d.delay,
           ].join(" ")}

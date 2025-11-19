@@ -2,9 +2,8 @@
 
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
-// <--- CAMBIO 1: Importamos la validación y el nuevo componente
-import { validateUnit } from "../../utils/validation"; // Ajusta la ruta si es necesario
-import { FormErrors } from "./FormErrors"; // Ajusta la ruta si es necesario
+import { validateUnit } from "../../utils/validation";
+import { FormErrors } from "./FormErrors";
 
 interface UnitModalProps {
   isOpen: boolean;
@@ -33,11 +32,8 @@ export function UnitModal({
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
-      // <--- CAMBIO 3: Validamos el estado inicial al abrir
-      const initialErrors = validateUnit({ name: initialName });
-      // Si el nombre inicial es vacío (al "Crear"), la Regla 1 (required) se activará.
-      // Los mostraremos de inmediato.
-      setFormErrors(initialErrors);
+      // Limpiamos los errores al abrir el modal
+      setFormErrors([]);
     }
   }, [isOpen, initialName]);
 

@@ -1,14 +1,14 @@
-// src/components/units.tsx (Corregido con el Patrón de Contexto)
+// src/components/Sections.tsx (Corregido con el Patrón de Contexto)
 
-import { useUnits } from "./useSection";
-import { UnitsToolbar } from "./SectionToolbar";
-import { UnitsTable } from "./SectionTable";
+import { useSections } from "./useSection";
+import { SectionsToolbar } from "./SectionToolbar";
+import { SectionsTable } from "./SectionTable";
 import { Pagination } from "./Pagination";
-import { UnitModal } from "./SectionModal";
+import { SectionModal } from "./SectionModal";
 import { ConfirmModal } from "./ConfirmModal";
-import { ViewUnitModal } from "./ViewSectionModal"; 
+import { ViewSectionModal } from "./ViewSectionModal";
 // <--- Tus imports están perfectos
-import { ToastProvider, useToast } from "../../context/ToastContext"; 
+import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
 // ---
@@ -37,11 +37,11 @@ function ToastContainer() {
 // 2. Componente Interno para el Contenido de la Página
 //    (Este componente contiene TODO tu código anterior)
 // ---
-function UnitsPageContent() {
+function SectionsPageContent() {
   const {
     loading,
     error,
-    sortedUnits,
+    sortedSections,
     meta,
     links,
     filter,
@@ -49,12 +49,12 @@ function UnitsPageContent() {
     isModalOpen,
     isSubmitting,
     modalError,
-    editingUnit,
+    editingSection,
     isConfirmModalOpen,
-    actionUnit,
+    actionSection,
     actionType,
     isViewModalOpen,
-    viewingUnit,
+    viewingSection,
     handleFilterChange,
     handleSearchChange,
     handleSort,
@@ -68,61 +68,59 @@ function UnitsPageContent() {
     onRestore,
     onDelete,
     handleViewModalClose,
-    handleConfirmModalClose, 
+    handleConfirmModalClose,
     handleConfirmAction,
-  } = useUnits(); // <--- Ahora esta llamada es SEGURA porque está DENTRO del Provider
+  } = useSections(); // <--- Ahora esta llamada es SEGURA porque está DENTRO del Provider
 
-  // Si 'editingUnit' tiene datos, el título es "Editar". Si no, "Agregar".
-  const modalTitle = editingUnit ? "Editar Modulo" : "Agregar Modulo";
+  // Si 'editingSection' tiene datos, el título es "Editar". Si no, "Agregar".
+  const modalTitle = editingSection ? "Editar Modulo" : "Agregar Modulo";
 
-  // Si 'editingUnit' tiene datos, pasamos el nombre. Si no, pasamos "".
-  const modalInitialName = editingUnit ? editingUnit.name : "";
+  // Si 'editingSection' tiene datos, pasamos el nombre. Si no, pasamos "".
+  const modalInitialName = editingSection ? editingSection.name : "";
 
   let confirmTitle = "";
   let confirmMessage = "";
   let confirmButtonText = "";
   // Asignamos un tipo explícito a la variable
-  let confirmButtonColor: 'danger' | 'primary' = 'danger';
-  if (actionType === 'ban') {
+  let confirmButtonColor: "danger" | "primary" = "danger";
+  if (actionType === "ban") {
     confirmTitle = "Desactivar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${actionUnit?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${actionSection?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
-  } else if (actionType === 'restore') {
+  } else if (actionType === "restore") {
     confirmTitle = "Restaurar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${actionUnit?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${actionSection?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
-  } else if (actionType === 'delete') {
+  } else if (actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${actionUnit?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${actionSection?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative"> {/* Añadido 'relative' por si acaso */}
-      
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
+      {" "}
+      {/* Añadido 'relative' por si acaso */}
       {/* 3. Renderizamos el contenedor de Toasts */}
       <ToastContainer />
-      
       {/* --- Cabecera y Filtros --- */}
-      <UnitsToolbar
+      <SectionsToolbar
         filter={filter}
         searchTerm={searchTerm}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
         onAddClick={handleAddClick}
       />
-
       {/* --- Contenido Principal (Tabla y Paginación) --- */}
       <div className="p-4">
-        
         {/* --- Tabla de datos --- */}
-        <UnitsTable
+        <SectionsTable
           loading={loading}
           error={error}
-          units={sortedUnits}
+          Sections={sortedSections}
           meta={meta}
           onSort={handleSort}
           onView={onView}
@@ -141,18 +139,24 @@ function UnitsPageContent() {
           onPageClick={handlePageClick}
         />
       </div>
-      
       {/* --- Modales --- */}
-      <UnitModal
+      <SectionModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
         error={modalError}
-        title={modalTitle} 
-        initialName={modalInitialName}
+        title={editingSection ? "Editar Sección" : "Agregar Sección"}
+        // PASAMOS EL OBJETO COMPLETO O UNDEFINED
+        initialData={
+          editingSection
+            ? {
+                name: editingSection.name,
+                instructions: editingSection.instructions,
+              }
+            : undefined
+        }
         onClose={handleModalClose}
         onSave={handleModalSave}
       />
-
       <ConfirmModal
         isOpen={isConfirmModalOpen}
         isSubmitting={isSubmitting}
@@ -164,10 +168,9 @@ function UnitsPageContent() {
         onClose={handleConfirmModalClose}
         onConfirm={handleConfirmAction}
       />
-
-      <ViewUnitModal
+      <ViewSectionModal
         isOpen={isViewModalOpen}
-        unit={viewingUnit}
+        Section={viewingSection}
         onClose={handleViewModalClose}
       />
     </div>
@@ -181,7 +184,7 @@ function UnitsPageContent() {
 export default function Section() {
   return (
     <ToastProvider>
-      <UnitsPageContent />
+      <SectionsPageContent />
     </ToastProvider>
   );
 }

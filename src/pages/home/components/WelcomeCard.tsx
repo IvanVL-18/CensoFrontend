@@ -6,46 +6,65 @@ type Props = {
   subtitle?: string;
   userName?: string;
   onPrimaryClick?: () => void;
-  heroSrc?: string;  
+  logoSrc?: string;
 };
 
 export default function WelcomeCard({
-  title = "Bienvenido al Sistema de Censos del Estado de Hidalgo",
-  subtitle = "Plataforma oficial para la gestión, registro y análisis de censos.",
+  title = "Sistema de Censos del Estado de Hidalgo",
+  subtitle = "Plataforma oficial para la gestión y análisis de censos",
   userName,
-  heroSrc = "/logo-inegi.png", 
+  logoSrc = "/Estrella_header.svg",
 }: Props) {
   return (
-    <section className="relative overflow-hidden rounded-2xl shadow-[0_8px_28px_rgba(0,0,0,.08)]">
-      <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 p-6 md:p-10">
-        <div className="md:col-span-2 flex flex-col gap-6">
-          <div className="flex items-center gap-4">
-            <div className="space-y-1">
-               <h2 className="text-2xl md:text-3xl font-extrabold leading-tight text-[#5F0F1B]" style={{ fontFamily: 'var(--primary-font)' }}>
-                {title}
-              </h2>
-              <p className="text-sm md:text-base text-neutral-600">
-                {subtitle} {userName ? <span className="font-medium text-neutral-700">| {userName}</span> : null}
-              </p>
-            </div>
-          </div>
+    <section
+      className="
+        relative overflow-hidden
+        rounded-2xl border border-neutral-200
+        bg-white/80
+        px-8 py-10 md:px-12 md:py-12
+        text-center
+        shadow-sm
+        space-y-6
+      "
+    >
+      <div className="flex justify-center mt-2">
+        <img
+          src={logoSrc}
+          alt="Logo institucional"
+          className="h-14 md:h-40 w-auto object-contain"
+          draggable={false}
+        />
+      </div>
+      <p className="text-[11px] md:text-[15px] tracking-[0.28em] uppercase text-neutral-500 flex items-center justify-center gap-3">
+        <span className="hidden md:inline-block h-px w-8 bg-neutral-300" />
+        Bienvenidos{userName ? ` · ${userName}` : ""}
+        <span className="hidden md:inline-block h-px w-8 bg-neutral-300" />
+      </p>
 
-        </div>
+      <div className="space-y-3 max-w-3xl mx-auto">
+        <h1 className="text-[26px] md:text-[34px] lg:text-[38px] font-semibold text-[#5F0F1B] leading-tight">
+          {title}
+        </h1>
 
-        <div className="relative">
-          <div className="aspect-[4/3] md:aspect-[5/4] w-full overflow-hidden rounded-xl ring-1 ring-black/5 bg-[#F7F3E8]">
-            {heroSrc ? (
-              <img
-                src={heroSrc} 
-                alt="lustración del Estado de Hidalgo"
-                className="h-full w-full object-contain"
-              />
-            ) : (
-              <div className="h-full w-full grid place-items-center text-neutral-400 text-sm">
-              </div>
-            )}
-          </div>
-        </div>
+        <p className="text-[13px] md:text-[16px] text-neutral-600 leading-relaxed">
+          {subtitle}
+        </p>
+      </div>
+
+      <div className="h-px w-full max-w-4xl mx-auto bg-neutral-200 mt-2" />
+
+      <div className="flex justify-center mt-2 gap-10 items-center">
+        <img
+          src="/SNIEG.png"
+          alt="Logo SNIEG"
+          className="h-12 md:h-16 object-contain"
+        />
+
+        <img
+          src="/logo-inegi.png"
+          alt="Logo INEGI"
+          className="h-8 md:h-10 object-contain"
+        />
       </div>
     </section>
   );
