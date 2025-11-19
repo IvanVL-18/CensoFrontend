@@ -66,8 +66,10 @@ export function useOccupations() {
 
   // 1. Efecto para cargar datos
   useEffect(() => {
-    setLoading(true); // Inicia la carga para las ocupaciones
-    getOccupations(filter, sortConfig)
+    setLoading(true);
+    // <--- CAMBIO 1: Pedimos los datos al backend UNA SOLA VEZ.
+    // El ordenamiento y filtrado se harán en el cliente.
+    getOccupations("all", { key: "name", direction: "ascending" }) // Pedimos una lista base ordenada por nombre
       .then((response) => {
         setOccupations(response.data);
         setLinks(response.links);
@@ -93,7 +95,8 @@ export function useOccupations() {
         // Podrías establecer un error específico para las instituciones si lo deseas
         setError(`Error al cargar las Instituciones: ${err.message}`);
       });
-  }, [filter, reloadToken, sortConfig]);
+    // <--- CAMBIO 2: Quitamos 'sortConfig' de las dependencias para evitar recargas.
+  }, [reloadToken]);
 
   // 2. Función para paginación
   const loadOccupationsByUrl = useCallback((url: string) => {
@@ -149,17 +152,44 @@ export function useOccupations() {
 
   // --- Lógica de Memoización (Datos Computados) ---
   const filteredOccupations = useMemo(() => {
-    return occupations
-      .filter((occupation) =>
-        occupation.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-  }, [occupations, searchTerm]);
+    // <--- CAMBIO 3: Lógica de filtrado combinada (estado + búsqueda)
+    return occupations.filter((occupation) => {
+      // Primero, filtramos por estado (activo/inactivo)
+      const matchesFilter =
+        filter === "all" ||
+        (filter === "active" && !occupation.deleted_at) ||
+        (filter === "inactive" && occupation.deleted_at);
+
+      // Luego, filtramos por el término de búsqueda
+      const matchesSearch = occupation.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+      return matchesFilter && matchesSearch;
+    });
+  }, [occupations, searchTerm, filter]); // <--- CAMBIO 4: Añadimos 'filter' a las dependencias del memo
 
   // El backend ahora se encarga de ordenar, por lo que solo necesitamos filtrar.
   const sortedOccupations = useMemo(() => {
-    // La API ya devuelve los datos ordenados, solo aplicamos el filtro de búsqueda local.
-    return filteredOccupations;
-  }, [filteredOccupations]);
+    // Hacemos una copia para no mutar el estado original filtrado
+    const sortableOccupations = [...filteredOccupations];
+
+    // Aplicamos el ordenamiento localmente basado en la configuración actual
+    sortableOccupations.sort((a, b) => {
+      const key = sortConfig.key;
+      // Usamos 'any' temporalmente para acceder a las propiedades dinámicamente
+      const valA = (a as any)[key]?.toString().toLowerCase() || '';
+      const valB = (b as any)[key]?.toString().toLowerCase() || '';
+
+      if (valA < valB) {
+        return sortConfig.direction === 'ascending' ? -1 : 1;
+      }
+      if (valA > valB) {
+        return sortConfig.direction === 'ascending' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return sortableOccupations;
+  }, [filteredOccupations, sortConfig]);
 
   // (Acciones CRUD) ---
 
