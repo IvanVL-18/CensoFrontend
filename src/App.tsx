@@ -8,9 +8,7 @@ import CensosPage from "./pages/census/page/CensosPage";
 import ChartsPage from "./pages/grapher/page/ChartsPage";
 import FiscalPage from "./pages/fiscal-years/page/FiscalPage";
 import SettingsPage from "./pages/settings/page/SettingsPage";
-
 import DashboardLayout from "./components/DashboardLayout";
-
 import UsersPage from "./pages/users/page/UsersPage";
 import Units from "./pages/Units/units";
 

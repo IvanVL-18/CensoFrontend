@@ -52,15 +52,15 @@ export default function WelcomeCard({
 
       <div className="flex justify-center mt-2 gap-10 items-center">
         <img
-          src="/SNIEG.png"
+          src="/SNIEG.svg"
           alt="Logo SNIEG"
           className="h-12 md:h-16 object-contain"
         />
 
         <img
-          src="/logo-inegi.png"
+          src="/INEGI.svg"
           alt="Logo INEGI"
-          className="h-8 md:h-10 object-contain"
+          className="h-10 md:h-12 object-contain"
         />
       </div>
     </section>
