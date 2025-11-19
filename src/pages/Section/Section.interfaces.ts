@@ -1,12 +1,13 @@
-// src/pages/Units/units.interfaces.ts
+// src/pages/Sections/Sections.interfaces.ts
 
-// Esta es la interfaz para cada objeto 'Unit' dentro del array 'data'
-export interface Unit {
+// Esta es la interfaz para cada objeto 'Section' dentro del array 'data'
+export interface Section {
   id: string; // Es un string encriptado
   name: string;
+  instructions: string | null; // <--- NUEVO CAMPO
   created_at: string;
   updated_at: string;
-  deleted_at: string; // <-- CORRECCIÓN 1: '?' lo hace opcional (puede no existir)
+  deleted_at: string | null;
 }
 
 // --- Interaces para la paginación ---
@@ -32,8 +33,8 @@ export interface Meta {
 }
 
 // Esta es la interfaz para la respuesta COMPLETA de la API (con paginación)
-export interface PaginatedUnitsResponse {
-  data: Unit[];
+export interface PaginatedSectionsResponse {
+  data: Section[];
   links: {
     first: string | null;
     last: string | null;
@@ -44,11 +45,11 @@ export interface PaginatedUnitsResponse {
 }
 
 // Esta es la interfaz para crear una nueva unidad
-export interface CreateUnitDTO {
+export interface CreateSectionDTO {
   name: string;
-  // Agrega aquí otros campos que necesites para crear
+  instructions?: string | null;
 }
 
 // Esta es la interfaz para actualizar (opcional, pero útil)
-// 'Partial' hace que todos los campos de CreateUnitDTO (como 'name') sean opcionales
-export type UpdateUnitDTO = Partial<CreateUnitDTO>;
+// 'Partial' hace que todos los campos de CreateSectionDTO (como 'name') sean opcionales
+export type UpdateSectionDTO = Partial<CreateSectionDTO>;

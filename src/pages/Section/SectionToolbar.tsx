@@ -5,7 +5,7 @@ import {
   CirclePlus,
   type LucideProps,
 } from "lucide-react";
-import type { UnitFilter } from "./Section.service"; // Asegúrate que la ruta sea correcta
+import type { SectionFilter } from "./Section.service"; // Asegúrate que la ruta sea correcta
 
 // --- Definiciones de Iconos (usados solo en este componente) ---
 
@@ -24,8 +24,8 @@ const IconCirclePlus = (props: LucideProps) => (
 
 // --- Definición de Props ---
 
-interface UnitsToolbarProps {
-  filter: UnitFilter;
+interface SectionsToolbarProps {
+  filter: SectionFilter;
   searchTerm: string;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -34,13 +34,13 @@ interface UnitsToolbarProps {
 
 // --- Componente ---
 
-export function UnitsToolbar({
+export function SectionsToolbar({
   filter,
   searchTerm,
   onFilterChange,
   onSearchChange,
   onAddClick, // Recibimos la prop
-}: UnitsToolbarProps) {
+}: SectionsToolbarProps) {
   return (
     <>
       {/* --- Cabecera: Título y Botón --- */}
@@ -78,7 +78,7 @@ export function UnitsToolbar({
 
       {/* --- Filtros: Dropdown y Búsqueda (Dentro del div .p-4 del padre) --- */}
       {/* NOTA: Este div se renderizará *dentro* del <div className="p-4"> 
-        del componente Units.tsx principal. 
+        del componente Sections.tsx principal. 
       */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 px-4 pt-4">
         {/* Dropdown */}

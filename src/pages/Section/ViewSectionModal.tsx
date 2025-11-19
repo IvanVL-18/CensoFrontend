@@ -1,11 +1,11 @@
 import { X } from "lucide-react";
-// Importa tu interfaz 'Unit' desde donde la tengas
-import type { Unit } from "./Section.interfaces";
+// Importa tu interfaz 'Section' desde donde la tengas
+import type { Section } from "./Section.interfaces";
 
-interface ViewUnitModalProps {
+interface ViewSectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  unit: Unit | null; // El módulo que vamos a mostrar
+  Section: Section | null; // El módulo que vamos a mostrar
 }
 
 /**
@@ -44,9 +44,9 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewUnitModal({ isOpen, onClose, unit }: ViewUnitModalProps) {
+export function ViewSectionModal({ isOpen, onClose, Section }: ViewSectionModalProps) {
   // Si no está abierto o no hay una unidad, no renderiza nada
-  if (!isOpen || !unit) {
+  if (!isOpen || !Section) {
     return null;
   }
 
@@ -78,15 +78,15 @@ export function ViewUnitModal({ isOpen, onClose, unit }: ViewUnitModalProps) {
           <div className="p-6 space-y-4">
             <DetailRow 
               label="Nombre del módulo:" 
-              value={unit.name} 
+              value={Section.name} 
             />
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(unit.created_at)} // Asumiendo que se llama así
+              value={formatDate(Section.created_at)} // Asumiendo que se llama así
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(unit.deleted_at)} // Asumiendo que se llama así
+              value={formatDate(Section.deleted_at)} // Asumiendo que se llama así
             />
           </div>
 

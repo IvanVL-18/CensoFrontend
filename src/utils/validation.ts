@@ -4,7 +4,10 @@
 interface UnitFormData {
   name: string;
 }
-
+interface SectionData {
+  name: string;
+  instructions?: string | null;
+}
 /**
  * Valida los datos del formulario de la Unidad, replicando las reglas del backend.
  * Recibe un objeto con los datos y devuelve un ARRAY de strings con los mensajes de error.
@@ -46,3 +49,48 @@ export function validateUnit(data: UnitFormData): string[] {
 
   return errors;
 }
+
+export const validateSection = (data: SectionData): string[] => {
+  const errors: string[] = [];
+
+  // --- 1. Validación de Nombre ---
+  if (!data.name.trim()) {
+    errors.push("El nombre es obligatorio.");
+  } else {
+    if (data.name.length < 10) {
+      errors.push("El nombre debe tener al menos 10 caracteres.");
+    }
+    if (data.name.length > 150) {
+      errors.push("El nombre no puede exceder los 150 caracteres.");
+    }
+    // Regex de nombre (letras, números, espacios, diagonales y comas)
+    const nameRegex = /^[A-Za-zÁÉÍÓÚÜáéíóúüÑñ0-9\s/,]+$/;
+    if (!nameRegex.test(data.name)) {
+      errors.push("El nombre contiene caracteres no permitidos (solo letras, números, espacios, / y ,).");
+    }
+  }
+
+  // --- 2. Validación de Instrucciones ---
+  // Solo validamos si hay algo escrito (porque es nullable)
+  if (data.instructions && data.instructions.trim().length > 0) {
+    const text = data.instructions;
+
+    if (text.length < 10) {
+      errors.push("La descripción debe tener al menos 10 caracteres.");
+    }
+    if (text.length > 2200) {
+      errors.push("La descripción no puede exceder los 2200 caracteres.");
+    }
+
+    // Regex de instrucciones (letras, números, puntuación básica)
+    // Nota: \pL no funciona igual en todos los navegadores antiguos, 
+    // esta regex cubre español y los símbolos que pediste: . : ; - / " “ ” _ ( ) º °
+    const instructionsRegex = /^[A-Za-zÁÉÍÓÚÜáéíóúüÑñ0-9\s,.:;\-/"“”_()º°]+$/;
+    
+    if (!instructionsRegex.test(text)) {
+      errors.push("La descripción contiene caracteres inválidos.");
+    }
+  }
+
+  return errors;
+};
