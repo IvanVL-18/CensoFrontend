@@ -49,6 +49,20 @@ export default function WelcomeCard({
       </div>
 
       <div className="h-px w-full max-w-4xl mx-auto bg-neutral-200 mt-2" />
+
+      <div className="flex justify-center mt-2 gap-10 items-center">
+        <img
+          src="/SNIEG.png"
+          alt="Logo SNIEG"
+          className="h-12 md:h-16 object-contain"
+        />
+
+        <img
+          src="/logo-inegi.png"
+          alt="Logo INEGI"
+          className="h-8 md:h-10 object-contain"
+        />
+      </div>
     </section>
   );
 }

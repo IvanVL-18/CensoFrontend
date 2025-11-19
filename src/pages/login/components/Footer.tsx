@@ -1,17 +1,14 @@
 export default function Footer() {
   return (
     <>
-      <section className="mt-25 bg-[#DDC9A3] backdrop-blur-sm flex justify-center items-center pt-1">
-      </section>
-
-      <footer className="bg-[#691B31] text-white py-8">
+      <footer className="bg-[#691B31] text-white py-8 mt-20">
+        <div className="text-center mt-8 border-t border-[#DDC9A3]/50 pt-4"></div>
         <div className="max-w-screen-xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-center md:text-left">
-
           <div className="flex justify-center md:justify-start">
             <img
-              src="/logo_gobierno.png"
+              src="/Logo_gob_hidalg.svg"
               alt="Escudo del Estado de Hidalgo"
-              className="h-30 object-contain"
+              className="h-5 object-contain"
             />
           </div>
 
@@ -64,7 +61,7 @@ export default function Footer() {
         </div>
 
         {/* Línea inferior */}
-        <div className="text-center text-xs text-[#FFFFFF] mt-8 border-t border-[#DDC9A3]/50 pt-4">
+        <div className="text-center text-xs text-[#FFFFFF] mt-8 border-t border-[#DDC9A3]/10 pt-4">
           © 2025 Gobierno del Estado de Hidalgo
         </div>
       </footer>
