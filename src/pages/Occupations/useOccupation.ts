@@ -272,11 +272,23 @@ const handleConfirmAction = useCallback(async () => {
     setIsViewModalOpen(true);
   }, []);
 
-  const onEdit = useCallback((occupation: Occupation) => {
-    setEditingOccupation(occupation); // <--- Guarda la ocupación a editar
+  const onEdit = useCallback((occupationFromTable: Occupation) => {
+    // El objeto 'occupationFromTable' viene de la tabla y probablemente no tiene 'institution_id'.
+    // Lo vamos a encontrar usando el 'institution_name'.
+    const foundInstitution = institutions.find(
+      (inst) => inst.name === occupationFromTable.institution_name
+    );
+
+    // Creamos un nuevo objeto para editar, asegurándonos de que tenga el institution_id.
+    const occupationToEdit: Occupation = {
+      ...occupationFromTable,
+      institution_id: foundInstitution ? foundInstitution.id : "", // Usamos el ID encontrado o un string vacío si no se encuentra
+    };
+
+    setEditingOccupation(occupationToEdit); // Guardamos el objeto COMPLETO
     setModalError(null);
-    setIsModalOpen(true); // <--- Abre el modal
-  }, []);
+    setIsModalOpen(true);
+  }, [institutions]); // Añadimos 'institutions' como dependencia para que la función tenga la lista actualizada.
 
   const onBan = useCallback((occupation: Occupation) => {
     setActionOccupation(occupation);
