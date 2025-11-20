@@ -7,7 +7,7 @@ type Props = {
 };
 
 export default function WelcomeCard({
-  title = "Sistema de Censos del Estado de Hidalgo",
+  title = "Censos del Estado de Hidalgo",
   subtitle = "Plataforma oficial para la gestión y análisis de censos",
   userName,
   logoSrc = "/Estrella_header.svg",
