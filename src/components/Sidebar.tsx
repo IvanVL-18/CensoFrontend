@@ -4,13 +4,16 @@ import {
   LayoutDashboard,
   Users,
   Landmark,
-  ClipboardList,
-  BarChart3,
-  CalendarRange,
-  Settings,
-  LogOut,
-  Package,
+  
   Menu,
+  ClipboardList, 
+  BarChart3,
+  CalendarRange, 
+  Settings,
+  LogOut, 
+  Package,
+  Paperclip,
+  Briefcase
 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
@@ -31,6 +34,8 @@ const items = [
     label: "Ejercicios Fiscales",
   },
   { to: "/Unidades", icon: Package, label: "Modulos" },
+  { to: "/Secciones", icon: Paperclip, label: "Secciones" },
+  { to: "/Ocupaciones", icon: Briefcase, label: "Ocupaciones" },
   { to: "/ajustes", icon: Settings, label: "Ajustes" },
 ];
 
@@ -76,8 +81,8 @@ export default function Sidebar({ open, onToggle }: Props) {
   return (
     <aside
       className={clsx(
-        "h-screen sticky top-0 z-30 bg-[#5F0F1B] text-white",
-        open ? "w-72" : "w-20"
+        "h-screen sticky top-0 z-30 bg-[var(--pantone-7421)] text-white",
+        open ? "w-55" : "w-22"
       )}
     >
       <div className="h-16 flex items-center gap-2 px-6">

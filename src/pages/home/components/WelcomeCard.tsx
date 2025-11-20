@@ -1,3 +1,6 @@
+import '/src/assets/global-variables.css';
+import { BarChart3, Building2, Users } from "lucide-react";
+
 type Props = {
   title?: string;
   subtitle?: string;

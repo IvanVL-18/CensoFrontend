@@ -1,3 +1,5 @@
+// src/components/units.tsx (Corregido con el Patrón de Contexto)
+
 import { useUnits } from "./useUnits";
 import { UnitsToolbar } from "./UnitsToolbar";
 import { UnitsTable } from "./UnitsTable";
@@ -5,8 +7,37 @@ import { Pagination } from "./Pagination";
 import { UnitModal } from "./UnitModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { ViewUnitModal } from "./ViewUnitModal"; 
+// <--- Tus imports están perfectos
+import { ToastProvider, useToast } from "../../context/ToastContext"; 
+import { Toast } from "../../components/Toast";
 
-export default function Units() {
+// ---
+// 1. Contenedor de Toasts
+//    (Lo sacamos fuera para que sea más limpio)
+// ---
+function ToastContainer() {
+  const { toasts, removeToast } = useToast();
+
+  return (
+    // Aquí definimos la posición de TODOS los toasts
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+      {toasts.map((toast) => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => removeToast(toast.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ---
+// 2. Componente Interno para el Contenido de la Página
+//    (Este componente contiene TODO tu código anterior)
+// ---
+function UnitsPageContent() {
   const {
     loading,
     error,
@@ -39,14 +70,13 @@ export default function Units() {
     handleViewModalClose,
     handleConfirmModalClose, 
     handleConfirmAction,
-  } = useUnits();
+  } = useUnits(); // <--- Ahora esta llamada es SEGURA porque está DENTRO del Provider
+
   // Si 'editingUnit' tiene datos, el título es "Editar". Si no, "Agregar".
   const modalTitle = editingUnit ? "Editar Modulo" : "Agregar Modulo";
 
   // Si 'editingUnit' tiene datos, pasamos el nombre. Si no, pasamos "".
   const modalInitialName = editingUnit ? editingUnit.name : "";
-
-  
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -69,10 +99,12 @@ export default function Units() {
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
-  
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden"> {/* Este es tu contenedor principal */}
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative"> {/* Añadido 'relative' por si acaso */}
+      
+      {/* 3. Renderizamos el contenedor de Toasts */}
+      <ToastContainer />
       
       {/* --- Cabecera y Filtros --- */}
       <UnitsToolbar
@@ -110,8 +142,7 @@ export default function Units() {
         />
       </div>
       
-      {/* --- MUEVE ESTO AQUÍ --- */}
-      {/* El modal se renderiza fuera del div p-4 para que el overlay funcione correctamente */}
+      {/* --- Modales --- */}
       <UnitModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
@@ -140,5 +171,17 @@ export default function Units() {
         onClose={handleViewModalClose}
       />
     </div>
+  );
+}
+
+// ---
+// 3. Componente Principal (Exportado)
+//    Su única función es "proveer" el contexto de Toasts
+// ---
+export default function Units() {
+  return (
+    <ToastProvider>
+      <UnitsPageContent />
+    </ToastProvider>
   );
 }
