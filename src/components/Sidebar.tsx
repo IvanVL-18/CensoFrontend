@@ -77,8 +77,8 @@ export default function Sidebar({ open, onToggle }: Props) {
   return (
     <aside
       className={clsx(
-        "h-screen sticky top-0 z-30 bg-[#5F0F1B] text-white",
-        open ? "w-50" : "w-20" //tamaño de menú
+        "h-screen sticky top-0 z-30 bg-[var(--pantone-7421)] text-white",
+        open ? "w-55" : "w-22"
       )}
     >
       <div className="h-16 flex items-center gap-2 px-6">

@@ -168,7 +168,7 @@ export function OccupationsTable({
 
                 {/* Celda para el nombre de la Institución */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {occupation.institution_name ?? "Sin institución"}
+                  {occupation.institution?.name ?? "Sin institución"}
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}

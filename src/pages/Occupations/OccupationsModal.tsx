@@ -29,25 +29,32 @@ export function OccupationModal({
   onClose,
   onSave,
 }: OccupationModalProps) {
-  const [name, setName] = useState(initialName);
-  const [selectedInstitution, setSelectedInstitution] = useState(initialInstitutionId);
+  // <--- CAMBIO 1: Inicializamos los estados como vacíos.
+  // El useEffect se encargará de poblarlos con los valores correctos al abrir el modal.
+  const [name, setName] = useState("");
+  const [selectedInstitution, setSelectedInstitution] = useState("");
+  // <--- CAMBIO 2: Nuevo estado para rastrear si el campo de institución fue "tocado"
+  const [institutionFieldTouched, setInstitutionFieldTouched] = useState(false);
   
-  // <--- CAMBIO 2: El estado de errores ahora es un array de strings
+  // <--- CAMBIO 3: El estado de errores ahora es un array de strings
   const [formErrors, setFormErrors] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
-      setSelectedInstitution(initialInstitutionId);
-      // Limpiamos los errores al abrir el modal
-      setFormErrors([]);
+      setSelectedInstitution(initialInstitutionId || ""); // Aseguramos que sea un string
+      setInstitutionFieldTouched(false); // Reseteamos el estado "tocado" al abrir
+      setFormErrors([]); // Limpiamos errores previos
     }
-  }, [isOpen, initialName, initialInstitutionId]);
+  }, [isOpen, initialName, initialInstitutionId, institutions]); // Añadimos 'institutions' a las dependencias
 
 
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    // <--- CAMBIO 4: Marcamos el campo de institución como "tocado" al intentar guardar
+    setInstitutionFieldTouched(true);
 
     // Re-validamos nombre e institución antes de enviar
     const validationErrors = validateOccupation({
@@ -62,23 +69,38 @@ export function OccupationModal({
     }
   };
 
-  // <--- CAMBIO 5: ¡La validación "tecla por tecla"!
+  // <--- CAMBIO 5: La validación "tecla por tecla" para el nombre
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setName(newName);
     
-    // Validamos en CADA cambio del nombre y actualizamos el estado de errores
+    // Validamos en CADA cambio del nombre
     const validationErrors = validateOccupation({
       name: newName,
       institution_id: selectedInstitution,
     });
-    setFormErrors(validationErrors);
+
+    // <--- CAMBIO 6: Lógica para mostrar errores de forma selectiva
+    if (institutionFieldTouched) {
+      // Si el campo de institución ya fue tocado, mostramos todos los errores
+      setFormErrors(validationErrors);
+    } else {
+      // Si no, filtramos y solo mostramos los errores que NO son de la institución
+      const nameErrors = validationErrors.filter(
+        (err) => err !== "Debe seleccionar una institución."
+      );
+      setFormErrors(nameErrors);
+    }
   };
 
   const handleInstitutionChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newInstitutionId = e.target.value;
     setSelectedInstitution(newInstitutionId);
 
+    // <--- CAMBIO 7: Al cambiar la institución, la marcamos como "tocada"
+    if (!institutionFieldTouched) {
+      setInstitutionFieldTouched(true);
+    }
     // Validamos también al cambiar la institución
     const validationErrors = validateOccupation({ name, institution_id: newInstitutionId });
     setFormErrors(validationErrors);
@@ -90,10 +112,10 @@ export function OccupationModal({
     return null;
   }
 
-  // <--- CAMBIO 6: Variable para saber si hay errores (cliente o servidor)
+  // <--- CAMBIO 8: Variable para saber si hay errores (cliente o servidor)
   const hasClientErrors = formErrors.length > 0;
   const hasServerError = !!error; // Convierte string|null a boolean
-
+  
   return (
     <>
       <div
@@ -131,7 +153,7 @@ export function OccupationModal({
                 placeholder="Ingresar nombre..."
                 className={`
                   border rounded-lg p-2 w-full focus:outline-none focus:ring-2
-                  ${/* <--- CAMBIO 8: Estilo condicional */ ''}
+                  ${/* <--- CAMBIO 9: Estilo condicional */ ''}
                   ${(hasClientErrors || hasServerError)
                     ? 'border-red-500 focus:ring-red-400' // Borde rojo si hay error
                     : 'border-gray-300 focus:ring-[#DDC9A3]'
@@ -164,12 +186,12 @@ export function OccupationModal({
                 ))}
               </select>
 
-              {/* <--- CAMBIO 9: Mostramos errores del CLIENTE */ ''}
+              {/* <--- CAMBIO 10: Mostramos errores del CLIENTE */ ''}
               <div id="form-errors-client">
                 <FormErrors errors={formErrors} />
               </div>
-
-              {/* <--- CAMBIO 10: Mostramos error del SERVIDOR (ej: "unique") */ ''}
+              
+              {/* <--- CAMBIO 11: Mostramos error del SERVIDOR (ej: "unique") */ ''}
               {/* Lo mostramos en el mismo formato de alerta */}
               {error && (
                  <div id="form-errors-server">
@@ -194,7 +216,7 @@ export function OccupationModal({
               </button>
               <button
                 type="submit"
-                // <--- CAMBIO 11: Deshabilitamos si hay errores de CLIENTE
+                // <--- CAMBIO 12: Deshabilitamos si hay errores de CLIENTE
                 disabled={isSubmitting || hasClientErrors}
                 className="
                   bg-white border border-[#691b31] text-[#691b31] font-bold 
