@@ -27,8 +27,12 @@ const items = [
   { to: "/usuarios", icon: Users, label: "Usuarios" }, // normal
   { to: "/instituciones", icon: Landmark, label: "Instituciones" },
   { to: "/censos", icon: ClipboardList, label: "Censos" },
-  { to: "/graficador", icon: BarChart3, label: "Graficador" }, // especial
-  { to: "/ejercicios-fiscales", icon: CalendarRange,label: "Ejercicios Fiscales",},
+  { to: "/graficador", icon: BarChart3, label: "Graficador" },
+  {
+    to: "/ejercicios-fiscales",
+    icon: CalendarRange,
+    label: "Ejercicios Fiscales",
+  },
   { to: "/Unidades", icon: Package, label: "Modulos" },
   { to: "/Secciones", icon: Paperclip, label: "Secciones" },
   { to: "/Ocupaciones", icon: Briefcase, label: "Ocupaciones" },
@@ -93,14 +97,14 @@ export default function Sidebar({ open, onToggle }: Props) {
         <div
           className={clsx(
             "font-semibold whitespace-nowrap truncate text-right",
-            open ? "opacity-90 text-xs" : "opacity-0 hidden"
+            open ? "opacity-90 text-[14px]" : "opacity-0 hidden"
           )}
         >
-          Gobierno de Hidalgo
+          Gobierno del Estado de Hidalgo
         </div>
       </div>
 
-      <nav className="py-4">
+      <nav className="py">
         {items.map(({ to, icon: Icon, label }) => {
           if (label !== "Graficador") {
             return (

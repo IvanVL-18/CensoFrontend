@@ -6,9 +6,9 @@ export default function Footer() {
         <div className="max-w-screen-xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-center md:text-left">
           <div className="flex justify-center md:justify-start">
             <img
-              src="/Logo_gob_hidalg.svg"
+              src="/Hidalgo_log.svg"
               alt="Escudo del Estado de Hidalgo"
-              className="h-5 object-contain"
+              className="h-10 object-contain"
             />
           </div>
 
@@ -32,7 +32,7 @@ export default function Footer() {
             <span className="text-[#C79D63] font-semibold">Síguenos en</span>
             <div className="flex gap-4">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/CITNOVA/"
                 target="_blank"
                 className="bg-[#7a2834] hover:bg-[#8c3341] p-2 rounded-md transition-colors"
                 aria-label="Facebook"
@@ -41,15 +41,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="https://instagram.com"
-                target="_blank"
-                className="bg-[#7a2834] hover:bg-[#8c3341] p-2 rounded-md transition-colors"
-                aria-label="Instagram"
-              >
-                <i className="fab fa-instagram text-white text-lg"></i>
-              </a>
-              <a
-                href="https://x.com"
+                href="https://x.com/CITNOVA"
                 target="_blank"
                 className="bg-[#7a2834] hover:bg-[#8c3341] p-2 rounded-md transition-colors"
                 aria-label="X"
