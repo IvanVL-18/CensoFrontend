@@ -175,9 +175,15 @@ export function useOccupations() {
     // Aplicamos el ordenamiento localmente basado en la configuración actual
     sortableOccupations.sort((a, b) => {
       const key = sortConfig.key;
-      // Usamos 'any' temporalmente para acceder a las propiedades dinámicamente
-      const valA = (a as any)[key]?.toString().toLowerCase() || '';
-      const valB = (b as any)[key]?.toString().toLowerCase() || '';
+
+      // <--- CAMBIO 1: Lógica para acceder a la propiedad anidada 'institution.name'
+      const valA = (key === 'institution_name'
+        ? a.institution?.name?.toLowerCase() || ''
+        : (a as any)[key]?.toString().toLowerCase()) || '';
+
+      const valB = (key === 'institution_name'
+        ? b.institution?.name?.toLowerCase() || ''
+        : (b as any)[key]?.toString().toLowerCase()) || '';
 
       if (valA < valB) {
         return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -302,23 +308,17 @@ const handleConfirmAction = useCallback(async () => {
     setIsViewModalOpen(true);
   }, []);
 
-  const onEdit = useCallback((occupationFromTable: Occupation) => {
-    // El objeto 'occupationFromTable' viene de la tabla y probablemente no tiene 'institution_id'.
-    // Lo vamos a encontrar usando el 'institution_name'.
-    const foundInstitution = institutions.find(
-      (inst) => inst.name === occupationFromTable.institution_name
-    );
-
-    // Creamos un nuevo objeto para editar, asegurándonos de que tenga el institution_id.
+  const onEdit = useCallback((occupation: Occupation) => {
+    // <--- CAMBIO 2: Usamos la nueva estructura para obtener el ID de la institución
     const occupationToEdit: Occupation = {
-      ...occupationFromTable,
-      institution_id: foundInstitution ? foundInstitution.id : "", // Usamos el ID encontrado o un string vacío si no se encuentra
+      ...occupation,
+      institution_id: occupation.institution?.id || "",
     };
 
     setEditingOccupation(occupationToEdit); // Guardamos el objeto COMPLETO
     setModalError(null);
     setIsModalOpen(true);
-  }, [institutions]); // Añadimos 'institutions' como dependencia para que la función tenga la lista actualizada.
+  }, []); // Ya no depende de 'institutions'
 
   const onBan = useCallback((occupation: Occupation) => {
     setActionOccupation(occupation);

@@ -60,7 +60,7 @@ export default function Sidebar({ open, onToggle }: Props) {
   return (
     <aside
       className={clsx(
-        "h-screen sticky top-0 z-30 bg-[#5F0F1B] text-white",
+        "h-screen sticky top-0 z-30 bg-[var(--pantone-7421)] text-white",
         open ? "w-55" : "w-22"
       )}
     >
