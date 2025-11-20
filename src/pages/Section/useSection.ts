@@ -1,32 +1,32 @@
 import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
-import { getUnits, createUnit, updateUnit,banUnit, restoreUnit,forceDeleteUnit, type UnitFilter } from "./Section.service";
+import { getSections, createSection, updateSection,banSection, restoreSection,forceDeleteSection, type SectionFilter } from "./Section.service";
 import { useToast } from "../../context/ToastContext"; // <--- 1. IMPORTAR
 
 import type {
-  Unit,
-  PaginatedUnitsResponse,
+  Section,
+  PaginatedSectionsResponse,
   Meta,
-  CreateUnitDTO,
-  UpdateUnitDTO,
+  CreateSectionDTO,
+  UpdateSectionDTO,
 } from "./Section.interfaces";
 
 type SortConfig = {
-  key: keyof Unit;
+  key: keyof Section;
   direction: "ascending" | "descending";
 };
 
-export function useUnits() {
+export function useSections() {
   // --- Estados de datos ---
   const { addToast } = useToast(); 
 
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [links, setLinks] = useState<PaginatedUnitsResponse["links"] | null>(null);
+  const [Sections, setSections] = useState<Section[]>([]);
+  const [links, setLinks] = useState<PaginatedSectionsResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // --- Estados de filtros y orden ---
-  const [filter, setFilter] = useState<UnitFilter>("all");
+  const [filter, setFilter] = useState<SectionFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "name",
@@ -35,11 +35,11 @@ export function useUnits() {
   });
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingUnit, setViewingUnit] = useState<Unit | null>(null);
+  const [viewingSection, setViewingSection] = useState<Section | null>(null);
   
   const handleViewModalClose = useCallback(() => {
     setIsViewModalOpen(false);
-    setViewingUnit(null);
+    setViewingSection(null);
   }, []);
 
 
@@ -48,14 +48,14 @@ export function useUnits() {
   const [modalError, setModalError] = useState<string | null>(null);
   // (Esto nos permite recargar la lista después de crear un item)
   const [reloadToken, setReloadToken] = useState(0);
-  const reloadUnits = useCallback(() => setReloadToken((t) => t + 1), []);
+  const reloadSections = useCallback(() => setReloadToken((t) => t + 1), []);
   // Guardará la unidad que estamos editando
-  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
+  const [editingSection, setEditingSection] = useState<Section | null>(null);
 
   // --- 2. NUEVOS ESTADOS PARA EL MODAL DE CONFIRMACIÓN ---
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   // Guardará la unidad que queremos desactivar, restaurar o eliminar
-  const [actionUnit, setActionUnit] = useState<Unit | null>(null);
+  const [actionSection, setActionSection] = useState<Section | null>(null);
   // Guardará qué acción estamos por confirmar
   const [actionType, setActionType] = useState<'ban' | 'restore' | 'delete' | null>(null);
 
@@ -65,9 +65,9 @@ export function useUnits() {
   // 1. Efecto para cargar datos
   useEffect(() => {
     setLoading(true);
-    getUnits(filter)
+    getSections(filter)
       .then((response) => {
-        setUnits(response.data);
+        setSections(response.data);
         setLinks(response.links);
         setMeta(response.meta);
         setError(null);
@@ -82,12 +82,12 @@ export function useUnits() {
   }, [filter, reloadToken]); 
 
   // 2. Función para paginación
-  const loadUnitsByUrl = useCallback((url: string) => {
+  const loadSectionsByUrl = useCallback((url: string) => {
     setLoading(true);
     fetch(url)
-      .then((res) => res.json() as Promise<PaginatedUnitsResponse>)
+      .then((res) => res.json() as Promise<PaginatedSectionsResponse>)
       .then((response) => {
-        setUnits(response.data);
+        setSections(response.data);
         setLinks(response.links);
         setMeta(response.meta);
         setError(null);
@@ -104,7 +104,7 @@ export function useUnits() {
   // --- Controladores de Eventos (Filtros, Paginación) ---
 
   const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setFilter(e.target.value as UnitFilter);
+    setFilter(e.target.value as SectionFilter);
   }, []);
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -114,13 +114,13 @@ export function useUnits() {
   const handlePageClick = useCallback(
     (url: string | null) => {
       if (url) {
-        loadUnitsByUrl(url);
+        loadSectionsByUrl(url);
       }
     },
-    [loadUnitsByUrl]
+    [loadSectionsByUrl]
   );
 
-  const handleSort = useCallback((key: keyof Unit) => {
+  const handleSort = useCallback((key: keyof Section) => {
     setSortConfig((currentConfig) => {
       let direction: "ascending" | "descending" = "ascending";
       if (
@@ -134,14 +134,14 @@ export function useUnits() {
   }, []);
 
   // --- Lógica de Memoización (Datos Computados) ---
-  const filteredUnits = useMemo(() => {
-    return units.filter((unit) =>
-      unit.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSections = useMemo(() => {
+    return Sections.filter((Section) =>
+      Section.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [units, searchTerm]);
+  }, [Sections, searchTerm]);
 
-  const sortedUnits = useMemo(() => {
-    let sortableItems = [...filteredUnits];
+  const sortedSections = useMemo(() => {
+    let sortableItems = [...filteredSections];
     sortableItems.sort((a, b) => {
       // ... (lógica de ordenamiento sin cambios)
       const valA = a[sortConfig.key];
@@ -157,13 +157,13 @@ export function useUnits() {
       return 0;
     });
     return sortableItems;
-  }, [filteredUnits, sortConfig]);
+  }, [filteredSections, sortConfig]);
 
   // (Acciones CRUD) ---
 
   // MODIFICADO: Abre el modal
   const handleAddClick = useCallback(() => {
-    setEditingUnit(null);
+    setEditingSection(null);
     setModalError(null); // Limpia errores antiguos
     setIsModalOpen(true);
   }, []);
@@ -172,55 +172,55 @@ export function useUnits() {
   const handleModalClose = useCallback(() => {
     setIsModalOpen(false);
     setModalError(null); // Limpia errores al cerrar
-    setEditingUnit(null);
+    setEditingSection(null);
   }, []);
 
   // NUEVO: Lógica para guardar
  // Reemplaza tu 'handleModalSave' con esto:
   const handleModalSave = useCallback(
-    async (name: string) => {
-      setIsSubmitting(true);
-      setModalError(null);
+  async (data: { name: string; instructions: string | null }) => { // <--- RECIBE OBJETO
+    setIsSubmitting(true);
+    setModalError(null);
 
-      try {
-        if (editingUnit) {
-          // --- LÓGICA DE ACTUALIZAR ---
-          // (Asumiendo que tu DTO es solo { name })
-          const unitData: UpdateUnitDTO = { name }; 
-          await updateUnit(editingUnit.id, unitData);
-          addToast("Módulo actualizado con éxito.", "success");
+    try {
+      // Preparamos el DTO
+      const sectionData: CreateSectionDTO = {
+        name: data.name,
+        instructions: data.instructions || null, // Si viene vacío string, mandamos null o string vacío
+      };
 
-        } else {
-          // --- LÓGICA DE CREAR (la que ya tenías) ---
-          const unitData: CreateUnitDTO = { name };
-          await createUnit(unitData);
-          addToast("Módulo creado con éxito.", "success");
-        }
-
-        // ¡Éxito!
-        setIsModalOpen(false); // Cierra el modal
-        setEditingUnit(null);  // Limpia el estado de edición
-        reloadUnits();         // Dispara la recarga de datos
-
-      } catch (err) {
-        console.error("Error al guardar la unidad:", err);
-        setModalError((err as Error).message || "Ocurrió un error");
-      } finally {
-        setIsSubmitting(false);
+      if (editingSection) {
+        // EDITAR
+        await updateSection(editingSection.id, sectionData);
+        addToast("Sección actualizada con éxito.", "success");
+      } else {
+        // CREAR
+        await createSection(sectionData);
+        addToast("Sección creada con éxito.", "success");
       }
-    },
-    [reloadUnits, editingUnit,addToast] 
-  );
 
+      setIsModalOpen(false);
+      setEditingSection(null);
+      reloadSections(); // (Recuerda renombrar reloadUnits a reloadSections si no lo hiciste)
+
+    } catch (err) {
+      console.error("Error al guardar:", err);
+      setModalError((err as Error).message || "Ocurrió un error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  },
+  [reloadSections, editingSection, addToast]
+);
   const handleConfirmModalClose = useCallback(() => {
     setIsConfirmModalOpen(false);
-    setActionUnit(null);
+    setActionSection(null);
     setActionType(null);
     setModalError(null); 
   }, []);
 
 const handleConfirmAction = useCallback(async () => {
-    if (!actionUnit || !actionType) return;
+    if (!actionSection || !actionType) return;
 
     setIsSubmitting(true);
     setModalError(null);
@@ -230,24 +230,24 @@ const handleConfirmAction = useCallback(async () => {
       let toastType: "success" | "danger" | "warning" = "success";
 
       if (actionType === 'ban') {
-        await banUnit(actionUnit.id);
-        successMessage = `Módulo "${actionUnit.name}" desactivado.`;
+        await banSection(actionSection.id);
+        successMessage = `Módulo "${actionSection.name}" desactivado.`;
         toastType = "warning"; // Usamos 'warning' (naranja) para desactivar
 
       } else if (actionType === 'restore') {
-        await restoreUnit(actionUnit.id);
-        successMessage = `Módulo "${actionUnit.name}" restaurado.`;
+        await restoreSection(actionSection.id);
+        successMessage = `Módulo "${actionSection.name}" restaurado.`;
         toastType = "success";
 
       } else if (actionType === 'delete') { 
-        await forceDeleteUnit(actionUnit.id);
-        successMessage = `Módulo "${actionUnit.name}" eliminado permanentemente.`;
+        await forceDeleteSection(actionSection.id);
+        successMessage = `Módulo "${actionSection.name}" eliminado permanentemente.`;
         toastType = "danger";
       }
 
       // ¡Éxito!
       handleConfirmModalClose(); 
-      reloadUnits();
+      reloadSections();
       addToast(successMessage, toastType); // <--- 3. AÑADIR TOAST
 
     } catch (err) {
@@ -258,36 +258,36 @@ const handleConfirmAction = useCallback(async () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [actionUnit, actionType, reloadUnits, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
+  }, [actionSection, actionType, reloadSections, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
   
 
- const onView = useCallback((unit: Unit) => {
-    setViewingUnit(unit);
+ const onView = useCallback((Section: Section) => {
+    setViewingSection(Section);
     setIsViewModalOpen(true);
   }, []);
 
-  const onEdit = useCallback((unit: Unit) => {
-    setEditingUnit(unit); // <--- Guarda la unidad a editar
+  const onEdit = useCallback((Section: Section) => {
+    setEditingSection(Section); // <--- Guarda la unidad a editar
     setModalError(null);
     setIsModalOpen(true); // <--- Abre el modal
   }, []);
 
-  const onBan = useCallback((unit: Unit) => {
-    setActionUnit(unit);
+  const onBan = useCallback((Section: Section) => {
+    setActionSection(Section);
     setActionType('ban');
     setIsConfirmModalOpen(true); // Abre el modal de confirmación
     setModalError(null);
   }, []);
 
-  const onRestore = useCallback((unit: Unit) => {
-    setActionUnit(unit);
+  const onRestore = useCallback((Section: Section) => {
+    setActionSection(Section);
     setActionType('restore');
     setIsConfirmModalOpen(true);
     setModalError(null);
   }, []);
 
-  const onDelete = useCallback((unit: Unit) => {
-  setActionUnit(unit);
+  const onDelete = useCallback((Section: Section) => {
+  setActionSection(Section);
   setActionType('delete'); // <--- Esto le dice al modal qué textos mostrar
   setIsConfirmModalOpen(true);
   setModalError(null);
@@ -302,7 +302,7 @@ const handleConfirmAction = useCallback(async () => {
     error,
     
     // Datos
-    sortedUnits,
+    sortedSections,
     meta,
     links,
     
@@ -311,16 +311,16 @@ const handleConfirmAction = useCallback(async () => {
     searchTerm,
 
     isConfirmModalOpen,
-    actionUnit,
+    actionSection,
     actionType,
     
     // --- NUEVO: Estado del Modal ---
     isModalOpen,
     isSubmitting,
     modalError,
-    editingUnit,
+    editingSection,
     isViewModalOpen,
-    viewingUnit,
+    viewingSection,
 
     // Controladores (Filtros, Paginación)
     handleFilterChange,

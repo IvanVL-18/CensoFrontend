@@ -1,13 +1,13 @@
 import type {
-  Unit,
-  PaginatedUnitsResponse,
-  CreateUnitDTO,
-  UpdateUnitDTO,
+  Section,
+  PaginatedSectionsResponse,
+  CreateSectionDTO,
+  UpdateSectionDTO,
 } from "./Section.interfaces";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
-export type UnitFilter = "all" | "active" | "inactive";
+export type SectionFilter = "all" | "active" | "inactive";
 
 
 const handleJsonResponse = async (response: Response) => {
@@ -48,11 +48,11 @@ const handleEmptyResponse = async (response: Response) => {
 };
 
 /**
- * 📥 OBTENER (GET) lista de units con filtro y paginación
+ * 📥 OBTENER (GET) lista de Sections con filtro y paginación
  */
-export const getUnits = (
-  filter: UnitFilter = "all"
-): Promise<PaginatedUnitsResponse> => {
+export const getSections = (
+  filter: SectionFilter = "all"
+): Promise<PaginatedSectionsResponse> => {
   const url = `${API_URL}/sections/${filter}/content`;
 
   return fetch(url, {
@@ -69,9 +69,9 @@ export const getUnits = (
 };
 
 /**
- * ➕ CREAR (POST) una nueva unit
+ * ➕ CREAR (POST) una nueva Section
  */
-export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
+export const createSection = (SectionData: CreateSectionDTO): Promise<Section> => {
   const url = `${API_URL}/sections`;
 
   return fetch(url, {
@@ -80,7 +80,7 @@ export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify(unitData),
+    body: JSON.stringify(SectionData),
   })
     .then(handleJsonResponse)
     .then((response) => {
@@ -93,12 +93,12 @@ export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
 };
 
 /**
- * ✏️ ACTUALIZAR (PUT/PATCH) una unit existente
+ * ✏️ ACTUALIZAR (PUT/PATCH) una Section existente
  */
-export const updateUnit = (
+export const updateSection = (
   id: string,
-  unitData: UpdateUnitDTO
-): Promise<Unit> => {
+  SectionData: UpdateSectionDTO
+): Promise<Section> => {
   const url = `${API_URL}/sections/${id}`;
 
   return fetch(url, {
@@ -107,7 +107,7 @@ export const updateUnit = (
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify(unitData),
+    body: JSON.stringify(SectionData),
   })
     .then(handleJsonResponse)
     .then((response) => {
@@ -119,9 +119,9 @@ export const updateUnit = (
 };
 
 /**
- * 🗑️ BORRAR (DELETE) una unit (Soft Delete)
+ * 🗑️ BORRAR (DELETE) una Section (Soft Delete)
  */
-export const banUnit = (id: string): Promise<void> => {
+export const banSection = (id: string): Promise<void> => {
   const url = `${API_URL}/sections/${id}`;
 
   return fetch(url, {
@@ -138,9 +138,9 @@ export const banUnit = (id: string): Promise<void> => {
 };
 
 /**
- * ♻️ RESTAURAR (POST) una unit borrada
+ * ♻️ RESTAURAR (POST) una Section borrada
  */
-export const restoreUnit = (id: string): Promise<void> => {
+export const restoreSection = (id: string): Promise<void> => {
   const url = `${API_URL}/sections/${id}/restore`;
 
   return fetch(url, {
@@ -155,7 +155,7 @@ export const restoreUnit = (id: string): Promise<void> => {
     });
 };
 
-export const forceDeleteUnit = (id: string | number): Promise<void> => {
+export const forceDeleteSection = (id: string | number): Promise<void> => {
   const url = `${API_URL}/sections/${id}/force-delete`;
 
   return fetch(url, {
