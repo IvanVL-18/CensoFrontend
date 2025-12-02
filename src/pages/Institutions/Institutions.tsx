@@ -5,7 +5,7 @@ import { Pagination } from "./Pagination";
 import { InstitutionModal } from "./InstitutionsModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { ViewInstitutionModal } from "./ViewInstitutionsModal";
-import { MapModal } from "./MapModal"; // <-- Importamos el nuevo modal
+import { MapModal } from "./MapModal"; 
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
