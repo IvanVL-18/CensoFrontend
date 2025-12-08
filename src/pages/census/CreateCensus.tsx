@@ -1,8 +1,7 @@
-// src/pages/census/CreateCensus.tsx
+// src/pages/census/CreateCensusPage.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import FormAlert from "./FormAlert"; 
-
+import FormAlert from "./FormAlert";
 
 export type CensusFormValues = {
   name: string;
@@ -25,7 +24,7 @@ export default function CreateCensusPage() {
     is_active: true,
   });
 
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (
@@ -39,24 +38,29 @@ export default function CreateCensusPage() {
     setForm((prev) => ({ ...prev, is_active: !prev.is_active }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    setErrors([]);
+
+    // Validación rápida en front
     if (!form.name.trim() || !form.year.trim()) {
-      setError("El nombre y el año son obligatorios.");
+      setErrors(["El nombre y el año son obligatorios."]);
       return;
     }
 
-    try {
-      setError(null);
-      setSubmitting(true);
+    // Aquí todavía NO guardamos en la API
+    // Solo avanzamos al paso de Unidades
+    setSubmitting(true);
 
-      console.log("Datos del censo (aún sin guardar en API):", form);
+    // Puedes pasar el borrador del censo a la siguiente pantalla
+    navigate("/censos/unidades", {
+      state: {
+        censusDraft: form,
+      },
+    });
 
-      navigate("/censos/unidades");
-    } finally {
-      setSubmitting(false);
-    }
+    setSubmitting(false);
   };
 
   const handleCancel = () => {
@@ -71,7 +75,8 @@ export default function CreateCensusPage() {
 
       <div className="bg-white rounded-2xl shadow-md p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <FormAlert messages={[error]} />}
+          {/* Errores de validación (solo front por ahora) */}
+          {errors.length > 0 && <FormAlert messages={errors} />}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
@@ -169,8 +174,6 @@ export default function CreateCensusPage() {
 
           {/* Activo */}
           <div className="flex items-center gap-4 mt-2">
-            <span className="text-sm text-gray-700">Activo</span>
-
             <button
               type="button"
               onClick={handleToggleActive}

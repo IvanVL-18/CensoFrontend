@@ -1,74 +1,122 @@
-// src/pages/census/components/CensusCard.tsx
-import { MoreVertical } from "lucide-react";
-
-export interface Census {
-  id: number | string;
-  name: string;
-
-  status?: string;
-  year?: string | number;
-  start_date?: string;
-  end_date?: string;
-  [key: string]: any;
-}
+import type { Census } from "./censos.service";
 
 type Props = {
   census: Census;
   onView: (census: Census) => void;
 };
 
+function formatDate(value: string | null): string {
+  if (!value) return "---";
+
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+
+  return d.toLocaleDateString("es-MX", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export default function CensusCard({ census, onView }: Props) {
-  const status = census.status ?? "Creado";
-  const year = census.year ?? "2024";
-  const startDate = census.start_date ?? "---";
-  const endDate = census.end_date ?? "---";
+  const status = "Creado";
+  const year = census.init_date
+    ? new Date(census.init_date).getFullYear()
+    : "2024";
+
+  const startDate = formatDate(census.init_date);
+  const endDate = formatDate(census.deadline);
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col">
-      {/* Header rojo */}
-      <div className="bg-[var(--pantone-7421)] text-white px-4 py-3 flex justify-between items-start">
-        <div className="text-sm font-semibold leading-snug line-clamp-2">
+    <div
+      className="
+        bg-[#FAF7F2]
+        rounded-2xl
+        border border-[#E6DFD3]
+        shadow-[0_6px_16px_rgba(0,0,0,0.06)]
+        overflow-hidden
+        flex flex-col
+        transition-all duration-300
+        hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)]
+        hover:-translate-y-[2px]
+      "
+    >
+      <div
+        className="
+          bg-gradient-to-r 
+          from-[var(--pantone-7421)] 
+          to-[#4B0F21]
+          text-white
+          px-5 py-4
+          flex justify-between items-start
+          border-b border-white/10
+        "
+      >
+        <div className="text-sm font-semibold leading-snug tracking-wide">
           {census.name}
         </div>
-        <span className="w-3 h-3 rounded-full bg-emerald-500 ml-2 mt-1" />
+
+        <span className="mt-1">
+          <span className="w-2.5 h-2.5 block rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.25)]" />
+        </span>
       </div>
 
-      {/* Body */}
-      <div className="px-4 pt-3 pb-4 flex-1 flex flex-col gap-3">
-        {/* Chips estado/año */}
+      <div className="px-5 pt-4 pb-5 flex-1 flex flex-col gap-4">
+        
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-700">
+          <span
+            className="
+              inline-flex items-center px-3 py-0.5 rounded-full
+              text-[11px] font-medium
+              bg-emerald-50 text-emerald-700
+              border border-emerald-100
+            "
+          >
             {status}
           </span>
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-800 text-gray-100">
+
+          <span
+            className="
+              inline-flex items-center px-3 py-0.5 rounded-full
+              text-[11px] font-medium
+              bg-neutral-900 text-neutral-100
+            "
+          >
             {year}
           </span>
         </div>
 
-        {/* Fechas */}
-        <div className="bg-gray-50 rounded-lg border border-gray-200 px-3 py-2 flex items-center justify-between text-xs text-gray-600">
+        <div
+          className="
+            bg-white
+            rounded-xl
+            border border-[#E5DDD0]
+            px-4 py-3
+            flex items-center justify-between
+            text-[12px] text-neutral-600
+          "
+        >
           <div>
-            <div className="font-medium text-gray-700">Inicio</div>
-            <div>{startDate}</div>
+            <div className="font-semibold text-neutral-800">Inicio</div>
+            <div className="mt-[2px] tabular-nums">{startDate}</div>
           </div>
-          <div className="border-l border-gray-300 h-8 mx-4" />
-          <div>
-            <div className="font-medium text-gray-700">Fin</div>
-            <div>{endDate}</div>
+
+          <div className="h-9 mx-5 border-l border-[#D7CDC2]" />
+
+          <div className="text-right">
+            <div className="font-semibold text-neutral-800">Fin</div>
+            <div className="mt-[2px] tabular-nums">{endDate}</div>
           </div>
-          <button
-            type="button"
-            className="ml-2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
-          >
-            <MoreVertical className="w-4 h-4" />
-          </button>
         </div>
 
-        {/* Botón inferior */}
         <button
           type="button"
           onClick={() => onView(census)}
-          className="mt-2 inline-flex items-center justify-center w-full rounded-lg bg-[#d7b46a] text-[13px] font-medium text-white py-2 hover:bg-[#c29f52] transition-colors"
+          className="
+            px-4 py-2 rounded-xl text-sm font-medium
+            border border-gray-300 text-gray-700 bg-white
+            hover:bg-[#D7CDC2]/30 transition-colors
+            "
         >
           Ver censo
         </button>

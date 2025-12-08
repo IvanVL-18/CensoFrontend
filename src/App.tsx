@@ -6,7 +6,7 @@ import LoginPage from "./pages/login/page/LoginPage";
 import HomePage from "./pages/home/page/HomePage";
 import DashboardPage from "./pages/deshboard/page/DashboardPage";
 import ChartsPage from "./pages/grapher/page/ChartsPage";
-import FiscalPage from "./pages/fiscal-years/page/FiscalPage";
+import ReportsPage from "./pages/reports/ReportsPage";
 import SettingsPage from "./pages/settings/page/SettingsPage";
 import DashboardLayout from "./components/DashboardLayout";
 
@@ -14,6 +14,8 @@ import Units from "./pages/Units/units";
 import Census from "./pages/census/CensosPage";
 import CreateCensusPage from "./pages/census/CreateCensus";
 import CensusUnitsPage from "./pages/census/CensusUnitsPage";
+import CensusSectionsPage from "./pages/census/CensusSectionsPage";   // ← NUEVO
+import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; // ← NUEVO
 
 import Section from "./pages/Section/Section";
 import Insitutions from "./pages/Institutions/Institutions";
@@ -25,23 +27,25 @@ export default function App() {
       {/* Ruta pública */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* Área autenticada (usa layout con sidebar/topbar) */}
+      {/* Área autenticada */}
       <Route element={<DashboardLayout />}>
         <Route path="/" element={<Navigate to="/inicio" replace />} />
         <Route path="/inicio" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/instituciones" element={<Insitutions />} />
 
-        {/*Censos */}
+        {/* Censos */}
         <Route path="/censos" element={<Census />} />
         <Route path="/censos/crear" element={<CreateCensusPage />} />
         <Route path="/censos/unidades" element={<CensusUnitsPage />} />
+        <Route path="/censos/secciones" element={<CensusSectionsPage />} />     {/* ← NUEVO */}
+        <Route path="/censos/preguntas" element={<CensusQuestionsPage />} />    {/* ← NUEVO */}
 
         <Route path="/graficador" element={<ChartsPage />} />
-        <Route path="/ejercicios-fiscales" element={<FiscalPage />} />
+        <Route path="/reportes" element={<ReportsPage />} />
         <Route path="/ajustes" element={<SettingsPage />} />
 
-        {/* Rutas de catálogos (accesibles desde Ajustes) */}
+        {/* Catálogos */}
         <Route path="/unidades" element={<Units />} />
         <Route path="/secciones" element={<Section />} />
         <Route path="/ocupaciones" element={<Occupations />} />

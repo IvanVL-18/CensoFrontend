@@ -25,9 +25,9 @@ const items = [
   { to: "/censos", icon: ClipboardList, label: "Censos" },
   { to: "/graficador", icon: BarChart3, label: "Graficador" },
   {
-    to: "/ejercicios-fiscales",
+    to: "/reportes",
     icon: CalendarRange,
-    label: "Ejercicios Fiscales",
+    label: "Reportes",
   },
   { to: "/ajustes", icon: Settings, label: "Ajustes" },
 ];
