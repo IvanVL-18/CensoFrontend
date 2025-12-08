@@ -5,7 +5,7 @@ import { Pagination } from "./Pagination";
 import { InstitutionModal } from "./InstitutionsModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { ViewInstitutionModal } from "./ViewInstitutionsModal";
-import { MapModal } from "./MapModal"; 
+import { MapModal } from "./MapModal"; // <-- Importamos el nuevo modal
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
@@ -71,10 +71,6 @@ function InstitutionsPageContent() {
 
   // Si 'editingInstitution' tiene datos, el título es "Editar". Si no, "Agregar".
   const modalTitle = editingInstitution ? "Editar Institución" : "Agregar Institución";
-  const initialName = editingInstitution ? editingInstitution.name : "";
-  const initialMunicipality = editingInstitution ? editingInstitution.municipality : "";
-  const initialGeocode = editingInstitution ? editingInstitution.geocode : "";
-  const initialType = editingInstitution ? editingInstitution.typeinst : "";
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -146,10 +142,7 @@ function InstitutionsPageContent() {
         isSubmitting={isSubmitting}
         error={modalError}
         title={modalTitle}
-        initialName={initialName}
-        initialMunicipality={initialMunicipality}
-        initialGeocode={initialGeocode}
-        initialType={initialType}
+        editingInstitution={editingInstitution} // Pasamos la institución completa
         onClose={handleModalClose} // La función del hook
         onSave={handleModalSave}
       />

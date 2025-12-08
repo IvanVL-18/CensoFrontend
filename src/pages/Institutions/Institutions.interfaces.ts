@@ -47,13 +47,18 @@ export interface PaginatedInstitutionsResponse {
 }
 
 /**
+ * Representa los campos que se manejan en el formulario de la institución.
+ */
+export type InstitutionFormData = Omit<Institution, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>;
+
+/**
  * DTO (Data Transfer Object) para crear una nueva institución.
  * No incluye 'id', 'created_at', etc., porque son generados por el servidor.
  */
-export type CreateInstitutionDTO = Omit<Institution, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>;
+export type CreateInstitutionDTO = InstitutionFormData;
 
 /**
  * DTO para actualizar una institución. Es similar a Create, pero puede ser parcial.
  * `Partial` hace que todas las propiedades sean opcionales.
  */
-export type UpdateInstitutionDTO = Partial<CreateInstitutionDTO>;
+export type UpdateInstitutionDTO = Partial<InstitutionFormData>;

@@ -199,21 +199,32 @@ export function useInstitutions() {
 
   // NUEVO: Lógica para guardar
  // Reemplaza tu 'handleModalSave' con esto:
-  const handleModalSave = useCallback(
-    async (institutionData: CreateInstitutionDTO) => {
+  const handleModalSave = useCallback(async (
+    institutionData: CreateInstitutionDTO | UpdateInstitutionDTO
+  ) => {
       setIsSubmitting(true);
       setModalError(null);
 
       try {
         if (editingInstitution) {
           // --- LÓGICA DE ACTUALIZAR ---
-          const dataToUpdate: UpdateInstitutionDTO = institutionData; 
-          await updateInstitution(editingInstitution.id, dataToUpdate);
+          // Ahora 'institutionData' es el formData completo.
+          // Construimos el objeto de cambios aquí, comparando con el original.
+          const changes: UpdateInstitutionDTO = {};
+          for (const key in institutionData) {
+            const formKey = key as keyof CreateInstitutionDTO;
+            if (institutionData[formKey] !== editingInstitution[formKey]) {
+              (changes as any)[formKey] = institutionData[formKey];
+            }
+          }
+
+          await updateInstitution(editingInstitution.id, changes);
           addToast("Institución actualizada con éxito.", "success");
 
         } else {
           // --- LÓGICA DE CREAR (la que ya tenías) ---
-          await createInstitution(institutionData);
+          // Aquí, TypeScript sabe que institutionData es CreateInstitutionDTO
+          await createInstitution(institutionData as CreateInstitutionDTO);
           addToast("Institución creada con éxito.", "success");
         }
 
@@ -231,8 +242,7 @@ export function useInstitutions() {
         setIsSubmitting(false);
       }
     },
-    [reloadInstitutions, editingInstitution, addToast] 
-  );
+    [reloadInstitutions, editingInstitution, addToast]);
 
   const handleConfirmModalClose = useCallback(() => {
     setIsConfirmModalOpen(false);
@@ -283,16 +293,26 @@ export function useInstitutions() {
   }, [actionInstitution, actionType, reloadInstitutions, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
   
 
- const onView = useCallback((institution: Institution) => {
-    setViewingInstitution(institution);
-    setIsViewModalOpen(true);
-  }, []);
+ const onEdit = useCallback((institution: Institution) => {
+  // Cerrar cualquier modal abierto primero
+  setIsViewModalOpen(false);
+  setIsConfirmModalOpen(false);
+  setIsMapModalOpen(false);
+  
+  setEditingInstitution(institution);
+  setModalError(null);
+  setIsModalOpen(true);
+}, []);
 
-  const onEdit = useCallback((institution: Institution) => {
-    setEditingInstitution(institution); // <--- Guarda la institución a editar
-    setModalError(null);
-    setIsModalOpen(true); // <--- Abre el modal
-  }, []);
+const onView = useCallback((institution: Institution) => {
+  // Cerrar cualquier modal abierto primero
+  setIsModalOpen(false);
+  setIsConfirmModalOpen(false);
+  setIsMapModalOpen(false);
+  
+  setViewingInstitution(institution);
+  setIsViewModalOpen(true);
+}, []);
 
   const onBan = useCallback((institution: Institution) => {
     setActionInstitution(institution);

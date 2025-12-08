@@ -96,7 +96,7 @@ export const updateInstitution = (
   const url = `${API_URL}/institutions/${id}`;
 
   return fetch(url, {
-    method: "PUT",
+    method: "PATCH", // Cambiamos PUT por PATCH para actualizaciones parciales
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
