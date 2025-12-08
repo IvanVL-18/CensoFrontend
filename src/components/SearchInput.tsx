@@ -1,4 +1,3 @@
-// src/components/common/SearchInput.tsx
 import { Search } from "lucide-react";
 
 interface SearchInputProps {

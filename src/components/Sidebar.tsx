@@ -1,19 +1,15 @@
+// src/components/Sidebar.tsx
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home,
   LayoutDashboard,
   Users,
   Landmark,
-  
   Menu,
-  ClipboardList, 
+  ClipboardList,
   BarChart3,
-  CalendarRange, 
+  CalendarRange,
   Settings,
-  LogOut, 
-  Package,
-  Paperclip,
-  Briefcase
 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
@@ -24,18 +20,15 @@ type Props = { open: boolean; onToggle: () => void };
 const items = [
   { to: "/inicio", icon: Home, label: "Inicio" },
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/usuarios", icon: Users, label: "Usuarios" }, // normal
+  { to: "/usuarios", icon: Users, label: "Usuarios" },
   { to: "/instituciones", icon: Landmark, label: "Instituciones" },
   { to: "/censos", icon: ClipboardList, label: "Censos" },
   { to: "/graficador", icon: BarChart3, label: "Graficador" },
   {
-    to: "/ejercicios-fiscales",
+    to: "/reportes",
     icon: CalendarRange,
-    label: "Ejercicios Fiscales",
+    label: "Reportes",
   },
-  { to: "/Unidades", icon: Package, label: "Modulos" },
-  { to: "/Secciones", icon: Paperclip, label: "Secciones" },
-  { to: "/Ocupaciones", icon: Briefcase, label: "Ocupaciones" },
   { to: "/ajustes", icon: Settings, label: "Ajustes" },
 ];
 
@@ -72,12 +65,6 @@ export default function Sidebar({ open, onToggle }: Props) {
     }
   }, [location.pathname, location.search]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
-
   return (
     <aside
       className={clsx(
@@ -94,17 +81,23 @@ export default function Sidebar({ open, onToggle }: Props) {
           <Menu size={20} />
         </button>
 
-        <div
-          className={clsx(
-            "font-semibold whitespace-nowrap truncate text-right",
-            open ? "opacity-90 text-[14px]" : "opacity-0 hidden"
-          )}
-        >
-          Gobierno del Estado de Hidalgo
+        {/* Logo con transición más limpia */}
+        <div className="flex-1 overflow-hidden">
+          <img
+            src="/Hidalgo_log.svg"
+            alt="Logo"
+            className={clsx(
+              "h-6 object-contain transition-all duration-300 ease-out origin-left",
+              open
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 -translate-x-3 pointer-events-none"
+            )}
+          />
         </div>
       </div>
 
-      <nav className="py">
+      {/* Navegación */}
+      <nav className="py-2">
         {items.map(({ to, icon: Icon, label }) => {
           if (label !== "Graficador") {
             return (
@@ -134,6 +127,7 @@ export default function Sidebar({ open, onToggle }: Props) {
             );
           }
 
+          // Item especial: Graficador, con popover
           const isActive = location.pathname.startsWith("/graficador");
 
           return (
@@ -176,23 +170,6 @@ export default function Sidebar({ open, onToggle }: Props) {
           );
         })}
       </nav>
-
-      <div className="mt-auto px-2 pb-4">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/80 hover:bg-white/5 hover:text-white transition"
-        >
-          <LogOut size={20} />
-          <span
-            className={clsx(
-              "text-sm",
-              open ? "opacity-100" : "opacity-0 hidden"
-            )}
-          >
-            Cerrar sesión
-          </span>
-        </button>
-      </div>
     </aside>
   );
 }
