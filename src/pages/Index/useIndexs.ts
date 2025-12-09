@@ -74,7 +74,7 @@ export function useIndexs() {
       })
       .catch((err) => {
         console.error(err);
-        setError(`Error al cargar los Modulos: ${err.message}`);
+        setError(`Error al cargar los Indices: ${err.message}`);
       })
       .finally(() => {
         setLoading(false);
@@ -188,13 +188,13 @@ export function useIndexs() {
           // (Asumiendo que tu DTO es solo { name })
           const indexData: UpdateIndexDTO = { name }; 
           await updateIndex(editingIndex.id, indexData);
-          addToast("Módulo actualizado con éxito.", "success");
+          addToast("Indice actualizado con éxito.", "success");
 
         } else {
           // --- LÓGICA DE CREAR (la que ya tenías) ---
           const indexData: CreateIndexDTO = { name };
           await createIndex(indexData);
-          addToast("Módulo creado con éxito.", "success");
+          addToast("Indice creado con éxito.", "success");
         }
 
         // ¡Éxito!
@@ -231,17 +231,17 @@ const handleConfirmAction = useCallback(async () => {
 
       if (actionType === 'ban') {
         await banIndex(actionIndex.id);
-        successMessage = `Módulo "${actionIndex.name}" desactivado.`;
+        successMessage = `Indice "${actionIndex.name}" desactivado.`;
         toastType = "warning"; // Usamos 'warning' (naranja) para desactivar
 
       } else if (actionType === 'restore') {
         await restoreIndex(actionIndex.id);
-        successMessage = `Módulo "${actionIndex.name}" restaurado.`;
+        successMessage = `Indice "${actionIndex.name}" restaurado.`;
         toastType = "success";
 
       } else if (actionType === 'delete') { 
         await forceDeleteIndex(actionIndex.id);
-        successMessage = `Módulo "${actionIndex.name}" eliminado permanentemente.`;
+        successMessage = `Indice "${actionIndex.name}" eliminado permanentemente.`;
         toastType = "danger";
       }
 

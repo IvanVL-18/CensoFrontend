@@ -23,8 +23,11 @@ export default function SettingsPage() {
       </div>
 
       {/* Grid de tarjetas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {/* Módulos */}
+      {/* Contenedor principal para apilar las filas de tarjetas */}
+      <div className="flex flex-col gap-4">
+        {/* --- Primera Fila de Tarjetas --- */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {/* Módulos */}
         <button
           type="button"
           onClick={() => navigate("/Unidades")}
@@ -39,25 +42,6 @@ export default function SettingsPage() {
           <p className="text-xs text-gray-500">
             Gestiona los módulos/unidades del sistema para organizar la
             estructura de los censos.
-          </p>
-        </button>
-
-        {/* Índices */}
-        <button
-          type="button"
-          onClick={() => navigate("/Indices")}
-          className="w-full text-left border border-gray-200 rounded-lg p-4 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-md bg-[var(--pantone-7421)]/10">
-              <Hash className="w-5 h-5 text-[var(--pantone-7421)]" />
-            </div>
-            <h2 className="text-sm font-semibold text-gray-900">
-              Índices
-            </h2>
-          </div>
-          <p className="text-xs text-gray-500">
-            Administra los índices numéricos para la estructura del censo.
           </p>
         </button>
 
@@ -96,6 +80,29 @@ export default function SettingsPage() {
             Administra el catálogo de ocupaciones utilizado en el censo.
           </p>
         </button>
+        </div>
+
+        {/* --- Segunda Fila de Tarjetas --- */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {/* Índices */}
+          <button
+            type="button"
+            onClick={() => navigate("/Indices")}
+            className="w-full text-left border border-gray-200 rounded-lg p-4 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-md bg-[var(--pantone-7421)]/10">
+                <Hash className="w-5 h-5 text-[var(--pantone-7421)]" />
+              </div>
+              <h2 className="text-sm font-semibold text-gray-900">
+                Índices
+              </h2>
+            </div>
+            <p className="text-xs text-gray-500">
+              Administra los índices numéricos para la estructura del censo.
+            </p>
+          </button>
+        </div>
       </div>
     </div>
   );

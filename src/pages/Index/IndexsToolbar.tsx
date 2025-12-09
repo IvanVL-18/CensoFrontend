@@ -71,7 +71,7 @@ export function IndexsToolbar({
               group-active:w-auto group-active:ml-2 group-active:opacity-100
             "
           >
-            Agregar Modulo
+            Agregar Indice
           </span>
         </button>
       </div>

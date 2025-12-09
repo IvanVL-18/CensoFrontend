@@ -94,7 +94,7 @@ export function IndexModal({
                 htmlFor="indexName"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Nombre del modulo:
+                Nombre del indice:
               </label>
               <input
                 type="text"
@@ -102,7 +102,7 @@ export function IndexModal({
                 value={name}
                 // <--- CAMBIO 7: Usamos la nueva función de 'onChange'
                 onChange={handleNameChange}
-                placeholder="Ingresar nombre..."
+                placeholder="Ingresar indice..."
                 className={`
                   border rounded-lg p-2 w-full focus:outline-none focus:ring-2
                   ${/* <--- CAMBIO 8: Estilo condicional */ ''}

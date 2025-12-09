@@ -127,7 +127,7 @@ export function IndexsTable({
           {!loading && !error && indexs.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                No se encontraron Modulos.
+                No se encontraron Indices.
               </td>
             </tr>
           )}
@@ -153,7 +153,7 @@ export function IndexsTable({
                     <>
                       {/* --- Botón VER (Activo) --- */}
                       <button
-                        title="Ver Modulo"
+                        title="Ver Indice"
                         onClick={() => onView(indexData)} // Conectado a prop
                         className="
                           bg-white text-[#691b31] 
@@ -167,7 +167,7 @@ export function IndexsTable({
 
                       {/* --- Botón EDITAR (Activo) --- */}
                       <button
-                        title="Editar Modulo"
+                        title="Editar Indice"
                         onClick={() => onEdit(indexData)} // Conectado a prop
                         className="
                           bg-white text-[#691b31] 
@@ -181,7 +181,7 @@ export function IndexsTable({
 
                       {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
-                        title="Desactivar Modulo"
+                        title="Desactivar Indice"
                         onClick={() => onBan(indexData)} // Conectado a prop
                         className="
                           bg-white text-[#691b31] 
@@ -197,7 +197,7 @@ export function IndexsTable({
                     <>
                       {/* --- Botón VER (Inactivo) --- */}
                       <button
-                        title="Ver Modulo"
+                        title="Ver Indice"
                         onClick={() => onView(indexData)} // Conectado a prop
                         className="
                            bg-white text-[#691b31] 
@@ -211,7 +211,7 @@ export function IndexsTable({
 
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
-                        title="Restaurar Modulo"
+                        title="Restaurar Indice"
                         onClick={() => onRestore(indexData)} // Conectado a prop
                         className="
                            bg-white text-[#691b31] 

@@ -73,7 +73,7 @@ function IndexsPageContent() {
   } = useIndexs(); // <--- Ahora esta llamada es SEGURA porque está DENTRO del Provider
 
   // Si 'editingIndex' tiene datos, el título es "Editar". Si no, "Agregar".
-  const modalTitle = editingIndex ? "Editar Modulo" : "Agregar Modulo";
+  const modalTitle = editingIndex ? "Editar Indice" : "Agregar Indice";
 
   // Si 'editingIndex' tiene datos, pasamos el nombre. Si no, pasamos "".
   const modalInitialName = editingIndex ? editingIndex.name : "";
@@ -84,18 +84,18 @@ function IndexsPageContent() {
   // Asignamos un tipo explícito a la variable
   let confirmButtonColor: 'danger' | 'primary' = 'danger';
   if (actionType === 'ban') {
-    confirmTitle = "Desactivar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${actionIndex?.name}"?`;
+    confirmTitle = "Desactivar indice";
+    confirmMessage = `¿Estás seguro de que quieres desactivar el indice "${actionIndex?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (actionType === 'restore') {
-    confirmTitle = "Restaurar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${actionIndex?.name}"?`;
+    confirmTitle = "Restaurar indice";
+    confirmMessage = `¿Estás seguro de que quieres restaurar el indice "${actionIndex?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (actionType === 'delete') {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${actionIndex?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el indice "${actionIndex?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }

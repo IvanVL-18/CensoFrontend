@@ -5,7 +5,7 @@ import type { Index } from "./indexs.interfaces";
 interface ViewIndexModalProps {
   isOpen: boolean;
   onClose: () => void;
-  index: Index | null; // El módulo que vamos a mostrar
+  index: Index | null; // El Indice que vamos a mostrar
 }
 
 /**
@@ -64,7 +64,7 @@ export function ViewIndexModal({ isOpen, onClose, index }: ViewIndexModalProps) 
           
           {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">Detalle del Módulo</h2>
+            <h2 className="text-xl font-bold text-white">Detalle del Indice</h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300"
@@ -77,7 +77,7 @@ export function ViewIndexModal({ isOpen, onClose, index }: ViewIndexModalProps) 
           {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
             <DetailRow 
-              label="Nombre del módulo:" 
+              label="Nombre del indice:" 
               value={index.name} 
             />
             <DetailRow 
