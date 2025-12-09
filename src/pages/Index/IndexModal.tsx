@@ -71,9 +71,9 @@ export function IndexModal({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}
-      ></div>
+        className="fixed inset-0 bg-blue bg-opacity-30 backdrop-blur-sm z-40 transition-opacity"
+        onClick={onClose}>
+      </div>
 
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
