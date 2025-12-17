@@ -29,7 +29,7 @@ const items = [
     icon: CalendarRange,
     label: "Reportes",
   },
-  { to: "/ajustes", icon: Settings, label: "Ajustes" },
+  { to: "/configuracion", icon: Settings, label: "Configuración" },
 ];
 
 export default function Sidebar({ open, onToggle }: Props) {

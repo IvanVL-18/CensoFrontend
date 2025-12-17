@@ -43,7 +43,7 @@ export default function App() {
 
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />
-        <Route path="/ajustes" element={<SettingsPage />} />
+        <Route path="/configuracion" element={<SettingsPage />} />
 
         {/* Catálogos */}
         <Route path="/unidades" element={<Units />} />
