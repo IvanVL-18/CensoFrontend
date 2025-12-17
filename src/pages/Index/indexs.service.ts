@@ -48,6 +48,26 @@ const handleEmptyResponse = async (response: Response) => {
 };
 
 /**
+ * 📥 OBTENER (GET) un solo índice por su ID (método show)
+ */
+export const getSingleIndex = (id: string): Promise<Index> => {
+  const url = `${API_URL}/index/${id}`;
+
+  return fetch(url, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  })
+    .then(handleJsonResponse)
+    .then((response) => {
+      // La API de Laravel para 'show' suele devolver { data: {...} }
+      return response.data ?? response;
+    })
+    .catch((error) => { throw error; });
+};
+
+/**
  * 📥 OBTENER (GET) lista de indexs con filtro y paginación
  */
 export const getIndexs = (

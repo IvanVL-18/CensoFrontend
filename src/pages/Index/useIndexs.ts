@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
-import { getIndexs, createIndex, updateIndex,banIndex, restoreIndex,forceDeleteIndex, type IndexFilter } from "./indexs.service";
+import { getIndexs, getSingleIndex, createIndex, updateIndex,banIndex, restoreIndex,forceDeleteIndex, type IndexFilter } from "./indexs.service";
 import { useToast } from "../../context/ToastContext"; // <--- 1. IMPORTAR
 
 import type {
@@ -261,10 +261,18 @@ const handleConfirmAction = useCallback(async () => {
   }, [actionIndex, actionType, reloadIndexs, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
   
 
- const onView = useCallback((index: Index) => {
-    setViewingIndex(index);
-    setIsViewModalOpen(true);
-  }, []);
+ const onView = useCallback(async (index: Index) => {
+    try {
+      // 1. Llama al endpoint 'show' para obtener los datos completos
+      const fullIndexData = await getSingleIndex(index.id);
+      // 2. Guarda los datos completos en el estado
+      setViewingIndex(fullIndexData);
+      // 3. Abre el modal, que ahora tendrá las fechas
+      setIsViewModalOpen(true);
+    } catch (err) {
+      addToast("Error al cargar los detalles del índice.", "danger");
+    }
+  }, [addToast]);
 
   const onEdit = useCallback((index: Index) => {
     setEditingIndex(index); // <--- Guarda la unidad a editar
