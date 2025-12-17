@@ -29,7 +29,7 @@ export default function SettingsPage() {
           type="button"
           onClick={() => navigate("/Unidades")}
           className="w-full text-left border border-gray-200 rounded-lg p-4 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white"
-        >
+          >
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-md bg-[var(--pantone-7421)]/10">
               <Package className="w-5 h-5 text-[var(--pantone-7421)]" />
@@ -75,6 +75,22 @@ export default function SettingsPage() {
           </div>
           <p className="text-xs text-gray-500">
             Administra el catálogo de ocupaciones utilizado en el censo.
+          </p>
+        </button>
+         <button
+          type="button"
+          onClick={() => navigate("/Roles")}
+          className="w-full text-left border border-gray-200 rounded-lg p-4 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white"
+          >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-md bg-[var(--pantone-7421)]/10">
+              <Package className="w-5 h-5 text-[var(--pantone-7421)]" />
+            </div>
+            <h2 className="text-sm font-semibold text-gray-900">Roles</h2>
+          </div>
+          <p className="text-xs text-gray-500">
+            Gestiona los Roles del sistema para organizar la
+            estructura de los censos.
           </p>
         </button>
       </div>
