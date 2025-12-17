@@ -19,11 +19,11 @@ function formatDate(value: string | null): string {
 }
 
 export default function CensusCard({ census, onView }: Props) {
-  const status = "Creado";
-  const year = census.init_date
-    ? new Date(census.init_date).getFullYear()
-    : "2024";
+  // Usamos 'is_active' para determinar si el censo está "Activo" o "Inactivo"
+  const status = census.is_active ? "Activo" : "Inactivo"; 
+  const statusColor = census.is_active ? "bg-green-500" : "bg-gray-400"; // Color según el estado
 
+  const year = census.init_date ? new Date(census.init_date).getFullYear() : "2024";
   const startDate = formatDate(census.init_date);
   const endDate = formatDate(census.deadline);
 
@@ -43,34 +43,27 @@ export default function CensusCard({ census, onView }: Props) {
     >
       <div
         className="
-          bg-gradient-to-r 
-          from-[var(--pantone-7421)] 
-          to-[#4B0F21]
-          text-white
+          bg-[#F9F7F0]
+          text-[#4A4A4A]
           px-5 py-4
           flex justify-between items-start
-          border-b border-white/10
+          border-b border-[#E0D9C3]
         "
       >
         <div className="text-sm font-semibold leading-snug tracking-wide">
           {census.name}
         </div>
-
-        <span className="mt-1">
-          <span className="w-2.5 h-2.5 block rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.25)]" />
-        </span>
       </div>
 
       <div className="px-5 pt-4 pb-5 flex-1 flex flex-col gap-4">
-        
+        {/* Estado y Año */}
         <div className="flex items-center gap-2">
           <span
-            className="
+            className={`
               inline-flex items-center px-3 py-0.5 rounded-full
               text-[11px] font-medium
-              bg-emerald-50 text-emerald-700
-              border border-emerald-100
-            "
+              ${statusColor} text-white
+            `}
           >
             {status}
           </span>
@@ -86,6 +79,7 @@ export default function CensusCard({ census, onView }: Props) {
           </span>
         </div>
 
+        {/* Fechas */}
         <div
           className="
             bg-white
@@ -109,14 +103,16 @@ export default function CensusCard({ census, onView }: Props) {
           </div>
         </div>
 
+        {/* Botón de acción (mejorado) */}
         <button
           type="button"
           onClick={() => onView(census)}
           className="
             px-4 py-2 rounded-xl text-sm font-medium
-            border border-gray-300 text-gray-700 bg-white
-            hover:bg-[#D7CDC2]/30 transition-colors
-            "
+            bg-[#7C1227] text-white
+            hover:bg-[#5a0e1a] focus:outline-none focus:ring-2 focus:ring-[#7C1227] focus:ring-opacity-50
+            transition-all duration-300
+          "
         >
           Ver censo
         </button>

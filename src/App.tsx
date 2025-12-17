@@ -7,7 +7,7 @@ import HomePage from "./pages/home/page/HomePage";
 import DashboardPage from "./pages/deshboard/page/DashboardPage";
 import ChartsPage from "./pages/grapher/page/ChartsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
-import SettingsPage from "./pages/settings/page/SettingsPage";
+import SettingsPage from "./pages/settings/SettingsPage";
 import DashboardLayout from "./components/DashboardLayout";
 
 import Units from "./pages/Units/units";

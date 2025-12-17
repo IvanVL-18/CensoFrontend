@@ -1,6 +1,6 @@
 // src/pages/census/CreateCensusPage.tsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import FormAlert from "./FormAlert";
 
 export type CensusFormValues = {
@@ -14,15 +14,21 @@ export type CensusFormValues = {
 
 export default function CreateCensusPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [form, setForm] = useState<CensusFormValues>({
-    name: "",
-    year: "",
-    description: "",
-    start_date: "",
-    end_date: "",
-    is_active: true,
-  });
+  const fromState = (location.state as any) ?? {};
+  const draft: CensusFormValues | undefined = fromState.censusDraft;
+
+  const [form, setForm] = useState<CensusFormValues>(
+    draft ?? {
+      name: "",
+      year: "",
+      description: "",
+      start_date: "",
+      end_date: "",
+      is_active: true,
+    }
+  );
 
   const [errors, setErrors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -40,20 +46,16 @@ export default function CreateCensusPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     setErrors([]);
 
-    // Validación rápida en front
     if (!form.name.trim() || !form.year.trim()) {
       setErrors(["El nombre y el año son obligatorios."]);
       return;
     }
 
-    // Aquí todavía NO guardamos en la API
-    // Solo avanzamos al paso de Unidades
     setSubmitting(true);
 
-    // Puedes pasar el borrador del censo a la siguiente pantalla
+    // 👉 solo pasamos el borrador, no creamos nada en el backend todavía
     navigate("/censos/unidades", {
       state: {
         censusDraft: form,
@@ -75,7 +77,6 @@ export default function CreateCensusPage() {
 
       <div className="bg-white rounded-2xl shadow-md p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Errores de validación (solo front por ahora) */}
           {errors.length > 0 && <FormAlert messages={errors} />}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -145,10 +146,7 @@ export default function CreateCensusPage() {
                   name="start_date"
                   value={form.start_date}
                   onChange={handleChange}
-                  className="
-                    flex-1 px-3 py-2 text-sm text-gray-800
-                    focus:outline-none
-                  "
+                  className="flex-1 px-3 py-2 text-sm text-gray-800 focus:outline-none"
                 />
               </div>
             </div>
@@ -163,10 +161,7 @@ export default function CreateCensusPage() {
                   name="end_date"
                   value={form.end_date}
                   onChange={handleChange}
-                  className="
-                    flex-1 px-3 py-2 text-sm text-gray-800
-                    focus:outline-none
-                  "
+                  className="flex-1 px-3 py-2 text-sm text-gray-800 focus:outline-none"
                 />
               </div>
             </div>
@@ -199,7 +194,7 @@ export default function CreateCensusPage() {
             </span>
           </div>
 
-          {/* Footer botones */}
+          {/* Footer */}
           <div className="mt-4 pt-3 border-t border-gray-200 flex justify-end gap-3">
             <button
               type="button"
@@ -221,7 +216,7 @@ export default function CreateCensusPage() {
                 bg-[#BC955B] text-white border border-[#BC955B]
                 hover:bg-[#a8824f] hover:border-[#a8824f]
                 hover:shadow-md active:scale-[0.97]
-                transition-all duration-200
+                transition-all duración-200
               "
               disabled={submitting}
             >

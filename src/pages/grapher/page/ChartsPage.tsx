@@ -90,10 +90,6 @@ function EmptyChartsHint() {
       <p className="text-sm font-medium text-[#4b1220]">
         Selecciona un tipo de gráfica
       </p>
-      <p className="text-xs text-[#7b6670] max-w-md">
-        Usa el panel <span className="font-semibold">“Tipos de gráfica”</span>{" "}
-        de la izquierda para mostrar la vista general o por cuestionario.
-      </p>
     </div>
   );
 }

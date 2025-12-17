@@ -3,13 +3,18 @@ import { useEffect, useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getSections, type Section, type PaginationMeta } from "./sections.service";
+import type { CensusFormValues } from "./CreateCensus";
+import { createCensus } from "./censos.service";
 
 export default function CensusSectionsPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Por si luego quieres usar lo que viene de Unidades
-  const fromUnits = location.state ?? null;
+  const state = (location.state as any) ?? {};
+  const censusDraft: CensusFormValues | undefined = state.censusDraft;
+  const unitsFromState: (string | number)[] = state.selectedUnits ?? [];
+  const unitOrderFromState: Record<string | number, number | null> =
+    state.unitOrder ?? {};
 
   const [sections, setSections] = useState<Section[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
@@ -18,23 +23,18 @@ export default function CensusSectionsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [selected, setSelected] = useState<Set<string | number>>(new Set());
+  const [selected, setSelected] = useState<Set<string | number>>(
+    () => new Set()
+  );
+
+  const [saving, setSaving] = useState(false);
 
   const handleBack = () => {
-    navigate("/censos/unidades");
-  };
-
-  const handleNext = () => {
-    const selectedSections = Array.from(selected);
-
-    console.log("🔁 Datos que vienen de Unidades:", fromUnits);
-    console.log("✅ Secciones seleccionadas:", selectedSections);
-
-    // 👉 Todavía no guardamos en la API, solo avanzamos a Preguntas
-    navigate("/censos/preguntas", {
+    navigate("/censos/unidades", {
       state: {
-        fromUnits,
-        selectedSections,
+        censusDraft,
+        selectedUnits: unitsFromState,
+        unitOrder: unitOrderFromState,
       },
     });
   };
@@ -79,6 +79,53 @@ export default function CensusSectionsPage() {
   const handleNextPageClick = () => {
     if (!meta) return;
     if (meta.current_page < meta.last_page) setPage(meta.current_page + 1);
+  };
+
+  const handleSaveCensus = async () => {
+    if (!censusDraft) {
+      alert("No se encontró el borrador del censo. Vuelve a crearlo.");
+      return;
+    }
+
+    const selectedSections = Array.from(selected);
+
+    if (selectedSections.length === 0) {
+      const confirmNoSections = confirm(
+        "No has seleccionado secciones. ¿Quieres crear el censo de todos modos?"
+      );
+      if (!confirmNoSections) return;
+    }
+
+    try {
+      setSaving(true);
+
+      const census = await createCensus({
+        name: censusDraft.name,
+        description: censusDraft.description,
+        init_date: censusDraft.start_date || null,
+        deadline: censusDraft.end_date || null,
+        year: censusDraft.year,
+        is_active: censusDraft.is_active,
+      });
+
+      console.log("✅ Censo creado:", census);
+      console.log("👉 Unidades seleccionadas:", unitsFromState, unitOrderFromState);
+      console.log("👉 Secciones seleccionadas:", selectedSections);
+
+      alert("Censo creado correctamente.");
+      navigate("/censos");
+    } catch (err: any) {
+      console.error(err);
+      if (err?.type === "validation") {
+        alert((err.messages as string[]).join(" • "));
+      } else if (err?.message) {
+        alert(err.message);
+      } else {
+        alert("Ocurrió un error al crear el censo.");
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -240,9 +287,11 @@ export default function CensusSectionsPage() {
           >
             Regresar
           </button>
+
           <button
             type="button"
-            onClick={handleNext}
+            onClick={handleSaveCensus}
+            disabled={saving}
             className="
               inline-flex items-center justify-center
               px-5 py-1.5 rounded-xl text-sm font-medium
@@ -250,10 +299,11 @@ export default function CensusSectionsPage() {
               border border-[#DDC9A3]
               hover:bg-[#E0CEAA] hover:border-[#E0CEAA]
               hover:shadow-md active:scale-[0.97]
-              transition-all duración-200
+              transition-all duration-200
+              disabled:opacity-60 disabled:cursor-not-allowed
             "
           >
-            Siguiente
+            {saving ? "Guardando..." : "Guardar censo"}
           </button>
         </div>
       </section>
