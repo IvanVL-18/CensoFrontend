@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import type { Index, Meta } from "./indexs.interfaces"; // Asegúrate que la ruta sea correcta
 
-// --- Definiciones de Iconos (usados solo en la tabla) ---
+
 
 const defaultProps = {
   strokeWidth: 1.75,

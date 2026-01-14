@@ -70,18 +70,17 @@ function IndexsPageContent() {
     handleViewModalClose,
     handleConfirmModalClose, 
     handleConfirmAction,
-  } = useIndexs(); // <--- Ahora esta llamada es SEGURA porque está DENTRO del Provider
+  } = useIndexs(); 
 
-  // Si 'editingIndex' tiene datos, el título es "Editar". Si no, "Agregar".
+ 
   const modalTitle = editingIndex ? "Editar Indice" : "Agregar Indice";
 
-  // Si 'editingIndex' tiene datos, pasamos el nombre. Si no, pasamos "".
+  
   const modalInitialName = editingIndex ? editingIndex.name : "";
 
   let confirmTitle = "";
   let confirmMessage = "";
   let confirmButtonText = "";
-  // Asignamos un tipo explícito a la variable
   let confirmButtonColor: 'danger' | 'primary' = 'danger';
   if (actionType === 'ban') {
     confirmTitle = "Desactivar indice";
@@ -101,12 +100,12 @@ function IndexsPageContent() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative"> {/* Añadido 'relative' por si acaso */}
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative"> 
       
-      {/* 3. Renderizamos el contenedor de Toasts */}
+      
       <ToastContainer />
       
-      {/* --- Cabecera y Filtros --- */}
+     
       <IndexsToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -115,10 +114,8 @@ function IndexsPageContent() {
         onAddClick={handleAddClick}
       />
 
-      {/* --- Contenido Principal (Tabla y Paginación) --- */}
       <div className="p-4">
         
-        {/* --- Tabla de datos --- */}
         <IndexsTable
           loading={loading}
           error={error}
@@ -132,7 +129,7 @@ function IndexsPageContent() {
           onDelete={onDelete}
         />
 
-        {/* --- Paginación --- */}
+        
         <Pagination
           meta={meta}
           links={links}
@@ -142,7 +139,7 @@ function IndexsPageContent() {
         />
       </div>
       
-      {/* --- Modales --- */}
+ 
       <IndexModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
@@ -174,10 +171,7 @@ function IndexsPageContent() {
   );
 }
 
-// ---
-// 3. Componente Principal (Exportado)
-//    Su única función es "proveer" el contexto de Toasts
-// ---
+
 export default function Indexs() {
   return (
     <ToastProvider>

@@ -1,8 +1,8 @@
 // src/pages/Indexs/indexs.interfaces.ts
 
-// Esta es la interfaz para cada objeto 'Index' dentro del array 'data'
+
 export interface Index {
-  id: string; // Es un string encriptado
+  id: string; 
   name: string;
   created_at: string;
   updated_at: string;

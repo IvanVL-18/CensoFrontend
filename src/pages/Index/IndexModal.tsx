@@ -1,4 +1,4 @@
-// src/components/IndexModal.tsx (Actualizado)
+
 
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
@@ -8,7 +8,7 @@ import { FormErrors } from "./FormErrors";
 interface IndexModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
-  error: string | null; // Error del SERVIDOR (ej: "unique")
+  error: string | null;
   title: string;
   initialName?: string;
   onClose: () => void;
@@ -26,13 +26,13 @@ export function IndexModal({
 }: IndexModalProps) {
   const [name, setName] = useState(initialName);
   
-  // <--- CAMBIO 2: El estado de errores ahora es un array de strings
+  
   const [formErrors, setFormErrors] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
-      // Limpiamos los errores al abrir el modal
+     
       setFormErrors([]);
     }
   }, [isOpen, initialName]);
@@ -40,22 +40,22 @@ export function IndexModal({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    // <--- CAMBIO 4: Re-validamos antes de enviar
+    
     const validationErrors = validateIndex({ name });
-    setFormErrors(validationErrors); // Muestra errores si los hay
+    setFormErrors(validationErrors); 
 
-    // Si el array de errores está vacío, podemos enviar
+    
     if (validationErrors.length === 0) {
       onSave(name);
     }
   };
 
-  // <--- CAMBIO 5: ¡La validación "tecla por tecla"!
+  
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setName(newName);
     
-    // Validamos en CADA cambio y actualizamos el estado de errores
+    
     const validationErrors = validateIndex({ name: newName });
     setFormErrors(validationErrors);
   };
@@ -64,9 +64,9 @@ export function IndexModal({
     return null;
   }
 
-  // <--- CAMBIO 6: Variable para saber si hay errores (cliente o servidor)
+
   const hasClientErrors = formErrors.length > 0;
-  const hasServerError = !!error; // Convierte string|null a boolean
+  const hasServerError = !!error; 
 
   return (
     <>
@@ -100,12 +100,12 @@ export function IndexModal({
                 type="text"
                 id="indexName"
                 value={name}
-                // <--- CAMBIO 7: Usamos la nueva función de 'onChange'
+              
                 onChange={handleNameChange}
                 placeholder="Ingresar indice..."
                 className={`
                   border rounded-lg p-2 w-full focus:outline-none focus:ring-2
-                  ${/* <--- CAMBIO 8: Estilo condicional */ ''}
+                  ${''}
                   ${(hasClientErrors || hasServerError)
                     ? 'border-red-500 focus:ring-red-400' // Borde rojo si hay error
                     : 'border-gray-300 focus:ring-[#DDC9A3]'
@@ -117,12 +117,12 @@ export function IndexModal({
                 aria-describedby={hasClientErrors ? "form-errors-client" : (hasServerError ? "form-errors-server" : undefined)}
               />
 
-              {/* <--- CAMBIO 9: Mostramos errores del CLIENTE */ ''}
+              {''}
               <div id="form-errors-client">
                 <FormErrors errors={formErrors} />
               </div>
 
-              {/* <--- CAMBIO 10: Mostramos error del SERVIDOR (ej: "unique") */ ''}
+              {''}
               {/* Lo mostramos en el mismo formato de alerta */}
               {error && (
                  <div id="form-errors-server">
@@ -147,7 +147,7 @@ export function IndexModal({
               </button>
               <button
                 type="submit"
-                // <--- CAMBIO 11: Deshabilitamos si hay errores de CLIENTE
+                
                 disabled={isSubmitting || hasClientErrors}
                 className="
                   bg-white border border-[#691b31] text-[#691b31] font-bold 

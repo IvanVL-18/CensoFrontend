@@ -43,11 +43,11 @@ export function IndexsToolbar({
 }: IndexsToolbarProps) {
   return (
     <>
-      {/* --- Cabecera: Título y Botón --- */}
+      
       <div className="flex justify-between items-center p-4 bg-red-900">
         <h1 className="text-xl md:text-2xl font-bold text-white">Indices</h1>
         <button
-          onClick={onAddClick} // Conectamos el evento
+          onClick={onAddClick} 
           className="
             bg-gradient-to-r from-[#B49060] via-[#C3A67C] to-[#D4C09B] 
             text-white font-semibold 
@@ -76,16 +76,13 @@ export function IndexsToolbar({
         </button>
       </div>
 
-      {/* --- Filtros: Dropdown y Búsqueda (Dentro del div .p-4 del padre) --- */}
-      {/* NOTA: Este div se renderizará *dentro* del <div className="p-4"> 
-        del componente Indexs.tsx principal. 
-      */}
+     
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 px-4 pt-4">
-        {/* Dropdown */}
+        
         <div className="w-full md:w-auto relative">
           <select
             value={filter}
-            onChange={onFilterChange} // Conectado a props
+            onChange={onFilterChange} 
             className="bg-white border border-gray-300 rounded-lg p-2 w-full md:w-48 appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
           >
             <option value="all">Todos</option>
@@ -103,7 +100,7 @@ export function IndexsToolbar({
             type="text"
             placeholder="Buscar..."
             value={searchTerm}
-            onChange={onSearchChange} // Conectado a props
+            onChange={onSearchChange} 
             className="border border-gray-300 rounded-l-lg p-2 pl-4 w-full border-r-0 focus:ring-0 focus:border-gray-300"
           />
           <button className="bg-stone-200 text-gray-600 px-4 rounded-r-lg border border-gray-300 border-l-0 hover:bg-stone-300 transition-colors">

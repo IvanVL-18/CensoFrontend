@@ -8,9 +8,8 @@ interface ConfirmModalProps {
   // Props específicas de este modal
   title: string;
   message: string; 
-  confirmButtonText?: string; // Texto del botón de confirmación
-  confirmButtonColor?: 'danger' | 'primary'; // Para cambiar el color
-  
+  confirmButtonText?: string; 
+  confirmButtonColor?: 'danger' | 'primary'; 
   // Funciones de control
   onClose: () => void;
   onConfirm: () => void;
@@ -40,17 +39,17 @@ export function ConfirmModal({
 
   return (
     <>
-      {/* 1. Fondo Difuminado (Blur) */}
+      
       <div 
         className="fixed inset-0 bg-blue bg-opacity-30 backdrop-blur-sm z-40 transition-opacity"
         onClick={onClose}>
       </div>
 
-      {/* 2. Contenedor del Modal */}
+      
       <div className="fixed inset-0 bg-[#000000ab]  z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
           
-          {/* Cabecera del Modal (Roja como el otro modal) */}
+          
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
             <button
@@ -62,17 +61,17 @@ export function ConfirmModal({
             </button>
           </div>
 
-          {/* Cuerpo del Modal (Mensaje) */}
+          
           <div className="p-6">
             <p className="text-gray-700">{message}</p>
 
-            {/* Mensaje de Error (si existe) */}
+         
             {error && (
               <p className="text-red-600 text-sm mt-4">{error}</p>
             )}
           </div>
 
-          {/* Pie de página del Modal (Botones) */}
+        
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
             {/* Botón Cancelar */}
             <button
@@ -89,7 +88,6 @@ export function ConfirmModal({
               Cancelar
             </button>
             
-            {/* Botón Confirmar (Desactivar) */}
             <button
               type="button"
               onClick={onConfirm}

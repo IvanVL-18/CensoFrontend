@@ -16,7 +16,7 @@ type SortConfig = {
 };
 
 export function useIndexs() {
-  // --- Estados de datos ---
+  
   const { addToast } = useToast(); 
 
   const [indexs, setIndexs] = useState<Index[]>([]);
@@ -25,7 +25,7 @@ export function useIndexs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // --- Estados de filtros y orden ---
+ 
   const [filter, setFilter] = useState<IndexFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -46,21 +46,20 @@ export function useIndexs() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
-  // (Esto nos permite recargar la lista después de crear un item)
+  
   const [reloadToken, setReloadToken] = useState(0);
   const reloadIndexs = useCallback(() => setReloadToken((t) => t + 1), []);
-  // Guardará la unidad que estamos editando
-  const [editingIndex, setEditingIndex] = useState<Index | null>(null);
 
-  // --- 2. NUEVOS ESTADOS PARA EL MODAL DE CONFIRMACIÓN ---
+  const [editingIndex, setEditingIndex] = useState<Index | null>(null);
+  
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   // Guardará la unidad que queremos desactivar, restaurar o eliminar
   const [actionIndex, setActionIndex] = useState<Index | null>(null);
-  // Guardará qué acción estamos por confirmar
+
   const [actionType, setActionType] = useState<'ban' | 'restore' | 'delete' | null>(null);
 
   
-  // --- Lógica de Carga de Datos ---
+
 
   // 1. Efecto para cargar datos
   useEffect(() => {
@@ -101,7 +100,7 @@ export function useIndexs() {
       });
   }, []);
 
-  // --- Controladores de Eventos (Filtros, Paginación) ---
+  
 
   const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
     setFilter(e.target.value as IndexFilter);
@@ -133,7 +132,7 @@ export function useIndexs() {
     });
   }, []);
 
-  // --- Lógica de Memoización (Datos Computados) ---
+
   const filteredIndexs = useMemo(() => {
     return indexs.filter((index) =>
       index.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -143,7 +142,7 @@ export function useIndexs() {
   const sortedIndexs = useMemo(() => {
     let sortableItems = [...filteredIndexs];
     sortableItems.sort((a, b) => {
-      // ... (lógica de ordenamiento sin cambios)
+ 
       const valA = a[sortConfig.key];
       const valB = b[sortConfig.key];
       if (valA == null) return 1;
@@ -159,24 +158,23 @@ export function useIndexs() {
     return sortableItems;
   }, [filteredIndexs, sortConfig]);
 
-  // (Acciones CRUD) ---
+  
 
-  // MODIFICADO: Abre el modal
+  
   const handleAddClick = useCallback(() => {
     setEditingIndex(null);
-    setModalError(null); // Limpia errores antiguos
+    setModalError(null); 
     setIsModalOpen(true);
   }, []);
   
-  // NUEVO: Cierra el modal
+  
   const handleModalClose = useCallback(() => {
     setIsModalOpen(false);
-    setModalError(null); // Limpia errores al cerrar
+    setModalError(null); 
     setEditingIndex(null);
   }, []);
 
-  // NUEVO: Lógica para guardar
- // Reemplaza tu 'handleModalSave' con esto:
+
   const handleModalSave = useCallback(
     async (name: string) => {
       setIsSubmitting(true);
@@ -184,23 +182,22 @@ export function useIndexs() {
 
       try {
         if (editingIndex) {
-          // --- LÓGICA DE ACTUALIZAR ---
-          // (Asumiendo que tu DTO es solo { name })
+         
           const indexData: UpdateIndexDTO = { name }; 
           await updateIndex(editingIndex.id, indexData);
           addToast("Indice actualizado con éxito.", "success");
 
         } else {
-          // --- LÓGICA DE CREAR (la que ya tenías) ---
+         
           const indexData: CreateIndexDTO = { name };
           await createIndex(indexData);
           addToast("Indice creado con éxito.", "success");
         }
 
-        // ¡Éxito!
-        setIsModalOpen(false); // Cierra el modal
-        setEditingIndex(null);  // Limpia el estado de edición
-        reloadIndexs();         // Dispara la recarga de datos
+       
+        setIsModalOpen(false);
+        setEditingIndex(null);  
+        reloadIndexs();         
 
       } catch (err) {
         console.error("Error al guardar la unidad:", err);
@@ -232,7 +229,7 @@ const handleConfirmAction = useCallback(async () => {
       if (actionType === 'ban') {
         await banIndex(actionIndex.id);
         successMessage = `Indice "${actionIndex.name}" desactivado.`;
-        toastType = "warning"; // Usamos 'warning' (naranja) para desactivar
+        toastType = "warning"; 
 
       } else if (actionType === 'restore') {
         await restoreIndex(actionIndex.id);
@@ -245,29 +242,29 @@ const handleConfirmAction = useCallback(async () => {
         toastType = "danger";
       }
 
-      // ¡Éxito!
+     
       handleConfirmModalClose(); 
       reloadIndexs();
-      addToast(successMessage, toastType); // <--- 3. AÑADIR TOAST
+      addToast(successMessage, toastType); 
 
     } catch (err) {
       console.error("Error al procesar la acción:", err);
       const errorMessage = (err as Error).message || "Ocurrió un error";
       setModalError(errorMessage);
-      addToast(`Error: ${errorMessage}`, "danger"); // <--- 3. AÑADIR TOAST DE ERROR
+      addToast(`Error: ${errorMessage}`, "danger"); 
     } finally {
       setIsSubmitting(false);
     }
-  }, [actionIndex, actionType, reloadIndexs, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
+  }, [actionIndex, actionType, reloadIndexs, handleConfirmModalClose, addToast]); 
   
 
  const onView = useCallback(async (index: Index) => {
     try {
-      // 1. Llama al endpoint 'show' para obtener los datos completos
+      
       const fullIndexData = await getSingleIndex(index.id);
-      // 2. Guarda los datos completos en el estado
+     
       setViewingIndex(fullIndexData);
-      // 3. Abre el modal, que ahora tendrá las fechas
+     
       setIsViewModalOpen(true);
     } catch (err) {
       addToast("Error al cargar los detalles del índice.", "danger");
@@ -275,15 +272,15 @@ const handleConfirmAction = useCallback(async () => {
   }, [addToast]);
 
   const onEdit = useCallback((index: Index) => {
-    setEditingIndex(index); // <--- Guarda la unidad a editar
+    setEditingIndex(index); 
     setModalError(null);
-    setIsModalOpen(true); // <--- Abre el modal
+    setIsModalOpen(true); 
   }, []);
 
   const onBan = useCallback((index: Index) => {
     setActionIndex(index);
     setActionType('ban');
-    setIsConfirmModalOpen(true); // Abre el modal de confirmación
+    setIsConfirmModalOpen(true); 
     setModalError(null);
   }, []);
 
@@ -296,25 +293,25 @@ const handleConfirmAction = useCallback(async () => {
 
   const onDelete = useCallback((index: Index) => {
   setActionIndex(index);
-  setActionType('delete'); // <--- Esto le dice al modal qué textos mostrar
+  setActionType('delete'); 
   setIsConfirmModalOpen(true);
   setModalError(null);
 }, []);
 
   
 
-  // --- Objeto de Retorno ---
+
   return {
-    // Estado de carga
+    
     loading,
     error,
     
-    // Datos
+    
     sortedIndexs,
     meta,
     links,
     
-    // Estado de filtros
+   
     filter,
     searchTerm,
 
@@ -322,7 +319,7 @@ const handleConfirmAction = useCallback(async () => {
     actionIndex,
     actionType,
     
-    // --- NUEVO: Estado del Modal ---
+    
     isModalOpen,
     isSubmitting,
     modalError,
@@ -330,13 +327,13 @@ const handleConfirmAction = useCallback(async () => {
     isViewModalOpen,
     viewingIndex,
 
-    // Controladores (Filtros, Paginación)
+    
     handleFilterChange,
     handleSearchChange,
     handleSort,
     handlePageClick,
 
-    // Controladores de acciones (CRUD)
+    
     handleAddClick,
     handleModalClose, 
     handleModalSave,  

@@ -19,7 +19,7 @@ export function Pagination({
   error,
   onPageClick,
 }: PaginationProps) {
-  // No mostrar nada si está cargando, hay un error, o no hay datos de paginación
+  
   if (loading || error || !meta || !links) {
     return null;
   }
