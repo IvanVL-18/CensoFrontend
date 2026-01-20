@@ -47,9 +47,7 @@ const handleEmptyResponse = async (response: Response) => {
   return;
 };
 
-/**
- * 📥 OBTENER (GET) lista de units con filtro y paginación
- */
+
 export const getUnits = (
   filter: UnitFilter = "all"
 ): Promise<PaginatedUnitsResponse> => {
@@ -68,9 +66,6 @@ export const getUnits = (
     });
 };
 
-/**
- * ➕ CREAR (POST) una nueva unit
- */
 export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
   const url = `${API_URL}/units`;
 
@@ -92,9 +87,6 @@ export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
     });
 };
 
-/**
- * ✏️ ACTUALIZAR (PUT/PATCH) una unit existente
- */
 export const updateUnit = (
   id: string,
   unitData: UpdateUnitDTO
@@ -118,9 +110,6 @@ export const updateUnit = (
     });
 };
 
-/**
- * 🗑️ BORRAR (DELETE) una unit (Soft Delete)
- */
 export const banUnit = (id: string): Promise<void> => {
   const url = `${API_URL}/units/${id}`;
 
@@ -137,9 +126,6 @@ export const banUnit = (id: string): Promise<void> => {
     });
 };
 
-/**
- * ♻️ RESTAURAR (POST) una unit borrada
- */
 export const restoreUnit = (id: string): Promise<void> => {
   const url = `${API_URL}/units/${id}/restore`;
 
@@ -167,6 +153,27 @@ export const forceDeleteUnit = (id: string | number): Promise<void> => {
   })
     .then(handleEmptyResponse)
     .catch((error) => {
+      throw error;
+    });
+};
+
+export const getUnit = (id: string | number): Promise<Unit> => { 
+  const url = `${API_URL}/units/${id}`;
+
+  return fetch(url, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+      "ngrok-skip-browser-warning": "true", 
+    },
+  })
+    .then(handleJsonResponse)
+    .then((response) => {
+      // Al igual que en create/update, manejamos si viene en .data
+      return response.data ?? response;
+    })  
+    .catch((error) => {
+      console.error(`Error al obtener la unidad ${id}:`, error);
       throw error;
     });
 };
