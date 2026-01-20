@@ -47,9 +47,6 @@ const handleEmptyResponse = async (response: Response) => {
   return;
 };
 
-/**
- * 📥 OBTENER (GET) lista de Sections con filtro y paginación
- */
 export const getSections = (
   filter: SectionFilter = "all"
 ): Promise<PaginatedSectionsResponse> => {
@@ -68,9 +65,27 @@ export const getSections = (
     });
 };
 
-/**
- * ➕ CREAR (POST) una nueva Section
- */
+export const getSection = (id: string | number): Promise<Section> => { 
+  const url = `${API_URL}/sections/${id}`;
+
+  return fetch(url, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+      "ngrok-skip-browser-warning": "true", 
+    },
+  })
+    .then(handleJsonResponse)
+    .then((response) => {
+      // Al igual que en create/update, manejamos si viene en .data
+      return response.data ?? response;
+    })  
+    .catch((error) => {
+      console.error(`Error al obtener la unidad ${id}:`, error);
+      throw error;
+    });
+};
+
 export const createSection = (SectionData: CreateSectionDTO): Promise<Section> => {
   const url = `${API_URL}/sections`;
 
@@ -92,9 +107,6 @@ export const createSection = (SectionData: CreateSectionDTO): Promise<Section> =
     });
 };
 
-/**
- * ✏️ ACTUALIZAR (PUT/PATCH) una Section existente
- */
 export const updateSection = (
   id: string,
   SectionData: UpdateSectionDTO
@@ -118,9 +130,6 @@ export const updateSection = (
     });
 };
 
-/**
- * 🗑️ BORRAR (DELETE) una Section (Soft Delete)
- */
 export const banSection = (id: string): Promise<void> => {
   const url = `${API_URL}/sections/${id}`;
 
@@ -137,9 +146,7 @@ export const banSection = (id: string): Promise<void> => {
     });
 };
 
-/**
- * ♻️ RESTAURAR (POST) una Section borrada
- */
+
 export const restoreSection = (id: string): Promise<void> => {
   const url = `${API_URL}/sections/${id}/restore`;
 

@@ -7,39 +7,28 @@ import {
   Ban,
   type LucideProps,
 } from "lucide-react";
-import type { Section, Meta } from "./Section.interfaces"; // Asegúrate que la ruta sea correcta
+import type { Section, Meta } from "./Section.interfaces";
 
-// --- Definiciones de Iconos (usados solo en la tabla) ---
-
+// --- Definiciones de Iconos ---
 const defaultProps = {
   strokeWidth: 1.75,
   size: 22,
 };
 
-const IconSort = (props: LucideProps) => (
-  <ArrowUpDown {...defaultProps} {...props} />
-);
+const IconSort = (props: LucideProps) => <ArrowUpDown {...defaultProps} {...props} />;
 const IconView = (props: LucideProps) => <Eye {...defaultProps} {...props} />;
 const IconEdit = (props: LucideProps) => <Edit {...defaultProps} {...props} />;
-const IconDelete = (props: LucideProps) => (
-  <Trash2 {...defaultProps} {...props} />
-);
-const IconCircleArrowUp = (props: LucideProps) => (
-  <CircleArrowUp {...defaultProps} {...props} />
-);
-const IconBan = (props: LucideProps) => (
-  <Ban {...defaultProps} {...props} />
-);
+const IconDelete = (props: LucideProps) => <Trash2 {...defaultProps} {...props} />;
+const IconCircleArrowUp = (props: LucideProps) => <CircleArrowUp {...defaultProps} {...props} />;
+const IconBan = (props: LucideProps) => <Ban {...defaultProps} {...props} />;
 
 // --- Definición de Props ---
-
 interface SectionsTableProps {
-  Sections: Section[]; // Recibe las unidades YA filtradas y ordenadas
+  Sections: Section[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
   onSort: (key: keyof Section) => void;
-  // Funciones para manejar las acciones
   onView: (Section: Section) => void;
   onEdit: (Section: Section) => void;
   onBan: (Section: Section) => void;
@@ -47,7 +36,7 @@ interface SectionsTableProps {
   onDelete: (Section: Section) => void;
 }
 
-// --- Componente ---
+// ... (Iconos e interfaces se mantienen igual)
 
 export function SectionsTable({
   Sections,
@@ -63,176 +52,102 @@ export function SectionsTable({
 }: SectionsTableProps) {
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
+      {/* Añadimos table-fixed para que la tabla respete los anchos de columna definidos */}
+      <table className="min-w-full divide-y divide-gray-200 table-fixed"> 
         <thead className="bg-gray-50">
           <tr>
-            {/* 1. Columna "No." */}
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+            {/* 1. Columna "No." - Ancho pequeño fijo */}
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
               <button
-                onClick={() => onSort("id")} // Conectado a la prop onSort
-                className="
-                  flex items-center space-x-1     
-                  text-xs font-medium text-gray-500 uppercase tracking-wider
-                  hover:text-opacity-75 transition-colors
-                "
+                onClick={() => onSort("id")}
+                className="flex items-center space-x-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-opacity-75 transition-colors"
               >
                 <span>No°</span>
                 <IconSort size={16} strokeWidth={2.5} />
               </button>
             </th>
 
-            {/* 2. Columna "Nombre" */}
-            <th className="px-6 py-3 text-left w-full">
+            {/* 2. Columna "Nombre" - Eliminamos w-full y damos un ancho base */}
+            <th className="px-6 py-3 text-left w-auto">
               <button
-                onClick={() => onSort("name")} // Conectado a la prop onSort
-                className="
-                  flex items-center space-x-1     
-                  text-xs font-medium text-gray-500 uppercase tracking-wider
-                  hover:text-opacity-75 transition-colors
-                "
+                onClick={() => onSort("name")}
+                className="flex items-center space-x-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-opacity-75 transition-colors"
               >
                 <span>Nombre</span>
                 <IconSort size={16} strokeWidth={2.5} />
               </button>
             </th>
 
-            {/* 3. Columna "Opciones" */}
-            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
+            {/* 3. Columna "Opciones" - Ancho fijo para que no baile */}
+            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-44">
               Opciones
             </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {/* --- Estados de Carga y Error --- */}
-          {loading && (
-            <tr>
-              <td colSpan={3} className="text-center p-6 text-gray-500">
-                Cargando...
-              </td>
-            </tr>
-          )}
 
-          {error && (
-            <tr>
-              <td
-                colSpan={3}
-                className="text-center p-6 text-red-600 font-semibold"
-              >
-                {error}
-              </td>
-            </tr>
-          )}
-
-          {/* --- Estado Vacío --- */}
-          {!loading && !error && Sections.length === 0 && (
-            <tr>
-              <td colSpan={3} className="text-center p-6 text-gray-500">
-                No se encontraron Secciones.
-              </td>
-            </tr>
-          )}
-
-          {/* --- Mapeo de datos --- */}
           {!loading &&
             !error &&
             Sections.map((Section, index) => (
               <tr key={Section.id} className="hover:bg-gray-50">
-                {/* Celda "No." */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {meta ? meta.from + index : Section.id}
                 </td>
 
-                {/* Celda "Nombre" */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {Section.name}
+                <td 
+                  className="px-6 py-4 text-sm font-medium text-gray-900"
+                  title={Section.name} 
+                >
+                  <div className="truncate max-w-[300px] lg:max-w-[500px]">
+                    {Section.name}
+                  </div>
                 </td>
 
-                {/* Celda "Opciones" con lógica condicional */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
                   {!Section.deleted_at ? (
                     <>
-                      {/* --- Botón VER (Activo) --- */}
                       <button
-                        title="Ver Modulo"
-                        onClick={() => onView(Section)} // Conectado a prop
-                        className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#9d7e43] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
+                        title="Ver Sección"
+                        onClick={() => onView(Section)}
+                        className="bg-white text-[#691b31] hover:bg-[#9d7e43] hover:text-white p-2 rounded-lg transition-colors"
                       >
                         <IconView />
                       </button>
-
-                      {/* --- Botón EDITAR (Activo) --- */}
                       <button
-                        title="Editar Modulo"
-                        onClick={() => onEdit(Section)} // Conectado a prop
-                        className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#1b2469] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
+                        title="Editar Sección"
+                        onClick={() => onEdit(Section)}
+                        className="bg-white text-[#691b31] hover:bg-[#1b2469] hover:text-white p-2 rounded-lg transition-colors"
                       >
                         <IconEdit />
                       </button>
-
-                      {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
-                        title="Desactivar Modulo"
-                        onClick={() => onBan(Section)} // Conectado a prop
-                        className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#691b31] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
+                        title="Desactivar Sección"
+                        onClick={() => onBan(Section)}
+                        className="bg-white text-[#691b31] hover:bg-[#691b31] hover:text-white p-2 rounded-lg transition-colors"
                       >
                         <IconBan />
                       </button>
                     </>
                   ) : (
                     <>
-                      {/* --- Botón VER (Inactivo) --- */}
                       <button
-                        title="Ver Modulo"
-                        onClick={() => onView(Section)} // Conectado a prop
-                        className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#9d7e43] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
+                        title="Ver Sección"
+                        onClick={() => onView(Section)}
+                        className="bg-white text-[#691b31] hover:bg-[#9d7e43] hover:text-white p-2 rounded-lg transition-colors"
                       >
                         <IconView />
                       </button>
-
-                      {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
-                        title="Restaurar Modulo"
-                        onClick={() => onRestore(Section)} // Conectado a prop
-                        className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#1b6939] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
+                        title="Restaurar Sección"
+                        onClick={() => onRestore(Section)}
+                        className="bg-white text-[#691b31] hover:bg-[#1b6939] hover:text-white p-2 rounded-lg transition-colors"
                       >
                         <IconCircleArrowUp />
                       </button>
-
-                      {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
                       <button
-                        title="Eliminar Permanentemente"
-                        onClick={() => onDelete(Section)} // Conectado a prop
-                        className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#691b31] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
+                        title="Eliminar Permanente"
+                        onClick={() => onDelete(Section)}
+                        className="bg-white text-[#691b31] hover:bg-[#691b31] hover:text-white p-2 rounded-lg transition-colors"
                       >
                         <IconDelete />
                       </button>

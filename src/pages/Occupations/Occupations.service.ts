@@ -75,9 +75,27 @@ export const getOccupations = (
     });
 };
 
-/**
- * ➕ CREAR (POST) una nueva occupation
- */
+export const getOccupation = (id: string | number): Promise<Occupation> => { 
+  const url = `${API_URL}/occupations/${id}`;
+
+  return fetch(url, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+      "ngrok-skip-browser-warning": "true", 
+    },
+  })
+    .then(handleJsonResponse)
+    .then((response) => {
+      // Al igual que en create/update, manejamos si viene en .data
+      return response.data ?? response;
+    })  
+    .catch((error) => {
+      console.error(`Error al obtener la unidad ${id}:`, error);
+      throw error;
+    });
+};
+
 export const createOccupation = (occupationData: CreateOccupationDTO): Promise<Occupation> => {
   const url = `${API_URL}/occupations`;
 
@@ -99,9 +117,7 @@ export const createOccupation = (occupationData: CreateOccupationDTO): Promise<O
     });
 };
 
-/**
- * ✏️ ACTUALIZAR (PUT/PATCH) una occupation existente
- */
+
 export const updateOccupation = (
   id: string,
   occupationData: UpdateOccupationDTO
@@ -125,9 +141,7 @@ export const updateOccupation = (
     });
 };
 
-/**
- * 🗑️ BORRAR (DELETE) una occupation (Soft Delete)
- */
+
 export const banOccupation = (id: string): Promise<void> => {
   const url = `${API_URL}/occupations/${id}`;
 
@@ -144,9 +158,6 @@ export const banOccupation = (id: string): Promise<void> => {
     });
 };
 
-/**
- * ♻️ RESTAURAR (POST) una occupation borrada
- */
 export const restoreOccupation = (id: string): Promise<void> => {
   const url = `${API_URL}/occupations/${id}/restore`;
 
@@ -178,7 +189,6 @@ export const forceDeleteOccupation = (id: string | number): Promise<void> => {
     });
 };
 
-// 📥 OBTENER (GET) lista de instituciones
 export const getInstitutions = (): Promise<Institution[]> => {
   const url = `${API_URL}/institutions`;
 
@@ -189,7 +199,7 @@ export const getInstitutions = (): Promise<Institution[]> => {
     },
   })
     .then(handleJsonResponse)
-    .then((response) => response.data ?? response) // Ajusta esto según la respuesta de tu API
+    .then((response) => response.data ?? response) 
     .catch((error) => {
       throw error;
     });
