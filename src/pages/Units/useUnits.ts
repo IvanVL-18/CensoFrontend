@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
-import { getUnits, createUnit, updateUnit,banUnit, restoreUnit,forceDeleteUnit, type UnitFilter } from "./units.service";
+import { getUnits, createUnit, updateUnit,banUnit, restoreUnit,forceDeleteUnit, getUnit, type UnitFilter } from "./units.service";
 import { useToast } from "../../context/ToastContext"; // <--- 1. IMPORTAR
 
 import type {
@@ -18,7 +18,7 @@ type SortConfig = {
 export function useUnits() {
   // --- Estados de datos ---
   const { addToast } = useToast(); 
-
+  const [isViewLoading, setIsViewLoading] = useState(false);
   const [units, setUnits] = useState<Unit[]>([]);
   const [links, setLinks] = useState<PaginatedUnitsResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
@@ -261,10 +261,24 @@ const handleConfirmAction = useCallback(async () => {
   }, [actionUnit, actionType, reloadUnits, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
   
 
- const onView = useCallback((unit: Unit) => {
-    setViewingUnit(unit);
+// --- Modificación en useUnits.ts ---
+
+const onView = useCallback(async (unit: Unit) => {
+  // Usamos el nuevo estado, así la tabla no se entera de que estamos cargando
+  setIsViewLoading(true); 
+  
+  try {
+    const unitData = await getUnit(unit.id);
+    setViewingUnit(unitData);
     setIsViewModalOpen(true);
-  }, []);
+  } catch (err) {
+    console.error("Error al obtener detalle de la unidad:", err);
+    const errorMessage = (err as Error).message || "No se pudo cargar el detalle.";
+    addToast(errorMessage, "danger");
+  } finally {
+    setIsViewLoading(false); // Apagamos la carga del modal
+  }
+}, [addToast]);
 
   const onEdit = useCallback((unit: Unit) => {
     setEditingUnit(unit); // <--- Guarda la unidad a editar
@@ -299,6 +313,7 @@ const handleConfirmAction = useCallback(async () => {
   return {
     // Estado de carga
     loading,
+    isViewLoading,
     error,
     
     // Datos

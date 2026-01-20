@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
-import { getSections, createSection, updateSection,banSection, restoreSection,forceDeleteSection, type SectionFilter } from "./Section.service";
+import { getSections, getSection, createSection, updateSection,banSection, restoreSection,forceDeleteSection, type SectionFilter } from "./Section.service";
 import { useToast } from "../../context/ToastContext"; // <--- 1. IMPORTAR
 
 import type {
@@ -7,7 +7,6 @@ import type {
   PaginatedSectionsResponse,
   Meta,
   CreateSectionDTO,
-  UpdateSectionDTO,
 } from "./Section.interfaces";
 
 type SortConfig = {
@@ -18,7 +17,7 @@ type SortConfig = {
 export function useSections() {
   // --- Estados de datos ---
   const { addToast } = useToast(); 
-
+  const [isViewLoading, setIsViewLoading] = useState(false);
   const [Sections, setSections] = useState<Section[]>([]);
   const [links, setLinks] = useState<PaginatedSectionsResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
@@ -201,7 +200,7 @@ export function useSections() {
 
       setIsModalOpen(false);
       setEditingSection(null);
-      reloadSections(); // (Recuerda renombrar reloadUnits a reloadSections si no lo hiciste)
+      reloadSections(); 
 
     } catch (err) {
       console.error("Error al guardar:", err);
@@ -261,10 +260,22 @@ const handleConfirmAction = useCallback(async () => {
   }, [actionSection, actionType, reloadSections, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
   
 
- const onView = useCallback((Section: Section) => {
-    setViewingSection(Section);
+const onView = useCallback(async (Section: Section) => {
+  // Usamos el nuevo estado, así la tabla no se entera de que estamos cargando
+  setIsViewLoading(true); 
+  
+  try {
+    const SectionData = await getSection(Section.id);
+    setViewingSection(SectionData);
     setIsViewModalOpen(true);
-  }, []);
+  } catch (err) {
+    console.error("Error al obtener detalle de la unidad:", err);
+    const errorMessage = (err as Error).message || "No se pudo cargar el detalle.";
+    addToast(errorMessage, "danger");
+  } finally {
+    setIsViewLoading(false); // Apagamos la carga del modal
+  }
+}, [addToast]);
 
   const onEdit = useCallback((Section: Section) => {
     setEditingSection(Section); // <--- Guarda la unidad a editar
@@ -299,6 +310,7 @@ const handleConfirmAction = useCallback(async () => {
   return {
     // Estado de carga
     loading,
+    isViewLoading,
     error,
     
     // Datos
