@@ -1,6 +1,6 @@
 // src/pages/settings/page/SettingsPage.tsx
 import { useNavigate } from "react-router-dom";
-import { Package, Paperclip, Briefcase, Settings2 } from "lucide-react";
+import { Package, Paperclip, Briefcase, Settings2, Hash } from "lucide-react";
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -23,8 +23,11 @@ export default function SettingsPage() {
       </div>
 
       {/* Grid de tarjetas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Módulos */}
+      {/* Contenedor principal para apilar las filas de tarjetas */}
+      <div className="flex flex-col gap-4">
+        {/* --- Primera Fila de Tarjetas --- */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {/* Módulos */}
         <button
           type="button"
           onClick={() => navigate("/Unidades")}
@@ -77,6 +80,29 @@ export default function SettingsPage() {
             Administra el catálogo de ocupaciones utilizado en el censo.
           </p>
         </button>
+        </div>
+
+        {/* --- Segunda Fila de Tarjetas --- */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {/* Índices */}
+          <button
+            type="button"
+            onClick={() => navigate("/Indices")}
+            className="w-full text-left border border-gray-200 rounded-lg p-4 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-md bg-[var(--pantone-7421)]/10">
+                <Hash className="w-5 h-5 text-[var(--pantone-7421)]" />
+              </div>
+              <h2 className="text-sm font-semibold text-gray-900">
+                Índices
+              </h2>
+            </div>
+            <p className="text-xs text-gray-500">
+              Administra los índices numéricos para la estructura del censo.
+            </p>
+          </button>
+        </div>
       </div>
     </div>
   );
