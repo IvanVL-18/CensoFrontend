@@ -7,7 +7,7 @@ import type {
   PaginatedOccupationsResponse,
   Meta,
   CreateOccupationDTO,
-  UpdateOccupationDTO,
+  
   Institution,
 } from "./Occupations.interfaces";
 
@@ -213,46 +213,42 @@ export function useOccupations() {
     setEditingOccupation(null);
   }, []);
 
-  // NUEVO: Lógica para guardar
- // Reemplaza tu 'handleModalSave' con esto:
-  const handleModalSave = useCallback(
-    async (name: string, institution_id: string) => {
-      setIsSubmitting(true);
-      setModalError(null);
+ const handleModalSave = useCallback(
+  async (name: string, institution_id: string) => {
+    setIsSubmitting(true);
+    setModalError(null);
 
-      try {
-        if (editingOccupation) {
-          // --- LÓGICA DE ACTUALIZAR ---
-          // (Asumiendo que tu DTO es solo { name })
-          const occupationData: UpdateOccupationDTO = { name, institution_id }; 
-          await updateOccupation(editingOccupation.id, occupationData);
-          addToast("Ocupación actualizada con éxito.", "success");
+    try {
+      const occupationData: CreateOccupationDTO = { name, institution_id };
+      let response: any; // Declaramos para capturar el JSON del back
 
-        } else {
-          // --- LÓGICA DE CREAR (la que ya tenías) ---
-          const occupationData: CreateOccupationDTO = {  name, institution_id };
-          await createOccupation(occupationData);
-          addToast("Ocupación creada con éxito.", "success");
-        }
-
-        // ¡Éxito!
-        setIsModalOpen(false); // Cierra el modal
-        setEditingOccupation(null);  // Limpia el estado de edición
-        reloadOccupations();         // Dispara la recarga de datos
-
-      } catch (err) {
-        console.error("Error al guardar la ocupación:", err);
-        if (err instanceof TypeError && err.message === 'Failed to fetch') {
-          setModalError("Error de conexión: No se pudo conectar con el servidor. Verifica que el backend esté funcionando y la URL de la API sea correcta.");
-        } else {
-          setModalError((err as Error).message || "Ocurrió un error desconocido al guardar.");
-        }
-      } finally {
-        setIsSubmitting(false);
+      if (editingOccupation) {
+        // ACTUALIZAR
+        response = await updateOccupation(editingOccupation.id, occupationData);
+      } else {
+        // CREAR
+        response = await createOccupation(occupationData);
       }
-    },
-    [reloadOccupations, editingOccupation,addToast] 
-  );
+
+      // El mensaje viene directamente de tu controlador PHP
+      addToast(response.message, "success");
+
+      setIsModalOpen(false);
+      setEditingOccupation(null);
+      reloadOccupations();
+
+    } catch (err: any) {
+      console.error("Error al guardar la ocupación:", err);
+      // El service lanza el error con el message del back (ej. "La ocupación ya existe")
+      const errorMessage = err.message || "Ocurrió un error al guardar";
+      setModalError(errorMessage);
+      addToast(errorMessage, "danger");
+    } finally {
+      setIsSubmitting(false);
+    }
+  },
+  [reloadOccupations, editingOccupation, addToast]
+);
 
   const handleConfirmModalClose = useCallback(() => {
     setIsConfirmModalOpen(false);
@@ -262,45 +258,42 @@ export function useOccupations() {
   }, []);
 
 const handleConfirmAction = useCallback(async () => {
-    if (!actionOccupation || !actionType) return;
+  if (!actionOccupation || !actionType) return;
 
-    setIsSubmitting(true);
-    setModalError(null);
+  setIsSubmitting(true);
+  setModalError(null);
 
-    try {
-      let successMessage = "";
-      let toastType: "success" | "danger" | "warning" = "success";
+  try {
+    let response: any;
 
-      if (actionType === 'ban') {
-        await banOccupation(actionOccupation.id);
-        successMessage = `Ocupación "${actionOccupation.name}" desactivada.`;
-        toastType = "warning"; // Usamos 'warning' (naranja) para desactivar
+    if (actionType === 'ban') {
+      response = await banOccupation(actionOccupation.id);
+    } else if (actionType === 'restore') {
+      response = await restoreOccupation(actionOccupation.id);
+    } else if (actionType === 'delete') { 
+      response = await forceDeleteOccupation(actionOccupation.id);
+    }
 
-      } else if (actionType === 'restore') {
-        await restoreOccupation(actionOccupation.id);
-        successMessage = `Ocupación "${actionOccupation.name}" restaurada.`;
-        toastType = "success";
+    // Validamos que exista respuesta para evitar el error de "undefined" en TS
+    if (response) {
+      const toastType = actionType === 'ban' ? "warning" : actionType === 'delete' ? "danger" : "success";
 
-      } else if (actionType === 'delete') { 
-        await forceDeleteOccupation(actionOccupation.id);
-        successMessage = `Ocupación "${actionOccupation.name}" eliminada permanentemente.`;
-        toastType = "danger";
-      }
-
-      // ¡Éxito!
       handleConfirmModalClose(); 
       reloadOccupations();
-      addToast(successMessage, toastType); // <--- 3. AÑADIR TOAST
-
-    } catch (err) {
-      console.error("Error al procesar la acción:", err);
-      const errorMessage = (err as Error).message || "Ocurrió un error";
-      setModalError(errorMessage);
-      addToast(`Error: ${errorMessage}`, "danger"); // <--- 3. AÑADIR TOAST DE ERROR
-    } finally {
-      setIsSubmitting(false);
+      
+      // Sincronización total con Laravel
+      addToast(response.message, toastType);
     }
-  }, [actionOccupation, actionType, reloadOccupations, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
+
+  } catch (err: any) {
+    console.error("Error al procesar la acción:", err);
+    const errorMessage = err.message || "Ocurrió un error inesperado";
+    setModalError(errorMessage);
+    addToast(errorMessage, "danger");
+  } finally {
+    setIsSubmitting(false);
+  }
+}, [actionOccupation, actionType, reloadOccupations, handleConfirmModalClose, addToast]);
   
 
 const onView = useCallback(async (Occupation: Occupation) => {

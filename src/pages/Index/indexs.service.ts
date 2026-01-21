@@ -9,184 +9,95 @@ const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type IndexFilter = "all" | "active" | "inactive";
 
-
+/**
+ * 🛠️ Helper Unificado
+ * Procesa la respuesta y extrae el 'message' de Laravel tanto en éxito como en error.
+ */
 const handleJsonResponse = async (response: Response) => {
-  const text = await response.text(); // leer como texto por si no es JSON
+  const text = await response.text();
+  let data;
 
   try {
-    const data = JSON.parse(text);
-
-    if (!response.ok) {
-      throw new Error(
-        data.message || `Error ${response.status}: ${response.statusText}`
-      );
-    }
-
-    return data;
+    data = text ? JSON.parse(text) : {};
   } catch (error) {
-    // Lanzamos un error más descriptivo si el JSON falla
-    throw new Error(
-      `Respuesta no válida del servidor o no es JSON. Detalle: ${text.slice(
-        0,
-        200
-      )}`
-    );
+    throw new Error(`Error al procesar respuesta del servidor: ${text.slice(0, 100)}`);
   }
-};
 
-/**
- * ⚙️ Helper para manejar respuestas VACÍAS (DELETE, RESTORE)
- */
-const handleEmptyResponse = async (response: Response) => {
   if (!response.ok) {
-    // Consumimos el texto del error aunque no lo usemos, es buena práctica
-    await response.text();
-    throw new Error(`Error ${response.status}: ${response.statusText}`);
+    // Si Laravel devuelve un error (400, 422, etc.), lanzamos su mensaje
+    throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
   }
-  // Si la respuesta es ok (200, 204), simplemente retornamos void
-  return;
+
+  return data;
 };
 
-/**
- * 📥 OBTENER (GET) un solo índice por su ID (método show)
- */
+// --- SERVICIOS ---
+
+export const getIndexs = (filter: IndexFilter = "all"): Promise<PaginatedIndexsResponse> => {
+  const url = `${API_URL}/index/${filter}/content`;
+  return fetch(url, {
+    method: "GET",
+    headers: { "Accept": "application/json" },
+  }).then(handleJsonResponse);
+};
+
 export const getSingleIndex = (id: string): Promise<Index> => {
   const url = `${API_URL}/index/${id}`;
-
   return fetch(url, {
     method: "GET",
-    headers: {
-      Accept: "application/json",
-    },
+    headers: { "Accept": "application/json" },
   })
     .then(handleJsonResponse)
-    .then((response) => {
-      // La API de Laravel para 'show' suele devolver { data: {...} }
-      return response.data ?? response;
-    })
-    .catch((error) => { throw error; });
+    .then((response) => response.data ?? response);
 };
 
-/**
- * 📥 OBTENER (GET) lista de indexs con filtro y paginación
- */
-export const getIndexs = (
-  filter: IndexFilter = "all"
-): Promise<PaginatedIndexsResponse> => {
-  const url = `${API_URL}/index/${filter}/content`;
-
-  return fetch(url, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      //"ngrok-skip-browser-warning": "true", 
-    },
-  })
-    .then(handleJsonResponse)
-    .catch((error) => {
-      throw error;
-    });
-};
-
-/**
- * ➕ CREAR (POST) una nueva index
- */
-export const createIndex = (indexData: CreateIndexDTO): Promise<Index> => {
+// Cambiamos a Promise<any> para capturar el message de "Índice creado con éxito"
+export const createIndex = (indexData: CreateIndexDTO): Promise<any> => {
   const url = `${API_URL}/index`;
-
   return fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json",
+      "Accept": "application/json",
     },
     body: JSON.stringify(indexData),
-  })
-    .then(handleJsonResponse)
-    .then((response) => {
-      // Soporta si la API devuelve el objeto anidado en 'data' o directamente
-      return response.data ?? response;
-    })
-    .catch((error) => {
-      throw error;
-    });
+  }).then(handleJsonResponse);
 };
 
-/**
- * ✏️ ACTUALIZAR (PUT/PATCH) una index existente
- */
-export const updateIndex = (
-  id: string,
-  indexData: UpdateIndexDTO
-): Promise<Index> => {
+export const updateIndex = (id: string, indexData: UpdateIndexDTO): Promise<any> => {
   const url = `${API_URL}/index/${id}`;
-
   return fetch(url, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json",
+      "Accept": "application/json",
     },
     body: JSON.stringify(indexData),
-  })
-    .then(handleJsonResponse)
-    .then((response) => {
-      return response.data ?? response;
-    })
-    .catch((error) => {
-      throw error;
-    });
+  }).then(handleJsonResponse);
 };
 
-/**
- * 🗑️ BORRAR (DELETE) una index (Soft Delete)
- */
-export const banIndex = (id: string): Promise<void> => {
-  const url = `${API_URL}/index/${id}`;
+// --- Acciones de Confirmación (Ahora retornan el JSON con el mensaje) ---
 
+export const banIndex = (id: string): Promise<{ message: string }> => {
+  const url = `${API_URL}/index/${id}`;
   return fetch(url, {
     method: "DELETE",
-    headers: {
-      Accept: "application/json",
-      "ngrok-skip-browser-warning": "true", 
-    },
-  })
-    .then(handleEmptyResponse)
-    .catch((error) => {
-      throw error;
-    });
+    headers: { "Accept": "application/json" },
+  }).then(handleJsonResponse);
 };
 
-/**
- * ♻️ RESTAURAR (POST) una index borrada
- */
-export const restoreIndex = (id: string): Promise<void> => {
+export const restoreIndex = (id: string): Promise<{ message: string }> => {
   const url = `${API_URL}/index/${id}/restore`;
-
   return fetch(url, {
     method: "POST",
-    headers: {
-      Accept: "application/json",
-    },
-  })
-    .then(handleEmptyResponse)
-    .catch((error) => {
-      throw error;
-    });
+    headers: { "Accept": "application/json" },
+  }).then(handleJsonResponse);
 };
 
-export const forceDeleteIndex = (id: string | number): Promise<void> => {
+export const forceDeleteIndex = (id: string | number): Promise<{ message: string }> => {
   const url = `${API_URL}/index/${id}/force-delete`;
-
   return fetch(url, {
     method: "DELETE",
-    headers: {
-      Accept: "application/json",
-      "ngrok-skip-browser-warning": "true",
-    },
-  })
-    .then(handleEmptyResponse)
-    .catch((error) => {
-      throw error;
-    });
+    headers: { "Accept": "application/json" },
+  }).then(handleJsonResponse);
 };

@@ -6,8 +6,6 @@ import type {
   Unit,
   PaginatedUnitsResponse,
   Meta,
-  CreateUnitDTO,
-  UpdateUnitDTO,
 } from "./units.interfaces";
 
 type SortConfig = {
@@ -178,90 +176,79 @@ export function useUnits() {
   // NUEVO: Lógica para guardar
  // Reemplaza tu 'handleModalSave' con esto:
   const handleModalSave = useCallback(
-    async (name: string) => {
-      setIsSubmitting(true);
-      setModalError(null);
-
-      try {
-        if (editingUnit) {
-          // --- LÓGICA DE ACTUALIZAR ---
-          // (Asumiendo que tu DTO es solo { name })
-          const unitData: UpdateUnitDTO = { name }; 
-          await updateUnit(editingUnit.id, unitData);
-          addToast("Módulo actualizado con éxito.", "success");
-
-        } else {
-          // --- LÓGICA DE CREAR (la que ya tenías) ---
-          const unitData: CreateUnitDTO = { name };
-          await createUnit(unitData);
-          addToast("Módulo creado con éxito.", "success");
-        }
-
-        // ¡Éxito!
-        setIsModalOpen(false); // Cierra el modal
-        setEditingUnit(null);  // Limpia el estado de edición
-        reloadUnits();         // Dispara la recarga de datos
-
-      } catch (err) {
-        console.error("Error al guardar la unidad:", err);
-        setModalError((err as Error).message || "Ocurrió un error");
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [reloadUnits, editingUnit,addToast] 
-  );
-
-  const handleConfirmModalClose = useCallback(() => {
-    setIsConfirmModalOpen(false);
-    setActionUnit(null);
-    setActionType(null);
-    setModalError(null); 
-  }, []);
-
-const handleConfirmAction = useCallback(async () => {
-    if (!actionUnit || !actionType) return;
-
+  async (name: string) => {
     setIsSubmitting(true);
     setModalError(null);
 
     try {
-      let successMessage = "";
-      let toastType: "success" | "danger" | "warning" = "success";
+      let response: any;
+      const unitData = { name };
 
-      if (actionType === 'ban') {
-        await banUnit(actionUnit.id);
-        successMessage = `Módulo "${actionUnit.name}" desactivado.`;
-        toastType = "warning"; // Usamos 'warning' (naranja) para desactivar
-
-      } else if (actionType === 'restore') {
-        await restoreUnit(actionUnit.id);
-        successMessage = `Módulo "${actionUnit.name}" restaurado.`;
-        toastType = "success";
-
-      } else if (actionType === 'delete') { 
-        await forceDeleteUnit(actionUnit.id);
-        successMessage = `Módulo "${actionUnit.name}" eliminado permanentemente.`;
-        toastType = "danger";
+      if (editingUnit) {
+        response = await updateUnit(editingUnit.id, unitData);
+      } else {
+        response = await createUnit(unitData);
       }
 
-      // ¡Éxito!
-      handleConfirmModalClose(); 
-      reloadUnits();
-      addToast(successMessage, toastType); // <--- 3. AÑADIR TOAST
+      // Usamos el mensaje del back: "Unidad creada con exito" o "Unidad actualizada con éxito."
+      addToast(response.message, "success");
 
-    } catch (err) {
-      console.error("Error al procesar la acción:", err);
-      const errorMessage = (err as Error).message || "Ocurrió un error";
-      setModalError(errorMessage);
-      addToast(`Error: ${errorMessage}`, "danger"); // <--- 3. AÑADIR TOAST DE ERROR
+      setIsModalOpen(false);
+      setEditingUnit(null);
+      reloadUnits();
+
+    } catch (err: any) {
+      setModalError(err.message || "Ocurrió un error");
+      addToast(err.message, "danger");
     } finally {
       setIsSubmitting(false);
     }
-  }, [actionUnit, actionType, reloadUnits, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
-  
+  },
+  [reloadUnits, editingUnit, addToast]
+);
 
-// --- Modificación en useUnits.ts ---
+// --- 1. AGREGA ESTA FUNCIÓN (que se había borrado) ---
+const handleConfirmModalClose = useCallback(() => {
+  setIsConfirmModalOpen(false);
+  setActionUnit(null);
+  setActionType(null);
+  setModalError(null); 
+}, []);
+
+// --- 2. MODAL DE ACCIÓN (Corregido para TS) ---
+const handleConfirmAction = useCallback(async () => {
+  if (!actionUnit || !actionType) return;
+  setIsSubmitting(true);
+
+  try {
+    let response: any; // <--- Le damos un tipo para que TS no se queje
+
+    if (actionType === 'ban') {
+      response = await banUnit(actionUnit.id);
+    } else if (actionType === 'restore') {
+      response = await restoreUnit(actionUnit.id);
+    } else if (actionType === 'delete') {
+      response = await forceDeleteUnit(actionUnit.id);
+    }
+
+    // Verificamos que response exista antes de usarlo (soluciona el error de 'undefined')
+    if (response) {
+      const toastType = actionType === 'ban' ? "warning" : actionType === 'delete' ? "danger" : "success";
+
+      handleConfirmModalClose();
+      reloadUnits();
+      
+      // Ahora sí, tomamos el mensaje que viene del UnitController.php
+      addToast(response.message, toastType); 
+    }
+
+  } catch (err: any) {
+    // Si el backend lanza el error 400, handleJsonResponse captura el message y lo lanza aquí
+    addToast(err.message || "Error al procesar la acción", "danger");
+  } finally {
+    setIsSubmitting(false);
+  }
+}, [actionUnit, actionType, reloadUnits, handleConfirmModalClose, addToast]);
 
 const onView = useCallback(async (unit: Unit) => {
   // Usamos el nuevo estado, así la tabla no se entera de que estamos cargando

@@ -11,169 +11,90 @@ export type UnitFilter = "all" | "active" | "inactive";
 
 
 const handleJsonResponse = async (response: Response) => {
-  const text = await response.text(); // leer como texto por si no es JSON
+  const text = await response.text();
+  let data;
 
   try {
-    const data = JSON.parse(text);
-
-    if (!response.ok) {
-      throw new Error(
-        data.message || `Error ${response.status}: ${response.statusText}`
-      );
-    }
-
-    return data;
+    data = text ? JSON.parse(text) : {};
   } catch (error) {
-    // Lanzamos un error más descriptivo si el JSON falla
-    throw new Error(
-      `Respuesta no válida del servidor o no es JSON. Detalle: ${text.slice(
-        0,
-        200
-      )}`
-    );
+    throw new Error(`Error al procesar respuesta del servidor: ${text.slice(0, 100)}`);
   }
-};
 
-/**
- * ⚙️ Helper para manejar respuestas VACÍAS (DELETE, RESTORE)
- */
-const handleEmptyResponse = async (response: Response) => {
   if (!response.ok) {
-    // Consumimos el texto del error aunque no lo usemos, es buena práctica
-    await response.text();
-    throw new Error(`Error ${response.status}: ${response.statusText}`);
+    // Si hay error, lanzamos el mensaje que viene del back (Laravel)
+    throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
   }
-  // Si la respuesta es ok (200, 204), simplemente retornamos void
-  return;
+
+  // Retornamos toda la data (incluyendo el message y el code si existiera)
+  return data;
 };
 
 
-export const getUnits = (
-  filter: UnitFilter = "all"
-): Promise<PaginatedUnitsResponse> => {
+export const getUnits = (filter: UnitFilter = "all"): Promise<PaginatedUnitsResponse> => {
   const url = `${API_URL}/units/${filter}/content`;
-
   return fetch(url, {
     method: "GET",
-    headers: {
-      Accept: "application/json",
-      //"ngrok-skip-browser-warning": "true", 
-    },
-  })
-    .then(handleJsonResponse)
-    .catch((error) => {
-      throw error;
-    });
+    headers: { "Accept": "application/json" },
+  }).then(handleJsonResponse);
 };
 
-export const createUnit = (unitData: CreateUnitDTO): Promise<Unit> => {
-  const url = `${API_URL}/units`;
+// Cambiamos Promise<void> por Promise<any> para recibir el { message: "..." }
+export const banUnit = (id: string): Promise<{ message: string }> => {
+  const url = `${API_URL}/units/${id}`;
+  return fetch(url, {
+    method: "DELETE",
+    headers: { "Accept": "application/json" },
+  }).then(handleJsonResponse);
+};
 
+export const restoreUnit = (id: string): Promise<{ message: string }> => {
+  const url = `${API_URL}/units/${id}/restore`;
+  return fetch(url, {
+    method: "POST",
+    headers: { "Accept": "application/json" },
+  }).then(handleJsonResponse);
+};
+
+export const forceDeleteUnit = (id: string | number): Promise<{ message: string }> => {
+  const url = `${API_URL}/units/${id}/force-delete`;
+  return fetch(url, {
+    method: "DELETE",
+    headers: { "Accept": "application/json" },
+  }).then(handleJsonResponse);
+};
+
+// Para crear y editar, Laravel devuelve el message. 
+// Si necesitas el objeto Unit, podrías ajustar el back o desestructurar aquí.
+export const createUnit = (unitData: CreateUnitDTO): Promise<any> => {
+  const url = `${API_URL}/units`;
   return fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json",
+      "Accept": "application/json",
     },
     body: JSON.stringify(unitData),
-  })
-    .then(handleJsonResponse)
-    .then((response) => {
-      // Soporta si la API devuelve el objeto anidado en 'data' o directamente
-      return response.data ?? response;
-    })
-    .catch((error) => {
-      throw error;
-    });
+  }).then(handleJsonResponse);
 };
 
-export const updateUnit = (
-  id: string,
-  unitData: UpdateUnitDTO
-): Promise<Unit> => {
+export const updateUnit = (id: string, unitData: UpdateUnitDTO): Promise<any> => {
   const url = `${API_URL}/units/${id}`;
-
   return fetch(url, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json",
+      "Accept": "application/json",
     },
     body: JSON.stringify(unitData),
-  })
-    .then(handleJsonResponse)
-    .then((response) => {
-      return response.data ?? response;
-    })
-    .catch((error) => {
-      throw error;
-    });
+  }).then(handleJsonResponse);
 };
 
-export const banUnit = (id: string): Promise<void> => {
+export const getUnit = (id: string | number): Promise<Unit> => {
   const url = `${API_URL}/units/${id}`;
-
-  return fetch(url, {
-    method: "DELETE",
-    headers: {
-      Accept: "application/json",
-      "ngrok-skip-browser-warning": "true", 
-    },
-  })
-    .then(handleEmptyResponse)
-    .catch((error) => {
-      throw error;
-    });
-};
-
-export const restoreUnit = (id: string): Promise<void> => {
-  const url = `${API_URL}/units/${id}/restore`;
-
-  return fetch(url, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-    },
-  })
-    .then(handleEmptyResponse)
-    .catch((error) => {
-      throw error;
-    });
-};
-
-export const forceDeleteUnit = (id: string | number): Promise<void> => {
-  const url = `${API_URL}/units/${id}/force-delete`;
-
-  return fetch(url, {
-    method: "DELETE",
-    headers: {
-      Accept: "application/json",
-      "ngrok-skip-browser-warning": "true",
-    },
-  })
-    .then(handleEmptyResponse)
-    .catch((error) => {
-      throw error;
-    });
-};
-
-export const getUnit = (id: string | number): Promise<Unit> => { 
-  const url = `${API_URL}/units/${id}`;
-
   return fetch(url, {
     method: "GET",
-    headers: {
-      "Accept": "application/json",
-      "ngrok-skip-browser-warning": "true", 
-    },
+    headers: { "Accept": "application/json" },
   })
     .then(handleJsonResponse)
-    .then((response) => {
-      // Al igual que en create/update, manejamos si viene en .data
-      return response.data ?? response;
-    })  
-    .catch((error) => {
-      console.error(`Error al obtener la unidad ${id}:`, error);
-      throw error;
-    });
+    .then((response) => response.data ?? response);
 };
