@@ -20,6 +20,7 @@ import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; // ← NUE
 import Section from "./pages/Section/Section";
 import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
+import Index from "./pages/Index/indexs";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/inicio" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/instituciones" element={<Insitutions />} />
+        <Route path="/indices" element={<Index />} />
 
         {/* Censos */}
         <Route path="/censos" element={<Census />} />

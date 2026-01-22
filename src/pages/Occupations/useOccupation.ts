@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
-import { getOccupations, createOccupation, updateOccupation,banOccupation, restoreOccupation,forceDeleteOccupation, type OccupationFilter, getInstitutions } from "./Occupations.service";
+import { getOccupations, getOccupation, createOccupation, updateOccupation,banOccupation, restoreOccupation,forceDeleteOccupation, type OccupationFilter, getInstitutions } from "./Occupations.service";
 import { useToast } from "../../context/ToastContext"; // <--- 1. IMPORTAR
 
 import type {
@@ -19,7 +19,7 @@ type SortConfig = {
 export function useOccupations() {
   // --- Estados de datos ---
   const { addToast } = useToast(); 
-
+  const [isViewLoading, setIsViewLoading] = useState(false);
   const [occupations, setOccupations] = useState<Occupation[]>([]);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [links, setLinks] = useState<PaginatedOccupationsResponse["links"] | null>(null);
@@ -303,10 +303,22 @@ const handleConfirmAction = useCallback(async () => {
   }, [actionOccupation, actionType, reloadOccupations, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
   
 
- const onView = useCallback((occupation: Occupation) => {
-    setViewingOccupation(occupation);
+const onView = useCallback(async (Occupation: Occupation) => {
+  // Usamos el nuevo estado, así la tabla no se entera de que estamos cargando
+  setIsViewLoading(true); 
+  
+  try {
+    const OccupationData = await getOccupation(Occupation.id);
+    setViewingOccupation(OccupationData);
     setIsViewModalOpen(true);
-  }, []);
+  } catch (err) {
+    console.error("Error al obtener detalle de la unidad:", err);
+    const errorMessage = (err as Error).message || "No se pudo cargar el detalle.";
+    addToast(errorMessage, "danger");
+  } finally {
+    setIsViewLoading(false); // Apagamos la carga del modal
+  }
+}, [addToast]);
 
   const onEdit = useCallback((occupation: Occupation) => {
     // <--- CAMBIO 2: Usamos la nueva estructura para obtener el ID de la institución
@@ -347,6 +359,7 @@ const handleConfirmAction = useCallback(async () => {
   return {
     // Estado de carga
     loading,
+    isViewLoading,
     error,
     
     // Datos

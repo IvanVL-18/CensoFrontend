@@ -37,8 +37,8 @@ export function validateUnit(data: UnitFormData): string[] {
   }
 
   // Regla 3: 'name.max' (Transcripción)
-  if (name.length > 45) {
-    errors.push("El nombre no puede exceder los 45 caracteres.");
+  if (name.length > 65) {
+    errors.push("El nombre no puede exceder los 65 caracteres.");
   }
 
   // Regla 4: 'name.regex' (Transcripción)
