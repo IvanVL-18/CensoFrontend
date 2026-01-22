@@ -1,6 +1,6 @@
 // src/pages/settings/page/SettingsPage.tsx
 import { useNavigate } from "react-router-dom";
-import { Package, Paperclip, Briefcase } from "lucide-react";
+import { Package, Paperclip, Briefcase, Hash } from "lucide-react";
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -11,7 +11,7 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-5 sm:mb-6">
         <div className="min-w-0">
           <h1 className="text-lg sm:text-xl font-semibold text-gray-900">
-            Configuración del censo 
+            Configuración del censo
           </h1>
         </div>
       </div>
@@ -109,6 +109,26 @@ export default function SettingsPage() {
             </div>
           </div>
         </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {/* Índices */}
+          <button
+            type="button"
+            onClick={() => navigate("/Indices")}
+            className="w-full text-left border border-gray-200 rounded-lg p-4 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-md bg-[var(--pantone-7421)]/10">
+                <Hash className="w-5 h-5 text-[var(--pantone-7421)]" />
+              </div>
+              <h2 className="text-sm font-semibold text-gray-900">
+                Índices
+              </h2>
+            </div>
+            <p className="text-xs text-gray-500">
+              Administra los índices numéricos para la estructura del censo.
+            </p>
+          </button>
+        </div>
       </div>
     </div>
   );
