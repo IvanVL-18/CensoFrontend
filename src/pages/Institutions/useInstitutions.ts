@@ -15,7 +15,6 @@ import type {
   PaginatedInstitutionsResponse,
   Meta,
   CreateInstitutionDTO,
-  UpdateInstitutionDTO,
 } from "./Institutions.interfaces";
 
 type SortConfig = {
@@ -200,39 +199,40 @@ export function useInstitutions() {
   // NUEVO: Lógica para guardar
  // Reemplaza tu 'handleModalSave' con esto:
   const handleModalSave = useCallback(
-    async (institutionData: CreateInstitutionDTO) => {
-      setIsSubmitting(true);
-      setModalError(null);
+  async (institutionData: CreateInstitutionDTO) => {
+    setIsSubmitting(true);
+    setModalError(null);
 
-      try {
-        if (editingInstitution) {
-          // --- LÓGICA DE ACTUALIZAR ---
-          const dataToUpdate: UpdateInstitutionDTO = institutionData; 
-          await updateInstitution(editingInstitution.id, dataToUpdate);
-          addToast("Institución actualizada con éxito.", "success");
+    try {
+      let response: any; // Declaramos para capturar el JSON del back
 
-        } else {
-          // --- LÓGICA DE CREAR (la que ya tenías) ---
-          await createInstitution(institutionData);
-          addToast("Institución creada con éxito.", "success");
-        }
-
-        // ¡Éxito!
-        setIsModalOpen(false); // Cierra el modal
-        setEditingInstitution(null);  // Limpia el estado de edición
-        reloadInstitutions();         // Dispara la recarga de datos
-
-      } catch (err) {
-        const errorMessage = (err as Error).message || "Ocurrió un error";
-        console.error("Error al guardar la institución:", err);
-        setModalError((err as Error).message || "Ocurrió un error");
-        addToast(`Error: ${errorMessage}`, "danger");
-      } finally {
-        setIsSubmitting(false);
+      if (editingInstitution) {
+        // ACTUALIZAR
+        response = await updateInstitution(editingInstitution.id, institutionData);
+      } else {
+        // CREAR
+        response = await createInstitution(institutionData);
       }
-    },
-    [reloadInstitutions, editingInstitution, addToast] 
-  );
+
+      // Usamos el mensaje dinámico del back: "Institución creada con éxito"
+      addToast(response.message, "success");
+
+      setIsModalOpen(false);
+      setEditingInstitution(null);
+      reloadInstitutions();
+
+    } catch (err: any) {
+      console.error("Error al guardar la institución:", err);
+      // El service ahora lanza el mensaje exacto de Laravel
+      const errorMessage = err.message || "Ocurrió un error inesperado";
+      setModalError(errorMessage);
+      addToast(errorMessage, "danger");
+    } finally {
+      setIsSubmitting(false);
+    }
+  },
+  [reloadInstitutions, editingInstitution, addToast]
+);
 
   const handleConfirmModalClose = useCallback(() => {
     setIsConfirmModalOpen(false);
@@ -242,46 +242,42 @@ export function useInstitutions() {
   }, []);
 
   const handleConfirmAction = useCallback(async () => {
-    if (!actionInstitution || !actionType) return;
+  if (!actionInstitution || !actionType) return;
 
-    setIsSubmitting(true);
-    setModalError(null);
+  setIsSubmitting(true);
+  setModalError(null);
 
-    try {
-      let successMessage = "";
-      let toastType: "success" | "danger" | "warning" = "success";
+  try {
+    let response: any;
 
-      if (actionType === 'ban') {
-        await banInstitution(actionInstitution.id);
-        successMessage = `Institución "${actionInstitution.name}" desactivada.`;
-        toastType = "warning"; // Usamos 'warning' (naranja) para desactivar
+    if (actionType === 'ban') {
+      response = await banInstitution(actionInstitution.id);
+    } else if (actionType === 'restore') {
+      response = await restoreInstitution(actionInstitution.id);
+    } else if (actionType === 'delete') { 
+      response = await forceDeleteInstitution(actionInstitution.id);
+    }
 
-      } else if (actionType === 'restore') {
-        await restoreInstitution(actionInstitution.id);
-        successMessage = `Institución "${actionInstitution.name}" restaurada.`;
-        toastType = "success";
+    // Validamos que tengamos respuesta para evitar el error de 'undefined' en TS
+    if (response) {
+      const toastType = actionType === 'ban' ? "warning" : actionType === 'delete' ? "danger" : "success";
 
-      } else if (actionType === 'delete') { 
-        await forceDeleteInstitution(actionInstitution.id);
-        successMessage = `Institución "${actionInstitution.name}" eliminada permanentemente.`;
-        toastType = "danger";
-      }
-
-      // ¡Éxito!
       handleConfirmModalClose(); 
       reloadInstitutions();
-      addToast(successMessage, toastType); // <--- 3. AÑADIR TOAST
-
-    } catch (err) {
-      console.error("Error al procesar la acción:", err);
-      const errorMessage = (err as Error).message || "Ocurrió un error";
-      setModalError(errorMessage);
-      addToast(`Error: ${errorMessage}`, "danger"); // <--- 3. AÑADIR TOAST DE ERROR
-    } finally {
-      setIsSubmitting(false);
+      
+      // Sincronización total con los mensajes de tu UnitController de PHP
+      addToast(response.message, toastType);
     }
-  }, [actionInstitution, actionType, reloadInstitutions, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
-  
+
+  } catch (err: any) {
+    console.error("Error al procesar la acción:", err);
+    const errorMessage = err.message || "Ocurrió un error al procesar la solicitud";
+    setModalError(errorMessage);
+    addToast(errorMessage, "danger");
+  } finally {
+    setIsSubmitting(false);
+  }
+}, [actionInstitution, actionType, reloadInstitutions, handleConfirmModalClose, addToast]);
 
  const onView = useCallback((institution: Institution) => {
     setViewingInstitution(institution);

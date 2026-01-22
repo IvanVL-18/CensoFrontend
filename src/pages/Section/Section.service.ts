@@ -9,171 +9,103 @@ const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type SectionFilter = "all" | "active" | "inactive";
 
-
+/**
+ * 🛠️ Helper Unificado
+ * Procesa la respuesta, maneja errores de parseo y extrae mensajes de Laravel.
+ */
 const handleJsonResponse = async (response: Response) => {
-  const text = await response.text(); // leer como texto por si no es JSON
+  const text = await response.text();
+  let data;
 
   try {
-    const data = JSON.parse(text);
-
-    if (!response.ok) {
-      throw new Error(
-        data.message || `Error ${response.status}: ${response.statusText}`
-      );
-    }
-
-    return data;
+    data = text ? JSON.parse(text) : {};
   } catch (error) {
-    // Lanzamos un error más descriptivo si el JSON falla
-    throw new Error(
-      `Respuesta no válida del servidor o no es JSON. Detalle: ${text.slice(
-        0,
-        200
-      )}`
-    );
+    throw new Error(`Error al procesar respuesta del servidor: ${text.slice(0, 100)}`);
   }
-};
 
-/**
- * ⚙️ Helper para manejar respuestas VACÍAS (DELETE, RESTORE)
- */
-const handleEmptyResponse = async (response: Response) => {
   if (!response.ok) {
-    // Consumimos el texto del error aunque no lo usemos, es buena práctica
-    await response.text();
-    throw new Error(`Error ${response.status}: ${response.statusText}`);
+    // Captura el mensaje de error definido en tu controlador de Laravel
+    throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
   }
-  // Si la respuesta es ok (200, 204), simplemente retornamos void
-  return;
+
+  return data;
 };
 
-export const getSections = (
-  filter: SectionFilter = "all"
-): Promise<PaginatedSectionsResponse> => {
-  const url = `${API_URL}/sections/${filter}/content`;
+// --- SERVICIOS ---
 
+export const getSections = (filter: SectionFilter = "all"): Promise<PaginatedSectionsResponse> => {
+  const url = `${API_URL}/sections/${filter}/content`;
   return fetch(url, {
     method: "GET",
-    headers: {
-      Accept: "application/json",
-      //"ngrok-skip-browser-warning": "true", 
-    },
-  })
-    .then(handleJsonResponse)
-    .catch((error) => {
-      throw error;
-    });
+    headers: { "Accept": "application/json" },
+  }).then(handleJsonResponse);
 };
 
-export const getSection = (id: string | number): Promise<Section> => { 
+export const getSection = (id: string | number): Promise<Section> => {
   const url = `${API_URL}/sections/${id}`;
-
   return fetch(url, {
     method: "GET",
     headers: {
       "Accept": "application/json",
-      "ngrok-skip-browser-warning": "true", 
+      "ngrok-skip-browser-warning": "true",
     },
   })
     .then(handleJsonResponse)
-    .then((response) => {
-      // Al igual que en create/update, manejamos si viene en .data
-      return response.data ?? response;
-    })  
-    .catch((error) => {
-      console.error(`Error al obtener la unidad ${id}:`, error);
-      throw error;
-    });
+    .then((response) => response.data ?? response);
 };
 
-export const createSection = (SectionData: CreateSectionDTO): Promise<Section> => {
+// Se cambia Promise<Section> por Promise<any> para poder leer el 'message' de éxito
+export const createSection = (SectionData: CreateSectionDTO): Promise<any> => {
   const url = `${API_URL}/sections`;
-
   return fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json",
+      "Accept": "application/json",
     },
     body: JSON.stringify(SectionData),
-  })
-    .then(handleJsonResponse)
-    .then((response) => {
-      // Soporta si la API devuelve el objeto anidado en 'data' o directamente
-      return response.data ?? response;
-    })
-    .catch((error) => {
-      throw error;
-    });
+  }).then(handleJsonResponse);
 };
 
-export const updateSection = (
-  id: string,
-  SectionData: UpdateSectionDTO
-): Promise<Section> => {
+export const updateSection = (id: string, SectionData: UpdateSectionDTO): Promise<any> => {
   const url = `${API_URL}/sections/${id}`;
-
   return fetch(url, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json",
+      "Accept": "application/json",
     },
     body: JSON.stringify(SectionData),
-  })
-    .then(handleJsonResponse)
-    .then((response) => {
-      return response.data ?? response;
-    })
-    .catch((error) => {
-      throw error;
-    });
+  }).then(handleJsonResponse);
 };
 
-export const banSection = (id: string): Promise<void> => {
+// Eliminamos handleEmptyResponse y usamos handleJsonResponse para capturar el mensaje
+export const banSection = (id: string): Promise<{ message: string }> => {
   const url = `${API_URL}/sections/${id}`;
-
   return fetch(url, {
     method: "DELETE",
     headers: {
-      Accept: "application/json",
-      "ngrok-skip-browser-warning": "true", 
-    },
-  })
-    .then(handleEmptyResponse)
-    .catch((error) => {
-      throw error;
-    });
-};
-
-
-export const restoreSection = (id: string): Promise<void> => {
-  const url = `${API_URL}/sections/${id}/restore`;
-
-  return fetch(url, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-    },
-  })
-    .then(handleEmptyResponse)
-    .catch((error) => {
-      throw error;
-    });
-};
-
-export const forceDeleteSection = (id: string | number): Promise<void> => {
-  const url = `${API_URL}/sections/${id}/force-delete`;
-
-  return fetch(url, {
-    method: "DELETE",
-    headers: {
-      Accept: "application/json",
+      "Accept": "application/json",
       "ngrok-skip-browser-warning": "true",
     },
-  })
-    .then(handleEmptyResponse)
-    .catch((error) => {
-      throw error;
-    });
+  }).then(handleJsonResponse);
+};
+
+export const restoreSection = (id: string): Promise<{ message: string }> => {
+  const url = `${API_URL}/sections/${id}/restore`;
+  return fetch(url, {
+    method: "POST",
+    headers: { "Accept": "application/json" },
+  }).then(handleJsonResponse);
+};
+
+export const forceDeleteSection = (id: string | number): Promise<{ message: string }> => {
+  const url = `${API_URL}/sections/${id}/force-delete`;
+  return fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Accept": "application/json",
+      "ngrok-skip-browser-warning": "true",
+    },
+  }).then(handleJsonResponse);
 };

@@ -174,90 +174,94 @@ export function useSections() {
     setEditingSection(null);
   }, []);
 
-  // NUEVO: Lógica para guardar
- // Reemplaza tu 'handleModalSave' con esto:
-  const handleModalSave = useCallback(
-  async (data: { name: string; instructions: string | null }) => { // <--- RECIBE OBJETO
+
+  const handleConfirmModalClose = useCallback(() => {
+  setIsConfirmModalOpen(false);
+  setActionSection(null);
+  setActionType(null);
+  setModalError(null); 
+}, []);
+
+ // 1. Lógica para Guardar (Crear/Editar)
+const handleModalSave = useCallback(
+  async (data: { name: string; instructions: string | null }) => {
     setIsSubmitting(true);
     setModalError(null);
 
     try {
-      // Preparamos el DTO
       const sectionData: CreateSectionDTO = {
         name: data.name,
-        instructions: data.instructions || null, // Si viene vacío string, mandamos null o string vacío
+        instructions: data.instructions || null,
       };
 
+      let response: any;
+
       if (editingSection) {
-        // EDITAR
-        await updateSection(editingSection.id, sectionData);
-        addToast("Sección actualizada con éxito.", "success");
+        // El servicio ahora retorna el JSON completo con el 'message'
+        response = await updateSection(editingSection.id, sectionData);
       } else {
-        // CREAR
-        await createSection(sectionData);
-        addToast("Sección creada con éxito.", "success");
+        response = await createSection(sectionData);
       }
+
+      // Usamos el mensaje que viene de Laravel
+      addToast(response.message, "success");
 
       setIsModalOpen(false);
       setEditingSection(null);
-      reloadSections(); 
+      reloadSections();
 
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error al guardar:", err);
-      setModalError((err as Error).message || "Ocurrió un error");
+      // El service lanza el error con el message del back
+      const errorMessage = err.message || "Ocurrió un error inesperado";
+      setModalError(errorMessage);
+      addToast(errorMessage, "danger");
     } finally {
       setIsSubmitting(false);
     }
   },
   [reloadSections, editingSection, addToast]
 );
-  const handleConfirmModalClose = useCallback(() => {
-    setIsConfirmModalOpen(false);
-    setActionSection(null);
-    setActionType(null);
-    setModalError(null); 
-  }, []);
 
+// 2. Lógica de Confirmación (Desactivar/Restaurar/Eliminar)
 const handleConfirmAction = useCallback(async () => {
-    if (!actionSection || !actionType) return;
+  if (!actionSection || !actionType) return;
 
-    setIsSubmitting(true);
-    setModalError(null);
+  setIsSubmitting(true);
+  setModalError(null);
 
-    try {
-      let successMessage = "";
-      let toastType: "success" | "danger" | "warning" = "success";
+  try {
+    let response: any;
 
-      if (actionType === 'ban') {
-        await banSection(actionSection.id);
-        successMessage = `Módulo "${actionSection.name}" desactivado.`;
-        toastType = "warning"; // Usamos 'warning' (naranja) para desactivar
+    if (actionType === 'ban') {
+      response = await banSection(actionSection.id);
+    } else if (actionType === 'restore') {
+      response = await restoreSection(actionSection.id);
+    } else if (actionType === 'delete') { 
+      response = await forceDeleteSection(actionSection.id);
+    }
 
-      } else if (actionType === 'restore') {
-        await restoreSection(actionSection.id);
-        successMessage = `Módulo "${actionSection.name}" restaurado.`;
-        toastType = "success";
+    // Verificamos que tengamos respuesta para evitar errores de TypeScript
+    if (response) {
+      // Mapeo visual de los Toast según la acción
+      const toastType = actionType === 'ban' ? "warning" : actionType === 'delete' ? "danger" : "success";
 
-      } else if (actionType === 'delete') { 
-        await forceDeleteSection(actionSection.id);
-        successMessage = `Módulo "${actionSection.name}" eliminado permanentemente.`;
-        toastType = "danger";
-      }
-
-      // ¡Éxito!
       handleConfirmModalClose(); 
       reloadSections();
-      addToast(successMessage, toastType); // <--- 3. AÑADIR TOAST
-
-    } catch (err) {
-      console.error("Error al procesar la acción:", err);
-      const errorMessage = (err as Error).message || "Ocurrió un error";
-      setModalError(errorMessage);
-      addToast(`Error: ${errorMessage}`, "danger"); // <--- 3. AÑADIR TOAST DE ERROR
-    } finally {
-      setIsSubmitting(false);
+      
+      // Mostramos el mensaje exacto del controlador PHP
+      addToast(response.message, toastType);
     }
-  }, [actionSection, actionType, reloadSections, handleConfirmModalClose, addToast]); // <--- 4. AÑADIR 'addToast'
+
+  } catch (err: any) {
+    console.error("Error al procesar la acción:", err);
+    const errorMessage = err.message || "Ocurrió un error";
+    setModalError(errorMessage);
+    addToast(errorMessage, "danger");
+  } finally {
+    setIsSubmitting(false);
+  }
+}, [actionSection, actionType, reloadSections, handleConfirmModalClose, addToast]);
   
 
 const onView = useCallback(async (Section: Section) => {

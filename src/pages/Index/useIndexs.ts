@@ -1,13 +1,12 @@
 import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
 import { getIndexs, getSingleIndex, createIndex, updateIndex,banIndex, restoreIndex,forceDeleteIndex, type IndexFilter } from "./indexs.service";
-import { useToast } from "../../context/ToastContext"; // <--- 1. IMPORTAR
+import { useToast } from "../../context/ToastContext"; 
 
 import type {
   Index,
   PaginatedIndexsResponse,
   Meta,
   CreateIndexDTO,
-  UpdateIndexDTO,
 } from "./indexs.interfaces";
 
 type SortConfig = {
@@ -53,7 +52,6 @@ export function useIndexs() {
   const [editingIndex, setEditingIndex] = useState<Index | null>(null);
   
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  // Guardará la unidad que queremos desactivar, restaurar o eliminar
   const [actionIndex, setActionIndex] = useState<Index | null>(null);
 
   const [actionType, setActionType] = useState<'ban' | 'restore' | 'delete' | null>(null);
@@ -176,38 +174,41 @@ export function useIndexs() {
 
 
   const handleModalSave = useCallback(
-    async (name: string) => {
-      setIsSubmitting(true);
-      setModalError(null);
+  async (name: string) => {
+    setIsSubmitting(true);
+    setModalError(null);
 
-      try {
-        if (editingIndex) {
-         
-          const indexData: UpdateIndexDTO = { name }; 
-          await updateIndex(editingIndex.id, indexData);
-          addToast("Indice actualizado con éxito.", "success");
+    try {
+      let response: any; // Declaramos para capturar el mensaje del back
+      const indexData: CreateIndexDTO = { name };
 
-        } else {
-         
-          const indexData: CreateIndexDTO = { name };
-          await createIndex(indexData);
-          addToast("Indice creado con éxito.", "success");
-        }
-
-       
-        setIsModalOpen(false);
-        setEditingIndex(null);  
-        reloadIndexs();         
-
-      } catch (err) {
-        console.error("Error al guardar la unidad:", err);
-        setModalError((err as Error).message || "Ocurrió un error");
-      } finally {
-        setIsSubmitting(false);
+      if (editingIndex) {
+        // ACTUALIZAR
+        response = await updateIndex(editingIndex.id, indexData);
+      } else {
+        // CREAR
+        response = await createIndex(indexData);
       }
-    },
-    [reloadIndexs, editingIndex,addToast] 
-  );
+
+      // Usamos el mensaje dinámico de Laravel: "Indice creado con éxito"
+      addToast(response.message, "success");
+
+      setIsModalOpen(false);
+      setEditingIndex(null);
+      reloadIndexs();
+
+    } catch (err: any) {
+      console.error("Error al guardar el índice:", err);
+      // El service lanza el error con el mensaje que viene de PHP
+      const errorMessage = err.message || "Ocurrió un error al procesar la solicitud";
+      setModalError(errorMessage);
+      addToast(errorMessage, "danger");
+    } finally {
+      setIsSubmitting(false);
+    }
+  },
+  [reloadIndexs, editingIndex, addToast]
+);
 
   const handleConfirmModalClose = useCallback(() => {
     setIsConfirmModalOpen(false);
@@ -217,45 +218,42 @@ export function useIndexs() {
   }, []);
 
 const handleConfirmAction = useCallback(async () => {
-    if (!actionIndex || !actionType) return;
+  if (!actionIndex || !actionType) return;
 
-    setIsSubmitting(true);
-    setModalError(null);
+  setIsSubmitting(true);
+  setModalError(null);
 
-    try {
-      let successMessage = "";
-      let toastType: "success" | "danger" | "warning" = "success";
+  try {
+    let response: any;
 
-      if (actionType === 'ban') {
-        await banIndex(actionIndex.id);
-        successMessage = `Indice "${actionIndex.name}" desactivado.`;
-        toastType = "warning"; 
+    if (actionType === 'ban') {
+      response = await banIndex(actionIndex.id);
+    } else if (actionType === 'restore') {
+      response = await restoreIndex(actionIndex.id);
+    } else if (actionType === 'delete') { 
+      response = await forceDeleteIndex(actionIndex.id);
+    }
 
-      } else if (actionType === 'restore') {
-        await restoreIndex(actionIndex.id);
-        successMessage = `Indice "${actionIndex.name}" restaurado.`;
-        toastType = "success";
+    // Si recibimos respuesta del service (que ahora siempre devuelve el JSON)
+    if (response) {
+      const toastType = actionType === 'ban' ? "warning" : actionType === 'delete' ? "danger" : "success";
 
-      } else if (actionType === 'delete') { 
-        await forceDeleteIndex(actionIndex.id);
-        successMessage = `Indice "${actionIndex.name}" eliminado permanentemente.`;
-        toastType = "danger";
-      }
-
-     
       handleConfirmModalClose(); 
       reloadIndexs();
-      addToast(successMessage, toastType); 
-
-    } catch (err) {
-      console.error("Error al procesar la acción:", err);
-      const errorMessage = (err as Error).message || "Ocurrió un error";
-      setModalError(errorMessage);
-      addToast(`Error: ${errorMessage}`, "danger"); 
-    } finally {
-      setIsSubmitting(false);
+      
+      // Mostramos el mensaje configurado en el controlador de Laravel
+      addToast(response.message, toastType);
     }
-  }, [actionIndex, actionType, reloadIndexs, handleConfirmModalClose, addToast]); 
+
+  } catch (err: any) {
+    console.error("Error en la acción de índice:", err);
+    const errorMessage = err.message || "Ocurrió un error inesperado";
+    setModalError(errorMessage);
+    addToast(errorMessage, "danger");
+  } finally {
+    setIsSubmitting(false);
+  }
+}, [actionIndex, actionType, reloadIndexs, handleConfirmModalClose, addToast]);
   
 
  const onView = useCallback(async (index: Index) => {
