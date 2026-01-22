@@ -1,6 +1,7 @@
+// src/pages/census/CensusDetail.tsx
 import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import type { Census } from "./censos.service";
+import type { Census } from "./census.interfaces";
 import CensusQuestions from "./CensusQuestionsPage";
 
 type Props = {
@@ -26,20 +27,15 @@ function formatDate(value: string | null): string {
 export default function CensusDetail({ census, onBack }: Props) {
   const [view, setView] = useState<ViewMode>("summary");
 
-  const year = census.init_date
-    ? new Date(census.init_date).getFullYear()
-    : "2024";
-
+  const year = census.init_date ? new Date(census.init_date).getFullYear() : "2024";
   const startDate = formatDate(census.init_date);
   const endDate = formatDate(census.deadline);
-
   const totalQuestions = census.questions_count ?? 0;
 
   const percentage = 100;
 
   return (
     <div className="w-full space-y-4 lg:space-y-6">
-      {/* Solo botón Regresar (a la lista de censos) */}
       <div className="flex items-center justify-start">
         <button
           type="button"
@@ -56,14 +52,10 @@ export default function CensusDetail({ census, onBack }: Props) {
       </div>
 
       {view === "questions" ? (
-        // 🔹 Vista de preguntas
         <CensusQuestions census={census} />
       ) : (
-        // 🔹 Vista resumen
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-          {/* Columna izquierda: resumen + pasos */}
           <div className="space-y-4">
-            {/* Card principal del censo */}
             <div
               className="
                 bg-white rounded-2xl border border-gray-200
@@ -121,9 +113,7 @@ export default function CensusDetail({ census, onBack }: Props) {
                   "
                 >
                   <div>
-                    <div className="font-semibold text-neutral-800">
-                      Inicio
-                    </div>
+                    <div className="font-semibold text-neutral-800">Inicio</div>
                     <div className="mt-[2px] tabular-nums">{startDate}</div>
                   </div>
 
@@ -133,30 +123,24 @@ export default function CensusDetail({ census, onBack }: Props) {
                   </div>
 
                   <div className="text-right">
-                    <div className="font-semibold text-neutral-800">
-                      Preguntas
-                    </div>
-                    <div className="mt-[2px] tabular-nums">
-                      {totalQuestions}
-                    </div>
+                    <div className="font-semibold text-neutral-800">Preguntas</div>
+                    <div className="mt-[2px] tabular-nums">{totalQuestions}</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Bloques: Unidades, Secciones, Preguntas */}
             <div className="space-y-2.5">
               {[
                 { id: 1, label: "Unidades" },
                 { id: 2, label: "Secciones" },
-                {/*{ id: 3, label: "Preguntas" },*/}
+                // { id: 3, label: "Preguntas" },
               ].map((item) => (
                 <button
                   key={item.id}
                   type="button"
                   onClick={() => {
                     if (item.id === 3) setView("questions");
-                    // luego puedes hacer lo mismo para unidades y secciones
                   }}
                   className="
                     w-full bg-white rounded-2xl border border-gray-200
@@ -167,9 +151,7 @@ export default function CensusDetail({ census, onBack }: Props) {
                   "
                 >
                   <span className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">
-                      {item.id}.
-                    </span>
+                    <span className="text-xs text-gray-500">{item.id}.</span>
                     <span className="font-medium">{item.label}</span>
                   </span>
 
@@ -187,7 +169,6 @@ export default function CensusDetail({ census, onBack }: Props) {
             </div>
           </div>
 
-          {/* Columna derecha: gráfica */}
           <div
             className="
               bg-white rounded-2xl border border-gray-200
@@ -199,9 +180,7 @@ export default function CensusDetail({ census, onBack }: Props) {
               <h3 className="text-sm font-semibold text-neutral-800">
                 Porcentaje del censo
               </h3>
-              <span className="text-[11px] text-neutral-500">
-                Total de preguntas
-              </span>
+              <span className="text-[11px] text-neutral-500">Total de preguntas</span>
             </div>
 
             <div className="flex-1 flex flex-col items-center justify-center gap-4">
@@ -214,9 +193,7 @@ export default function CensusDetail({ census, onBack }: Props) {
               </div>
 
               <div className="text-center space-y-1">
-                <div className="text-xs text-neutral-500">
-                  Total de preguntas
-                </div>
+                <div className="text-xs text-neutral-500">Total de preguntas</div>
                 <div className="text-lg font-semibold text-neutral-800">
                   {totalQuestions}
                 </div>

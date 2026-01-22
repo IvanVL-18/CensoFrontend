@@ -9,7 +9,6 @@ type Questionnaire = {
   resolvedQuestions: number;
 };
 
-// 🔹 Datos de ejemplo (luego se reemplazan por la API)
 const QUESTIONNAIRES: Questionnaire[] = [
   {
     id: "cng",
@@ -44,19 +43,18 @@ export default function QuestionnaireCharts() {
 
   return (
     <div className="space-y-4">
-      {/* TARJETA PRINCIPAL */}
       <article className="rounded-2xl overflow-hidden border border-black/5 shadow-sm flex flex-col">
-        {/* Header vino con select */}
-        <div className="bg-[#7C1227] text-white px-4 py-2 flex items-center justify-between gap-4">
+        {/* Header responsive */}
+        <div className="bg-[#7C1227] text-white px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-sm font-semibold">
             Elija un cuestionario para graficar
           </span>
 
-          <div className="relative">
+          <div className="relative w-full sm:w-[360px]">
             <select
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="appearance-none rounded-lg bg-[#F5F1EA] text-[#3b2a2e] text-xs md:text-sm pl-3 pr-8 py-1.5 border border-white/60 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#F5F1EA] focus:border-white"
+              className="w-full appearance-none rounded-lg bg-[#F5F1EA] text-[#3b2a2e] text-xs sm:text-sm pl-3 pr-8 py-2 border border-white/60 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#F5F1EA] focus:border-white"
             >
               {QUESTIONNAIRES.map((q) => (
                 <option key={q.id} value={q.id}>
@@ -68,10 +66,10 @@ export default function QuestionnaireCharts() {
           </div>
         </div>
 
-        {/* Contenido */}
-        <div className="p-4 flex flex-col md:flex-row gap-6 items-center md:items-start">
-          {/* Leyenda / texto a la izquierda */}
-          <div className="w-full md:w-1/3 space-y-4">
+        {/* Contenido responsive */}
+        <div className="p-4 flex flex-col lg:flex-row gap-6 items-center lg:items-start">
+          {/* Izquierda */}
+          <div className="w-full lg:w-1/3 space-y-4">
             <div className="space-y-2 text-xs text-[#3b2a2e]">
               <LegendItem color="#22c55e" label="Total de preguntas" />
               <LegendItem color="#ef4444" label="Porcentaje resuelto" />
@@ -96,14 +94,12 @@ export default function QuestionnaireCharts() {
             </div>
           </div>
 
-          {/* Gráfica de pastel a la derecha */}
-          <div className="w-full md:w-2/3 flex items-center justify-center">
-            <div className="relative h-52 w-52 md:h-60 md:w-60">
-              {/* Pastel dinámico */}
+          {/* Derecha */}
+          <div className="w-full lg:w-2/3 flex items-center justify-center">
+            <div className="relative h-48 w-48 sm:h-56 sm:w-56 lg:h-60 lg:w-60">
               <div
                 className="h-full w-full rounded-full border border-black/10 shadow-inner"
                 style={{
-                  // rojo = resuelto, verde = resto
                   backgroundImage: `conic-gradient(
                     #ef4444 0 ${percentResolved}%,
                     #22c55e ${percentResolved}% 100%
@@ -111,12 +107,9 @@ export default function QuestionnaireCharts() {
                 }}
               />
 
-              {/* Badge con % en el centro */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="rounded-full bg-white/90 px-4 py-2 text-center shadow-md border border-black/5">
-                  <p className="text-[10px] text-[#7b6670]">
-                    Porcentaje resuelto
-                  </p>
+                  <p className="text-[10px] text-[#7b6670]">Porcentaje resuelto</p>
                   <p className="text-lg font-semibold text-[#4b1220]">
                     {percentResolved.toFixed(1)}%
                   </p>

@@ -1,19 +1,5 @@
 // src/pages/census/units.service.ts
-
-export type Unit = {
-  id: string | number;
-  name: string;
-  key?: string | null;      // si tu recurso tiene clave de unidad
-  [key: string]: any;
-};
-
-export type PaginationMeta = {
-  current_page: number;
-  last_page: number;
-  from: number | null;
-  to: number | null;
-  total: number;
-};
+import type { Unit, PaginationMeta, ContentFilter } from "./census.interfaces";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api";
@@ -24,7 +10,7 @@ const API_BASE_URL =
  */
 export async function getUnits(
   page: number = 1,
-  content: "active" | "inactive" | "all" = "active"
+  content: ContentFilter = "active"
 ): Promise<{ data: Unit[]; meta: PaginationMeta }> {
   const url = `${API_BASE_URL}/units/${content}/content?page=${page}`;
 

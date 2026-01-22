@@ -1,20 +1,13 @@
-// src/components/Sections.tsx (Corregido con el Patrón de Contexto)
-
 import { useSections } from "./useSection";
 import { SectionsToolbar } from "./SectionToolbar";
 import { SectionsTable } from "./SectionTable";
-import { Pagination } from "./Pagination";
+import Pagination from "../../components/Pagination";
 import { SectionModal } from "./SectionModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { ViewSectionModal } from "./ViewSectionModal";
-// <--- Tus imports están perfectos
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
-// ---
-// 1. Contenedor de Toasts
-//    (Lo sacamos fuera para que sea más limpio)
-// ---
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
 
@@ -131,13 +124,15 @@ function SectionsPageContent() {
         />
 
         {/* --- Paginación --- */}
-        <Pagination
-          meta={meta}
-          links={links}
-          loading={loading}
-          error={error}
-          onPageClick={handlePageClick}
-        />
+        <div className="mt-4 flex justify-center">
+          <Pagination
+            meta={meta}
+            links={links}
+            loading={loading}
+            error={error}
+            onPageClick={handlePageClick}
+          />
+        </div>
       </div>
       {/* --- Modales --- */}
       <SectionModal

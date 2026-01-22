@@ -17,7 +17,7 @@ export function SearchInput({
         flex items-center w-full
         bg-white
         rounded-xl   
-        py-2 pl-4 pr-3
+        py-3 pl-3 pr-3
         shadow-sm
         hover:shadow-md
         transition-all duration-150

@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getUnits, type Unit, type PaginationMeta } from "./units.service";
-import type { CensusFormValues } from "./CreateCensus";
+import { getUnits } from "./units.service";
+import type { Unit, PaginationMeta, CensusFormValues } from "./census.interfaces";
 
 export default function CensusUnitsPage() {
   const navigate = useNavigate();
@@ -27,16 +27,12 @@ export default function CensusUnitsPage() {
     () => new Set(initialSelectedUnits)
   );
 
-  const [unitOrder, setUnitOrder] = useState<
-    Record<string | number, number | null>
-  >(() => initialUnitOrder);
+  const [unitOrder, setUnitOrder] = useState<Record<string | number, number | null>>(
+    () => initialUnitOrder
+  );
 
   const handleBack = () => {
-    navigate("/censos/crear", {
-      state: {
-        censusDraft,
-      },
-    });
+    navigate("/censos/crear", { state: { censusDraft } });
   };
 
   const handleNext = () => {
@@ -64,11 +60,8 @@ export default function CensusUnitsPage() {
   const toggleUnit = (id: string | number) => {
     setSelected((prev) => {
       const copy = new Set(prev);
-      if (copy.has(id)) {
-        copy.delete(id);
-      } else {
-        copy.add(id);
-      }
+      if (copy.has(id)) copy.delete(id);
+      else copy.add(id);
       return copy;
     });
   };
@@ -115,8 +108,7 @@ export default function CensusUnitsPage() {
       <header className="bg-[var(--pantone-7421)] text-white rounded-xl px-4 py-3">
         <h1 className="text-lg font-semibold">Unidades</h1>
         <p className="text-xs mt-1 text-white/80">
-          Selecciona las unidades y define el orden en el que aparecerán en el
-          censo.
+          Selecciona las unidades y define el orden en el que aparecerán en el censo.
         </p>
       </header>
 
@@ -155,10 +147,7 @@ export default function CensusUnitsPage() {
                   <tbody>
                     {units.length === 0 && (
                       <tr>
-                        <td
-                          colSpan={3}
-                          className="px-4 py-6 text-center text-sm text-gray-500"
-                        >
+                        <td colSpan={3} className="px-4 py-6 text-center text-sm text-gray-500">
                           Aún no hay unidades registradas.
                         </td>
                       </tr>
@@ -169,10 +158,7 @@ export default function CensusUnitsPage() {
                       const orderValue = unitOrder[unit.id] ?? "";
 
                       return (
-                        <tr
-                          key={unit.id}
-                          className="hover:bg-gray-50 transition-colors"
-                        >
+                        <tr key={unit.id} className="hover:bg-gray-50 transition-colors">
                           <td className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
                             <select
                               className="
@@ -181,18 +167,14 @@ export default function CensusUnitsPage() {
                                 focus:outline-none focus:ring-1 focus:ring-[var(--pantone-7421)] focus:border-[var(--pantone-7421)]
                               "
                               value={orderValue}
-                              onChange={(e) =>
-                                handleOrderChange(unit.id, e.target.value)
-                              }
+                              onChange={(e) => handleOrderChange(unit.id, e.target.value)}
                             >
                               <option value="">Sin orden</option>
-                              {Array.from({ length: units.length }).map(
-                                (_, idx) => (
-                                  <option key={idx + 1} value={idx + 1}>
-                                    {idx + 1}
-                                  </option>
-                                )
-                              )}
+                              {Array.from({ length: units.length }).map((_, idx) => (
+                                <option key={idx + 1} value={idx + 1}>
+                                  {idx + 1}
+                                </option>
+                              ))}
                             </select>
                           </td>
 
@@ -218,11 +200,7 @@ export default function CensusUnitsPage() {
                                 <span
                                   className={`
                                     w-4 h-4 bg-white rounded-full shadow-sm transform transition-all
-                                    ${
-                                      isSelected
-                                        ? "translate-x-2.5"
-                                        : "-translate-x-2.5"
-                                    }
+                                    ${isSelected ? "translate-x-2.5" : "-translate-x-2.5"}
                                   `}
                                 />
                               </button>

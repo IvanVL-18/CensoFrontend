@@ -1,4 +1,5 @@
-import type { Census } from "./censos.service";
+// src/pages/census/CensusCard.tsx
+import type { Census } from "./census.interfaces";
 
 type Props = {
   census: Census;
@@ -19,104 +20,108 @@ function formatDate(value: string | null): string {
 }
 
 export default function CensusCard({ census, onView }: Props) {
-  // Usamos 'is_active' para determinar si el censo está "Activo" o "Inactivo"
-  const status = census.is_active ? "Activo" : "Inactivo"; 
-  const statusColor = census.is_active ? "bg-green-500" : "bg-gray-400"; // Color según el estado
+  const isActive = !!census.is_active;
 
+  const status = isActive ? "Activo" : "Inactivo";
   const year = census.init_date ? new Date(census.init_date).getFullYear() : "2024";
   const startDate = formatDate(census.init_date);
   const endDate = formatDate(census.deadline);
 
   return (
-    <div
+    <article
       className="
-        bg-[#FAF7F2]
-        rounded-2xl
-        border border-[#E6DFD3]
-        shadow-[0_6px_16px_rgba(0,0,0,0.06)]
-        overflow-hidden
-        flex flex-col
-        transition-all duration-300
-        hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)]
-        hover:-translate-y-[2px]
+        group relative overflow-hidden
+        rounded-2xl bg-white
+        border border-neutral-200
+        shadow-sm
+        transition
+        hover:shadow-md hover:border-neutral-300
       "
     >
-      <div
-        className="
-          bg-[#F9F7F0]
-          text-[#4A4A4A]
-          px-5 py-4
-          flex justify-between items-start
-          border-b border-[#E0D9C3]
-        "
-      >
-        <div className="text-sm font-semibold leading-snug tracking-wide">
-          {census.name}
-        </div>
-      </div>
+      {/* Acento vino fino */}
+      <div className="absolute inset-y-0 left-0 w-1 bg-[#7C1227]" />
 
-      <div className="px-5 pt-4 pb-5 flex-1 flex flex-col gap-4">
-        {/* Estado y Año */}
-        <div className="flex items-center gap-2">
+      <header className="px-6 pt-5 pb-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h3
+              className="text-[15px] font-semibold leading-snug text-neutral-900 line-clamp-2"
+              title={census.name}
+            >
+              {census.name}
+            </h3>
+
+            {/* Año debajo del nombre */}
+            <div className="mt-1 text-xs font-medium text-neutral-500">
+              {year}
+            </div>
+          </div>
+
+          {/* Solo dejamos estatus arriba a la derecha */}
           <span
-            className={`
-              inline-flex items-center px-3 py-0.5 rounded-full
-              text-[11px] font-medium
-              ${statusColor} text-white
-            `}
+            className={[
+              "shrink-0 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold",
+              "ring-1 ring-inset",
+              isActive
+                ? "bg-[#0B7A63]/10 text-[#0B7A63] ring-[#0B7A63]/25"
+                : "bg-[#7C1227]/10 text-[#7C1227] ring-[#7C1227]/25",
+            ].join(" ")}
           >
+            <span
+              aria-hidden="true"
+              className={[
+                "h-1.5 w-1.5 rounded-full",
+                isActive ? "bg-[#0B7A63]" : "bg-[#7C1227]",
+              ].join(" ")}
+            />
             {status}
           </span>
-
-          <span
-            className="
-              inline-flex items-center px-3 py-0.5 rounded-full
-              text-[11px] font-medium
-              bg-neutral-900 text-neutral-100
-            "
-          >
-            {year}
-          </span>
         </div>
+      </header>
 
-        {/* Fechas */}
-        <div
-          className="
-            bg-white
-            rounded-xl
-            border border-[#E5DDD0]
-            px-4 py-3
-            flex items-center justify-between
-            text-[12px] text-neutral-600
-          "
-        >
-          <div>
-            <div className="font-semibold text-neutral-800">Inicio</div>
-            <div className="mt-[2px] tabular-nums">{startDate}</div>
-          </div>
+      <section className="px-6 pb-6">
+        {/* Fechas: bloque simple */}
+        <div className="rounded-xl border border-neutral-200 bg-white">
+          <div className="grid grid-cols-2">
+            <div className="p-4">
+              <div className="text-[11px] uppercase tracking-wider text-neutral-500">
+                Inicio
+              </div>
+              <div className="mt-1 tabular-nums text-sm font-semibold text-neutral-900">
+                {startDate}
+              </div>
+            </div>
 
-          <div className="h-9 mx-5 border-l border-[#D7CDC2]" />
-
-          <div className="text-right">
-            <div className="font-semibold text-neutral-800">Fin</div>
-            <div className="mt-[2px] tabular-nums">{endDate}</div>
+            <div className="p-4 border-l border-neutral-200 text-right">
+              <div className="text-[11px] uppercase tracking-wider text-neutral-500">
+                Fin
+              </div>
+              <div className="mt-1 tabular-nums text-sm font-semibold text-neutral-900">
+                {endDate}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Botón de acción (mejorado) */}
         <button
           type="button"
           onClick={() => onView(census)}
           className="
-            px-4 py-2 rounded-xl text-sm font-medium
-            bg-[#7C1227] text-white
-            hover:bg-[#5a0e1a] focus:outline-none focus:ring-2 focus:ring-[#7C1227] focus:ring-opacity-50
-            transition-all duration-300
+            mt-4 w-full
+            inline-flex items-center justify-center
+            rounded-xl px-4 py-2.5
+            text-sm font-semibold text-white
+            bg-[#7C1227]
+            shadow-sm
+            transition
+            hover:bg-[#5a0e1a]
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7C1227]/35
+            active:translate-y-[0.5px]
           "
         >
           Ver censo
         </button>
-      </div>
-    </div>
+      </section>
+    </article>
   );
 }

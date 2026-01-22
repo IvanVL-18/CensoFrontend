@@ -1,16 +1,13 @@
-// src/components/occupation.tsx (Corregido con el Patrón de Contexto)
-
-import { useOccupations } from "./useOccupation"; // <-- Añadido useMemo
+import { useOccupations } from "./useOccupation";
 import { OccupationsToolbar } from "./OccupationsToolbar";
 import { OccupationsTable } from "./OccupationsTable";
-import { Pagination } from "./Pagination";
+import Pagination from "../../components/Pagination";
 import { OccupationModal } from "./OccupationsModal";
 import { ConfirmModal } from "./ConfirmModal";
-import { ViewOccupationModal } from "./ViewOccupationModal"; 
+import { ViewOccupationModal } from "./ViewOccupationModal";
 // <--- Tus imports están perfectos
-import { ToastProvider, useToast } from "../../context/ToastContext"; 
+import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
-
 
 // ---
 // 1. Contenedor de Toasts
@@ -70,35 +67,39 @@ function OccupationsPageContent() {
     onRestore,
     onDelete,
     handleViewModalClose,
-    handleConfirmModalClose, 
+    handleConfirmModalClose,
     handleConfirmAction,
   } = useOccupations(); // <--- Ahora esta llamada es SEGURA porque está DENTRO del Provider
 
   // Si 'editingOccupation' tiene datos, el título es "Editar". Si no, "Agregar".
-  const modalTitle = editingOccupation ? "Editar Ocupación" : "Agregar Ocupación";
+  const modalTitle = editingOccupation
+    ? "Editar Ocupación"
+    : "Agregar Ocupación";
 
   // Si 'editingOccupation' tiene datos, pasamos el nombre. Si no, pasamos "".
   const modalInitialName = editingOccupation ? editingOccupation.name : "";
 
   // Si 'editingOccupation' tiene datos, pasamos el ID de su institución. Si no, pasamos "".
-  const modalInitialInstitutionId = editingOccupation ? editingOccupation.institution_id : "";
+  const modalInitialInstitutionId = editingOccupation
+    ? editingOccupation.institution_id
+    : "";
 
   let confirmTitle = "";
   let confirmMessage = "";
   let confirmButtonText = "";
   // Asignamos un tipo explícito a la variable
-  let confirmButtonColor: 'danger' | 'primary' = 'danger';
-  if (actionType === 'ban') {
+  let confirmButtonColor: "danger" | "primary" = "danger";
+  if (actionType === "ban") {
     confirmTitle = "Desactivar Ocupación";
     confirmMessage = `¿Estás seguro de que quieres desactivar la ocupación "${actionOccupation?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
-  } else if (actionType === 'restore') {
+  } else if (actionType === "restore") {
     confirmTitle = "Restaurar Ocupación";
     confirmMessage = `¿Estás seguro de que quieres restaurar la ocupación "${actionOccupation?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
-  } else if (actionType === 'delete') {
+  } else if (actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
     confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la ocupación "${actionOccupation?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
@@ -106,11 +107,11 @@ function OccupationsPageContent() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative"> {/* Añadido 'relative' por si acaso */}
-      
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
+      {" "}
+      {/* Añadido 'relative' por si acaso */}
       {/* 3. Renderizamos el contenedor de Toasts */}
       <ToastContainer />
-      
       {/* --- Cabecera y Filtros --- */}
       <OccupationsToolbar
         filter={filter}
@@ -119,10 +120,8 @@ function OccupationsPageContent() {
         onSearchChange={handleSearchChange}
         onAddClick={handleAddClick}
       />
-
       {/* --- Contenido Principal (Tabla y Paginación) --- */}
       <div className="p-4">
-        
         {/* --- Tabla de datos --- */}
         <OccupationsTable
           loading={loading}
@@ -138,21 +137,22 @@ function OccupationsPageContent() {
         />
 
         {/* --- Paginación --- */}
-        <Pagination
-          meta={meta}
-          links={links}
-          loading={loading}
-          error={error}
-          onPageClick={handlePageClick}
-        />
+        <div className="mt-4 flex justify-center">
+          <Pagination
+            meta={meta}
+            links={links}
+            loading={loading}
+            error={error}
+            onPageClick={handlePageClick}
+          />
+        </div>
       </div>
-      
       {/* --- Modales --- */}
       <OccupationModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
         error={modalError}
-        title={modalTitle} 
+        title={modalTitle}
         initialName={modalInitialName}
         // --- Props añadidas ---
         initialInstitutionId={modalInitialInstitutionId}
@@ -160,7 +160,6 @@ function OccupationsPageContent() {
         onClose={handleModalClose}
         onSave={handleModalSave}
       />
-
       <ConfirmModal
         isOpen={isConfirmModalOpen}
         isSubmitting={isSubmitting}
@@ -172,7 +171,6 @@ function OccupationsPageContent() {
         onClose={handleConfirmModalClose}
         onConfirm={handleConfirmAction}
       />
-
       <ViewOccupationModal
         isOpen={isViewModalOpen}
         occupation={viewingOccupation}

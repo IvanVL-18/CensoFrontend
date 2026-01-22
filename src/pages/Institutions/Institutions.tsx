@@ -1,17 +1,14 @@
 import { useInstitutions } from "./useInstitutions";
 import { InstitutionsToolbar } from "./InstitutionsToolbar";
 import { InstitutionsTable } from "./InstitutionsTable";
-import { Pagination } from "./Pagination";
+import Pagination from "../../components/Pagination";
 import { InstitutionModal } from "./InstitutionsModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { ViewInstitutionModal } from "./ViewInstitutionsModal";
-import { MapModal } from "./MapModal"; 
+import { MapModal } from "./MapModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
-// El resto de tu código...
-
-// --- 1. Contenedor de Toasts ---
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
 
@@ -70,34 +67,37 @@ function InstitutionsPageContent() {
   } = useInstitutions();
 
   // Si 'editingInstitution' tiene datos, el título es "Editar". Si no, "Agregar".
-  const modalTitle = editingInstitution ? "Editar Institución" : "Agregar Institución";
+  const modalTitle = editingInstitution
+    ? "Editar Institución"
+    : "Agregar Institución";
   const initialName = editingInstitution ? editingInstitution.name : "";
-  const initialMunicipality = editingInstitution ? editingInstitution.municipality : "";
+  const initialMunicipality = editingInstitution
+    ? editingInstitution.municipality
+    : "";
   const initialGeocode = editingInstitution ? editingInstitution.geocode : "";
   const initialType = editingInstitution ? editingInstitution.typeinst : "";
 
   let confirmTitle = "";
   let confirmMessage = "";
   let confirmButtonText = "";
-  let confirmButtonColor: 'danger' | 'primary' = 'danger';
+  let confirmButtonColor: "danger" | "primary" = "danger";
 
-  if (actionType === 'ban') {
+  if (actionType === "ban") {
     confirmTitle = "Desactivar Institución";
     confirmMessage = `¿Estás seguro de que quieres desactivar la institución "${actionInstitution?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
-  } else if (actionType === 'restore') {
+  } else if (actionType === "restore") {
     confirmTitle = "Restaurar Institución";
     confirmMessage = `¿Estás seguro de que quieres restaurar la institución "${actionInstitution?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
-  } else if (actionType === 'delete') {
+  } else if (actionType === "delete") {
     confirmTitle = "Eliminar Institución Permanentemente";
     confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la institución "${actionInstitution?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
-
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
@@ -129,15 +129,16 @@ function InstitutionsPageContent() {
           onRestore={onRestore}
           onDelete={onDelete}
         />
-
-        {/* Paginación */}
-        <Pagination
-          meta={paginationMeta}
-          links={links}
-          loading={loading}
-          error={error}
-          onPageClick={handlePageClick}
-        />
+        {/* --- Paginación --- */}
+        <div className="mt-4 flex justify-center">
+          <Pagination
+            meta={paginationMeta}
+            links={links}
+            loading={loading}
+            error={error}
+            onPageClick={handlePageClick}
+          />
+        </div>
       </div>
 
       {/* Modales */}

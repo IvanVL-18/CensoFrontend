@@ -1,10 +1,52 @@
-// src/pages/census/CensusSectionsPage.tsx
 import { useEffect, useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getSections, type Section, type PaginationMeta } from "./sections.service";
-import type { CensusFormValues } from "./CreateCensus";
+import { getSections } from "./sections.service";
+import type { Section, PaginationMeta, CensusFormValues } from "./census.interfaces";
 import { createCensus } from "./censos.service";
+import FormAlert from "./FormAlert";
+
+function validateDraft(draft: CensusFormValues): string[] {
+  const errs: string[] = [];
+
+  if ((draft.description ?? "").trim().length < 10) {
+    errs.push("La descripción debe tener al menos 10 caracteres.");
+  }
+
+  const start = (draft.start_date ?? "").trim();
+  const end = (draft.end_date ?? "").trim();
+
+  if ((start && !end) || (!start && end)) {
+    errs.push("Captura ambas fechas: inicio y límite.");
+  }
+
+  if (start) {
+    const startDate = new Date(start);
+    if (isNaN(startDate.getTime())) {
+      errs.push("La fecha de inicio no es válida.");
+    } else {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      startDate.setHours(0, 0, 0, 0);
+
+      if (startDate.getTime() < today.getTime()) {
+        errs.push("La fecha de inicio no puede ser anterior a hoy.");
+      }
+    }
+  }
+
+  if (start && end) {
+    const s = new Date(start);
+    const d = new Date(end);
+    if (!isNaN(s.getTime()) && !isNaN(d.getTime())) {
+      if (d.getTime() <= s.getTime()) {
+        errs.push("La fecha límite debe ser posterior a la fecha de inicio.");
+      }
+    }
+  }
+
+  return errs;
+}
 
 export default function CensusSectionsPage() {
   const navigate = useNavigate();
@@ -23,11 +65,24 @@ export default function CensusSectionsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [selected, setSelected] = useState<Set<string | number>>(
-    () => new Set()
-  );
-
+  const [selected, setSelected] = useState<Set<string | number>>(() => new Set());
   const [saving, setSaving] = useState(false);
+
+  // ✅ errores en UI (FormAlert), NO alert()
+  const [errors, setErrors] = useState<string[]>([]);
+
+  // ✅ si el draft viene inválido, regresa a Create y muestra errores allá
+  useEffect(() => {
+    if (!censusDraft) return;
+
+    const errs = validateDraft(censusDraft);
+    if (errs.length > 0) {
+      navigate("/censos/crear", {
+        state: { censusDraft, validationErrors: errs },
+        replace: true,
+      });
+    }
+  }, [censusDraft, navigate]);
 
   const handleBack = () => {
     navigate("/censos/unidades", {
@@ -42,11 +97,8 @@ export default function CensusSectionsPage() {
   const toggleSection = (id: string | number) => {
     setSelected((prev) => {
       const copy = new Set(prev);
-      if (copy.has(id)) {
-        copy.delete(id);
-      } else {
-        copy.add(id);
-      }
+      if (copy.has(id)) copy.delete(id);
+      else copy.add(id);
       return copy;
     });
   };
@@ -82,8 +134,22 @@ export default function CensusSectionsPage() {
   };
 
   const handleSaveCensus = async () => {
+    setErrors([]);
+
     if (!censusDraft) {
-      alert("No se encontró el borrador del censo. Vuelve a crearlo.");
+      setErrors(["No se encontró el borrador del censo. Vuelve a crearlo."]);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    // ✅ última defensa (no popups)
+    const draftErrs = validateDraft(censusDraft);
+    if (draftErrs.length > 0) {
+      // manda a Create (donde se corrige)
+      navigate("/censos/crear", {
+        state: { censusDraft, validationErrors: draftErrs },
+        replace: true,
+      });
       return;
     }
 
@@ -99,7 +165,7 @@ export default function CensusSectionsPage() {
     try {
       setSaving(true);
 
-      const census = await createCensus({
+      await createCensus({
         name: censusDraft.name,
         description: censusDraft.description,
         init_date: censusDraft.start_date || null,
@@ -108,21 +174,20 @@ export default function CensusSectionsPage() {
         is_active: censusDraft.is_active,
       });
 
-      console.log("✅ Censo creado:", census);
-      console.log("👉 Unidades seleccionadas:", unitsFromState, unitOrderFromState);
-      console.log("👉 Secciones seleccionadas:", selectedSections);
-
-      alert("Censo creado correctamente.");
       navigate("/censos");
     } catch (err: any) {
       console.error(err);
-      if (err?.type === "validation") {
-        alert((err.messages as string[]).join(" • "));
-      } else if (err?.message) {
-        alert(err.message);
+
+      // ✅ aquí YA NO alert() para errores
+      if (err?.type === "validation" && Array.isArray(err.messages)) {
+        setErrors(err.messages);
+      } else if (typeof err?.message === "string" && err.message.trim()) {
+        setErrors([err.message]);
       } else {
-        alert("Ocurrió un error al crear el censo.");
+        setErrors(["Ocurrió un error al crear el censo."]);
       }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setSaving(false);
     }
@@ -137,6 +202,9 @@ export default function CensusSectionsPage() {
         </p>
       </header>
 
+      {/* ✅ si hay error real del guardado, se ve aquí (sin popup) */}
+      {errors.length > 0 && <FormAlert messages={errors} />}
+
       <section className="bg-white rounded-2xl shadow-md overflow-hidden">
         <div className="px-4 py-4">
           {loading && (
@@ -144,9 +212,7 @@ export default function CensusSectionsPage() {
               Cargando secciones...
             </p>
           )}
-          {error && (
-            <p className="text-center text-sm text-red-600 py-4">{error}</p>
-          )}
+          {error && <p className="text-center text-sm text-red-600 py-4">{error}</p>}
 
           {!loading && !error && (
             <>
@@ -172,10 +238,7 @@ export default function CensusSectionsPage() {
                   <tbody>
                     {sections.length === 0 && (
                       <tr>
-                        <td
-                          colSpan={3}
-                          className="px-4 py-6 text-center text-sm text-gray-500"
-                        >
+                        <td colSpan={3} className="px-4 py-6 text-center text-sm text-gray-500">
                           Aún no hay secciones registradas.
                         </td>
                       </tr>
@@ -185,10 +248,7 @@ export default function CensusSectionsPage() {
                       const isSelected = selected.has(section.id);
 
                       return (
-                        <tr
-                          key={section.id}
-                          className="hover:bg-gray-50 transition-colors"
-                        >
+                        <tr key={section.id} className="hover:bg-gray-50 transition-colors">
                           <td className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
                             {section.key ?? index + 1}
                           </td>
@@ -213,11 +273,7 @@ export default function CensusSectionsPage() {
                                 <span
                                   className={`
                                     w-4 h-4 bg-white rounded-full shadow-sm transform transition-all
-                                    ${
-                                      isSelected
-                                        ? "translate-x-2.5"
-                                        : "-translate-x-2.5"
-                                    }
+                                    ${isSelected ? "translate-x-2.5" : "-translate-x-2.5"}
                                   `}
                                 />
                               </button>

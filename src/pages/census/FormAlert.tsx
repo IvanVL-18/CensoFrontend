@@ -5,7 +5,10 @@ type Props = {
   messages: string[];
 };
 
-export default function FormAlert({ title = "Por favor, corrige los siguientes errores:", messages }: Props) {
+export default function FormAlert({
+  title = "Por favor, corrige los siguientes errores:",
+  messages,
+}: Props) {
   return (
     <div className="w-full bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3">
       <div className="flex items-start gap-2">

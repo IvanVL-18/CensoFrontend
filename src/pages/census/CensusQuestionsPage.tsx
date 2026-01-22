@@ -1,25 +1,16 @@
 // src/pages/census/CensusQuestions.tsx
 import { useState } from "react";
 import { ChevronDown, Plus, Info } from "lucide-react";
-import type { Census } from "./censos.service";
-
+import type { Census } from "./census.interfaces";
 
 type Props = {
-  census?: Census | null;   
+  census?: Census | null;
 };
 
-// Reutilizamos el tipo del servicio
-
-
-
 export default function CensusQuestions({ census }: Props) {
-  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(
-    null
-  );
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
 
   const [questionText, setQuestionText] = useState("");
- 
-
   const [optionText, setOptionText] = useState("");
   const [options, setOptions] = useState<string[]>([]);
 
@@ -27,7 +18,6 @@ export default function CensusQuestions({ census }: Props) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // TODO: luego esto vendrá del API
   const fakeQuestions = [
     { id: "1", text: "Pregunta de ejemplo 1" },
     { id: "2", text: "Pregunta de ejemplo 2" },
@@ -60,9 +50,7 @@ export default function CensusQuestions({ census }: Props) {
     try {
       setSaving(true);
 
-
       setSuccessMessage("Pregunta guardada correctamente.");
-      // limpiar formulario
       setQuestionText("");
       setOptionText("");
       setOptions([]);
@@ -83,7 +71,6 @@ export default function CensusQuestions({ census }: Props) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      {/* Encabezado vino */}
       <div className="bg-[var(--pantone-7421)] text-white px-6 py-3 flex items-center justify-between">
         <div>
           <p className="text-[11px] uppercase tracking-wide opacity-90">
@@ -98,9 +85,7 @@ export default function CensusQuestions({ census }: Props) {
         </p>
       </div>
 
-      {/* Contenido principal */}
       <div className="px-6 pt-4 pb-6 space-y-4">
-        {/* Mensajes de estado */}
         {errorMessage && (
           <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-800">
             <Info className="w-4 h-4 mt-[2px]" />
@@ -115,7 +100,6 @@ export default function CensusQuestions({ census }: Props) {
           </div>
         )}
 
-        {/* Descripción corta */}
         <p className="text-xs text-neutral-600">
           Aquí puedes <span className="font-semibold">crear</span> o{" "}
           <span className="font-semibold">editar</span> las preguntas que
@@ -123,7 +107,6 @@ export default function CensusQuestions({ census }: Props) {
         </p>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)] mt-2">
-          {/* Columna izquierda: seleccionar pregunta */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-neutral-800">
@@ -142,9 +125,7 @@ export default function CensusQuestions({ census }: Props) {
               <div className="relative">
                 <select
                   value={selectedQuestionId ?? ""}
-                  onChange={(e) =>
-                    setSelectedQuestionId(e.target.value || null)
-                  }
+                  onChange={(e) => setSelectedQuestionId(e.target.value || null)}
                   className="
                     w-full h-[42px] rounded-xl border border-gray-300
                     bg-white pl-3 pr-10 text-sm text-neutral-800
@@ -172,19 +153,16 @@ export default function CensusQuestions({ census }: Props) {
               </div>
 
               <p className="text-[11px] text-neutral-500">
-                Más adelante esta lista se llenará con las preguntas que vengan
-                de la API.
+                Más adelante esta lista se llenará con las preguntas que vengan de la API.
               </p>
             </div>
           </div>
 
-          {/* Columna derecha: creación / edición */}
           <div className="space-y-5">
             <h3 className="text-sm font-semibold text-neutral-800">
               Crear / editar pregunta
             </h3>
 
-            {/* Pregunta */}
             <div className="space-y-1.5">
               <label className="block text-xs font-medium text-neutral-700">
                 Pregunta
@@ -218,16 +196,16 @@ export default function CensusQuestions({ census }: Props) {
               </div>
             </div>
 
-            {/* Tipo de pregunta */}
+            {/* Tipo de pregunta (pendiente) */}
             <div className="space-y-1.5">
               <label className="block text-xs font-medium text-neutral-700">
                 Tipo de Pregunta
               </label>
-
-             mn 
+              <div className="text-xs text-neutral-500">
+                (Pendiente de integrar selector de tipo)
+              </div>
             </div>
 
-            {/* Opciones */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-medium text-neutral-700">
@@ -267,8 +245,7 @@ export default function CensusQuestions({ census }: Props) {
 
               {options.length === 0 ? (
                 <p className="text-[11px] text-neutral-500 mt-3">
-                  Aún no se han añadido opciones. Puedes empezar agregando
-                  “Sí”, “No”, “No aplica”, etc.
+                  Aún no se han añadido opciones. Puedes empezar agregando “Sí”, “No”, “No aplica”, etc.
                 </p>
               ) : (
                 <ul className="mt-3 space-y-1 text-sm text-neutral-800">
@@ -292,7 +269,6 @@ export default function CensusQuestions({ census }: Props) {
           </div>
         </div>
 
-        {/* Botón Guardar abajo a la derecha */}
         <div className="mt-6 flex justify-end">
           <button
             type="button"

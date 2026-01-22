@@ -4,11 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { BarChart3 } from "lucide-react";
 import GeneralCharts from "../../grapher/components/GeneralCharts";
 import QuestionnaireCharts from "../../grapher/components/QuestionnaireCharts";
-import type {
-  ChartKind,
-  GeneralSummary,
-  InstitutionStat,
-} from "../components/charts";
+import type { ChartKind, GeneralSummary, InstitutionStat } from "../components/charts";
 
 function isValidKind(value: string | null): value is ChartKind {
   return value === "general" || value === "cuestionario";
@@ -24,7 +20,6 @@ export default function ChartsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔹 solo traemos datos cuando el tipo es "general"
   useEffect(() => {
     if (tipo !== "general") return;
 
@@ -33,11 +28,6 @@ export default function ChartsPage() {
         setLoading(true);
         setError(null);
 
-        // 👉 aquí luego sustituyes por tu endpoint real
-        // const res = await fetch("/api/charts/general");
-        // const data = await res.json();
-
-        // Dummy de ejemplo:
         const data = {
           summary: { totalQuestions: 120, mappedQuestions: 85 },
           institutions: [
@@ -61,7 +51,7 @@ export default function ChartsPage() {
   }, [tipo]);
 
   return (
-    <div className="bg-white rounded-xl shadow-md border border-black/5 p-6">
+    <div className="bg-white rounded-xl border border-black/5 p-4 sm:p-6 shadow-sm sm:shadow-md">
       {!tipo && <EmptyChartsHint />}
 
       {tipo === "general" && (
@@ -83,7 +73,7 @@ export default function ChartsPage() {
 
 function EmptyChartsHint() {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+    <div className="flex flex-col items-center justify-center gap-3 py-10 text-center px-2">
       <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#F5F1EA] border border-[#7C1227]/20">
         <BarChart3 className="h-5 w-5 text-[#7C1227]" />
       </div>
