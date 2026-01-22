@@ -1,5 +1,4 @@
 import "/src/assets/global-variables.css";
-import { BarChart3, Building2, Users } from "lucide-react";
 
 type Props = {
   title?: string;
@@ -66,10 +65,8 @@ export default function WelcomeCard({
         </p>
       </div>
 
-      {/* Divider */}
       <div className="h-px w-full max-w-4xl mx-auto bg-neutral-200" />
 
-      {/* Logos inferiores */}
       <div className="flex flex-wrap justify-center gap-x-10 gap-y-3 items-center">
         <img
           src="/SNIEG.svg"

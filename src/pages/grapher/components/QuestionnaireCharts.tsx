@@ -66,9 +66,7 @@ export default function QuestionnaireCharts() {
           </div>
         </div>
 
-        {/* Contenido responsive */}
         <div className="p-4 flex flex-col lg:flex-row gap-6 items-center lg:items-start">
-          {/* Izquierda */}
           <div className="w-full lg:w-1/3 space-y-4">
             <div className="space-y-2 text-xs text-[#3b2a2e]">
               <LegendItem color="#22c55e" label="Total de preguntas" />
@@ -94,7 +92,6 @@ export default function QuestionnaireCharts() {
             </div>
           </div>
 
-          {/* Derecha */}
           <div className="w-full lg:w-2/3 flex items-center justify-center">
             <div className="relative h-48 w-48 sm:h-56 sm:w-56 lg:h-60 lg:w-60">
               <div

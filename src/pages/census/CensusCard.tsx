@@ -1,4 +1,3 @@
-// src/pages/census/CensusCard.tsx
 import type { Census } from "./census.interfaces";
 
 type Props = {
@@ -51,13 +50,11 @@ export default function CensusCard({ census, onView }: Props) {
               {census.name}
             </h3>
 
-            {/* Año debajo del nombre */}
             <div className="mt-1 text-xs font-medium text-neutral-500">
               {year}
             </div>
           </div>
 
-          {/* Solo dejamos estatus arriba a la derecha */}
           <span
             className={[
               "shrink-0 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold",
@@ -80,7 +77,6 @@ export default function CensusCard({ census, onView }: Props) {
       </header>
 
       <section className="px-6 pb-6">
-        {/* Fechas: bloque simple */}
         <div className="rounded-xl border border-neutral-200 bg-white">
           <div className="grid grid-cols-2">
             <div className="p-4">

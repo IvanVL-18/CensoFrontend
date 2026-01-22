@@ -89,7 +89,6 @@ export default function GeneralCharts({ summary, institutions }: Props) {
               mayor número de preguntas.
             </p>
 
-            {/* ✅ Responsive: si hay muchas barras, permite scroll horizontal */}
             <div className="w-full overflow-x-auto">
               <div className="relative h-52 px-4 sm:px-6 pt-4 min-w-[520px]">
                 {/* Eje Y */}

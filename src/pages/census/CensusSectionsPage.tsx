@@ -68,10 +68,8 @@ export default function CensusSectionsPage() {
   const [selected, setSelected] = useState<Set<string | number>>(() => new Set());
   const [saving, setSaving] = useState(false);
 
-  // ✅ errores en UI (FormAlert), NO alert()
   const [errors, setErrors] = useState<string[]>([]);
 
-  // ✅ si el draft viene inválido, regresa a Create y muestra errores allá
   useEffect(() => {
     if (!censusDraft) return;
 
@@ -142,10 +140,8 @@ export default function CensusSectionsPage() {
       return;
     }
 
-    // ✅ última defensa (no popups)
     const draftErrs = validateDraft(censusDraft);
     if (draftErrs.length > 0) {
-      // manda a Create (donde se corrige)
       navigate("/censos/crear", {
         state: { censusDraft, validationErrors: draftErrs },
         replace: true,
@@ -178,7 +174,6 @@ export default function CensusSectionsPage() {
     } catch (err: any) {
       console.error(err);
 
-      // ✅ aquí YA NO alert() para errores
       if (err?.type === "validation" && Array.isArray(err.messages)) {
         setErrors(err.messages);
       } else if (typeof err?.message === "string" && err.message.trim()) {
@@ -202,7 +197,6 @@ export default function CensusSectionsPage() {
         </p>
       </header>
 
-      {/* ✅ si hay error real del guardado, se ve aquí (sin popup) */}
       {errors.length > 0 && <FormAlert messages={errors} />}
 
       <section className="bg-white rounded-2xl shadow-md overflow-hidden">

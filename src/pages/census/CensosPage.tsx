@@ -14,7 +14,6 @@ import Pagination from "../../components/Pagination";
 import { getCensuses } from "./censos.service";
 import type { Census, PaginationMeta } from "./census.interfaces";
 
-// ✅ Si tu API ya maneja links tipo {first,last,prev,next}, usa este type:
 type PaginationLinks = {
   first: string | null;
   last: string | null;
@@ -31,7 +30,6 @@ export default function CensosPage() {
   const [censuses, setCensuses] = useState<Census[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
 
-  // ✅ NUEVO: links para el paginador reutilizable
   const [links, setLinks] = useState<PaginationLinks | null>(null);
 
   const [loading, setLoading] = useState(false);
@@ -46,13 +44,11 @@ export default function CensosPage() {
         setLoading(true);
         setError(null);
 
-        // ✅ Asegúrate que getCensuses regrese { data, meta, links }
         const res = await getCensuses(page, "active");
 
         setCensuses(res.data);
         setMeta(res.meta);
 
-        // ✅ Si no existe, ponlo en null para evitar errores
         setLinks(res.links ?? null);
       } catch (err: any) {
         console.error(err);
@@ -86,11 +82,9 @@ export default function CensosPage() {
     setSearch(value);
   };
 
-  // ✅ Handler compatible con Pagination reutilizable (recibe url)
   const handlePageClick = (url: string | null) => {
     if (!url) return;
 
-    // Extrae page desde la url y actualiza setPage
     try {
       const u = new URL(url);
       const p = u.searchParams.get("page");
@@ -171,7 +165,6 @@ export default function CensosPage() {
             </section>
           )}
 
-          {/* ✅ MISMO Pagination reutilizable que Units */}
           <div className="mt-4 flex justify-center">
             <Pagination
               meta={meta as any}

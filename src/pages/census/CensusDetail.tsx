@@ -134,7 +134,6 @@ export default function CensusDetail({ census, onBack }: Props) {
               {[
                 { id: 1, label: "Unidades" },
                 { id: 2, label: "Secciones" },
-                // { id: 3, label: "Preguntas" },
               ].map((item) => (
                 <button
                   key={item.id}

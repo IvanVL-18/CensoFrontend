@@ -3,7 +3,6 @@ import { SearchInput } from "../../../components/SearchInput";
 import Pagination from "../../../components/Pagination"; 
 import type { QuestionnaireItem } from "../dashboard.types";
 
-// ✅ tipos de paginación compatibles con tu Pagination
 type MetaLike = {
   current_page: number | number[];
   last_page: number | number[];
@@ -23,14 +22,12 @@ type Props = {
   items: QuestionnaireItem[];
   onView: (id: string) => void;
 
-  // ✅ nuevos props para paginación
   meta?: MetaLike | null;
   links?: LinksObj | null;
   loading?: boolean;
   error?: string | null;
   onPageClick?: (url: string | null) => void;
 
-  // (si paginaras por número en lugar de URL)
   onPageNumber?: (page: number) => void;
   baseUrl?: string;
 };
@@ -118,7 +115,6 @@ export default function QuestionnairesCard({
             )}
           </div>
 
-          {/* ✅ Pagination (solo si meta existe) */}
           {meta && (
             <div className="mt-4 pb-4 flex justify-center">
               <Pagination

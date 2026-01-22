@@ -9,9 +9,6 @@ import { ViewUnitModal } from "./ViewUnitModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
-// ---
-// Contenedor de Toasts
-// ---
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
 
@@ -91,10 +88,7 @@ function UnitsPageContent() {
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
-      {/* Toasts */}
       <ToastContainer />
-
-      {/* Toolbar */}
       <UnitsToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -103,7 +97,6 @@ function UnitsPageContent() {
         onAddClick={handleAddClick}
       />
 
-      {/* Tabla + Paginación */}
       <div className="p-4">
         <UnitsTable
           loading={loading}
@@ -130,7 +123,6 @@ function UnitsPageContent() {
 
       </div>
 
-      {/* Modales */}
       <UnitModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
@@ -162,9 +154,6 @@ function UnitsPageContent() {
   );
 }
 
-// ---
-// Componente principal
-// ---
 export default function Units() {
   return (
     <ToastProvider>

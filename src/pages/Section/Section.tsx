@@ -12,7 +12,6 @@ function ToastContainer() {
   const { toasts, removeToast } = useToast();
 
   return (
-    // Aquí definimos la posición de TODOS los toasts
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
       {toasts.map((toast) => (
         <Toast
@@ -26,10 +25,6 @@ function ToastContainer() {
   );
 }
 
-// ---
-// 2. Componente Interno para el Contenido de la Página
-//    (Este componente contiene TODO tu código anterior)
-// ---
 function SectionsPageContent() {
   const {
     loading,
@@ -63,18 +58,15 @@ function SectionsPageContent() {
     handleViewModalClose,
     handleConfirmModalClose,
     handleConfirmAction,
-  } = useSections(); // <--- Ahora esta llamada es SEGURA porque está DENTRO del Provider
+  } = useSections(); 
 
-  // Si 'editingSection' tiene datos, el título es "Editar". Si no, "Agregar".
   const modalTitle = editingSection ? "Editar Modulo" : "Agregar Modulo";
 
-  // Si 'editingSection' tiene datos, pasamos el nombre. Si no, pasamos "".
   const modalInitialName = editingSection ? editingSection.name : "";
 
   let confirmTitle = "";
   let confirmMessage = "";
   let confirmButtonText = "";
-  // Asignamos un tipo explícito a la variable
   let confirmButtonColor: "danger" | "primary" = "danger";
   if (actionType === "ban") {
     confirmTitle = "Desactivar Módulo";
@@ -96,10 +88,7 @@ function SectionsPageContent() {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       {" "}
-      {/* Añadido 'relative' por si acaso */}
-      {/* 3. Renderizamos el contenedor de Toasts */}
       <ToastContainer />
-      {/* --- Cabecera y Filtros --- */}
       <SectionsToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -107,9 +96,7 @@ function SectionsPageContent() {
         onSearchChange={handleSearchChange}
         onAddClick={handleAddClick}
       />
-      {/* --- Contenido Principal (Tabla y Paginación) --- */}
       <div className="p-4">
-        {/* --- Tabla de datos --- */}
         <SectionsTable
           loading={loading}
           error={error}
@@ -123,7 +110,6 @@ function SectionsPageContent() {
           onDelete={onDelete}
         />
 
-        {/* --- Paginación --- */}
         <div className="mt-4 flex justify-center">
           <Pagination
             meta={meta}
@@ -140,7 +126,6 @@ function SectionsPageContent() {
         isSubmitting={isSubmitting}
         error={modalError}
         title={editingSection ? "Editar Sección" : "Agregar Sección"}
-        // PASAMOS EL OBJETO COMPLETO O UNDEFINED
         initialData={
           editingSection
             ? {
@@ -172,10 +157,6 @@ function SectionsPageContent() {
   );
 }
 
-// ---
-// 3. Componente Principal (Exportado)
-//    Su única función es "proveer" el contexto de Toasts
-// ---
 export default function Section() {
   return (
     <ToastProvider>

@@ -47,7 +47,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4">
-      {/* STATS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {stats.map((s) => (
           <StatCard

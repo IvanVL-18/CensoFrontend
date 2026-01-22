@@ -27,7 +27,7 @@ export default function CreateCensusPage() {
 
   useEffect(() => {
     if (backErrors?.length) setErrors(backErrors);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   const handleChange = (
@@ -47,11 +47,9 @@ export default function CreateCensusPage() {
 
     const nextErrors: string[] = [];
 
-    // Obligatorios
     if (!form.name.trim()) nextErrors.push("El nombre es obligatorio.");
     if (!String(form.year ?? "").trim()) nextErrors.push("El año es obligatorio.");
 
-    // ✅ Descripción min 10 (mensaje exacto)
     if ((form.description ?? "").trim().length < 10) {
       nextErrors.push("La descripción debe tener al menos 10 caracteres.");
     }
@@ -59,12 +57,10 @@ export default function CreateCensusPage() {
     const start = (form.start_date ?? "").trim();
     const end = (form.end_date ?? "").trim();
 
-    // Si una fecha existe, la otra también
     if ((start && !end) || (!start && end)) {
       nextErrors.push("Captura ambas fechas: inicio y límite.");
     }
 
-    // ✅ Inicio no anterior a hoy (mensaje exacto)
     if (start) {
       const startDate = new Date(start);
       if (isNaN(startDate.getTime())) {
@@ -80,7 +76,6 @@ export default function CreateCensusPage() {
       }
     }
 
-    // ✅ Regla estricta: límite debe ser POSTERIOR (end > start)
     if (start && end) {
       const s = new Date(start);
       const d = new Date(end);
