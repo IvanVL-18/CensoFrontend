@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LogOut, User, Settings } from "lucide-react";
+import { ChevronDown, LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProfileModal from "./ProfileModal";
 
@@ -112,15 +112,6 @@ export default function ProfileMenu() {
             >
               <User className="w-4 h-4 text-gray-500" />
               <span>Ver perfil</span>
-            </button>
-
-            <button
-              type="button"
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50"
-              onClick={() => {}}
-            >
-              <Settings className="w-4 h-4 text-gray-500" />
-              <span>Configuración</span>
             </button>
 
             <button

@@ -10,7 +10,7 @@ const names: Record<string, string> = {
   "censos": "Censos",
   "graficador": "Graficador",
   "reportes": "Reportes",
-  "ajustes": "Ajustes",
+  "configuracion": "Configuración",
 };
 
 export default function Breadcrumbs({ pathname }: { pathname: string }) {

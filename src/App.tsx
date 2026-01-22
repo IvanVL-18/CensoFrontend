@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 // Páginas base
 import LoginPage from "./pages/login/page/LoginPage";
 import HomePage from "./pages/home/page/HomePage";
-import DashboardPage from "./pages/deshboard/page/DashboardPage";
+import DashboardPage from "./pages/deshboard/DashboardPage";
 import ChartsPage from "./pages/grapher/page/ChartsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
 import SettingsPage from "./pages/settings/SettingsPage";
@@ -45,7 +45,7 @@ export default function App() {
 
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />
-        <Route path="/ajustes" element={<SettingsPage />} />
+        <Route path="/configuracion" element={<SettingsPage />} />
 
         {/* Catálogos */}
         <Route path="/unidades" element={<Units />} />

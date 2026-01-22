@@ -1,25 +1,18 @@
-// src/components/units.tsx (Corregido con el Patrón de Contexto)
-
 import { useUnits } from "./useUnits";
 import { UnitsToolbar } from "./UnitsToolbar";
 import { UnitsTable } from "./UnitsTable";
-import { Pagination } from "./Pagination";
+import Pagination from "../../components/Pagination";
 import { UnitModal } from "./UnitModal";
 import { ConfirmModal } from "./ConfirmModal";
-import { ViewUnitModal } from "./ViewUnitModal"; 
-// <--- Tus imports están perfectos
-import { ToastProvider, useToast } from "../../context/ToastContext"; 
+import { ViewUnitModal } from "./ViewUnitModal";
+
+import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
-// ---
-// 1. Contenedor de Toasts
-//    (Lo sacamos fuera para que sea más limpio)
-// ---
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
 
   return (
-    // Aquí definimos la posición de TODOS los toasts
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
       {toasts.map((toast) => (
         <Toast
@@ -33,10 +26,6 @@ function ToastContainer() {
   );
 }
 
-// ---
-// 2. Componente Interno para el Contenido de la Página
-//    (Este componente contiene TODO tu código anterior)
-// ---
 function UnitsPageContent() {
   const {
     loading,
@@ -68,32 +57,29 @@ function UnitsPageContent() {
     onRestore,
     onDelete,
     handleViewModalClose,
-    handleConfirmModalClose, 
+    handleConfirmModalClose,
     handleConfirmAction,
-  } = useUnits(); // <--- Ahora esta llamada es SEGURA porque está DENTRO del Provider
+  } = useUnits();
 
-  // Si 'editingUnit' tiene datos, el título es "Editar". Si no, "Agregar".
-  const modalTitle = editingUnit ? "Editar Modulo" : "Agregar Modulo";
-
-  // Si 'editingUnit' tiene datos, pasamos el nombre. Si no, pasamos "".
+  const modalTitle = editingUnit ? "Editar Módulo" : "Agregar Módulo";
   const modalInitialName = editingUnit ? editingUnit.name : "";
 
   let confirmTitle = "";
   let confirmMessage = "";
   let confirmButtonText = "";
-  // Asignamos un tipo explícito a la variable
-  let confirmButtonColor: 'danger' | 'primary' = 'danger';
-  if (actionType === 'ban') {
+  let confirmButtonColor: "danger" | "primary" = "danger";
+
+  if (actionType === "ban") {
     confirmTitle = "Desactivar Módulo";
     confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${actionUnit?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
-  } else if (actionType === 'restore') {
+  } else if (actionType === "restore") {
     confirmTitle = "Restaurar Módulo";
     confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${actionUnit?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
-  } else if (actionType === 'delete') {
+  } else if (actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
     confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${actionUnit?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
@@ -101,12 +87,8 @@ function UnitsPageContent() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative"> {/* Añadido 'relative' por si acaso */}
-      
-      {/* 3. Renderizamos el contenedor de Toasts */}
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
-      
-      {/* --- Cabecera y Filtros --- */}
       <UnitsToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -115,10 +97,7 @@ function UnitsPageContent() {
         onAddClick={handleAddClick}
       />
 
-      {/* --- Contenido Principal (Tabla y Paginación) --- */}
       <div className="p-4">
-        
-        {/* --- Tabla de datos --- */}
         <UnitsTable
           loading={loading}
           error={error}
@@ -131,23 +110,24 @@ function UnitsPageContent() {
           onRestore={onRestore}
           onDelete={onDelete}
         />
+        
+        <div className="mt-4 flex justify-center">
+          <Pagination
+            meta={meta}
+            links={links}
+            loading={loading}
+            error={error}
+            onPageClick={handlePageClick}
+          />
+        </div>
 
-        {/* --- Paginación --- */}
-        <Pagination
-          meta={meta}
-          links={links}
-          loading={loading}
-          error={error}
-          onPageClick={handlePageClick}
-        />
       </div>
-      
-      {/* --- Modales --- */}
+
       <UnitModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
         error={modalError}
-        title={modalTitle} 
+        title={modalTitle}
         initialName={modalInitialName}
         onClose={handleModalClose}
         onSave={handleModalSave}
@@ -174,10 +154,6 @@ function UnitsPageContent() {
   );
 }
 
-// ---
-// 3. Componente Principal (Exportado)
-//    Su única función es "proveer" el contexto de Toasts
-// ---
 export default function Units() {
   return (
     <ToastProvider>

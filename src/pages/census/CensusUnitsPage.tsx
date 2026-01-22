@@ -1,11 +1,20 @@
 // src/pages/census/CensusUnitsPage.tsx
 import { useEffect, useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { getUnits, type Unit, type PaginationMeta } from "./units.service";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getUnits } from "./units.service";
+import type { Unit, PaginationMeta, CensusFormValues } from "./census.interfaces";
 
 export default function CensusUnitsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const state = (location.state as any) ?? {};
+  const censusDraft: CensusFormValues | undefined = state.censusDraft;
+
+  const initialSelectedUnits: (string | number)[] = state.selectedUnits ?? [];
+  const initialUnitOrder: Record<string | number, number | null> =
+    state.unitOrder ?? {};
 
   const [units, setUnits] = useState<Unit[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
@@ -14,25 +23,34 @@ export default function CensusUnitsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Unidades seleccionadas para "Mostrar"
-  const [selected, setSelected] = useState<Set<string | number>>(new Set());
+  const [selected, setSelected] = useState<Set<string | number>>(
+    () => new Set(initialSelectedUnits)
+  );
 
-  // Orden (índice) por unidad
-  const [unitOrder, setUnitOrder] = useState<Record<string | number, number | null>>({});
+  const [unitOrder, setUnitOrder] = useState<Record<string | number, number | null>>(
+    () => initialUnitOrder
+  );
 
   const handleBack = () => {
-    navigate("/censos/crear");
+    navigate("/censos/crear", { state: { censusDraft } });
   };
 
   const handleNext = () => {
+    if (!censusDraft) {
+      alert("No se encontró el borrador del censo. Vuelve a crearlo.");
+      return;
+    }
+
     const selectedUnits = Array.from(selected);
 
-    console.log("✅ Unidades seleccionadas:", selectedUnits);
-    console.log("✅ Orden por unidad:", unitOrder);
+    if (selectedUnits.length === 0) {
+      alert("Selecciona al menos una unidad para continuar.");
+      return;
+    }
 
-    // Aquí más adelante enviarás todo al backend
     navigate("/censos/secciones", {
       state: {
+        censusDraft,
         selectedUnits,
         unitOrder,
       },
@@ -42,11 +60,8 @@ export default function CensusUnitsPage() {
   const toggleUnit = (id: string | number) => {
     setSelected((prev) => {
       const copy = new Set(prev);
-      if (copy.has(id)) {
-        copy.delete(id);
-      } else {
-        copy.add(id);
-      }
+      if (copy.has(id)) copy.delete(id);
+      else copy.add(id);
       return copy;
     });
   };
@@ -58,7 +73,6 @@ export default function CensusUnitsPage() {
     }));
   };
 
-  // Cargar unidades desde API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -98,10 +112,8 @@ export default function CensusUnitsPage() {
         </p>
       </header>
 
-      {/* Contenedor principal tipo card grande */}
       <section className="bg-white rounded-2xl shadow-md overflow-hidden">
         <div className="px-4 py-4">
-          {/* Estados de carga / error */}
           {loading && (
             <p className="text-center text-sm text-gray-500 py-4">
               Cargando unidades...
@@ -135,25 +147,18 @@ export default function CensusUnitsPage() {
                   <tbody>
                     {units.length === 0 && (
                       <tr>
-                        <td
-                          colSpan={3}
-                          className="px-4 py-6 text-center text-sm text-gray-500"
-                        >
+                        <td colSpan={3} className="px-4 py-6 text-center text-sm text-gray-500">
                           Aún no hay unidades registradas.
                         </td>
                       </tr>
                     )}
 
-                    {units.map((unit, index) => {
+                    {units.map((unit) => {
                       const isSelected = selected.has(unit.id);
                       const orderValue = unitOrder[unit.id] ?? "";
 
                       return (
-                        <tr
-                          key={unit.id}
-                          className="hover:bg-gray-50 transition-colors"
-                        >
-                          {/* ÍNDICE → SELECT */}
+                        <tr key={unit.id} className="hover:bg-gray-50 transition-colors">
                           <td className="px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
                             <select
                               className="
@@ -162,27 +167,21 @@ export default function CensusUnitsPage() {
                                 focus:outline-none focus:ring-1 focus:ring-[var(--pantone-7421)] focus:border-[var(--pantone-7421)]
                               "
                               value={orderValue}
-                              onChange={(e) =>
-                                handleOrderChange(unit.id, e.target.value)
-                              }
+                              onChange={(e) => handleOrderChange(unit.id, e.target.value)}
                             >
                               <option value="">Sin orden</option>
-                              {Array.from({ length: units.length }).map(
-                                (_, idx) => (
-                                  <option key={idx + 1} value={idx + 1}>
-                                    {idx + 1}
-                                  </option>
-                                )
-                              )}
+                              {Array.from({ length: units.length }).map((_, idx) => (
+                                <option key={idx + 1} value={idx + 1}>
+                                  {idx + 1}
+                                </option>
+                              ))}
                             </select>
                           </td>
 
-                          {/* NOMBRE */}
                           <td className="px-4 py-2 text-sm text-gray-800 border-b border-gray-200">
                             {unit.name}
                           </td>
 
-                          {/* MOSTRAR → SWITCH VINO */}
                           <td className="px-4 py-2 border-b border-gray-200">
                             <div className="flex justify-center">
                               <button
@@ -201,11 +200,7 @@ export default function CensusUnitsPage() {
                                 <span
                                   className={`
                                     w-4 h-4 bg-white rounded-full shadow-sm transform transition-all
-                                    ${
-                                      isSelected
-                                        ? "translate-x-2.5"
-                                        : "-translate-x-2.5"
-                                    }
+                                    ${isSelected ? "translate-x-2.5" : "-translate-x-2.5"}
                                   `}
                                 />
                               </button>
@@ -218,7 +213,6 @@ export default function CensusUnitsPage() {
                 </table>
               </div>
 
-              {/* Paginación simple usando meta */}
               {meta && meta.last_page > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-4 text-xs">
                   <button
@@ -260,7 +254,6 @@ export default function CensusUnitsPage() {
           )}
         </div>
 
-        {/* Footer rojo con botones Regresar / Siguiente */}
         <div className="bg px-4 py-3 flex justify-between border-t border-gray-200">
           <button
             type="button"
