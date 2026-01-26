@@ -8,8 +8,10 @@ export interface Occupation {
   institution: {
     id: string;
     name: string;
+    
   } | null; // Puede ser nulo si no tiene institución
   institution_id?: string; // Lo mantenemos opcional para compatibilidad interna
+  institution_name: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null; // Puede ser nulo

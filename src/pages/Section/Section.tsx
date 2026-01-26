@@ -60,10 +60,6 @@ function SectionsPageContent() {
     handleConfirmAction,
   } = useSections(); 
 
-  const modalTitle = editingSection ? "Editar Modulo" : "Agregar Modulo";
-
-  const modalInitialName = editingSection ? editingSection.name : "";
-
   let confirmTitle = "";
   let confirmMessage = "";
   let confirmButtonText = "";
