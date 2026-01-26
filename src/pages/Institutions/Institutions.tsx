@@ -173,13 +173,12 @@ function InstitutionsPageContent() {
         onClose={handleViewModalClose}
       />
 
-      <MapModal
-        isOpen={isMapModalOpen}
-        onClose={handleMapModalClose}
-        geocode={mapInstitution?.geocode || null}
-        municipality={mapInstitution?.municipality || null}
-        institutionName={mapInstitution?.name || null}
-      />
+     <MapModal
+  isOpen={isMapModalOpen}
+  onClose={handleMapModalClose}
+  institutionId={mapInstitution?.id || null}
+  institutionName={mapInstitution?.name || null}
+/>
     </div>
   );
 }

@@ -1,55 +1,69 @@
-export interface Coordinates {
-  lat: number;
-  lon: number;
-}
+import axios from "axios"; 
+import type {
+  Coordinates,
+  MapDataResponse
+} from "./Map.interfaces";
 
-/**
- * Convierte un código postal en coordenadas (latitud, longitud) usando la API de Nominatim.
- * Si el código no es un CP de 5 dígitos, intenta buscar por el nombre del municipio.
- * @param geocode - El código postal (5 dígitos) o una clave geoestadística.
- * @param municipality - El nombre del municipio para usar como fallback.
- * @returns Una promesa que se resuelve con un objeto de coordenadas o null si no se encuentra.
- */
-export const getCoordinatesFromPostalCode = async (
-  geocode: string,
-  municipality: string | null
-): Promise<Coordinates | null> => {
-  // Asumimos que los códigos postales son de México. Cambia 'MX' si es otro país.
-  const countryCode = "MX";
-  let url = "";
+// Map.service.ts
+export const getInstitutionMapData = async (id: string): Promise<MapDataResponse | null> => {
+  try {
+    // Cambia el puerto por el que use tu backend (ej. 8000)
+    const response = await axios.get(`http://localhost:8000/api/institutions/${id}/get-map`, {
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
 
-  // Si es un código de 5 dígitos, lo tratamos como Código Postal para mayor precisión.
-  if (/^\d{5}$/.test(geocode)) {
-    url = `https://nominatim.openstreetmap.org/search?postalcode=${geocode}&country=${countryCode}&format=json&limit=1`;
-  } 
-  // Si no, y tenemos un municipio, buscamos por el municipio.
-  else if (municipality) {
-    // Usamos 'city' para buscar por municipio, es más efectivo en Nominatim.
-    url = `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(municipality)}&country=${countryCode}&format=json&limit=1`;
-  } 
-  // Si no es un CP y no hay municipio, no podemos buscar.
-  else {
+    return response.data;
+  } catch (error: any) {
+    console.error("Error en la petición:", error.response?.data || error.message);
     return null;
   }
+};
+
+
+export const getCoordinatesFromPostalCode = async (
+  geocode: string,
+  municipality: string | null,
+  street: string | null = null // <-- Añadimos calle si existe en tu DB
+): Promise<Coordinates | null> => {
+  const countryCode = "mx";
+  
+  const params = new URLSearchParams({
+    format: "json",
+    countrycodes: countryCode,
+    limit: "1",
+    addressdetails: "1" 
+  });
+
+  
+  if (street) params.append("street", street);
+  if (municipality) params.append("city", municipality);
+  if (geocode) params.append("postalcode", geocode);
+
+  const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
 
   try {
     const response = await fetch(url, {
       headers: {
-        Accept: "application/json",
+        "Accept": "application/json",
+        "User-Agent": "MiAppInstituciones/1.0 (ivan@example.com)" 
       },
     });
 
-    if (!response.ok) throw new Error("La respuesta de la red no fue exitosa.");
+    if (!response.ok) throw new Error("Error en Nominatim");
 
     const data = await response.json();
 
     if (data && data.length > 0) {
-      return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+      return { 
+        lat: parseFloat(data[0].lat), 
+        lon: parseFloat(data[0].lon) 
+      };
     }
-
-    return null; // No se encontraron coordenadas
+    return null;
   } catch (error) {
-    console.error("Error al obtener coordenadas:", error);
+    console.error("Error en geocodificación:", error);
     return null;
   }
 };

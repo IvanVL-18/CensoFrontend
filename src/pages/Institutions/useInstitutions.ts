@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
 import { 
-  getInstitutions, 
+  getInstitutions,
+  getInstitution, 
   createInstitution, 
   updateInstitution,
   banInstitution, 
@@ -25,7 +26,7 @@ type SortConfig = {
 export function useInstitutions() {
   // --- Estados de datos ---
   const { addToast } = useToast(); 
-
+  const [isViewLoading, setIsViewLoading] = useState(false);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [links, setLinks] = useState<PaginatedInstitutionsResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
@@ -71,10 +72,10 @@ export function useInstitutions() {
   const [actionType, setActionType] = useState<'ban' | 'restore' | 'delete' | null>(null);
 
   // --- Manejadores para el Modal del Mapa ---
-  const onShowMap = (institution: Institution) => {
-    setMapInstitution(institution);
-    setIsMapModalOpen(true);
-  };
+  const onShowMap = useCallback((institution: Institution) => {
+  setMapInstitution(institution);
+  setIsMapModalOpen(true);
+}, []);
 
   const handleMapModalClose = () => {
     setIsMapModalOpen(false);
@@ -279,10 +280,24 @@ export function useInstitutions() {
   }
 }, [actionInstitution, actionType, reloadInstitutions, handleConfirmModalClose, addToast]);
 
- const onView = useCallback((institution: Institution) => {
-    setViewingInstitution(institution);
+// --- Modificación en useUnits.ts ---
+
+const onView = useCallback(async (unit: Institution) => {
+  // Usamos el nuevo estado, así la tabla no se entera de que estamos cargando
+  setIsViewLoading(true); 
+  
+  try {
+    const unitData = await getInstitution(unit.id);
+    setViewingInstitution(unitData);
     setIsViewModalOpen(true);
-  }, []);
+  } catch (err) {
+    console.error("Error al obtener detalle de la unidad:", err);
+    const errorMessage = (err as Error).message || "No se pudo cargar el detalle.";
+    addToast(errorMessage, "danger");
+  } finally {
+    setIsViewLoading(false); // Apagamos la carga del modal
+  }
+}, [addToast]);
 
   const onEdit = useCallback((institution: Institution) => {
     setEditingInstitution(institution); // <--- Guarda la institución a editar
@@ -317,6 +332,7 @@ export function useInstitutions() {
   return {
     // Estado de carga
     loading,
+    isViewLoading,
     error,
     
     // Datos

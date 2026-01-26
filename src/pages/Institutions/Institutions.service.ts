@@ -1,4 +1,5 @@
 import type {
+  Institution,
   PaginatedInstitutionsResponse,
   CreateInstitutionDTO,
   UpdateInstitutionDTO,
@@ -102,4 +103,25 @@ export const forceDeleteInstitution = (id: string | number): Promise<{ message: 
     method: "DELETE",
     headers: { "Accept": "application/json" },
   }).then(handleJsonResponse);
+};
+
+export const getInstitution = (id: string | number): Promise<Institution> => { 
+  const url = `${API_URL}/institutions/${id}`;
+
+  return fetch(url, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+      "ngrok-skip-browser-warning": "true", 
+    },
+  })
+    .then(handleJsonResponse)
+    .then((response) => {
+      // Al igual que en create/update, manejamos si viene en .data
+      return response.data ?? response;
+    })  
+    .catch((error) => {
+      console.error(`Error al obtener la unidad ${id}:`, error);
+      throw error;
+    });
 };
