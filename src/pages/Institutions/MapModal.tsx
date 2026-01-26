@@ -3,8 +3,12 @@ import { X, LoaderCircle } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+
+// Importación de servicios e interfaces
 import { getCoordinatesFromPostalCode, getInstitutionMapData } from "./Map.service";
 import type { Coordinates } from "./Map.interfaces";
+
+// Configuración de iconos de Leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
@@ -20,7 +24,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 interface MapModalProps {
   isOpen: boolean;
   onClose: () => void;
-  institutionId: string | null; // Cambiamos props por el ID
+  institutionId: string | null; 
   institutionName: string | null;
 }
 
@@ -29,51 +33,51 @@ export function MapModal({ isOpen, onClose, institutionId, institutionName }: Ma
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-useEffect(() => {
-  if (isOpen && institutionId) {
-    const fetchLocation = async () => {
-      setLoading(true);
-      setError(null);
-      console.log("1. Iniciando búsqueda para ID:", institutionId);
+  useEffect(() => {
+    if (isOpen && institutionId) {
+      const fetchLocation = async () => {
+  setLoading(true);
+  setError(null);
+  
+  try {
+    const mapData = await getInstitutionMapData(institutionId);
 
-      try {
-        // LLAMADA AL BACKEND (LARAVEL)
-        const mapData = await getInstitutionMapData(institutionId);
-        console.log("2. Respuesta de Laravel:", mapData);
+    if (!mapData || typeof mapData === 'string') {
+       throw new Error("Datos de ubicación no válidos.");
+    }
 
-        if (!mapData || (!mapData.geocode && !mapData.municipality)) {
-           console.error("Error: Datos insuficientes en mapData", mapData);
-           throw new Error("La institución no tiene geocode ni municipio en la BD.");
-        }
+    // MEJORÍA: Si tu modelo de Laravel tiene 'street' o 'address', úsalo aquí
+    // Incluso si no lo tienes, al pasar geocode Y municipality juntos en la nueva función,
+    // Nominatim será más certero que usando solo uno.
+    const coords = await getCoordinatesFromPostalCode(
+      mapData.geocode, 
+      mapData.municipality,
+      mapData.street || null // <-- Asegúrate de que tu API de Laravel mande este campo
+    );
 
-        // LLAMADA A LA API EXTERNA (NOMINATIM)
-        console.log("3. Consultando Nominatim con:", mapData.geocode, mapData.municipality);
-        const coords = await getCoordinatesFromPostalCode(mapData.geocode, mapData.municipality);
-        console.log("4. Coordenadas obtenidas:", coords);
-
-        if (coords) {
-          setCoordinates(coords);
-        } else {
-          setError("No se encontraron coordenadas en OpenStreetMap.");
-        }
-      } catch (err: any) {
-        console.error("Error en el flujo del mapa:", err);
-        setError(err.message || "Error al cargar el mapa.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLocation();
+    if (coords) {
+      setCoordinates(coords);
+    } else {
+      setError(`No se encontró la ubicación exacta.`);
+    }
+  } catch (err: any) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
   }
-}, [isOpen, institutionId]);
+};
+
+      fetchLocation();
+    }
+  }, [isOpen, institutionId]);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl h-3/4 flex flex-col overflow-hidden">
-        {/* Header */}
+        
+        {/* Header institucional */}
         <div className="flex justify-between items-center p-4 bg-red-900 text-white">
           <h2 className="text-xl font-bold truncate">Ubicación de {institutionName}</h2>
           <button onClick={onClose} className="hover:bg-red-800 p-1 rounded transition-colors">
@@ -81,12 +85,12 @@ useEffect(() => {
           </button>
         </div>
 
-        {/* Contenido del Mapa */}
+        {/* Área del Mapa / Estados */}
         <div className="flex-grow relative bg-gray-100">
           {loading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-20">
               <LoaderCircle className="animate-spin text-red-900 mb-2" size={48} />
-              <p className="text-gray-700 font-medium">Obteniendo datos de ubicación...</p>
+              <p className="text-gray-700 font-medium">Buscando en el mapa...</p>
             </div>
           )}
           
@@ -104,7 +108,7 @@ useEffect(() => {
               style={{ height: '100%', width: '100%' }}
             >
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                attribution='&copy; OpenStreetMap'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               <Marker position={[coordinates.lat, coordinates.lon]}>
