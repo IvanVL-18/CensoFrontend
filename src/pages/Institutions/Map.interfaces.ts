@@ -3,13 +3,11 @@ export interface Coordinates {
   lon: number;
 }
 
-// Map.interfaces.ts
-
 export interface MapDataResponse {
-  geocode: string;      // Tu Código Postal
-  municipality: string; // Tu Municipio
-  street?: string;      // <-- AGREGA ESTO: El nombre de la calle
-  suburb?: string;      // Opcional: El nombre de la colonia
+  geocode: string;      
+  municipality: string; 
+  street?: string;      
+  suburb?: string;     
 }
 
 export interface Coordinates {

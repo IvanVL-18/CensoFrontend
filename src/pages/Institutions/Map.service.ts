@@ -22,8 +22,6 @@ export const getInstitutionMapData = async (id: string): Promise<MapDataResponse
 };
 
 
-// Map.service.ts
-
 export const getCoordinatesFromPostalCode = async (
   geocode: string,
   municipality: string | null,
@@ -31,15 +29,14 @@ export const getCoordinatesFromPostalCode = async (
 ): Promise<Coordinates | null> => {
   const countryCode = "mx";
   
-  // 1. Usamos URLSearchParams para construir una consulta limpia y segura
   const params = new URLSearchParams({
     format: "json",
     countrycodes: countryCode,
     limit: "1",
-    addressdetails: "1" // Nos da más info sobre qué encontró
+    addressdetails: "1" 
   });
 
-  // 2. Agregamos los campos de forma específica
+  
   if (street) params.append("street", street);
   if (municipality) params.append("city", municipality);
   if (geocode) params.append("postalcode", geocode);
@@ -50,7 +47,7 @@ export const getCoordinatesFromPostalCode = async (
     const response = await fetch(url, {
       headers: {
         "Accept": "application/json",
-        "User-Agent": "MiAppInstituciones/1.0 (ivan@example.com)" // Es buena práctica poner un contacto
+        "User-Agent": "MiAppInstituciones/1.0 (ivan@example.com)" 
       },
     });
 
@@ -59,7 +56,6 @@ export const getCoordinatesFromPostalCode = async (
     const data = await response.json();
 
     if (data && data.length > 0) {
-      // Nominatim devuelve lat/lon como strings, los pasamos a número
       return { 
         lat: parseFloat(data[0].lat), 
         lon: parseFloat(data[0].lon) 
