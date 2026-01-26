@@ -176,8 +176,9 @@ function InstitutionsPageContent() {
       <MapModal
         isOpen={isMapModalOpen}
         onClose={handleMapModalClose}
-        geocode={mapInstitution?.geocode || null}
-        municipality={mapInstitution?.municipality || null}
+        // ANTES: Quizás tenías geocode={...}
+        // AHORA: Pasamos el ID que el Modal usará para llamar a tu API de Laravel
+        institutionId={mapInstitution?.id || null}
         institutionName={mapInstitution?.name || null}
       />
     </div>
