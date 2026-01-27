@@ -34,7 +34,7 @@ export function UnitsToolbar({
           />
 
           <AddButton
-            label="Crear Módulos"
+            label="Agregar Módulo"
             onClick={onAddClick}
             variant="gold"
             icon={<CirclePlus size={22} strokeWidth={2.5} />}
