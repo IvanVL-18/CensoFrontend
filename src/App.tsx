@@ -7,20 +7,21 @@ import HomePage from "./pages/home/page/HomePage";
 import DashboardPage from "./pages/deshboard/DashboardPage";
 import ChartsPage from "./pages/grapher/page/ChartsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
-import SettingsPage from "./pages/settings/SettingsPage";
+import SettingsPage from "./pages/settings/page/SettingsPage";
 import DashboardLayout from "./components/DashboardLayout";
 
 import Units from "./pages/Units/units";
-import Census from "./pages/census/CensosPage";
-import CreateCensusPage from "./pages/census/CreateCensus";
-import CensusUnitsPage from "./pages/census/CensusUnitsPage";
-import CensusSectionsPage from "./pages/census/CensusSectionsPage";   // ← NUEVO
-import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; // ← NUEVO
+import Census from "./pages/census/page/CensosPage";
+import CreateCensusPage from "./pages/census/components/CreateCensus";
+import CensusUnitsPage from "./pages/census/components/CensusUnitsPage";
+import CensusSectionsPage from "./pages/census/components/CensusSectionsPage";   // ← NUEVO
+import CensusQuestionsPage from "./pages/census/components/CensusQuestionsPage"; // ← NUEVO
 
 import Section from "./pages/Section/Section";
 import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Index/indexs";
+import Area from "./pages/area/Areas";
 
 export default function App() {
   return (
@@ -34,7 +35,6 @@ export default function App() {
         <Route path="/inicio" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/instituciones" element={<Insitutions />} />
-        <Route path="/indices" element={<Index />} />
 
         {/* Censos */}
         <Route path="/censos" element={<Census />} />
@@ -47,10 +47,12 @@ export default function App() {
         <Route path="/reportes" element={<ReportsPage />} />
         <Route path="/configuracion" element={<SettingsPage />} />
 
-        {/* Catálogos */}
+        {/* Configuración */}
         <Route path="/unidades" element={<Units />} />
         <Route path="/secciones" element={<Section />} />
         <Route path="/ocupaciones" element={<Occupations />} />
+        <Route path="/indices" element={<Index />} />
+        <Route path="/area" element={<Area />} />
       </Route>
 
       {/* Fallback */}

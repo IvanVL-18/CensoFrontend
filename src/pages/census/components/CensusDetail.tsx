@@ -1,7 +1,7 @@
 // src/pages/census/CensusDetail.tsx
 import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import type { Census } from "./census.interfaces";
+import type { Census } from "../census.interfaces";
 import CensusQuestions from "./CensusQuestionsPage";
 
 type Props = {
