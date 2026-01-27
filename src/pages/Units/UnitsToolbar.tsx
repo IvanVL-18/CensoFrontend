@@ -1,5 +1,5 @@
 import { type ChangeEvent } from "react";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus,FileDown  } from "lucide-react";
 
 import type { UnitFilter } from "./units.service";
 import { SearchInput } from "../../components/SearchInput";
@@ -30,7 +30,7 @@ export function UnitsToolbar({
             label="Carga Masiva"
             onClick={onAddClick}
             variant="green"
-            icon={<CirclePlus size={22} strokeWidth={2.5} />}
+            icon={<FileDown  size={22} strokeWidth={2.5} />}
           />
 
           <AddButton
