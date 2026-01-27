@@ -1,16 +1,7 @@
 // src/pages/area/ViewAreaModal.tsx
 import { X } from "lucide-react";
-import type { Area } from "./Areas.interfaces";
+import type { ViewAreaModalProps } from "./Areas.interfaces";
 
-interface ViewAreaModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  area: Area | null;
-}
-
-/**
- * helper para formatear las fechas de Laravel a un formato legible
- */
 const formatDate = (dateString: string | null | undefined) => {
   if (!dateString) return "N/A";
 
@@ -43,25 +34,18 @@ function DetailRow({
   );
 }
 
-export default function ViewAreaModal({
-  isOpen,
-  onClose,
-  area,
-}: ViewAreaModalProps) {
+export default function ViewAreaModal({ isOpen, onClose, area }: ViewAreaModalProps) {
   if (!isOpen || !area) return null;
 
   return (
     <>
-      {/* Fondo (click para cerrar) */}
       <div
         className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden border border-gray-200">
-          {/* Header */}
           <div className="flex justify-between items-center p-4 bg-[#691b31]">
             <h2 className="text-base sm:text-lg font-bold text-white">
               Detalle del Área
@@ -78,7 +62,6 @@ export default function ViewAreaModal({
             </button>
           </div>
 
-          {/* Body */}
           <div className="p-6 space-y-4">
             <DetailRow label="Nombre del Área:" value={area.name} />
 
@@ -89,7 +72,7 @@ export default function ViewAreaModal({
 
             <DetailRow
               label="Fecha de creación:"
-              value={formatDate((area as any).created_at)}
+              value={formatDate(area.created_at)}
             />
 
             <DetailRow
@@ -98,7 +81,6 @@ export default function ViewAreaModal({
             />
           </div>
 
-          {/* Footer */}
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50 border-t border-gray-200">
             <button
               type="button"

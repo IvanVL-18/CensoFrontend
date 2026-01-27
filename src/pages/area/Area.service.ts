@@ -5,12 +5,11 @@ import type {
   CreateAreaDTO,
   Institution,
   UpdateAreaDTO,
+  AreaFilter,
+  SortConfig,
 } from "./Areas.interfaces";
 
-const API_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api";
-
-export type AreaFilter = "all" | "active" | "inactive";
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const handleJsonResponse = async (response: Response) => {
   const text = await response.text();
@@ -31,11 +30,11 @@ const handleJsonResponse = async (response: Response) => {
 
 export const getAreas = (
   filter: AreaFilter = "all",
-  sortConfig: { key: string; direction: string },
+  sortConfig: SortConfig,
   page: number = 1
 ): Promise<PaginatedAreasResponse> => {
   const params = new URLSearchParams({
-    sort: sortConfig.key,
+    sort: String(sortConfig.key),
     dir: sortConfig.direction === "ascending" ? "asc" : "desc",
     page: String(page),
   });

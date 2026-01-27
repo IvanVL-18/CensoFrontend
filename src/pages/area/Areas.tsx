@@ -5,8 +5,6 @@ import { AreasTable } from "./AreasTable";
 import Pagination from "../../components/Pagination";
 import { AreaModal } from "./AreasModal";
 import { ConfirmModal } from "./ConfirmModal";
-
-// ✅ CORREGIDO: default import
 import ViewAreaModal from "./ViewAreaModal";
 
 import { ToastProvider, useToast } from "../../context/ToastContext";
@@ -65,10 +63,9 @@ function AreasPageContent() {
     handleConfirmAction,
   } = useAreas();
 
-  // (Si quieres, cambia estos textos a "Área" para consistencia)
   const modalTitle = editingArea ? "Editar Área" : "Agregar Área";
   const modalInitialName = editingArea ? editingArea.name : "";
-  const modalInitialInstitutionId = editingArea ? editingArea.institution_id : "";
+  const modalInitialInstitutionId = editingArea ? (editingArea.institution_id ?? "") : "";
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -108,7 +105,7 @@ function AreasPageContent() {
         <AreasTable
           loading={loading}
           error={error}
-          areas={sortedAreas}   // ✅ CORREGIDO: prop correcto
+          areas={sortedAreas}
           meta={meta}
           onSort={handleSort}
           onView={onView}

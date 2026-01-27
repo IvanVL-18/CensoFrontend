@@ -3,18 +3,7 @@ import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X, ChevronDown } from "lucide-react";
 import { validateArea } from "../../utils/validation.area";
 import { FormErrors } from "./FormErrors";
-
-interface AreaModalProps {
-  isOpen: boolean;
-  isSubmitting: boolean;
-  error: string | null;
-  title: string;
-  initialName?: string;
-  initialInstitutionId?: string;
-  institutions: { id: string; name: string }[];
-  onClose: () => void;
-  onSave: (name: string, institution_id: string) => void;
-}
+import type { AreaModalProps } from "./Areas.interfaces";
 
 export function AreaModal({
   isOpen,
@@ -39,7 +28,7 @@ export function AreaModal({
       setInstitutionFieldTouched(false);
       setFormErrors([]);
     }
-  }, [isOpen, initialName, initialInstitutionId, institutions]);
+  }, [isOpen, initialName, initialInstitutionId]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -80,14 +69,13 @@ export function AreaModal({
     const newInstitutionId = e.target.value;
     setSelectedInstitution(newInstitutionId);
 
-    if (!institutionFieldTouched) {
-      setInstitutionFieldTouched(true);
-    }
+    if (!institutionFieldTouched) setInstitutionFieldTouched(true);
 
     const validationErrors = validateArea({
       name,
       institution_id: newInstitutionId,
     });
+
     setFormErrors(validationErrors);
   };
 
@@ -120,10 +108,7 @@ export function AreaModal({
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
-              <label
-                htmlFor="areaName"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="areaName" className="block text-sm font-medium text-gray-700 mb-2">
                 Nombre del Área:
               </label>
 
@@ -153,7 +138,6 @@ export function AreaModal({
                 Institución:
               </label>
 
-              {/* ✅ Selector mejorado */}
               <div className="relative">
                 <select
                   id="institution_id"
@@ -178,7 +162,6 @@ export function AreaModal({
                   ))}
                 </select>
 
-                {/* Icono flecha */}
                 <ChevronDown
                   size={18}
                   className={`

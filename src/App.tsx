@@ -22,6 +22,7 @@ import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Index/indexs";
 import Area from "./pages/area/Areas";
+import Questions from "./pages/Questions/questions";
 
 export default function App() {
   return (
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/ocupaciones" element={<Occupations />} />
         <Route path="/indices" element={<Index />} />
         <Route path="/area" element={<Area />} />
+        <Route path="/preguntas" element={<Questions />} />
       </Route>
 
       {/* Fallback */}

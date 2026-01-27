@@ -1,18 +1,10 @@
 // src/pages/area/AreasToolbar.tsx
 import { type ChangeEvent } from "react";
 import { CirclePlus } from "lucide-react";
-import type { AreaFilter } from "./Area.service";
 import { SearchInput } from "../../components/SearchInput";
 import AddButton from "../../components/AddButton";
 import StatusFilterSelect from "../../components/StatusFilterSelect";
-
-interface AreasToolbarProps {
-  filter: AreaFilter;
-  searchTerm: string;
-  onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
-  onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onAddClick: () => void;
-}
+import type { AreasToolbarProps } from "./Areas.interfaces";
 
 export function AreasToolbar({
   filter,
@@ -24,9 +16,7 @@ export function AreasToolbar({
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-red-900">
-        <h1 className="text-xl md:text-2xl font-bold text-white">
-          Áreas
-        </h1>
+        <h1 className="text-xl md:text-2xl font-bold text-white">Áreas</h1>
 
         <AddButton
           label="Agregar Área"
@@ -36,7 +26,7 @@ export function AreasToolbar({
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 px-4 pt-4">
-        <StatusFilterSelect value={filter} onChange={onFilterChange} />
+        <StatusFilterSelect value={filter as any} onChange={onFilterChange} />
 
         <div className="w-full md:w-80">
           <SearchInput

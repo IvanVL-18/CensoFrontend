@@ -1,6 +1,4 @@
-// src/pages/Units/units.interfaces.ts
 
-// Esta es la interfaz para cada objeto 'Unit' dentro del array 'data'
 export interface Unit {
   id: string; // Es un string encriptado
   name: string;
