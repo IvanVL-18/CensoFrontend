@@ -25,12 +25,21 @@ export function UnitsToolbar({
     <>
       <div className="flex justify-between items-center p-4 bg-red-900">
         <h1 className="text-xl md:text-2xl font-bold text-white">Módulos</h1>
+        <div className="flex items-center gap-2">
+          <AddButton
+            label="Carga Masiva"
+            onClick={onAddClick}
+            variant="green"
+            icon={<CirclePlus size={22} strokeWidth={2.5} />}
+          />
 
-        <AddButton
-          label="Agregar Módulo"
-          onClick={onAddClick}
-          icon={<CirclePlus size={22} strokeWidth={2.5} />}
-        />
+          <AddButton
+            label="Crear Módulos"
+            onClick={onAddClick}
+            variant="gold"
+            icon={<CirclePlus size={22} strokeWidth={2.5} />}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 px-4 pt-4">

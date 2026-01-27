@@ -2,11 +2,13 @@ import type { ReactNode } from "react";
 import clsx from "clsx";
 
 type Props = {
-  label: string;              // "Agregar Institución", "Agregar Censo", etc.
+  label: string;
   onClick: () => void;
-  icon?: ReactNode;           // opcional, por si un día quieres otro icono
-  className?: string;         // por si quieres ajustar estilos en casos especiales
+  icon?: ReactNode;
+  className?: string;
   buttonType?: "button" | "submit";
+  // Añadimos la opción de variante
+  variant?: "gold" | "green"; 
 };
 
 export default function AddButton({
@@ -15,35 +17,38 @@ export default function AddButton({
   icon,
   className,
   buttonType = "button",
+  variant = "gold", 
 }: Props) {
+  
+  const variantStyles = {
+    gold: "bg-gradient-to-r from-[#B49060] via-[#C3A67C] to-[#D4C09B]",
+    green: "bg-gradient-to-r from-[#174a2b] via-[#1b6939] to-[#2d8a4e]" 
+  };
+
   return (
     <button
       type={buttonType}
       onClick={onClick}
       className={clsx(
         `
-        bg-gradient-to-r from-[#B49060] via-[#C3A67C] to-[#D4C09B]
         text-white font-semibold
         h-10 rounded-lg shadow
-        hover:brightness-95
+        hover:brightness-110
         flex items-center
         group
         transition-all duration-300 ease-in-out
         p-[9px]
-        group-hover:px-4 group-active:px-4
+        hover:px-4 active:px-4
         `,
+        variantStyles[variant], 
         className
       )}
     >
-      {/* Icono */}
+
       <span className="flex-shrink-0">
-        {icon ?? (
-          // Si no le pasas icon, no renderiza nada extra
-          null
-        )}
+        {icon ?? null}
       </span>
 
-      {/* Texto animado */}
       <span
         className="
           w-0 ml-0 opacity-0
