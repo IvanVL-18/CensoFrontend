@@ -62,7 +62,7 @@ export default function SettingsPage() {
             bg-white
             focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/30
           "
-        >
+          >
           <div className="flex items-start gap-3 mb-2">
             <div className="p-2 rounded-lg bg-[var(--pantone-7421)]/10 shrink-0">
               <Paperclip className="w-5 h-5 text-[var(--pantone-7421)]" />
@@ -73,6 +73,34 @@ export default function SettingsPage() {
               <p className="text-xs text-gray-500 mt-1">
                 Crea y administra las secciones que componen los módulos del
                 censo.
+              </p>
+            </div>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate("/Roles")}
+          className="
+            w-full text-left
+            border border-gray-200 rounded-xl
+            p-4 sm:p-5
+            hover:border-[var(--pantone-7421)]
+            hover:shadow-sm
+            transition
+            bg-white
+            focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/30
+          "
+          >
+          <div className="flex items-start gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-[var(--pantone-7421)]/10 shrink-0">
+              <Paperclip className="w-5 h-5 text-[var(--pantone-7421)]" />
+            </div>
+
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-gray-900">Roles</h2>
+              <p className="text-xs text-gray-500 mt-1">
+                Crea y administra los Roles.
               </p>
             </div>
           </div>
