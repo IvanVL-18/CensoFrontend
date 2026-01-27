@@ -27,7 +27,7 @@ export function validateIndex(data: IndexFormData): string[] {
 
   // Regla 3: 'name.max' (Máximo 45 caracteres)
   if (name.length > 45) {
-    errors.push("El nombre del índice no puede exceder los 45 caracteres.");
+    errors.push("El nombre del índice no puede exceder los 50 caracteres.");
   }
 
   // Regla 4: 'name.regex' (Formato tipo 1.1.2)

@@ -1,7 +1,6 @@
-// src/App.tsx
+
 import { Routes, Route, Navigate } from "react-router-dom";
 
-// Páginas base
 import LoginPage from "./pages/login/page/LoginPage";
 import HomePage from "./pages/home/page/HomePage";
 import DashboardPage from "./pages/deshboard/DashboardPage";
@@ -14,13 +13,14 @@ import Units from "./pages/Units/units";
 import Census from "./pages/census/CensosPage";
 import CreateCensusPage from "./pages/census/CreateCensus";
 import CensusUnitsPage from "./pages/census/CensusUnitsPage";
-import CensusSectionsPage from "./pages/census/CensusSectionsPage";   // ← NUEVO
-import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; // ← NUEVO
+import CensusSectionsPage from "./pages/census/CensusSectionsPage";   
+import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; 
 
 import Section from "./pages/Section/Section";
 import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Index/indexs";
+import Roles from "./pages/Roles/Roles";
 
 export default function App() {
   return (
@@ -40,8 +40,8 @@ export default function App() {
         <Route path="/censos" element={<Census />} />
         <Route path="/censos/crear" element={<CreateCensusPage />} />
         <Route path="/censos/unidades" element={<CensusUnitsPage />} />
-        <Route path="/censos/secciones" element={<CensusSectionsPage />} />     {/* ← NUEVO */}
-        <Route path="/censos/preguntas" element={<CensusQuestionsPage />} />    {/* ← NUEVO */}
+        <Route path="/censos/secciones" element={<CensusSectionsPage />} />     
+        <Route path="/censos/preguntas" element={<CensusQuestionsPage />} />    
 
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />
@@ -51,6 +51,7 @@ export default function App() {
         <Route path="/unidades" element={<Units />} />
         <Route path="/secciones" element={<Section />} />
         <Route path="/ocupaciones" element={<Occupations />} />
+        <Route path="/Roles" element={<Roles />} />
       </Route>
 
       {/* Fallback */}
