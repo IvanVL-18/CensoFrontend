@@ -1,8 +1,8 @@
-// src/context/ToastContext.tsx (Corregido)
-
+// src/context/ToastContext.tsx
 import { createContext, useContext, useState } from "react";
-// <--- CAMBIO AQUÍ: Importamos ReactNode por separado como un TIPO
 import type { ReactNode } from "react";
+// 1. IMPORTAMOS la función para generar IDs de la librería uuid
+import { v4 as uuidv4 } from "uuid"; 
 
 // Tipos
 type ToastType = "success" | "danger" | "warning";
@@ -19,18 +19,17 @@ interface IToastContext {
   removeToast: (id: string) => void;
 }
 
-// 1. Creamos el Contexto
 const ToastContext = createContext<IToastContext | undefined>(undefined);
 
-// 2. Creamos el Proveedor (Provider)
-//    (Esta línea ahora funcionará porque ReactNode está bien importado)
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   // Función para AÑADIR un toast
   const addToast = (message: string, type: ToastType) => {
-    // Creamos un ID único
-    const id = crypto.randomUUID();
+    // 2. CAMBIO CLAVE: Usamos uuidv4() en lugar de crypto.randomUUID()
+    // Esto funcionará en localhost, en IPs de red local y en producción (HTTPS)
+    const id = uuidv4(); 
+    
     setToasts((currentToasts) => [...currentToasts, { id, message, type }]);
   };
 
@@ -48,7 +47,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// 3. Creamos el Hook para usar el contexto fácilmente
 export function useToast() {
   const context = useContext(ToastContext);
   if (!context) {

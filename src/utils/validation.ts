@@ -43,9 +43,7 @@ export function validateUnit(data: UnitFormData): string[] {
 
   // Regla 4: 'name.regex' (Transcripción)
   
-  // <--- CORRECCIÓN AQUÍ ---
-  // Se quitaron los escapes innecesarios (\', \.)
-  // y se movió el guion (-) al final de la clase para que no requiera escape.
+  
   const regex = /^[\p{L}\p{M}\p{N}\s'.,-]+$/u;
   
   if (!regex.test(data.name)) { // Aquí usamos data.name (sin trim)
