@@ -13,7 +13,7 @@ const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const handleJsonResponse = async (response: Response) => {
   const text = await response.text();
-  let data: any;
+  let data: any; 
 
   try {
     data = text ? JSON.parse(text) : {};
