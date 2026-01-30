@@ -1,6 +1,6 @@
 // src/pages/area/AreasModal.tsx
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
-import { X, ChevronDown } from "lucide-react";
+import { X, ChevronDown } from "lucide-react"; 
 import { validateArea } from "../../utils/validation.area";
 import { FormErrors } from "./FormErrors";
 import type { AreaModalProps } from "./Areas.interfaces";
