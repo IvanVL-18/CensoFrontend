@@ -1,7 +1,7 @@
 import { Eye } from "lucide-react";
-import { SearchInput } from "../../../components/SearchInput";
-import Pagination from "../../../components/Pagination"; 
-import type { QuestionnaireItem } from "../dashboard.types";
+import { SearchInput } from "../../components/SearchInput";
+import Pagination from "../../components/Pagination"; 
+import type { QuestionnaireItem } from "./dashboard.types";
 
 type MetaLike = {
   current_page: number | number[];

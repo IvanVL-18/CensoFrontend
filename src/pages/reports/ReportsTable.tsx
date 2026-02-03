@@ -1,5 +1,5 @@
 import ReportRow from "./ReportRow";
-import type { ReportItem } from "../ReportsPage";
+import type { ReportItem } from "./ReportsPage";
 
 type Props = {
   items: ReportItem[];

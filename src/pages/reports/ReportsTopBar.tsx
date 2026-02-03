@@ -1,4 +1,4 @@
-import { SearchInput } from "../../../components/SearchInput";
+import { SearchInput } from "../../components/SearchInput";
 
 type Props = {
   value: string;

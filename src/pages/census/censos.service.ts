@@ -6,8 +6,7 @@ import type {
   ContentFilter,
 } from "./census.interfaces";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type PaginationLinks = {
   first: string | null;
@@ -54,9 +53,6 @@ export async function getCensuses(
 
   const meta = json.meta as PaginationMeta;
 
-  // ✅ LINKS: tolerante a varios formatos
-  // Laravel: json.links {first,last,prev,next}
-  // A veces: json.meta.links {first,last,prev,next}
   const linksRaw = (json.links ?? json?.meta?.links) as any;
 
   const links: PaginationLinks | null = linksRaw

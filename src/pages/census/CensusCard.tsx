@@ -1,4 +1,4 @@
-import type { Census } from "../census.interfaces";
+import type { Census } from "./census.interfaces";
 
 type Props = {
   census: Census;

@@ -1,4 +1,4 @@
-import WelcomeCard from "../components/WelcomeCard";
+import WelcomeCard from "./WelcomeCard";
 
 export default function HomePage(){
   return (

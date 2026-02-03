@@ -1,13 +1,7 @@
-// src/pages/census/sections.service.ts
 import type { Section, PaginationMeta, ContentFilter } from "./census.interfaces";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-/**
- * GET /sections/{content}/content
- * content: 'active' | 'inactive' | 'all'
- */
 export async function getSections(
   page: number = 1,
   content: ContentFilter = "active"

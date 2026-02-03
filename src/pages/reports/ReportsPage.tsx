@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import ReportsTopBar from "./components/ReportsTopBar";
-import ReportsTable from "./components/ReportsTable";
+import ReportsTopBar from "./ReportsTopBar";
+import ReportsTable from "./ReportsTable";
 
 export type ReportItem = {
   id: string;

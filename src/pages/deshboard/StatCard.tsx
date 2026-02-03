@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Eye } from "lucide-react";
-import type { StatCardColor } from "../dashboard.types";
+import type { StatCardColor } from "./dashboard.types";
 
 type Props = {
   title: string;

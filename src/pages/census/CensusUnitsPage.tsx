@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getUnits } from "../units.service";
-import type { Unit, PaginationMeta, CensusFormValues } from "../census.interfaces";
+import { getUnits } from "./units.service";
+import type { Unit, PaginationMeta, CensusFormValues } from "./census.interfaces";
 
 export default function CensusUnitsPage() {
   const navigate = useNavigate();

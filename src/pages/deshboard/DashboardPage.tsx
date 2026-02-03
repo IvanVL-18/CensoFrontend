@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import StatCard from "./components/StatCard";
-import QuestionnairesCard from "./components/QuestionnairesCard";
-import ChartsCard from "./components/ChartsCard";
+import StatCard from "./StatCard";
+import QuestionnairesCard from "./QuestionnairesCard";
+import ChartsCard from "./ChartsCard";
 import { Users, Building2, ClipboardList } from "lucide-react";
 
 import type {

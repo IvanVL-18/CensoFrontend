@@ -1,13 +1,8 @@
 // src/pages/census/units.service.ts
 import type { Unit, PaginationMeta, ContentFilter } from "./census.interfaces";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-/**
- * GET /units/{content}/content
- * content: 'active' | 'inactive' | 'all'
- */
 export async function getUnits(
   page: number = 1,
   content: ContentFilter = "active"

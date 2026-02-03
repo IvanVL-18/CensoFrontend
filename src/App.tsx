@@ -1,21 +1,18 @@
-// src/App.tsx
 import { Routes, Route, Navigate } from "react-router-dom";
-
-// Páginas base
-import LoginPage from "./pages/login/page/LoginPage";
-import HomePage from "./pages/home/page/HomePage";
+import LoginPage from "./pages/login/LoginPage";
+import HomePage from "./pages/home/HomePage";
 import DashboardPage from "./pages/deshboard/DashboardPage";
-import ChartsPage from "./pages/grapher/page/ChartsPage";
+import ChartsPage from "./pages/grapher/ChartsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
-import SettingsPage from "./pages/settings/page/SettingsPage";
+import SettingsPage from "./pages/settings/SettingsPage";
 import DashboardLayout from "./components/DashboardLayout";
 
 import Units from "./pages/Units/units";
-import Census from "./pages/census/page/CensosPage";
-import CreateCensusPage from "./pages/census/components/CreateCensus";
-import CensusUnitsPage from "./pages/census/components/CensusUnitsPage";
-import CensusSectionsPage from "./pages/census/components/CensusSectionsPage";   // ← NUEVO
-import CensusQuestionsPage from "./pages/census/components/CensusQuestionsPage"; // ← NUEVO
+import Census from "./pages/census/CensosPage";
+import CreateCensusPage from "./pages/census/CreateCensus";
+import CensusUnitsPage from "./pages/census/CensusUnitsPage";
+import CensusSectionsPage from "./pages/census/CensusSectionsPage";  
+import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; 
 
 import Section from "./pages/Section/Section";
 import Insitutions from "./pages/Institutions/Institutions";
@@ -41,8 +38,8 @@ export default function App() {
         <Route path="/censos" element={<Census />} />
         <Route path="/censos/crear" element={<CreateCensusPage />} />
         <Route path="/censos/unidades" element={<CensusUnitsPage />} />
-        <Route path="/censos/secciones" element={<CensusSectionsPage />} />     {/* ← NUEVO */}
-        <Route path="/censos/preguntas" element={<CensusQuestionsPage />} />    {/* ← NUEVO */}
+        <Route path="/censos/secciones" element={<CensusSectionsPage />} />    
+        <Route path="/censos/preguntas" element={<CensusQuestionsPage />} /> 
 
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />

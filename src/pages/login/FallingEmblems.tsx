@@ -1,5 +1,3 @@
-// src/pages/login/components/FallingEmblems.tsx
-
 type Drop = {
   left: string;
   top: string;

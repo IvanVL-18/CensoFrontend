@@ -1,5 +1,5 @@
 import ChartPlaceholder from "./ChartPlaceholder";
-import type { DonutItem, BarItem } from "../dashboard.types";
+import type { DonutItem, BarItem } from "./dashboard.types";
 
 type Props = {
   title: string;

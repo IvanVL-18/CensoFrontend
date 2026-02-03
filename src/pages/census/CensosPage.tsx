@@ -1,18 +1,17 @@
-// src/pages/census/CensosPage.tsx
 import { useEffect, useState } from "react";
 import { CirclePlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import CensusCard from "../components/CensusCard";
-import NewCensusModal from "../components/NewCensusModal";
-import CensusDetail from "../components/CensusDetail";
+import CensusCard from "./CensusCard";
+import NewCensusModal from "./NewCensusModal";
+import CensusDetail from "./CensusDetail";
 
-import { SearchInput } from "../../../components/SearchInput";
-import AddButton from "../../../components/AddButton";
-import Pagination from "../../../components/Pagination";
+import { SearchInput } from "../../components/SearchInput";
+import AddButton from "../../components/AddButton";
+import Pagination from "../../components/Pagination";
 
-import { getCensuses } from "../censos.service";
-import type { Census, PaginationMeta } from "../census.interfaces";
+import { getCensuses } from "./censos.service";
+import type { Census, PaginationMeta } from "./census.interfaces";
 
 type PaginationLinks = {
   first: string | null;

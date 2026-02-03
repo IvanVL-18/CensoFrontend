@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import FormAlert from "./FormAlert";
-import type { CensusFormValues } from "../census.interfaces";
+import type { CensusFormValues } from "./census.interfaces";
 
 export default function CreateCensusPage() {
   const navigate = useNavigate();

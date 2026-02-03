@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { Package, Paperclip, Briefcase, Hash, Layers,  HelpCircle } from "lucide-react";
 
-import SettingsLayout from "../SettingsLayout";
-import SettingsGrid from "../SettingsGrid";
-import SettingsNavCard from "../SettingsNavCard";
+import SettingsLayout from "./SettingsLayout";
+import SettingsGrid from "./SettingsGrid";
+import SettingsNavCard from "./SettingsNavCard";
 
 export default function SettingsPage() {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import { Download } from "lucide-react";
-import type { ReportItem } from "../ReportsPage";
+import type { ReportItem } from "./ReportsPage";
 
 type Props = {
   item: ReportItem;

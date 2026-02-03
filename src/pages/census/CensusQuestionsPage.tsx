@@ -1,7 +1,7 @@
 // src/pages/census/CensusQuestions.tsx
 import { useState } from "react";
 import { ChevronDown, Plus, Info } from "lucide-react";
-import type { Census } from "../census.interfaces";
+import type { Census } from "./census.interfaces";
 
 type Props = {
   census?: Census | null;
