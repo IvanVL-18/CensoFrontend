@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
-import ChartTypePopover from "../pages/grapher/components/ChartTypePopover";
+import ChartTypePopover from "../pages/Grapher/ChartTypePopover";
 
 type Props = { open: boolean; onToggle: () => void };
 

@@ -1,8 +1,5 @@
-// src/pages/census/census.interfaces.ts
-
 export type ContentFilter = "active" | "inactive" | "all";
 
-/** Meta de paginación del backend */
 export type PaginationMeta = {
   current_page: number;
   last_page: number;
