@@ -1,4 +1,3 @@
-// src/pages/area/Area.service.ts
 import type {
   Area,
   PaginatedAreasResponse,

@@ -1,15 +1,12 @@
-// src/pages/questions/questions.service.ts
 import type {
   Question,
   PaginatedQuestionsResponse,
   CreateQuestionDTO,
   UpdateQuestionDTO,
+  QuestionFilter,
 } from "./questions.interfaces";
 
-const API_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api";
-
-export type QuestionFilter = "all" | "active" | "inactive";
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const handleJsonResponse = async (response: Response) => {
   const text = await response.text();
@@ -24,7 +21,6 @@ const handleJsonResponse = async (response: Response) => {
   }
 
   if (!response.ok) {
-    // Laravel Validation (422): errors:{campo:[msg]}
     if (data?.errors && typeof data.errors === "object") {
       const firstKey = Object.keys(data.errors)[0];
       const firstMsg = Array.isArray(data.errors[firstKey])
@@ -56,6 +52,30 @@ export const getQuestionsByUrl = (
 ): Promise<PaginatedQuestionsResponse> => {
   return fetch(url, {
     method: "GET",
+    headers: { Accept: "application/json" },
+  }).then(handleJsonResponse);
+};
+
+export const banQuestion = (id: string): Promise<{ message: string }> => {
+  const url = `${API_URL}/questions/${id}`;
+  return fetch(url, {
+    method: "DELETE",
+    headers: { Accept: "application/json" },
+  }).then(handleJsonResponse);
+};
+
+export const restoreQuestion = (id: string): Promise<{ message: string }> => {
+  const url = `${API_URL}/questions/${id}/restore`;
+  return fetch(url, {
+    method: "POST",
+    headers: { Accept: "application/json" },
+  }).then(handleJsonResponse);
+};
+
+export const forceDeleteQuestion = (id: string): Promise<{ message: string }> => {
+  const url = `${API_URL}/questions/${id}/force-delete`;
+  return fetch(url, {
+    method: "DELETE",
     headers: { Accept: "application/json" },
   }).then(handleJsonResponse);
 };
@@ -93,32 +113,6 @@ export const getQuestion = (id: string): Promise<Question> => {
   const url = `${API_URL}/questions/${id}`;
   return fetch(url, {
     method: "GET",
-    headers: { Accept: "application/json" },
-  }).then(handleJsonResponse);
-};
-
-export const banQuestion = (id: string): Promise<{ message: string }> => {
-  const url = `${API_URL}/questions/${id}`;
-  return fetch(url, {
-    method: "DELETE",
-    headers: { Accept: "application/json" },
-  }).then(handleJsonResponse);
-};
-
-export const restoreQuestion = (id: string): Promise<{ message: string }> => {
-  const url = `${API_URL}/questions/${id}/restore`;
-  return fetch(url, {
-    method: "POST",
-    headers: { Accept: "application/json" },
-  }).then(handleJsonResponse);
-};
-
-export const forceDeleteQuestion = (
-  id: string
-): Promise<{ message: string }> => {
-  const url = `${API_URL}/questions/${id}/force-delete`;
-  return fetch(url, {
-    method: "DELETE",
     headers: { Accept: "application/json" },
   }).then(handleJsonResponse);
 };

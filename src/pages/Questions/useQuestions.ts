@@ -8,7 +8,6 @@ import {
   restoreQuestion,
   forceDeleteQuestion,
   getQuestion,
-  type QuestionFilter,
 } from "./questions.service";
 
 import { useToast } from "../../context/ToastContext";
@@ -18,12 +17,9 @@ import type {
   PaginatedQuestionsResponse,
   Meta,
   CreateQuestionDTO,
+  QuestionFilter,
+  SortConfig,
 } from "./questions.interfaces";
-
-type SortConfig = {
-  key: keyof Question;
-  direction: "ascending" | "descending";
-};
 
 export function useQuestions() {
   const { addToast } = useToast();
@@ -53,6 +49,7 @@ export function useQuestions() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
+
   const [reloadToken, setReloadToken] = useState(0);
   const reloadQuestions = useCallback(() => setReloadToken((t) => t + 1), []);
 
@@ -73,7 +70,7 @@ export function useQuestions() {
       })
       .catch((err) => {
         console.error(err);
-        setError(`Error al cargar los Módulos: ${err.message}`);
+        setError(`Error al cargar las Preguntas: ${err.message}`);
       })
       .finally(() => setLoading(false));
   }, [filter, reloadToken]);

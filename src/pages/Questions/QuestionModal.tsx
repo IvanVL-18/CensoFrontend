@@ -1,21 +1,7 @@
-// src/pages/questions/QuestionModal.tsx
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
 import { FormErrors } from "./FormErrors";
-import type { CreateQuestionDTO, QuestionType } from "./questions.interfaces";
-
-interface QuestionModalProps {
-  isOpen: boolean;
-  isSubmitting: boolean;
-  error: string | null;
-  title: string;
-
-  // ✅ Para edición, mandamos el detalle completo aquí
-  initialData?: Partial<CreateQuestionDTO>;
-
-  onClose: () => void;
-  onSave: (payload: CreateQuestionDTO) => void;
-}
+import type { CreateQuestionDTO, QuestionModalProps, QuestionType } from "./questions.interfaces";
 
 const DEFAULT_TYPE: QuestionType = "empty";
 
@@ -35,7 +21,8 @@ export function QuestionModal({
   const [options, setOptions] = useState<string[]>([""]);
   const [formErrors, setFormErrors] = useState<string[]>([]);
 
-  const needsOptions = type === "radio" || type === "check" || type === "selector";
+  const needsOptions =
+    type === "radio" || type === "check" || type === "selector";
 
   useEffect(() => {
     if (!isOpen) return;
@@ -62,12 +49,16 @@ export function QuestionModal({
     const errs: string[] = [];
 
     if (!name.trim()) errs.push("La pregunta es obligatoria.");
-    if (name.trim().length < 20) errs.push("La pregunta debe tener al menos 20 caracteres.");
-    if (name.trim().length > 600) errs.push("La pregunta no debe exceder 600 caracteres.");
+    if (name.trim().length < 20)
+      errs.push("La pregunta debe tener al menos 20 caracteres.");
+    if (name.trim().length > 600)
+      errs.push("La pregunta no debe exceder 600 caracteres.");
 
     if (instructions.trim()) {
-      if (instructions.trim().length < 20) errs.push("Las instrucciones deben tener al menos 20 caracteres.");
-      if (instructions.trim().length > 600) errs.push("Las instrucciones no deben exceder 600 caracteres.");
+      if (instructions.trim().length < 20)
+        errs.push("Las instrucciones deben tener al menos 20 caracteres.");
+      if (instructions.trim().length > 600)
+        errs.push("Las instrucciones no deben exceder 600 caracteres.");
     }
 
     if (needsOptions) {
@@ -75,8 +66,10 @@ export function QuestionModal({
       if (cleaned.length < 1) errs.push("Debes agregar al menos 1 opción.");
 
       cleaned.forEach((opt, idx) => {
-        if (opt.length < 10) errs.push(`Opción #${idx + 1} debe tener al menos 10 caracteres.`);
-        if (opt.length > 60) errs.push(`Opción #${idx + 1} no debe exceder 60 caracteres.`);
+        if (opt.length < 10)
+          errs.push(`Opción #${idx + 1} debe tener al menos 10 caracteres.`);
+        if (opt.length > 60)
+          errs.push(`Opción #${idx + 1} no debe exceder 60 caracteres.`);
       });
     }
 
@@ -121,17 +114,20 @@ export function QuestionModal({
         <div className="bg-white rounded-lg shadow-xl w-full max-w-xl overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button onClick={onClose} className="text-white hover:text-gray-300" aria-label="Cerrar modal">
+            <button
+              onClick={onClose}
+              className="text-white hover:text-gray-300"
+              aria-label="Cerrar modal"
+            >
               <X size={24} />
             </button>
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6 space-y-4">
-              {/* NAME */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Pregunta / Módulo:
+                  Pregunta:
                 </label>
                 <input
                   type="text"
@@ -147,7 +143,6 @@ export function QuestionModal({
                 />
               </div>
 
-              {/* TYPE */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Tipo:
@@ -165,7 +160,6 @@ export function QuestionModal({
                 </select>
               </div>
 
-              {/* COMMENTARIES */}
               <div className="flex items-center gap-3">
                 <input
                   id="commentaries"
@@ -180,7 +174,6 @@ export function QuestionModal({
                 </label>
               </div>
 
-              {/* INSTRUCTIONS */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Instrucciones (opcional):
@@ -195,7 +188,6 @@ export function QuestionModal({
                 />
               </div>
 
-              {/* OPTIONS */}
               {needsOptions && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -221,12 +213,15 @@ export function QuestionModal({
                         value={opt}
                         onChange={(e) => {
                           const v = e.target.value;
-                          setOptions((prev) => prev.map((p, i) => (i === idx ? v : p)));
+                          setOptions((prev) =>
+                            prev.map((p, i) => (i === idx ? v : p))
+                          );
                         }}
                         disabled={isSubmitting}
                         className="border rounded-lg p-2 w-full focus:outline-none focus:ring-2 border-gray-300 focus:ring-[#DDC9A3]"
                         placeholder={`Opción ${idx + 1}`}
                       />
+
                       <button
                         type="button"
                         title="Quitar"
@@ -247,7 +242,6 @@ export function QuestionModal({
                 </div>
               )}
 
-              {/* ERRORES */}
               <FormErrors errors={formErrors} />
               {error && <FormErrors errors={[error]} />}
             </div>
@@ -257,7 +251,12 @@ export function QuestionModal({
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95 disabled:opacity-50"
+                className="
+                  bg-[#C3A67C] text-white font-bold 
+                  py-2 px-6 rounded-lg 
+                  hover:brightness-95 
+                  disabled:opacity-50
+                "
               >
                 Cancelar
               </button>
@@ -265,7 +264,12 @@ export function QuestionModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                className="
+                  bg-white border border-[#691b31] text-[#691b31] font-bold 
+                  py-2 px-6 rounded-lg 
+                  hover:bg-gray-100 
+                  disabled:opacity-50
+                "
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
               </button>

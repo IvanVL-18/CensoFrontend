@@ -1,18 +1,11 @@
 import { type ChangeEvent } from "react";
 import { CirclePlus } from "lucide-react";
 
-import type { QuestionFilter } from "./questions.service";
 import { SearchInput } from "../../components/SearchInput";
 import AddButton from "../../components/AddButton";
 import StatusFilterSelect from "../../components/StatusFilterSelect";
 
-interface QuestionsToolbarProps {
-  filter: QuestionFilter;
-  searchTerm: string;
-  onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
-  onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onAddClick: () => void;
-}
+import type { QuestionsToolbarProps } from "./questions.interfaces";
 
 export function QuestionsToolbar({
   filter,
@@ -34,7 +27,10 @@ export function QuestionsToolbar({
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 px-4 pt-4">
-        <StatusFilterSelect value={filter} onChange={onFilterChange} />
+        <StatusFilterSelect
+          value={filter}
+          onChange={onFilterChange as (e: ChangeEvent<HTMLSelectElement>) => void}
+        />
 
         <div className="w-full md:w-80">
           <SearchInput

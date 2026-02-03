@@ -70,17 +70,17 @@ function QuestionsPageContent() {
 
   if (actionType === "ban") {
     confirmTitle = "Desactivar Pregunta";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el Pregunta "${actionQuestion?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres desactivar el pregunta"${actionQuestion?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (actionType === "restore") {
     confirmTitle = "Restaurar Pregunta";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el Pregunta "${actionQuestion?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres restaurar el pregunta"${actionQuestion?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el Pregunta "${actionQuestion?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la pregunta"${actionQuestion?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -88,6 +88,7 @@ function QuestionsPageContent() {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
+
       <QuestionsToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -109,7 +110,7 @@ function QuestionsPageContent() {
           onRestore={onRestore}
           onDelete={onDelete}
         />
-        
+
         <div className="mt-4 flex justify-center">
           <Pagination
             meta={meta}
@@ -119,7 +120,6 @@ function QuestionsPageContent() {
             onPageClick={handlePageClick}
           />
         </div>
-
       </div>
 
       <QuestionModal
@@ -131,7 +131,6 @@ function QuestionsPageContent() {
         onClose={handleModalClose}
         onSave={handleModalSave}
       />
-
 
       <ConfirmModal
         isOpen={isConfirmModalOpen}

@@ -1,8 +1,4 @@
-// src/pages/questions/FormErrors.tsx
-
-interface FormErrorsProps {
-  errors: string[];
-}
+import type { FormErrorsProps } from "./questions.interfaces";
 
 export function FormErrors({ errors }: FormErrorsProps) {
   if (errors.length === 0) return null;
@@ -25,7 +21,9 @@ export function FormErrors({ errors }: FormErrorsProps) {
       <span className="sr-only">Error</span>
 
       <div>
-        <span className="font-medium">Por favor, corrige los siguientes errores:</span>
+        <span className="font-medium">
+          Por favor, corrige los siguientes errores:
+        </span>
         <ul className="mt-1.5 list-disc list-inside">
           {errors.map((error, index) => (
             <li key={index}>{error}</li>

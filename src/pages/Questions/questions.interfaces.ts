@@ -1,5 +1,3 @@
-// src/pages/questions/questions.interfaces.ts
-
 export type QuestionType = "empty" | "radio" | "check" | "selector";
 
 export interface Option {
@@ -10,13 +8,10 @@ export interface Option {
 export interface Question {
   id: string;
   name: string;
-
-  // vienen del QuestionResource
   commentaries: boolean;
   instructions: string | null;
   type: QuestionType;
   options?: Option[];
-
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -61,10 +56,70 @@ export interface CreateQuestionDTO {
 
 export type UpdateQuestionDTO = Partial<CreateQuestionDTO>;
 
-export type SortDirection = "ascending" | "descending";
+export type QuestionFilter = "all" | "active" | "inactive";
 
 export type SortConfig = {
   key: keyof Question;
-  direction: SortDirection;
+  direction: "ascending" | "descending";
 };
 
+// ✅ INTERFACES DE PROPS (COMPONENTES)
+// (Te las pidieron aquí, así que aquí van)
+
+export interface ConfirmModalProps {
+  isOpen: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+
+  title: string;
+  message: string;
+  confirmButtonText?: string;
+  confirmButtonColor?: "danger" | "primary";
+
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+export interface FormErrorsProps {
+  errors: string[];
+}
+
+export interface QuestionModalProps {
+  isOpen: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+  title: string;
+
+  initialData?: Partial<CreateQuestionDTO>;
+
+  onClose: () => void;
+  onSave: (payload: CreateQuestionDTO) => void;
+}
+
+export interface ViewQuestionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  question: Question | null;
+}
+
+export interface QuestionsTableProps {
+  questions: Question[];
+  meta: Meta | null;
+  loading: boolean;
+  error: string | null;
+  onSort: (key: keyof Question) => void;
+
+  onView: (question: Question) => void;
+  onEdit: (question: Question) => void;
+  onBan: (question: Question) => void;
+  onRestore: (question: Question) => void;
+  onDelete: (question: Question) => void;
+}
+
+export interface QuestionsToolbarProps {
+  filter: QuestionFilter;
+  searchTerm: string;
+  onFilterChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onAddClick: () => void;
+}

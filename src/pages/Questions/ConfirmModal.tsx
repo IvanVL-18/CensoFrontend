@@ -1,19 +1,5 @@
-// src/pages/questions/ConfirmModal.tsx
-import { X } from "lucide-react"; 
-
-interface ConfirmModalProps {
-  isOpen: boolean;
-  isSubmitting: boolean;
-  error: string | null;
-
-  title: string;
-  message: string;
-  confirmButtonText?: string;
-  confirmButtonColor?: "danger" | "primary";
-
-  onClose: () => void;
-  onConfirm: () => void;
-}
+import { X } from "lucide-react";
+import type { ConfirmModalProps } from "./questions.interfaces";
 
 export function ConfirmModal({
   isOpen,
