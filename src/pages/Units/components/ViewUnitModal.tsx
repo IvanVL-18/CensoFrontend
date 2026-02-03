@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import type { ViewUnitModalProps } from "./units.types";
+import type { ViewUnitModalProps } from "../units.types";
 
 const formatDate = (dateString: string | null) => {
   if (!dateString) {

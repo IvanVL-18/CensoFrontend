@@ -1,10 +1,4 @@
-// src/utils/validation.occupation.ts
 
-/**
- * Valida los datos para crear o actualizar una Ocupación (Occupation).
- * @param data - Objeto con el nombre de la ocupación y el ID de la institución.
- * @returns Un array de strings con los mensajes de error. Array vacío si es válido.
- */
 export function validateOccupation(data: { name: string, institution_id?: string | null }): string[] {
   const errors: string[] = [];
   const name = data.name.trim();

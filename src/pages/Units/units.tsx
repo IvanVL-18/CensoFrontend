@@ -1,11 +1,15 @@
-import { useUnits } from "./useUnits";
-import { UnitsToolbar } from "./UnitsToolbar";
-import { UnitsTable } from "./UnitsTable";
-import Pagination from "../../components/Pagination";
-import { UnitModal } from "./UnitModal";
-import { ConfirmModal } from "./ConfirmModal";
-import { ViewUnitModal } from "./ViewUnitModal";
-import { BulkErrorModal } from "./BulkErrorModal";
+import { useUnitsData } from "./hooks/useUnitsData";
+import { useUnitsModals } from "./hooks/useUnitsModals";
+import { useUnitsMutations } from "./hooks/useUnitsMutations";
+
+import { UnitsToolbar } from "./components/UnitsToolbar";
+import { UnitsTable } from "./components/UnitsTable";
+import Pagination from "../../components/Pagination"; 
+import { UnitModal } from "./components/UnitModal";
+import { ConfirmModal } from "./components/ConfirmModal";
+import { ViewUnitModal } from "./components/ViewUnitModal";
+import { BulkErrorModal } from "./components/BulkErrorModal";
+
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
@@ -25,66 +29,60 @@ function ToastContainer() {
   );
 }
 
+
 function UnitsPageContent() {
   const {
+    units,
     loading,
     error,
-    sortedUnits,
     meta,
     links,
     filter,
     searchTerm,
-    isModalOpen,
-    isSubmitting,
-    modalError,
-    editingUnit,
-    isConfirmModalOpen,
-    actionUnit,
-    actionType,
-    isViewModalOpen,
-    viewingUnit,
-    isBulkErrorModalOpen,
-    bulkErrors,
-    setIsBulkErrorModalOpen,
-    handleBulkUpload,
+    refreshUnits,     
     handleFilterChange,
     handleSearchChange,
     handleSort,
     handlePageClick,
-    handleAddClick,
-    handleModalClose,
-    handleModalSave,
-    onView,
-    onEdit,
-    onBan,
-    onRestore,
-    onDelete,
-    handleViewModalClose,
-    handleConfirmModalClose,
-    handleConfirmAction,
-  } = useUnits();
+  } = useUnitsData();
 
-  const modalTitle = editingUnit ? "Editar Módulo" : "Agregar Módulo";
-  const modalInitialName = editingUnit ? editingUnit.name : "";
+  
+  const modals = useUnitsModals();
+
+  const { 
+    isSubmitting, 
+    mutationError, 
+    handleSave, 
+    handleConfirmAction, 
+    handleBulkUpload 
+  } = useUnitsMutations({
+    refreshUnits,
+    closeForm: modals.closeForm,
+    closeConfirm: modals.closeConfirm,
+    openBulkError: modals.openBulkError,
+  });
+
+  const modalTitle = modals.editingUnit ? "Editar Módulo" : "Agregar Módulo";
+  const modalInitialName = modals.editingUnit?.name || "";
 
   let confirmTitle = "";
   let confirmMessage = "";
   let confirmButtonText = "";
   let confirmButtonColor: "danger" | "primary" = "danger";
 
-  if (actionType === "ban") {
+  if (modals.actionType === "ban") {
     confirmTitle = "Desactivar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${actionUnit?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${modals.actionUnit?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
-  } else if (actionType === "restore") {
+  } else if (modals.actionType === "restore") {
     confirmTitle = "Restaurar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${actionUnit?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${modals.actionUnit?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
-  } else if (actionType === "delete") {
+  } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${actionUnit?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${modals.actionUnit?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -92,30 +90,34 @@ function UnitsPageContent() {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
+      
+      {/* Barra de Herramientas */}
       <UnitsToolbar
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
-        onAddClick={handleAddClick}
-        onBulkUpload={handleBulkUpload}
+        onAddClick={modals.openCreate}      
+        onBulkUpload={handleBulkUpload}   
       />
 
+      {/* Tabla de Resultados */}
       <div className="p-4">
         <UnitsTable
           loading={loading}
           error={error}
-          units={sortedUnits}
+          units={units}
           meta={meta}
           onSort={handleSort}
-          onView={onView}
-          onEdit={onEdit}
-          onBan={onBan}
-          onRestore={onRestore}
-          onDelete={onDelete}
+          onView={modals.openView}         
+          onEdit={modals.openEdit}          
+          onBan={(u) => modals.openConfirm(u, "ban")}
+          onRestore={(u) => modals.openConfirm(u, "restore")}
+          onDelete={(u) => modals.openConfirm(u, "delete")}
         />
 
+        {/* Paginación */}
         <div className="mt-4 flex justify-center">
           <Pagination
             meta={meta}
@@ -127,42 +129,44 @@ function UnitsPageContent() {
         </div>
       </div>
 
-      {/* Modal Crear/Editar */}
+      {/* --- MODALES --- */}
+
+      {/* 1. Crear / Editar */}
       <UnitModal
-        isOpen={isModalOpen}
+        isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
-        error={modalError}
+        error={mutationError}
         title={modalTitle}
         initialName={modalInitialName}
-        onClose={handleModalClose}
-        onSave={handleModalSave}
+        onClose={modals.closeForm}
+        onSave={(name) => handleSave(name, modals.editingUnit)}
       />
 
-      {/* Modal Confirmación (Borrar/Restaurar) */}
+      {/* 2. Confirmación (Ban/Restore/Delete) */}
       <ConfirmModal
-        isOpen={isConfirmModalOpen}
+        isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={modalError}
+        error={mutationError} // Si falla el borrado, se muestra aquí
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
         confirmButtonColor={confirmButtonColor}
-        onClose={handleConfirmModalClose}
-        onConfirm={handleConfirmAction}
+        onClose={modals.closeConfirm}
+        onConfirm={() => handleConfirmAction(modals.actionUnit, modals.actionType)}
       />
 
-      {/* Modal Ver Detalle */}
+      {/* 3. Ver Detalle */}
       <ViewUnitModal
-        isOpen={isViewModalOpen}
-        unit={viewingUnit}
-        onClose={handleViewModalClose}
+        isOpen={modals.isViewOpen}
+        unit={modals.viewingUnit}
+        onClose={modals.closeView}
       />
 
-      {/* Modal Errores de Carga Masiva */}
+      {/* 4. Errores de Excel */}
       <BulkErrorModal
-        isOpen={isBulkErrorModalOpen}
-        errors={bulkErrors}
-        onClose={() => setIsBulkErrorModalOpen(false)}
+        isOpen={modals.isBulkErrorOpen}
+        errors={modals.bulkErrors}
+        onClose={modals.closeBulkError}
       />
     </div>
   );
