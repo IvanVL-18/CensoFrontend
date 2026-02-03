@@ -21,10 +21,10 @@ export interface MetaLink {
 
 // Esta es la interfaz para el objeto 'meta' (ajustado a tu API)
 export interface Meta {
-  total: number[];
-  per_page: number[];
-  current_page: number[];
-  last_page: number[];
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
   from: number;
   links: MetaLink[]; // <-- Faltaba este array de links
   path: string;
