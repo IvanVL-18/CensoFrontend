@@ -6,12 +6,10 @@ export interface Index {
   name: string;
   created_at: string;
   updated_at: string;
-  deleted_at: string; // <-- CORRECCIÓN 1: '?' lo hace opcional (puede no existir)
+  deleted_at: string; 
 }
 
-// --- Interaces para la paginación ---
 
-// Esta es la interfaz para los links DENTRO del objeto 'meta'
 export interface MetaLink {
   url: string | null;
   label: string;
@@ -19,19 +17,19 @@ export interface MetaLink {
   active: boolean;
 }
 
-// Esta es la interfaz para el objeto 'meta' (ajustado a tu API)
+
 export interface Meta {
   total: number[];
   per_page: number[];
   current_page: number[];
   last_page: number[];
   from: number;
-  links: MetaLink[]; // <-- Faltaba este array de links
+  links: MetaLink[]; 
   path: string;
   to: number;
 }
 
-// Esta es la interfaz para la respuesta COMPLETA de la API (con paginación)
+
 export interface PaginatedIndexsResponse {
   data: Index[];
   links: {
@@ -40,15 +38,27 @@ export interface PaginatedIndexsResponse {
     prev: string | null;
     next: string | null;
   };
-  meta: Meta; // <-- CORRECCIÓN 2: Usamos la interfaz Meta corregida
+  meta: Meta;
 }
 
-// Esta es la interfaz para crear una nueva unidad
+
 export interface CreateIndexDTO {
   name: string;
-  // Agrega aquí otros campos que necesites para crear
+  
 }
 
-// Esta es la interfaz para actualizar (opcional, pero útil)
-// 'Partial' hace que todos los campos de CreateIndexDTO (como 'name') sean opcionales
+
 export type UpdateIndexDTO = Partial<CreateIndexDTO>;
+
+export interface ExcelFailure {
+  row: number;
+  field: string;
+  errors: string[];
+  invalid_value: any;
+}
+
+export interface BulkErrorModalProps {
+  isOpen: boolean;
+  errors: ExcelFailure[];
+  onClose: () => void;
+}

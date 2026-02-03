@@ -70,6 +70,7 @@ function IndexsPageContent() {
     handleViewModalClose,
     handleConfirmModalClose, 
     handleConfirmAction,
+    handleBulkUpload,
   } = useIndexs(); 
 
  
@@ -109,9 +110,11 @@ function IndexsPageContent() {
       <IndexsToolbar
         filter={filter}
         searchTerm={searchTerm}
+        isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
         onAddClick={handleAddClick}
+        onBulkUpload={handleBulkUpload}
       />
 
       <div className="p-4">

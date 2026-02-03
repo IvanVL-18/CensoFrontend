@@ -101,3 +101,29 @@ export const forceDeleteIndex = (id: string | number): Promise<{ message: string
     headers: { "Accept": "application/json" },
   }).then(handleJsonResponse);
 };
+
+export const importIndexs = async (
+  formData: FormData
+): Promise<{ message: string }> => {
+  const url = `${API_URL}/index/import`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { Accept: "application/json" },
+    body: formData,
+  });
+
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : {};
+
+  if (!response.ok) {
+    
+    if (response.status === 422 && data.errors) {
+      const error: any = new Error(data.message || "Errores en el archivo");
+      error.bulkErrors = data.errors; 
+      throw error;
+    }
+    throw new Error(data.message || `Error ${response.status}`);
+  }
+
+  return data;
+};
