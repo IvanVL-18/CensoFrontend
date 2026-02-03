@@ -1,12 +1,24 @@
-import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
-import { getUnits, createUnit, updateUnit,banUnit, restoreUnit,forceDeleteUnit, getUnit, type UnitFilter } from "./units.service";
-import { useToast } from "../../context/ToastContext"; // <--- 1. IMPORTAR
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  type ChangeEvent,
+} from "react";
 
-import type {
-  Unit,
-  PaginatedUnitsResponse,
-  Meta,
-} from "./units.interfaces";
+import {
+  getUnits,
+  createUnit,
+  updateUnit,
+  banUnit,
+  restoreUnit,
+  forceDeleteUnit,
+  importUnits,
+  getUnit,
+  type UnitFilter,
+} from "./units.service";
+import { useToast } from "../../context/ToastContext";
+import type { Unit, PaginatedUnitsResponse, Meta } from "./units.interfaces";
 
 type SortConfig = {
   key: keyof Unit;
@@ -14,54 +26,50 @@ type SortConfig = {
 };
 
 export function useUnits() {
-  // --- Estados de datos ---
-  const { addToast } = useToast(); 
+  const [bulkErrors, setBulkErrors] = useState<any[]>([]);
+  const [isBulkErrorModalOpen, setIsBulkErrorModalOpen] = useState(false);
+  const { addToast } = useToast();
   const [isViewLoading, setIsViewLoading] = useState(false);
   const [units, setUnits] = useState<Unit[]>([]);
-  const [links, setLinks] = useState<PaginatedUnitsResponse["links"] | null>(null);
+  const [links, setLinks] = useState<PaginatedUnitsResponse["links"] | null>(
+    null,
+  );
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // --- Estados de filtros y orden ---
   const [filter, setFilter] = useState<UnitFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<SortConfig>({
-    key: "name",
-    direction: "ascending",
-    
-  });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({key: "name",direction: "ascending",});
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false); // Modal para subir archivo
+  const [importErrors, setImportErrors] = useState<any[]>([]); // Para guardar los errores del Excel
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingUnit, setViewingUnit] = useState<Unit | null>(null);
-  
+
   const handleViewModalClose = useCallback(() => {
     setIsViewModalOpen(false);
     setViewingUnit(null);
   }, []);
 
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
-  // (Esto nos permite recargar la lista después de crear un item)
   const [reloadToken, setReloadToken] = useState(0);
   const reloadUnits = useCallback(() => setReloadToken((t) => t + 1), []);
-  // Guardará la unidad que estamos editando
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
-
-  // --- 2. NUEVOS ESTADOS PARA EL MODAL DE CONFIRMACIÓN ---
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  // Guardará la unidad que queremos desactivar, restaurar o eliminar
   const [actionUnit, setActionUnit] = useState<Unit | null>(null);
-  // Guardará qué acción estamos por confirmar
-  const [actionType, setActionType] = useState<'ban' | 'restore' | 'delete' | null>(null);
+  const [actionType, setActionType] = useState<
+    "ban" | "restore" | "delete" | null
+  >(null);
 
-  
-  // --- Lógica de Carga de Datos ---
+const [previewData, setPreviewData] = useState<any[]>([]);
+const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+const [pendingFile, setPendingFile] = useState<File | null>(null);
 
-  // 1. Efecto para cargar datos
-  useEffect(() => {
+
+useEffect(() => {
     setLoading(true);
     getUnits(filter)
       .then((response) => {
@@ -74,13 +82,15 @@ export function useUnits() {
         console.error(err);
         setError(`Error al cargar los Modulos: ${err.message}`);
       })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [filter, reloadToken]); 
+      .finally(() => setLoading(false));
+  }, [filter, reloadToken]);
 
-  // 2. Función para paginación
-  const loadUnitsByUrl = useCallback((url: string) => {
+
+
+const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => setFilter(e.target.value as UnitFilter), []);
+const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value), []);
+const handlePageClick = useCallback((url: string | null) => {
+    if (!url) return;
     setLoading(true);
     fetch(url)
       .then((res) => res.json() as Promise<PaginatedUnitsResponse>)
@@ -90,257 +100,251 @@ export function useUnits() {
         setMeta(response.meta);
         setError(null);
       })
-      .catch((err) => {
-        console.error(err);
-        setError(`Error al cargar la página: ${err.message}`);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      .catch((err) => setError(`Error paginación: ${err.message}`))
+      .finally(() => setLoading(false));
   }, []);
 
-  // --- Controladores de Eventos (Filtros, Paginación) ---
-
-  const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setFilter(e.target.value as UnitFilter);
+const handleSort = useCallback((key: keyof Unit) => {
+    setSortConfig(c => ({ key, direction: c.key === key && c.direction === "ascending" ? "descending" : "ascending" }));
   }, []);
 
-  const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  }, []);
+const filteredUnits = useMemo(() => units.filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase())), [units, searchTerm]);
 
-  const handlePageClick = useCallback(
-    (url: string | null) => {
-      if (url) {
-        loadUnitsByUrl(url);
-      }
-    },
-    [loadUnitsByUrl]
-  );
-
-  const handleSort = useCallback((key: keyof Unit) => {
-    setSortConfig((currentConfig) => {
-      let direction: "ascending" | "descending" = "ascending";
-      if (
-        currentConfig.key === key &&
-        currentConfig.direction === "ascending"
-      ) {
-        direction = "descending";
-      }
-      return { key, direction };
-    });
-  }, []);
-
-  // --- Lógica de Memoización (Datos Computados) ---
-  const filteredUnits = useMemo(() => {
-    return units.filter((unit) =>
-      unit.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [units, searchTerm]);
-
-  const sortedUnits = useMemo(() => {
-    let sortableItems = [...filteredUnits];
-    sortableItems.sort((a, b) => {
-      // ... (lógica de ordenamiento sin cambios)
+const sortedUnits = useMemo(() => {
+    const items = [...filteredUnits];
+    items.sort((a, b) => {
       const valA = a[sortConfig.key];
       const valB = b[sortConfig.key];
-      if (valA == null) return 1;
+      if (valA == null) return 1; 
       if (valB == null) return -1;
-      if (valA < valB) {
-        return sortConfig.direction === "ascending" ? -1 : 1;
-      }
-      if (valA > valB) {
-        return sortConfig.direction === "ascending" ? 1 : -1;
-      }
+      if (valA < valB) return sortConfig.direction === "ascending" ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === "ascending" ? 1 : -1;
       return 0;
     });
-    return sortableItems;
+    return items;
   }, [filteredUnits, sortConfig]);
 
-  // (Acciones CRUD) ---
-
-  // MODIFICADO: Abre el modal
   const handleAddClick = useCallback(() => {
     setEditingUnit(null);
-    setModalError(null); // Limpia errores antiguos
+    setModalError(null);
     setIsModalOpen(true);
   }, []);
-  
-  // NUEVO: Cierra el modal
+
   const handleModalClose = useCallback(() => {
     setIsModalOpen(false);
-    setModalError(null); // Limpia errores al cerrar
+    setModalError(null);
     setEditingUnit(null);
   }, []);
 
-  // NUEVO: Lógica para guardar
- // Reemplaza tu 'handleModalSave' con esto:
-  const handleModalSave = useCallback(
-  async (name: string) => {
+ const handleModalSave = useCallback(async (name: string) => {
     setIsSubmitting(true);
     setModalError(null);
-
     try {
-      let response: any;
+      let response;
       const unitData = { name };
-
       if (editingUnit) {
         response = await updateUnit(editingUnit.id, unitData);
       } else {
         response = await createUnit(unitData);
       }
-
-      // Usamos el mensaje del back: "Unidad creada con exito" o "Unidad actualizada con éxito."
       addToast(response.message, "success");
-
       setIsModalOpen(false);
       setEditingUnit(null);
       reloadUnits();
-
     } catch (err: any) {
       setModalError(err.message || "Ocurrió un error");
       addToast(err.message, "danger");
     } finally {
       setIsSubmitting(false);
     }
-  },
-  [reloadUnits, editingUnit, addToast]
-);
+  }, [editingUnit, addToast, reloadUnits]);
 
-// --- 1. AGREGA ESTA FUNCIÓN (que se había borrado) ---
-const handleConfirmModalClose = useCallback(() => {
-  setIsConfirmModalOpen(false);
-  setActionUnit(null);
-  setActionType(null);
-  setModalError(null); 
-}, []);
 
-// --- 2. MODAL DE ACCIÓN (Corregido para TS) ---
+  const handleConfirmModalClose = useCallback(() => {
+    setIsConfirmModalOpen(false);
+    setActionUnit(null);
+    setActionType(null);
+    setModalError(null);
+  }, []);
+
 const handleConfirmAction = useCallback(async () => {
-  if (!actionUnit || !actionType) return;
-  setIsSubmitting(true);
+    if (!actionUnit || !actionType) return;
+    setIsSubmitting(true);
+    try {
+      let response: any;
+      if (actionType === 'ban') response = await banUnit(actionUnit.id);
+      else if (actionType === 'restore') response = await restoreUnit(actionUnit.id);
+      else if (actionType === 'delete') response = await forceDeleteUnit(actionUnit.id);
 
-  try {
-    let response: any; // <--- Le damos un tipo para que TS no se queje
-
-    if (actionType === 'ban') {
-      response = await banUnit(actionUnit.id);
-    } else if (actionType === 'restore') {
-      response = await restoreUnit(actionUnit.id);
-    } else if (actionType === 'delete') {
-      response = await forceDeleteUnit(actionUnit.id);
+      if (response) {
+        const toastType = actionType === 'delete' ? "danger" : "success";
+        addToast(response.message, toastType);
+        setIsConfirmModalOpen(false);
+        setActionUnit(null);
+        setActionType(null);
+        reloadUnits();
+      }
+    } catch (err: any) {
+      addToast(err.message || "Error en la acción", "danger");
+    } finally {
+      setIsSubmitting(false);
     }
+  }, [actionUnit, actionType, reloadUnits, addToast]);
 
-    // Verificamos que response exista antes de usarlo (soluciona el error de 'undefined')
-    if (response) {
-      const toastType = actionType === 'ban' ? "warning" : actionType === 'delete' ? "danger" : "success";
-
-      handleConfirmModalClose();
-      reloadUnits();
-      
-      // Ahora sí, tomamos el mensaje que viene del UnitController.php
-      addToast(response.message, toastType); 
+  const onView = useCallback(async (unit: Unit) => {
+    setIsViewLoading(true);
+    try {
+      const data = await getUnit(unit.id);
+      setViewingUnit(data);
+      setIsViewModalOpen(true);
+    } catch (err:any) {
+      addToast(err.message || "Error al cargar detalle", "danger");
+    } finally {
+      setIsViewLoading(false);
     }
-
-  } catch (err: any) {
-    // Si el backend lanza el error 400, handleJsonResponse captura el message y lo lanza aquí
-    addToast(err.message || "Error al procesar la acción", "danger");
-  } finally {
-    setIsSubmitting(false);
-  }
-}, [actionUnit, actionType, reloadUnits, handleConfirmModalClose, addToast]);
-
-const onView = useCallback(async (unit: Unit) => {
-  // Usamos el nuevo estado, así la tabla no se entera de que estamos cargando
-  setIsViewLoading(true); 
-  
-  try {
-    const unitData = await getUnit(unit.id);
-    setViewingUnit(unitData);
-    setIsViewModalOpen(true);
-  } catch (err) {
-    console.error("Error al obtener detalle de la unidad:", err);
-    const errorMessage = (err as Error).message || "No se pudo cargar el detalle.";
-    addToast(errorMessage, "danger");
-  } finally {
-    setIsViewLoading(false); // Apagamos la carga del modal
-  }
-}, [addToast]);
+  }, [addToast]);
 
   const onEdit = useCallback((unit: Unit) => {
-    setEditingUnit(unit); // <--- Guarda la unidad a editar
+    setEditingUnit(unit);
     setModalError(null);
-    setIsModalOpen(true); // <--- Abre el modal
+    setIsModalOpen(true);
   }, []);
 
   const onBan = useCallback((unit: Unit) => {
     setActionUnit(unit);
-    setActionType('ban');
-    setIsConfirmModalOpen(true); // Abre el modal de confirmación
+    setActionType("ban");
+    setIsConfirmModalOpen(true);
     setModalError(null);
   }, []);
 
   const onRestore = useCallback((unit: Unit) => {
     setActionUnit(unit);
-    setActionType('restore');
+    setActionType("restore");
     setIsConfirmModalOpen(true);
     setModalError(null);
   }, []);
 
   const onDelete = useCallback((unit: Unit) => {
-  setActionUnit(unit);
-  setActionType('delete'); // <--- Esto le dice al modal qué textos mostrar
-  setIsConfirmModalOpen(true);
-  setModalError(null);
-}, []);
+    setActionUnit(unit);
+    setActionType("delete");
+    setIsConfirmModalOpen(true);
+    setModalError(null);
+  }, []);
 
-  
+const handleBulkUpload = useCallback(async (file: File) => {
+    setIsSubmitting(true);
+    setBulkErrors([]); // Limpiamos errores previos
 
-  // --- Objeto de Retorno ---
+    const formData = new FormData();
+    formData.append('file', file); // 'file' debe coincidir con el Request de Laravel
+
+    try {
+      // Enviamos directo al backend
+      const response = await importUnits(formData);
+      
+      // Si llega aquí es status 200 (Todo perfecto)
+      addToast(response.message || "Importación exitosa", "success");
+      reloadUnits(); // Recargamos la tabla para ver los nuevos datos
+
+    } catch (err: any) {
+      console.error("Error en carga masiva:", err);
+
+      // Si el backend responde 422, es que hay errores de validación en el Excel
+      if (err.status === 422 && err.data?.errors) {
+        setBulkErrors(err.data.errors); // Guardamos la lista de fallos
+        setIsBulkErrorModalOpen(true);  // Abrimos el modal de reporte
+        addToast("El archivo se procesó con algunos errores", "warning");
+        reloadUnits(); // Recargamos igual, porque los buenos SÍ se guardaron
+      } else {
+        // Otros errores (500, red, etc)
+        addToast(err.message || "Error al subir el archivo", "danger");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [addToast, reloadUnits]);
+
+
+const confirmImport = useCallback(async () => {
+  setIsSubmitting(true);
+  try {
+    await importUnits; 
+    setIsPreviewModalOpen(false);
+    addToast("¡Importación exitosa!", "success");
+
+    // 2. Refresco total
+    const response = await getUnits(filter); 
+    setUnits(response.data);
+    reloadUnits();
+    setPreviewData([]);
+
+  } catch (error: any) {
+    // Si el backend devuelve errores de validación (el array de fallos)
+    if (error.errors) {
+      setBulkErrors(error.errors); // Guardamos los errores para el modal
+      setIsPreviewModalOpen(false); // Cerramos la preview
+      setIsBulkErrorModalOpen(true); // ¡ESTO activa el modal de errores!
+    } else {
+      addToast(error.message || "Error al guardar", "danger");
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+}, [previewData, filter, reloadUnits, addToast]);
+
+
+
+// Retorna estos nuevos estados y funciones
+
+
+
   return {
-    // Estado de carga
     loading,
+    bulkErrors,
     isViewLoading,
+    isBulkErrorModalOpen,
     error,
-    
-    // Datos
     sortedUnits,
     meta,
     links,
-    
-    // Estado de filtros
     filter,
     searchTerm,
-
     isConfirmModalOpen,
     actionUnit,
     actionType,
-    
-    // --- NUEVO: Estado del Modal ---
     isModalOpen,
     isSubmitting,
     modalError,
     editingUnit,
     isViewModalOpen,
     viewingUnit,
-
-    // Controladores (Filtros, Paginación)
+    previewData,
+    isPreviewModalOpen,
+    pendingFile,
+    isImportModalOpen,
+    importErrors,
+    setIsImportModalOpen,
+    setImportErrors,
+    setSearchTerm,
+    handleBulkUpload,
     handleFilterChange,
-    handleSearchChange,
     handleSort,
     handlePageClick,
-
-    // Controladores de acciones (CRUD)
     handleAddClick,
-    handleModalClose, 
-    handleModalSave,  
+    handleModalClose,
+    handleModalSave,
     onView,
     onEdit,
     onBan,
     onRestore,
     onDelete,
-    handleConfirmModalClose, 
+    handleConfirmModalClose,
     handleConfirmAction,
-    handleViewModalClose
+    handleViewModalClose,
+    setIsBulkErrorModalOpen,
+    setIsPreviewModalOpen,
+    confirmImport,
+    setPendingFile,
+    handleSearchChange,
   };
 }

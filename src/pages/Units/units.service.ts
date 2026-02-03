@@ -9,7 +9,6 @@ const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type UnitFilter = "all" | "active" | "inactive";
 
-
 const handleJsonResponse = async (response: Response) => {
   const text = await response.text();
   let data;
@@ -21,14 +20,14 @@ const handleJsonResponse = async (response: Response) => {
   }
 
   if (!response.ok) {
-    // Si hay error, lanzamos el mensaje que viene del back (Laravel)
-    throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
+    const error: any = new Error(data.message || `Error ${response.status}: ${response.statusText}`);
+    error.status = response.status;
+    error.data = data; 
+    throw error;
   }
 
-  // Retornamos toda la data (incluyendo el message y el code si existiera)
   return data;
 };
-
 
 export const getUnits = (filter: UnitFilter = "all"): Promise<PaginatedUnitsResponse> => {
   const url = `${API_URL}/units/${filter}/content`;
@@ -38,7 +37,6 @@ export const getUnits = (filter: UnitFilter = "all"): Promise<PaginatedUnitsResp
   }).then(handleJsonResponse);
 };
 
-// Cambiamos Promise<void> por Promise<any> para recibir el { message: "..." }
 export const banUnit = (id: string): Promise<{ message: string }> => {
   const url = `${API_URL}/units/${id}`;
   return fetch(url, {
@@ -63,8 +61,6 @@ export const forceDeleteUnit = (id: string | number): Promise<{ message: string 
   }).then(handleJsonResponse);
 };
 
-// Para crear y editar, Laravel devuelve el message. 
-// Si necesitas el objeto Unit, podrías ajustar el back o desestructurar aquí.
 export const createUnit = (unitData: CreateUnitDTO): Promise<any> => {
   const url = `${API_URL}/units`;
   return fetch(url, {
@@ -97,4 +93,15 @@ export const getUnit = (id: string | number): Promise<Unit> => {
   })
     .then(handleJsonResponse)
     .then((response) => response.data ?? response);
+};
+
+export const importUnits = (formData: FormData): Promise<any> => {
+  const url = `${API_URL}/units/import`;
+  return fetch(url, {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+    },
+    body: formData,
+  }).then(handleJsonResponse);
 };

@@ -5,13 +5,12 @@ import Pagination from "../../components/Pagination";
 import { UnitModal } from "./UnitModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { ViewUnitModal } from "./ViewUnitModal";
-
+import { BulkErrorModal } from "./BulkErrorModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
-
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
       {toasts.map((toast) => (
@@ -44,6 +43,10 @@ function UnitsPageContent() {
     actionType,
     isViewModalOpen,
     viewingUnit,
+    isBulkErrorModalOpen,
+    bulkErrors,
+    setIsBulkErrorModalOpen,
+    handleBulkUpload,
     handleFilterChange,
     handleSearchChange,
     handleSort,
@@ -92,9 +95,11 @@ function UnitsPageContent() {
       <UnitsToolbar
         filter={filter}
         searchTerm={searchTerm}
+        isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
         onAddClick={handleAddClick}
+        onBulkUpload={handleBulkUpload}
       />
 
       <div className="p-4">
@@ -110,7 +115,7 @@ function UnitsPageContent() {
           onRestore={onRestore}
           onDelete={onDelete}
         />
-        
+
         <div className="mt-4 flex justify-center">
           <Pagination
             meta={meta}
@@ -120,9 +125,9 @@ function UnitsPageContent() {
             onPageClick={handlePageClick}
           />
         </div>
-
       </div>
 
+      {/* Modal Crear/Editar */}
       <UnitModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
@@ -133,6 +138,7 @@ function UnitsPageContent() {
         onSave={handleModalSave}
       />
 
+      {/* Modal Confirmación (Borrar/Restaurar) */}
       <ConfirmModal
         isOpen={isConfirmModalOpen}
         isSubmitting={isSubmitting}
@@ -145,10 +151,18 @@ function UnitsPageContent() {
         onConfirm={handleConfirmAction}
       />
 
+      {/* Modal Ver Detalle */}
       <ViewUnitModal
         isOpen={isViewModalOpen}
         unit={viewingUnit}
         onClose={handleViewModalClose}
+      />
+
+      {/* Modal Errores de Carga Masiva */}
+      <BulkErrorModal
+        isOpen={isBulkErrorModalOpen}
+        errors={bulkErrors}
+        onClose={() => setIsBulkErrorModalOpen(false)}
       />
     </div>
   );
