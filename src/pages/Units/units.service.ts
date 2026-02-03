@@ -53,7 +53,7 @@ export const updateUnit = async (
 };
 
 export const banUnit = async (id: UnitId): Promise<{ message: string }> => {
-  const response = await api.delete(`/unitss/${id}`);
+  const response = await api.delete(`/units/${id}`);
   return response.data;
 };
 

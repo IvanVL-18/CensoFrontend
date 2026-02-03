@@ -1,10 +1,3 @@
-// src/utils/validation.ts (Corregido de nuevo)
-
-// Definimos los tipos de datos que esperamos del formulario
-interface UnitFormData { // Para Units
-  name: string;
-}
-
 interface InstitutionFormData { // Para Institutions
   name: string;
   municipality: string;
@@ -16,51 +9,7 @@ interface SectionData {
   name: string;
   instructions?: string | null;
 }
-/**
- * Valida los datos del formulario de la Unidad, replicando las reglas del backend.
- * Recibe un objeto con los datos y devuelve un ARRAY de strings con los mensajes de error.
- * Si no hay errores, devuelve un array vacío.
- */
-export function validateUnit(data: UnitFormData): string[] {
-  const errors: string[] = [];
-  const name = data.name.trim(); // Usamos trim para las validaciones
 
-  // Regla 1: 'name.required' (Transcripción)
-  if (name === "") {
-    errors.push("El nombre es obligatorio.");
-    return errors; 
-  }
-
-  // Regla 2: 'name.min' (Transcripción)
-  if (name.length < 5) {
-    errors.push("El nombre debe tener al menos 5 caracteres.");
-  }
-
-  // Regla 3: 'name.max' (Transcripción)
-  if (name.length > 65) {
-    errors.push("El nombre no puede exceder los 65 caracteres.");
-  }
-
-  // Regla 4: 'name.regex' (Transcripción)
-  
-  
-  const regex = /^[\p{L}\p{M}\p{N}\s'.,-]+$/u;
-  
-  if (!regex.test(data.name)) { // Aquí usamos data.name (sin trim)
-    errors.push("El campo nombre no puede contener emojis ni símbolos especiales.");
-  }
-
-  // Regla 5: 'name.unique' -> Esta NO se puede transcribir.
-  // Se validará en el servidor al momento de guardar.
-
-  return errors;
-}
-
-/**
- * Valida los datos del formulario de la Institución.
- * Devuelve un ARRAY de strings con los mensajes de error.
- * Si no hay errores, devuelve un array vacío.
- */
 export function validateInstitution(data: InstitutionFormData): string[] {
   const errors: string[] = [];
   const { name, municipality, geocode, typeinst } = data;

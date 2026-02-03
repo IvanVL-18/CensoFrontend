@@ -7,7 +7,7 @@ import {
   Ban,
   type LucideProps,
 } from "lucide-react";
-import type { UnitsTableProps } from "./units.types";
+import type { UnitsTableProps } from "../units.types";
 
 const defaultProps = {
   strokeWidth: 1.75,
