@@ -1,107 +1,79 @@
+import api from "../../lib/Axios";
 import type {
   Unit,
   PaginatedUnitsResponse,
   CreateUnitDTO,
   UpdateUnitDTO,
-} from "./units.interfaces";
-
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+} from "./units.types";
 
 export type UnitFilter = "all" | "active" | "inactive";
 
-const handleJsonResponse = async (response: Response) => {
-  const text = await response.text();
-  let data;
+type UnitId = string | number;
 
-  try {
-    data = text ? JSON.parse(text) : {};
-  } catch (error) {
-    throw new Error(`Error al procesar respuesta del servidor: ${text.slice(0, 100)}`);
-  }
-
-  if (!response.ok) {
-    const error: any = new Error(data.message || `Error ${response.status}: ${response.statusText}`);
-    error.status = response.status;
-    error.data = data; 
-    throw error;
-  }
-
-  return data;
-};
-
-export const getUnits = (filter: UnitFilter = "all"): Promise<PaginatedUnitsResponse> => {
-  const url = `${API_URL}/units/${filter}/content`;
-  return fetch(url, {
-    method: "GET",
-    headers: { "Accept": "application/json" },
-  }).then(handleJsonResponse);
-};
-
-export const banUnit = (id: string): Promise<{ message: string }> => {
-  const url = `${API_URL}/units/${id}`;
-  return fetch(url, {
-    method: "DELETE",
-    headers: { "Accept": "application/json" },
-  }).then(handleJsonResponse);
-};
-
-export const restoreUnit = (id: string): Promise<{ message: string }> => {
-  const url = `${API_URL}/units/${id}/restore`;
-  return fetch(url, {
-    method: "POST",
-    headers: { "Accept": "application/json" },
-  }).then(handleJsonResponse);
-};
-
-export const forceDeleteUnit = (id: string | number): Promise<{ message: string }> => {
-  const url = `${API_URL}/units/${id}/force-delete`;
-  return fetch(url, {
-    method: "DELETE",
-    headers: { "Accept": "application/json" },
-  }).then(handleJsonResponse);
-};
-
-export const createUnit = (unitData: CreateUnitDTO): Promise<any> => {
-  const url = `${API_URL}/units`;
-  return fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
+export const getUnits = async (
+  filter: UnitFilter = "all",
+  search: string = "",
+  signal?: AbortSignal,
+): Promise<PaginatedUnitsResponse> => {
+  const params = new URLSearchParams();
+  if (search) params.append("search", search);
+  const response = await api.get<PaginatedUnitsResponse>(
+    `/units/${filter}/content`,
+    {
+      params: params,
+      signal,
     },
-    body: JSON.stringify(unitData),
-  }).then(handleJsonResponse);
+  );
+  return response.data;
 };
 
-export const updateUnit = (id: string, unitData: UpdateUnitDTO): Promise<any> => {
-  const url = `${API_URL}/units/${id}`;
-  return fetch(url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-    },
-    body: JSON.stringify(unitData),
-  }).then(handleJsonResponse);
+export const getUnit = async (
+  id: UnitId,
+  signal?: AbortSignal,
+): Promise<Unit> => {
+  const response = await api.get<{ data: Unit } | Unit>(`/units/${id}`, {
+    signal,
+  });
+  return (response.data as any).data ?? response.data;
 };
 
-export const getUnit = (id: string | number): Promise<Unit> => {
-  const url = `${API_URL}/units/${id}`;
-  return fetch(url, {
-    method: "GET",
-    headers: { "Accept": "application/json" },
-  })
-    .then(handleJsonResponse)
-    .then((response) => response.data ?? response);
+export const createUnit = async (
+  unitData: CreateUnitDTO,
+): Promise<{ message: string; data?: Unit }> => {
+  const response = await api.post("/units", unitData);
+  return response.data;
 };
 
-export const importUnits = (formData: FormData): Promise<any> => {
-  const url = `${API_URL}/units/import`;
-  return fetch(url, {
-    method: "POST",
-    headers: {
-      "Accept": "application/json",
-    },
-    body: formData,
-  }).then(handleJsonResponse);
+export const updateUnit = async (
+  id: UnitId,
+  unitData: UpdateUnitDTO,
+): Promise<{ message: string }> => {
+  const response = await api.put(`/units/${id}`, unitData);
+  return response.data;
+};
+
+export const banUnit = async (id: UnitId): Promise<{ message: string }> => {
+  const response = await api.delete(`/unitss/${id}`);
+  return response.data;
+};
+
+export const restoreUnit = async (id: UnitId): Promise<{ message: string }> => {
+  const response = await api.post(`/units/${id}/restore`);
+  return response.data;
+};
+
+export const forceDeleteUnit = async (
+  id: UnitId,
+): Promise<{ message: string }> => {
+  const response = await api.delete(`/units/${id}/force-delete`);
+  return response.data;
+};
+
+export const importUnits = async (
+  formData: FormData,
+): Promise<{ message: string }> => {
+  const response = await api.post("/units/import", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
 };

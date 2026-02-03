@@ -7,9 +7,7 @@ import {
   Ban,
   type LucideProps,
 } from "lucide-react";
-import type { Unit, Meta } from "./units.interfaces"; // Asegúrate que la ruta sea correcta
-
-// --- Definiciones de Iconos (usados solo en la tabla) ---
+import type { UnitsTableProps } from "./units.types";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -27,27 +25,7 @@ const IconDelete = (props: LucideProps) => (
 const IconCircleArrowUp = (props: LucideProps) => (
   <CircleArrowUp {...defaultProps} {...props} />
 );
-const IconBan = (props: LucideProps) => (
-  <Ban {...defaultProps} {...props} />
-);
-
-// --- Definición de Props ---
-
-interface UnitsTableProps {
-  units: Unit[]; // Recibe las unidades YA filtradas y ordenadas
-  meta: Meta | null;
-  loading: boolean;
-  error: string | null;
-  onSort: (key: keyof Unit) => void;
-  // Funciones para manejar las acciones
-  onView: (unit: Unit) => void;
-  onEdit: (unit: Unit) => void;
-  onBan: (unit: Unit) => void;
-  onRestore: (unit: Unit) => void;
-  onDelete: (unit: Unit) => void;
-}
-
-// --- Componente ---
+const IconBan = (props: LucideProps) => <Ban {...defaultProps} {...props} />;
 
 export function UnitsTable({
   units,
@@ -69,7 +47,7 @@ export function UnitsTable({
             {/* 1. Columna "No." */}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
               <button
-                onClick={() => onSort("id")} // Conectado a la prop onSort
+                onClick={() => onSort("id")} 
                 className="
                   flex items-center space-x-1     
                   text-xs font-medium text-gray-500 uppercase tracking-wider
@@ -84,7 +62,7 @@ export function UnitsTable({
             {/* 2. Columna "Nombre" */}
             <th className="px-6 py-3 text-left w-full">
               <button
-                onClick={() => onSort("name")} // Conectado a la prop onSort
+                onClick={() => onSort("name")} 
                 className="
                   flex items-center space-x-1     
                   text-xs font-medium text-gray-500 uppercase tracking-wider
@@ -154,7 +132,7 @@ export function UnitsTable({
                       {/* --- Botón VER (Activo) --- */}
                       <button
                         title="Ver Modulo"
-                        onClick={() => onView(unit)} // Conectado a prop
+                        onClick={() => onView(unit)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -168,7 +146,7 @@ export function UnitsTable({
                       {/* --- Botón EDITAR (Activo) --- */}
                       <button
                         title="Editar Modulo"
-                        onClick={() => onEdit(unit)} // Conectado a prop
+                        onClick={() => onEdit(unit)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#1b2469] hover:text-white 
@@ -182,7 +160,7 @@ export function UnitsTable({
                       {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
                         title="Desactivar Modulo"
-                        onClick={() => onBan(unit)} // Conectado a prop
+                        onClick={() => onBan(unit)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 
@@ -198,7 +176,7 @@ export function UnitsTable({
                       {/* --- Botón VER (Inactivo) --- */}
                       <button
                         title="Ver Modulo"
-                        onClick={() => onView(unit)} // Conectado a prop
+                        onClick={() => onView(unit)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -212,7 +190,7 @@ export function UnitsTable({
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
                         title="Restaurar Modulo"
-                        onClick={() => onRestore(unit)} // Conectado a prop
+                        onClick={() => onRestore(unit)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#1b6939] hover:text-white 
@@ -226,7 +204,7 @@ export function UnitsTable({
                       {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
                       <button
                         title="Eliminar Permanentemente"
-                        onClick={() => onDelete(unit)} // Conectado a prop
+                        onClick={() => onDelete(unit)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 

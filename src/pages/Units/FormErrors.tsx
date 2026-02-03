@@ -1,14 +1,6 @@
-interface FormErrorsProps {
-  /** Un array de mensajes de error. Si está vacío, no se renderiza nada. */
-  errors: string[];
-}
+import type { FormErrorsProps } from "./units.types";
 
-/**
- * Un componente de alerta que muestra una lista de errores de formulario.
- * Basado en el diseño de alerta roja de Tailwind.
- */
 export function FormErrors({ errors }: FormErrorsProps) {
-  // Si no hay errores, no renderiza nada
   if (errors.length === 0) {
     return null;
   }
@@ -30,7 +22,9 @@ export function FormErrors({ errors }: FormErrorsProps) {
       </svg>
       <span className="sr-only">Error</span>
       <div>
-        <span className="font-medium">Por favor, corrige los siguientes errores:</span>
+        <span className="font-medium">
+          Por favor, corrige los siguientes errores:
+        </span>
         <ul className="mt-1.5 list-disc list-inside">
           {/* Mapeamos el array de errores a una lista */}
           {errors.map((error, index) => (

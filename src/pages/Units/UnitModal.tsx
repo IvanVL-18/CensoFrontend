@@ -4,16 +4,8 @@ import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { validateUnit } from "../../utils/validation";
 import { FormErrors } from "./FormErrors";
+import type {UnitModalProps} from "./units.types"
 
-interface UnitModalProps {
-  isOpen: boolean;
-  isSubmitting: boolean;
-  error: string | null; // Error del SERVIDOR (ej: "unique")
-  title: string;
-  initialName?: string;
-  onClose: () => void;
-  onSave: (name: string) => void;
-}
 
 export function UnitModal({
   isOpen,

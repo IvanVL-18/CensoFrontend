@@ -18,7 +18,8 @@ import {
   type UnitFilter,
 } from "./units.service";
 import { useToast } from "../../context/ToastContext";
-import type { Unit, PaginatedUnitsResponse, Meta } from "./units.interfaces";
+import type { Unit, PaginatedUnitsResponse, Meta } from "./units.types";
+import axios from "axios";
 
 type SortConfig = {
   key: keyof Unit;
@@ -40,7 +41,10 @@ export function useUnits() {
 
   const [filter, setFilter] = useState<UnitFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<SortConfig>({key: "name",direction: "ascending",});
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: "name",
+    direction: "ascending",
+  });
   const [isImportModalOpen, setIsImportModalOpen] = useState(false); // Modal para subir archivo
   const [importErrors, setImportErrors] = useState<any[]>([]); // Para guardar los errores del Excel
 
@@ -64,14 +68,14 @@ export function useUnits() {
     "ban" | "restore" | "delete" | null
   >(null);
 
-const [previewData, setPreviewData] = useState<any[]>([]);
-const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
-
-useEffect(() => {
+  useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
-    getUnits(filter)
+    getUnits(filter, searchTerm, controller.signal)
       .then((response) => {
         setUnits(response.data);
         setLinks(response.links);
@@ -79,17 +83,33 @@ useEffect(() => {
         setError(null);
       })
       .catch((err) => {
+        if (axios.isCancel(err) || err.name === "CanceledError") {
+          return;
+        }
         console.error(err);
-        setError(`Error al cargar los Modulos: ${err.message}`);
+        setError(`Error al cargar los Módulos: ${err.message}`);
       })
-      .finally(() => setLoading(false));
-  }, [filter, reloadToken]);
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
 
+    return () => {
+      controller.abort(); 
+    };
+  }, [filter, searchTerm, reloadToken]); 
 
-
-const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => setFilter(e.target.value as UnitFilter), []);
-const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value), []);
-const handlePageClick = useCallback((url: string | null) => {
+  const handleFilterChange = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>) =>
+      setFilter(e.target.value as UnitFilter),
+    [],
+  );
+  const handleSearchChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value),
+    [],
+  );
+  const handlePageClick = useCallback((url: string | null) => {
     if (!url) return;
     setLoading(true);
     fetch(url)
@@ -104,25 +124,29 @@ const handlePageClick = useCallback((url: string | null) => {
       .finally(() => setLoading(false));
   }, []);
 
-const handleSort = useCallback((key: keyof Unit) => {
-    setSortConfig(c => ({ key, direction: c.key === key && c.direction === "ascending" ? "descending" : "ascending" }));
+  const handleSort = useCallback((key: keyof Unit) => {
+    setSortConfig((c) => ({
+      key,
+      direction:
+        c.key === key && c.direction === "ascending"
+          ? "descending"
+          : "ascending",
+    }));
   }, []);
 
-const filteredUnits = useMemo(() => units.filter(u => u.name.toLowerCase().includes(searchTerm.toLowerCase())), [units, searchTerm]);
-
-const sortedUnits = useMemo(() => {
-    const items = [...filteredUnits];
+  const sortedUnits = useMemo(() => {
+    const items = [...units];
     items.sort((a, b) => {
       const valA = a[sortConfig.key];
       const valB = b[sortConfig.key];
-      if (valA == null) return 1; 
+      if (valA == null) return 1;
       if (valB == null) return -1;
       if (valA < valB) return sortConfig.direction === "ascending" ? -1 : 1;
       if (valA > valB) return sortConfig.direction === "ascending" ? 1 : -1;
       return 0;
     });
     return items;
-  }, [filteredUnits, sortConfig]);
+  }, [units, sortConfig]);
 
   const handleAddClick = useCallback(() => {
     setEditingUnit(null);
@@ -136,29 +160,31 @@ const sortedUnits = useMemo(() => {
     setEditingUnit(null);
   }, []);
 
- const handleModalSave = useCallback(async (name: string) => {
-    setIsSubmitting(true);
-    setModalError(null);
-    try {
-      let response;
-      const unitData = { name };
-      if (editingUnit) {
-        response = await updateUnit(editingUnit.id, unitData);
-      } else {
-        response = await createUnit(unitData);
+  const handleModalSave = useCallback(
+    async (name: string) => {
+      setIsSubmitting(true);
+      setModalError(null);
+      try {
+        let response;
+        const unitData = { name };
+        if (editingUnit) {
+          response = await updateUnit(editingUnit.id, unitData);
+        } else {
+          response = await createUnit(unitData);
+        }
+        addToast(response.message, "success");
+        setIsModalOpen(false);
+        setEditingUnit(null);
+        reloadUnits();
+      } catch (err: any) {
+        setModalError(err.message || "Ocurrió un error");
+        addToast(err.message, "danger");
+      } finally {
+        setIsSubmitting(false);
       }
-      addToast(response.message, "success");
-      setIsModalOpen(false);
-      setEditingUnit(null);
-      reloadUnits();
-    } catch (err: any) {
-      setModalError(err.message || "Ocurrió un error");
-      addToast(err.message, "danger");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [editingUnit, addToast, reloadUnits]);
-
+    },
+    [editingUnit, addToast, reloadUnits],
+  );
 
   const handleConfirmModalClose = useCallback(() => {
     setIsConfirmModalOpen(false);
@@ -167,17 +193,19 @@ const sortedUnits = useMemo(() => {
     setModalError(null);
   }, []);
 
-const handleConfirmAction = useCallback(async () => {
+  const handleConfirmAction = useCallback(async () => {
     if (!actionUnit || !actionType) return;
     setIsSubmitting(true);
     try {
       let response: any;
-      if (actionType === 'ban') response = await banUnit(actionUnit.id);
-      else if (actionType === 'restore') response = await restoreUnit(actionUnit.id);
-      else if (actionType === 'delete') response = await forceDeleteUnit(actionUnit.id);
+      if (actionType === "ban") response = await banUnit(actionUnit.id);
+      else if (actionType === "restore")
+        response = await restoreUnit(actionUnit.id);
+      else if (actionType === "delete")
+        response = await forceDeleteUnit(actionUnit.id);
 
       if (response) {
-        const toastType = actionType === 'delete' ? "danger" : "success";
+        const toastType = actionType === "delete" ? "danger" : "success";
         addToast(response.message, toastType);
         setIsConfirmModalOpen(false);
         setActionUnit(null);
@@ -191,18 +219,21 @@ const handleConfirmAction = useCallback(async () => {
     }
   }, [actionUnit, actionType, reloadUnits, addToast]);
 
-  const onView = useCallback(async (unit: Unit) => {
-    setIsViewLoading(true);
-    try {
-      const data = await getUnit(unit.id);
-      setViewingUnit(data);
-      setIsViewModalOpen(true);
-    } catch (err:any) {
-      addToast(err.message || "Error al cargar detalle", "danger");
-    } finally {
-      setIsViewLoading(false);
-    }
-  }, [addToast]);
+  const onView = useCallback(
+    async (unit: Unit) => {
+      setIsViewLoading(true);
+      try {
+        const data = await getUnit(unit.id);
+        setViewingUnit(data);
+        setIsViewModalOpen(true);
+      } catch (err: any) {
+        addToast(err.message || "Error al cargar detalle", "danger");
+      } finally {
+        setIsViewLoading(false);
+      }
+    },
+    [addToast],
+  );
 
   const onEdit = useCallback((unit: Unit) => {
     setEditingUnit(unit);
@@ -231,72 +262,57 @@ const handleConfirmAction = useCallback(async () => {
     setModalError(null);
   }, []);
 
-const handleBulkUpload = useCallback(async (file: File) => {
+  const handleBulkUpload = useCallback(
+    async (file: File) => {
+      setIsSubmitting(true);
+      setBulkErrors([]); 
+
+      const formData = new FormData();
+      formData.append("file", file); 
+
+      try {
+        const response = await importUnits(formData);
+        addToast(response.message || "Importación exitosa", "success");
+        reloadUnits(); 
+      } catch (err: any) {
+        console.error("Error en carga masiva:", err);
+        if (err.status === 422 && err.data?.errors) {
+          setBulkErrors(err.data.errors); 
+          setIsBulkErrorModalOpen(true); 
+          addToast("El archivo se procesó con algunos errores", "warning");
+          reloadUnits(); 
+        } else {
+          addToast(err.message || "Error al subir el archivo", "danger");
+        }
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [addToast, reloadUnits],
+  );
+
+  const confirmImport = useCallback(async () => {
     setIsSubmitting(true);
-    setBulkErrors([]); // Limpiamos errores previos
-
-    const formData = new FormData();
-    formData.append('file', file); // 'file' debe coincidir con el Request de Laravel
-
     try {
-      // Enviamos directo al backend
-      const response = await importUnits(formData);
-      
-      // Si llega aquí es status 200 (Todo perfecto)
-      addToast(response.message || "Importación exitosa", "success");
-      reloadUnits(); // Recargamos la tabla para ver los nuevos datos
-
-    } catch (err: any) {
-      console.error("Error en carga masiva:", err);
-
-      // Si el backend responde 422, es que hay errores de validación en el Excel
-      if (err.status === 422 && err.data?.errors) {
-        setBulkErrors(err.data.errors); // Guardamos la lista de fallos
-        setIsBulkErrorModalOpen(true);  // Abrimos el modal de reporte
-        addToast("El archivo se procesó con algunos errores", "warning");
-        reloadUnits(); // Recargamos igual, porque los buenos SÍ se guardaron
+      await importUnits;
+      setIsPreviewModalOpen(false);
+      addToast("¡Importación exitosa!", "success");
+      const response = await getUnits(filter);
+      setUnits(response.data);
+      reloadUnits();
+      setPreviewData([]);
+    } catch (error: any) {
+      if (error.errors) {
+        setBulkErrors(error.errors); 
+        setIsPreviewModalOpen(false); 
+        setIsBulkErrorModalOpen(true);
       } else {
-        // Otros errores (500, red, etc)
-        addToast(err.message || "Error al subir el archivo", "danger");
+        addToast(error.message || "Error al guardar", "danger");
       }
     } finally {
       setIsSubmitting(false);
     }
-  }, [addToast, reloadUnits]);
-
-
-const confirmImport = useCallback(async () => {
-  setIsSubmitting(true);
-  try {
-    await importUnits; 
-    setIsPreviewModalOpen(false);
-    addToast("¡Importación exitosa!", "success");
-
-    // 2. Refresco total
-    const response = await getUnits(filter); 
-    setUnits(response.data);
-    reloadUnits();
-    setPreviewData([]);
-
-  } catch (error: any) {
-    // Si el backend devuelve errores de validación (el array de fallos)
-    if (error.errors) {
-      setBulkErrors(error.errors); // Guardamos los errores para el modal
-      setIsPreviewModalOpen(false); // Cerramos la preview
-      setIsBulkErrorModalOpen(true); // ¡ESTO activa el modal de errores!
-    } else {
-      addToast(error.message || "Error al guardar", "danger");
-    }
-  } finally {
-    setIsSubmitting(false);
-  }
-}, [previewData, filter, reloadUnits, addToast]);
-
-
-
-// Retorna estos nuevos estados y funciones
-
-
+  }, [previewData, filter, reloadUnits, addToast]);
 
   return {
     loading,
