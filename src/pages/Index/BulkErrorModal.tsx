@@ -86,7 +86,7 @@ export function BulkErrorModal({
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table> 
         </div>
 
         {/* Footer */}
