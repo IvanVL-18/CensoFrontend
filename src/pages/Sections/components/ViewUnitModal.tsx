@@ -1,22 +1,11 @@
 import { X } from "lucide-react";
-// Importa tu interfaz 'Section' desde donde la tengas
-import type { Section } from "./Section.interfaces";
+import type { ViewSectionModalProps } from "../Sections.types";
 
-interface ViewSectionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  Section: Section | null; // El módulo que vamos a mostrar
-}
-
-/**
- * helper para formatear las fechas de Laravel a un formato legible
- */
 const formatDate = (dateString: string | null) => {
   if (!dateString) {
-    return "N/A"; // No aplica (ej. si no ha sido desactivado)
+    return "N/A"; 
   }
   try {
-    // Convierte 'YYYY-MM-DDTHH:MM:SS.mmmmmmZ' a un formato local
     return new Date(dateString).toLocaleString('es-MX', {
       year: 'numeric',
       month: 'long',
@@ -30,9 +19,6 @@ const formatDate = (dateString: string | null) => {
   }
 };
 
-/**
- * Componente de fila para mostrar un detalle
- */
 function DetailRow({ label, value }: { label: string, value: string | null }) {
   return (
     <div>
@@ -45,7 +31,6 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
 }
 
 export function ViewSectionModal({ isOpen, onClose, Section }: ViewSectionModalProps) {
-  // Si no está abierto o no hay una unidad, no renderiza nada
   if (!isOpen || !Section) {
     return null;
   }
@@ -82,11 +67,11 @@ export function ViewSectionModal({ isOpen, onClose, Section }: ViewSectionModalP
             />
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(Section.created_at)} // Asumiendo que se llama así
+              value={formatDate(Section.created_at)} 
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(Section.deleted_at)} // Asumiendo que se llama así
+              value={formatDate(Section.deleted_at)} 
             />
           </div>
 

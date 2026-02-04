@@ -1,40 +1,67 @@
-import { type ChangeEvent } from "react";
-import { CirclePlus,FileDown  } from "lucide-react";
+import { type ChangeEvent, useRef } from "react";
+import { CirclePlus, FileDown } from "lucide-react";
 
-import type { SectionFilter } from "./Section.service";
-import { SearchInput } from "../../components/SearchInput";
-import AddButton from "../../components/AddButton";
-import StatusFilterSelect from "../../components/StatusFilterSelect";
+import type { SectionFilter } from "../sections.service";
+import { SearchInput } from "../../../components/SearchInput";
+import AddButton from "../../../components/AddButton";
+import StatusFilterSelect from "../../../components/StatusFilterSelect";
 
 interface SectionsToolbarProps {
   filter: SectionFilter;
   searchTerm: string;
+  isSubmitting: boolean;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void;
+  onBulkUpload: (file: File) => void;
 }
 
 export function SectionsToolbar({
   filter,
   searchTerm,
+  isSubmitting,
   onFilterChange,
   onSearchChange,
   onAddClick,
+  onBulkUpload,
 }: SectionsToolbarProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onBulkUpload(file);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-red-900">
         <h1 className="text-xl md:text-2xl font-bold text-white">Secciones</h1>
+
         <div className="flex items-center gap-2">
-          <AddButton
-            label="Carga Masiva"
-            onClick={onAddClick}
-            variant="green"
-            icon={<FileDown  size={22} strokeWidth={2.5} />}
+          {/* Input de archivo oculto que solo acepta Excel/CSV */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".xlsx, .xls, .csv"
+            className="hidden"
           />
 
           <AddButton
-            label="Agregar Sección"
+            label={isSubmitting ? "Cargando..." : "Carga Masiva"}
+            onClick={() => fileInputRef.current?.click()}
+            variant="green"
+            disabled={isSubmitting} 
+            icon={<FileDown size={22} strokeWidth={2.5} />}
+          />
+
+          <AddButton
+            label="Agregar Módulo"
             onClick={onAddClick}
             variant="gold"
             icon={<CirclePlus size={22} strokeWidth={2.5} />}
