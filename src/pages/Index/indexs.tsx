@@ -10,6 +10,8 @@ import { ViewIndexModal } from "./ViewIndexModal";
 // <--- Tus imports están perfectos
 import { ToastProvider, useToast } from "../../context/ToastContext"; 
 import { Toast } from "../../components/Toast";
+import { BulkErrorModal } from "./BulkErrorModal";
+
 
 // ---
 // 1. Contenedor de Toasts
@@ -71,6 +73,9 @@ function IndexsPageContent() {
     handleConfirmModalClose, 
     handleConfirmAction,
     handleBulkUpload,
+    isBulkErrorOpen,
+    bulkErrors,
+    closeBulkError,
   } = useIndexs(); 
 
  
@@ -169,6 +174,12 @@ function IndexsPageContent() {
         isOpen={isViewModalOpen}
         index={viewingIndex}
         onClose={handleViewModalClose}
+      />
+
+      <BulkErrorModal
+        isOpen={isBulkErrorOpen}
+        errors={bulkErrors}
+        onClose={closeBulkError}
       />
     </div>
   );
