@@ -16,13 +16,12 @@ type SortConfig = {
 };
 
 export function useSectionsData() {
-  const [Sections, setSections] = useState<Section[]>([]);
-  const [links, setLinks] = useState<PaginatedSectionsResponse["links"] | null>(
-    null,
-  );
+  const [sections, setSections] = useState<Section[]>([]);
+  const [links, setLinks] = useState<PaginatedSectionsResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
   const [filter, setFilter] = useState<SectionFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -46,76 +45,55 @@ export function useSectionsData() {
         setError(null);
       })
       .catch((err) => {
-        if (axios.isCancel(err) || err.name === "CanceledError") {
-          return;
-        }
+        if (axios.isCancel(err) || err.name === "CanceledError") return;
         console.error(err);
-        setError(`Error al cargar los Secciones: ${err.message}`);
+        setError(`Error al cargar las Secciones: ${err.message}`);
       })
       .finally(() => {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
+        if (!controller.signal.aborted) setLoading(false);
       });
 
-    return () => {
-      controller.abort();
-    };
+    return () => controller.abort();
   }, [filter, searchTerm, reloadToken]);
 
-  const handleFilterChange = useCallback(
-    (e: ChangeEvent<HTMLSelectElement>) =>
-      setFilter(e.target.value as SectionFilter),
-    [],
-  );
+  const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
+    setFilter(e.target.value as SectionFilter);
+  }, []);
 
-  const handleSearchChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value),
-    [],
-  );
+  const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  }, []);
 
-  const handlePageClick = useCallback(
-    (url: string | null) => {
-      if (!url) return;
+  const handlePageClick = useCallback((url: string | null) => {
+    if (!url) return;
+    const targetUrl = new URL(url);
+    const params = new URLSearchParams(targetUrl.search);
+    if (searchTerm) params.set("search", searchTerm);
 
-      const targetUrl = new URL(url);
-      const params = new URLSearchParams(targetUrl.search);
-
-      if (searchTerm) params.set("search", searchTerm);
-
-      setLoading(true);
-
-      api
-        .get<PaginatedSectionsResponse>(
-          `/Sections/${filter}/content?${params.toString()}`,
-        )
-        .then((response) => {
-          setSections(response.data.data);
-          setLinks(response.data.links);
-          setMeta(response.data.meta);
-          setError(null);
-        })
-        .catch((err) => {
-          if (axios.isCancel(err)) return;
-          setError(`Error paginación: ${err.message}`);
-        })
-        .finally(() => setLoading(false));
-    },
-    [filter, searchTerm],
-  );
+    setLoading(true);
+    api.get<PaginatedSectionsResponse>(`/sections/${filter}/content?${params.toString()}`)
+      .then((response) => {
+        setSections(response.data.data);
+        setLinks(response.data.links);
+        setMeta(response.data.meta);
+        setError(null);
+      })
+      .catch((err) => {
+        if (axios.isCancel(err)) return;
+        setError(`Error paginación: ${err.message}`);
+      })
+      .finally(() => setLoading(false));
+  }, [filter, searchTerm]);
 
   const handleSort = useCallback((key: keyof Section) => {
     setSortConfig((c) => ({
       key,
-      direction:
-        c.key === key && c.direction === "ascending"
-          ? "descending"
-          : "ascending",
+      direction: c.key === key && c.direction === "ascending" ? "descending" : "ascending",
     }));
   }, []);
 
   const sortedSections = useMemo(() => {
-    const items = [...Sections];
+    const items = [...sections];
     items.sort((a, b) => {
       const valA = a[sortConfig.key];
       const valB = b[sortConfig.key];
@@ -126,10 +104,10 @@ export function useSectionsData() {
       return 0;
     });
     return items;
-  }, [Sections, sortConfig]);
+  }, [sections, sortConfig]);
 
   return {
-    Sections: sortedSections,
+    sections: sortedSections,
     loading,
     error,
     meta,

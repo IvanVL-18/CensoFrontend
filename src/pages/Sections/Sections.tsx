@@ -1,13 +1,14 @@
 import { useSectionsData } from "./hooks/UseSectionsData";
 import { useSectionsModals } from "./hooks/UseSectionsModals";
 import { useSectionsMutations } from "./hooks/UseSectionsMutations";
-
+import { getSection } from "./sections.service";
 import { SectionsToolbar } from "./components/SectionsToolbar";
 import { SectionsTable } from "./components/SectionsTable";
 import Pagination from "../../components/Pagination"; 
-import { SectionModal } from "./components/SectionsModal";
+// Asegúrate de que el nombre del componente coincida con el archivo (SectionsModal vs SectionModal)
+import { SectionModal } from "./components/SectionsModal"; 
 import { ConfirmModal } from "./components/ConfirmModal";
-import { ViewSectionModal } from "./components/ViewUnitModal";
+import { ViewSectionModal } from "./components/ViewSectionModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 
 import { ToastProvider, useToast } from "../../context/ToastContext";
@@ -29,10 +30,9 @@ function ToastContainer() {
   );
 }
 
-
 function SectionsPageContent() {
   const {
-    Sections,
+    sections, // Ojo: renombré la variable en el hook a minúscula
     loading,
     error,
     meta,
@@ -46,7 +46,6 @@ function SectionsPageContent() {
     handlePageClick,
   } = useSectionsData();
 
-  
   const modals = useSectionsModals();
 
   const { 
@@ -62,8 +61,30 @@ function SectionsPageContent() {
     openBulkError: modals.openBulkError,
   });
 
-  const modalTitle = modals.editingSection ? "Editar Módulo" : "Agregar Módulo";
+  const modalTitle = modals.editingSection ? "Editar Sección" : "Nueva Sección";
   const modalInitialName = modals.editingSection?.name || "";
+  const modalInitialInstructions = modals.editingSection?.instructions || ""; 
+  const handleEditClick = async (partialSection: any) => {
+    try {
+      // Opcional: Podrías poner un loading global aquí si quisieras
+      // Llamamos al endpoint SHOW que sí trae las instrucciones
+      const fullSection = await getSection(partialSection.id);
+      
+      // Abrimos el modal con la data COMPLETA
+      modals.openEdit(fullSection);
+    } catch (error) {
+      console.error("Error al cargar detalles de la sección", error);
+      // Aquí podrías usar addToast del contexto si lo exportaras o pasaras
+    }
+  };
+  const handleViewClick = async (partialSection: any) => {
+    try {
+      const fullSection = await getSection(partialSection.id);
+      modals.openView(fullSection);
+    } catch (error) {
+      console.error("Error al cargar detalles", error);
+    }
+  };
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -71,18 +92,18 @@ function SectionsPageContent() {
   let confirmButtonColor: "danger" | "primary" = "danger";
 
   if (modals.actionType === "ban") {
-    confirmTitle = "Desactivar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${modals.actionSection?.name}"?`;
+    confirmTitle = "Desactivar Sección";
+    confirmMessage = `¿Estás seguro de desactivar "${modals.actionSection?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (modals.actionType === "restore") {
-    confirmTitle = "Restaurar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${modals.actionSection?.name}"?`;
+    confirmTitle = "Restaurar Sección";
+    confirmMessage = `¿Estás seguro de restaurar "${modals.actionSection?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${modals.actionSection?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de ELIMINAR PERMANENTEMENTE "${modals.actionSection?.name}"?`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -91,33 +112,30 @@ function SectionsPageContent() {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
       
-      {/* Barra de Herramientas */}
       <SectionsToolbar
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
-        onAddClick={modals.openCreate}      
-        onBulkUpload={handleBulkUpload}   
+        onAddClick={modals.openCreate}
+        onBulkUpload={handleBulkUpload}
       />
 
-      {/* Tabla de Resultados */}
       <div className="p-4">
         <SectionsTable
           loading={loading}
           error={error}
-          Sections={Sections}
+          Sections={sections}
           meta={meta}
           onSort={handleSort}
-          onView={modals.openView}         
-          onEdit={modals.openEdit}          
-          onBan={(u) => modals.openConfirm(u, "ban")}
-          onRestore={(u) => modals.openConfirm(u, "restore")}
-          onDelete={(u) => modals.openConfirm(u, "delete")}
+          onView={handleViewClick}
+          onEdit={handleEditClick}
+          onBan={(s) => modals.openConfirm(s, "ban")}
+          onRestore={(s) => modals.openConfirm(s, "restore")}
+          onDelete={(s) => modals.openConfirm(s, "delete")}
         />
 
-        {/* Paginación */}
         <div className="mt-4 flex justify-center">
           <Pagination
             meta={meta}
@@ -138,15 +156,18 @@ function SectionsPageContent() {
         error={mutationError}
         title={modalTitle}
         initialName={modalInitialName}
+        // ✅ Pasamos las instrucciones iniciales
+        initialInstructions={modalInitialInstructions} 
         onClose={modals.closeForm}
-        onSave={(name) => handleSave(name, modals.editingSection)}
+        // ✅ El hook handleSave ya sabe manejar el objeto completo
+        onSave={(data) => handleSave(data, modals.editingSection)}
       />
 
-      {/* 2. Confirmación (Ban/Restore/Delete) */}
+      {/* 2. Confirmación */}
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={mutationError} // Si falla el borrado, se muestra aquí
+        error={mutationError}
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
@@ -158,7 +179,7 @@ function SectionsPageContent() {
       {/* 3. Ver Detalle */}
       <ViewSectionModal
         isOpen={modals.isViewOpen}
-        Section={modals.viewingSection}
+        section={modals.viewingSection} // Ajustar prop según componente
         onClose={modals.closeView}
       />
 

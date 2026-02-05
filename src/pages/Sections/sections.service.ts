@@ -7,7 +7,6 @@ import type {
 } from "./Sections.types";
 
 export type SectionFilter = "all" | "active" | "inactive";
-
 type SectionId = string | number;
 
 export const getSections = async (
@@ -17,12 +16,10 @@ export const getSections = async (
 ): Promise<PaginatedSectionsResponse> => {
   const params = new URLSearchParams();
   if (search) params.append("search", search);
+  
   const response = await api.get<PaginatedSectionsResponse>(
     `/sections/${filter}/content`,
-    {
-      params: params,
-      signal,
-    },
+    { params, signal }
   );
   return response.data;
 };
@@ -38,22 +35,23 @@ export const getSection = async (
 };
 
 export const createSection = async (
-  SectionData: CreateSectionDTO,
+  sectionData: CreateSectionDTO,
 ): Promise<{ message: string; data?: Section }> => {
-  const response = await api.post("/sections", SectionData);
+  // Axios enviará { name: "...", instructions: "..." }
+  const response = await api.post("/sections", sectionData);
   return response.data;
 };
 
 export const updateSection = async (
   id: SectionId,
-  SectionData: UpdateSectionDTO,
+  sectionData: UpdateSectionDTO,
 ): Promise<{ message: string }> => {
-  const response = await api.put(`/sections/${id}`, SectionData);
+  const response = await api.put(`/sections/${id}`, sectionData);
   return response.data;
 };
 
-export const banSection = async (id: SectionId): Promise<{ message: string }> => {
-  const response = await api.delete(`/sections/${id}`);
+export const deleteSection = async (id: SectionId): Promise<{ message: string }> => {
+  const response = await api.delete(`/sections/${id}`); // Soft delete (ban)
   return response.data;
 };
 
