@@ -312,7 +312,6 @@ const handleConfirmAction = useCallback(async () => {
       reloadIndexs();
     } catch (err: any) {
       console.error("Error carga masiva:", err);
-      // Validamos que sea un array antes de intentar mostrarlo en la tabla
       if (err.bulkErrors && Array.isArray(err.bulkErrors)) {
         setBulkErrors(err.bulkErrors);
         setIsBulkErrorOpen(true);

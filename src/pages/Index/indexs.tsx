@@ -1,4 +1,4 @@
-// src/components/indexs.tsx (Corregido con el Patrón de Contexto)
+
 
 import { useIndexs } from "./useIndexs";
 import { IndexsToolbar } from "./IndexsToolbar";
@@ -13,15 +13,10 @@ import { Toast } from "../../components/Toast";
 import { BulkErrorModal } from "./BulkErrorModal";
 
 
-// ---
-// 1. Contenedor de Toasts
-//    (Lo sacamos fuera para que sea más limpio)
-// ---
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
 
   return (
-    // Aquí definimos la posición de TODOS los toasts
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
       {toasts.map((toast) => (
         <Toast
@@ -35,10 +30,6 @@ function ToastContainer() {
   );
 }
 
-// ---
-// 2. Componente Interno para el Contenido de la Página
-//    (Este componente contiene TODO tu código anterior)
-// ---
 function IndexsPageContent() {
   const {
     loading,

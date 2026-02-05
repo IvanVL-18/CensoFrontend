@@ -1,5 +1,5 @@
-// src/pages/Indexs/indexs.interfaces.ts
 
+import type { ChangeEvent } from "react";
 
 export interface Index {
   id: string; 
@@ -61,4 +61,16 @@ export interface BulkErrorModalProps {
   isOpen: boolean;
   errors: ExcelFailure[];
   onClose: () => void;
+}
+
+export type IndexFilter = "all" | "active" | "inactive";
+
+ export interface IndexsToolbarProps {
+  filter: IndexFilter;
+  searchTerm: string;
+  isSubmitting: boolean;
+  onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
+  onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onAddClick: () => void; 
+  onBulkUpload: (file: File) => void;
 }

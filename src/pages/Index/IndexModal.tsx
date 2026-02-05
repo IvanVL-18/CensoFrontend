@@ -88,7 +88,7 @@ export function IndexModal({
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate> {/* Añadido noValidate para prevenir validación HTML5 */}
+          <form onSubmit={handleSubmit} noValidate> 
             <div className="p-6">
               <label
                 htmlFor="indexName"
@@ -107,13 +107,13 @@ export function IndexModal({
                   border rounded-lg p-2 w-full focus:outline-none focus:ring-2
                   ${''}
                   ${(hasClientErrors || hasServerError)
-                    ? 'border-red-500 focus:ring-red-400' // Borde rojo si hay error
+                    ? 'border-red-500 focus:ring-red-400' 
                     : 'border-gray-300 focus:ring-[#DDC9A3]'
                   }
                 `}
                 disabled={isSubmitting}
                 autoFocus
-                aria-invalid={hasClientErrors || hasServerError} // Para accesibilidad
+                aria-invalid={hasClientErrors || hasServerError} 
                 aria-describedby={hasClientErrors ? "form-errors-client" : (hasServerError ? "form-errors-server" : undefined)}
               />
 
@@ -123,7 +123,6 @@ export function IndexModal({
               </div>
 
               {''}
-              {/* Lo mostramos en el mismo formato de alerta */}
               {error && (
                  <div id="form-errors-server">
                    <FormErrors errors={[error]} />

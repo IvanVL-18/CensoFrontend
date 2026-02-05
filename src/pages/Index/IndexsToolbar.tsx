@@ -6,10 +6,10 @@ import {
   FileDown,
   type LucideProps,
 } from "lucide-react";
-import type { IndexFilter } from "./indexs.service"; // Asegúrate que la ruta sea correcta
-import AddButton from "../../components/AddButton";
 
-// --- Definiciones de Iconos (usados solo en este componente) ---
+import AddButton from "../../components/AddButton";
+import type { IndexsToolbarProps } from "./indexs.interfaces";
+
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -24,19 +24,6 @@ const IconCirclePlus = (props: LucideProps) => (
   <CirclePlus {...defaultProps} {...props} />
 );
 
-// --- Definición de Props ---
-
-interface IndexsToolbarProps {
-  filter: IndexFilter;
-  searchTerm: string;
-  isSubmitting: boolean;
-  onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
-  onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onAddClick: () => void; // Prop para el botón "Agregar"
-  onBulkUpload: (file: File) => void;
-}
-
-// --- Componente ---
 
 export function IndexsToolbar({
   filter,
@@ -44,7 +31,7 @@ export function IndexsToolbar({
   isSubmitting,
   onFilterChange,
   onSearchChange,
-  onAddClick, // Recibimos la prop
+  onAddClick, 
   onBulkUpload,
 }: IndexsToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -128,7 +115,6 @@ export function IndexsToolbar({
           </div>
         </div>
 
-        {/* Búsqueda */}
         <div className="relative flex w-full md:w-auto">
           <input
             type="text"

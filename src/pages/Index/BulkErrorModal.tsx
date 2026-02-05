@@ -6,13 +6,11 @@ export function BulkErrorModal({
   errors,
   onClose,
 }: BulkErrorModalProps) {
-  // Agregamos !Array.isArray(errors) para evitar la pantalla blanca si errors no es una lista
   if (!isOpen || !Array.isArray(errors) || errors.length === 0) return null;
 
   return (
     <div className="fixed inset-0 bg-[#00000080] z-[60] flex items-center justify-center p-4 backdrop-blur-sm transition-all">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden border border-gray-200">
-        {/* Cabecera */}
         <div className="flex justify-between items-center p-5 bg-[#691b31] text-white">
           <div className="flex items-center gap-3">
             <AlertCircle size={24} className="text-[#9d7e43]" />
@@ -33,7 +31,6 @@ export function BulkErrorModal({
           </button>
         </div>
 
-        {/* Cuerpo con Tabla */}
         <div className="overflow-y-auto flex-grow">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -89,7 +86,6 @@ export function BulkErrorModal({
           </table>
         </div>
 
-        {/* Footer */}
         <div className="p-4 bg-gray-50 border-t border-gray-200 flex justify-end">
           <button
             onClick={onClose}
