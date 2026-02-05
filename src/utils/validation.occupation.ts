@@ -11,6 +11,9 @@ export function validateOccupation(data: { name: string, institution_id?: string
   else if (name.length < 5) {
     errors.push("El nombre debe tener al menos 5 caracteres.");
   }
+  else if (name.length > 45) {
+    errors.push("El nombre no puede exceder los 45 caracteres.");
+  }
 
   // Regla extra: 'name.regex' (copiada de la validación de Unit)
   // Valida que no se incluyan emojis o símbolos no permitidos.

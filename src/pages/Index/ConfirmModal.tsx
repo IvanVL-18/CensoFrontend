@@ -59,7 +59,7 @@ export function ConfirmModal({
               aria-label="Cerrar modal"
             >
               <X size={24} />
-            </button>
+            </button>  
           </div>
 
           {/* Cuerpo del Modal (Mensaje) */}

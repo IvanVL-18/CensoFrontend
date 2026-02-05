@@ -3,7 +3,7 @@
 import { useIndexs } from "./useIndexs";
 import { IndexsToolbar } from "./IndexsToolbar";
 import { IndexsTable } from "./IndexsTable";
-import { Pagination } from "./Pagination";
+import Pagination from "../../components/Pagination";
 import { IndexModal } from "./IndexModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { ViewIndexModal } from "./ViewIndexModal"; 
