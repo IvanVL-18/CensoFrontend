@@ -16,7 +16,7 @@ import CensusUnitsPage from "./pages/census/CensusUnitsPage";
 import CensusSectionsPage from "./pages/census/CensusSectionsPage";   
 import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; 
 
-import Section from "./pages/Section/Section";
+import Sections from "./pages/Sections/Sections";
 import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Index/indexs";
@@ -49,7 +49,7 @@ export default function App() {
 
         {/* Catálogos */}
         <Route path="/unidades" element={<Units />} />
-        <Route path="/secciones" element={<Section />} />
+        <Route path="/secciones" element={<Sections />} />
         <Route path="/ocupaciones" element={<Occupations />} />
         <Route path="/Roles" element={<Roles />} />
       </Route>

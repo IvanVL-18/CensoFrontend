@@ -1,22 +1,11 @@
 import { X } from "lucide-react";
-// Importa tu interfaz 'Section' desde donde la tengas
-import type { Section } from "./Section.interfaces";
+import type { ViewSectionModalProps } from "../Sections.types";
 
-interface ViewSectionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  Section: Section | null; // El módulo que vamos a mostrar
-}
-
-/**
- * helper para formatear las fechas de Laravel a un formato legible
- */
 const formatDate = (dateString: string | null) => {
   if (!dateString) {
-    return "N/A"; // No aplica (ej. si no ha sido desactivado)
+    return "N/A"; 
   }
   try {
-    // Convierte 'YYYY-MM-DDTHH:MM:SS.mmmmmmZ' a un formato local
     return new Date(dateString).toLocaleString('es-MX', {
       year: 'numeric',
       month: 'long',
@@ -30,9 +19,6 @@ const formatDate = (dateString: string | null) => {
   }
 };
 
-/**
- * Componente de fila para mostrar un detalle
- */
 function DetailRow({ label, value }: { label: string, value: string | null }) {
   return (
     <div>
@@ -44,9 +30,8 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewSectionModal({ isOpen, onClose, Section }: ViewSectionModalProps) {
-  // Si no está abierto o no hay una unidad, no renderiza nada
-  if (!isOpen || !Section) {
+export function ViewSectionModal({ isOpen, onClose, section }: ViewSectionModalProps) {
+  if (!isOpen || !section) {
     return null;
   }
 
@@ -55,16 +40,17 @@ export function ViewSectionModal({ isOpen, onClose, Section }: ViewSectionModalP
       {/* 1. Fondo Difuminado (Blur) */}
       <div 
         className="fixed inset-0 bg-blue bg-opacity-30 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}>
-      </div>
+        onClick={onClose}
+      />
 
       {/* 2. Contenedor del Modal */}
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+        {/* Agregamos 'max-h-[90vh]' para evitar que se salga de pantalla si el texto es largo */}
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
           
-          {/* Cabecera del Modal (como los otros) */}
-          <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">Detalle del Módulo</h2>
+          {/* Cabecera */}
+          <div className="flex justify-between items-center p-4 bg-red-900 shrink-0">
+            <h2 className="text-xl font-bold text-white">Detalle de la sección</h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300"
@@ -74,24 +60,41 @@ export function ViewSectionModal({ isOpen, onClose, Section }: ViewSectionModalP
             </button>
           </div>
 
-          {/* Cuerpo del Modal (Los 3 campos) */}
-          <div className="p-6 space-y-4">
+          {/* Cuerpo del Modal (Con scroll auto por si las instrucciones son muy largas) */}
+          <div className="p-6 space-y-4 overflow-y-auto">
             <DetailRow 
               label="Nombre del módulo:" 
-              value={Section.name} 
+              value={section.name} 
             />
+
+            {/* --- NUEVO CAMPO: Instrucciones --- */}
+            {/* Usamos un diseño diferente al DetailRow para facilitar la lectura de textos largos */}
+            <div>
+               <label className="block text-sm font-medium text-gray-500 mb-1">
+                 Instrucciones:
+               </label>
+               <div className="
+                 text-sm text-gray-700 
+                 bg-gray-50 p-3 rounded-md border border-gray-200
+                 whitespace-pre-wrap  /* Respeta los saltos de línea */
+                 max-h-60 overflow-y-auto /* Scroll interno si es muy largo */
+               ">
+                 {section.instructions || "Sin instrucciones detalladas."}
+               </div>
+            </div>
+
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(Section.created_at)} // Asumiendo que se llama así
+              value={formatDate(section.created_at)} 
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(Section.deleted_at)} // Asumiendo que se llama así
+              value={formatDate(section.deleted_at)} 
             />
           </div>
 
-          {/* Pie de página del Modal (Solo 1 botón) */}
-          <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
+          {/* Pie de página */}
+          <div className="flex justify-end items-center gap-4 p-4 bg-gray-50 shrink-0">
             <button
               type="button"
               onClick={onClose}
