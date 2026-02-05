@@ -317,6 +317,7 @@ const handleConfirmAction = useCallback(async () => {
         setBulkErrors(err.bulkErrors);
         setIsBulkErrorOpen(true);
         addToast("El archivo contiene errores que debes corregir", "warning");
+        reloadIndexs();
       } else {
         const msg = err.message || "Error al subir archivo";
         setModalError(msg);
