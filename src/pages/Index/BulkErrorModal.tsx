@@ -6,7 +6,7 @@ export function BulkErrorModal({
   errors,
   onClose,
 }: BulkErrorModalProps) {
-  if (!isOpen || !Array.isArray(errors) || errors.length === 0) return null;
+  if (!isOpen || !Array.isArray(errors) || errors.length === 0) return null; 
 
   return (
     <div className="fixed inset-0 bg-[#00000080] z-[60] flex items-center justify-center p-4 backdrop-blur-sm transition-all">
