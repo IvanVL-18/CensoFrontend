@@ -7,7 +7,7 @@ import {
   Ban,
   type LucideProps,
 } from "lucide-react";
-import type { Index, Meta } from "./indexs.interfaces"; 
+import type { IndexsTableProps } from "./indexs.interfaces"; 
 
 
 
@@ -32,18 +32,7 @@ const IconBan = (props: LucideProps) => (
 );
 
 
-interface IndexsTableProps {
-  indexs: Index[]; 
-  meta: Meta | null;
-  loading: boolean;
-  error: string | null;
-  onSort: (key: keyof Index) => void;
-  onView: (index: Index) => void;
-  onEdit: (index: Index) => void;
-  onBan: (index: Index) => void;
-  onRestore: (index: Index) => void;
-  onDelete: (index: Index) => void;
-}
+
 
 export function IndexsTable({
   indexs,

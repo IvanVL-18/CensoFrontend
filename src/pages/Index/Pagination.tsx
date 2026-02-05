@@ -1,14 +1,4 @@
-import type { Meta, PaginatedIndexsResponse } from "./indexs.interfaces"; // Ajusta la ruta
-
-
-interface PaginationProps {
-  meta: Meta | null;
-  links: PaginatedIndexsResponse["links"] | null;
-  loading: boolean;
-  error: string | null;
-  onPageClick: (url: string | null) => void;
-}
-
+import type { Meta, PaginationProps } from "./indexs.interfaces"; 
 
 export function Pagination({
   meta,

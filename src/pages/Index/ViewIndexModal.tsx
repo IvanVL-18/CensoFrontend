@@ -1,12 +1,8 @@
 import { X } from "lucide-react";
 
-import type { Index } from "./indexs.interfaces";
+import type { ViewIndexModalProps } from "./indexs.interfaces";
 
-interface ViewIndexModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  index: Index | null; 
-}
+
 
 
 const formatDate = (dateString: string | null) => {

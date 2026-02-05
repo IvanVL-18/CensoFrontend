@@ -74,3 +74,47 @@ export type IndexFilter = "all" | "active" | "inactive";
   onAddClick: () => void; 
   onBulkUpload: (file: File) => void;
 }
+
+ export interface IndexsTableProps {
+  indexs: Index[]; 
+  meta: Meta | null;
+  loading: boolean;
+  error: string | null;
+  onSort: (key: keyof Index) => void;
+  onView: (index: Index) => void;
+  onEdit: (index: Index) => void;
+  onBan: (index: Index) => void;
+  onRestore: (index: Index) => void;
+  onDelete: (index: Index) => void;
+}
+
+export interface ViewIndexModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  index: Index | null; 
+}
+
+ export interface PaginationProps {
+  meta: Meta | null;
+  links: PaginatedIndexsResponse["links"] | null;
+  loading: boolean;
+  error: string | null;
+  onPageClick: (url: string | null) => void;
+}
+
+ export interface ConfirmModalProps {
+  isOpen: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+  
+  
+  title: string;
+  message: string; 
+  confirmButtonText?: string; 
+  confirmButtonColor?: 'danger' | 'primary'; 
+  
+  
+  onClose: () => void;
+  onConfirm: () => void;
+} 
+
