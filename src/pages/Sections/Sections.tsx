@@ -66,15 +66,10 @@ function SectionsPageContent() {
   const modalInitialInstructions = modals.editingSection?.instructions || ""; 
   const handleEditClick = async (partialSection: any) => {
     try {
-      // Opcional: Podrías poner un loading global aquí si quisieras
-      // Llamamos al endpoint SHOW que sí trae las instrucciones
       const fullSection = await getSection(partialSection.id);
-      
-      // Abrimos el modal con la data COMPLETA
       modals.openEdit(fullSection);
     } catch (error) {
       console.error("Error al cargar detalles de la sección", error);
-      // Aquí podrías usar addToast del contexto si lo exportaras o pasaras
     }
   };
   const handleViewClick = async (partialSection: any) => {
@@ -156,10 +151,8 @@ function SectionsPageContent() {
         error={mutationError}
         title={modalTitle}
         initialName={modalInitialName}
-        // ✅ Pasamos las instrucciones iniciales
         initialInstructions={modalInitialInstructions} 
         onClose={modals.closeForm}
-        // ✅ El hook handleSave ya sabe manejar el objeto completo
         onSave={(data) => handleSave(data, modals.editingSection)}
       />
 
@@ -179,7 +172,7 @@ function SectionsPageContent() {
       {/* 3. Ver Detalle */}
       <ViewSectionModal
         isOpen={modals.isViewOpen}
-        section={modals.viewingSection} // Ajustar prop según componente
+        section={modals.viewingSection} 
         onClose={modals.closeView}
       />
 

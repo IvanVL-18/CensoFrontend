@@ -105,7 +105,6 @@ export interface ViewSectionModalProps {
   section: Section | null;
 }
 
-// ✅ (Opcional) Si no tienes los DTOs, agrégalos también:
 export interface CreateSectionDTO {
   name: string;
   instructions?: string | null;

@@ -37,7 +37,6 @@ export const getSection = async (
 export const createSection = async (
   sectionData: CreateSectionDTO,
 ): Promise<{ message: string; data?: Section }> => {
-  // Axios enviará { name: "...", instructions: "..." }
   const response = await api.post("/sections", sectionData);
   return response.data;
 };
