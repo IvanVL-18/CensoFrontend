@@ -3,16 +3,14 @@ import type {
   PaginatedIndexsResponse,
   CreateIndexDTO,
   UpdateIndexDTO,
+  IndexFilter,
 } from "./indexs.interfaces";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
-export type IndexFilter = "all" | "active" | "inactive";
+export type { IndexFilter };
 
-/**
- * 🛠️ Helper Unificado
- * Procesa la respuesta y extrae el 'message' de Laravel tanto en éxito como en error.
- */
+
 const handleJsonResponse = async (response: Response) => {
   const text = await response.text();
   let data;
@@ -24,14 +22,12 @@ const handleJsonResponse = async (response: Response) => {
   }
 
   if (!response.ok) {
-    // Si Laravel devuelve un error (400, 422, etc.), lanzamos su mensaje
     throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
   }
 
   return data;
 };
 
-// --- SERVICIOS ---
 
 export const getIndexs = (filter: IndexFilter = "all"): Promise<PaginatedIndexsResponse> => {
   const url = `${API_URL}/index/${filter}/content`;
@@ -51,7 +47,6 @@ export const getSingleIndex = (id: string): Promise<Index> => {
     .then((response) => response.data ?? response);
 };
 
-// Cambiamos a Promise<any> para capturar el message de "Índice creado con éxito"
 export const createIndex = (indexData: CreateIndexDTO): Promise<any> => {
   const url = `${API_URL}/index`;
   return fetch(url, {
@@ -76,7 +71,6 @@ export const updateIndex = (id: string, indexData: UpdateIndexDTO): Promise<any>
   }).then(handleJsonResponse);
 };
 
-// --- Acciones de Confirmación (Ahora retornan el JSON con el mensaje) ---
 
 export const banIndex = (id: string): Promise<{ message: string }> => {
   const url = `${API_URL}/index/${id}`;

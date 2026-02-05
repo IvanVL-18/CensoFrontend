@@ -1,6 +1,5 @@
 import type { Meta, PaginatedIndexsResponse } from "./indexs.interfaces"; // Ajusta la ruta
 
-// --- Definición de Props ---
 
 interface PaginationProps {
   meta: Meta | null;
@@ -10,7 +9,6 @@ interface PaginationProps {
   onPageClick: (url: string | null) => void;
 }
 
-// --- Componente ---
 
 export function Pagination({
   meta,
@@ -39,7 +37,7 @@ export function Pagination({
         {meta.links.map((link: Meta["links"][number], index: number) => (
           <button
             key={index}
-            onClick={() => onPageClick(link.url)} // Conectado a la prop
+            onClick={() => onPageClick(link.url)} 
             disabled={!link.url || link.active}
             dangerouslySetInnerHTML={{ __html: link.label }}
             className={`
