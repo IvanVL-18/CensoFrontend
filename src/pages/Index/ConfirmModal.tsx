@@ -14,7 +14,7 @@ interface ConfirmModalProps {
   
   onClose: () => void;
   onConfirm: () => void;
-}
+} 
 
 export function ConfirmModal({
   isOpen,
