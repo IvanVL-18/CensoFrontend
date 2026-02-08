@@ -1,10 +1,10 @@
 import { useUnitsData } from "./hooks/useUnitsData";
 import { useUnitsModals } from "./hooks/useUnitsModals";
 import { useUnitsMutations } from "./hooks/useUnitsMutations";
-
+import { getUnit } from "./units.service";
 import { UnitsToolbar } from "./components/UnitsToolbar";
 import { UnitsTable } from "./components/UnitsTable";
-import Pagination from "../../components/Pagination"; 
+import Pagination from "../../components/Pagination";
 import { UnitModal } from "./components/UnitModal";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { ViewUnitModal } from "./components/ViewUnitModal";
@@ -29,7 +29,6 @@ function ToastContainer() {
   );
 }
 
-
 function UnitsPageContent() {
   const {
     units,
@@ -39,22 +38,29 @@ function UnitsPageContent() {
     links,
     filter,
     searchTerm,
-    refreshUnits,     
+    refreshUnits,
     handleFilterChange,
-    handleSearchChange,
     handleSort,
-    handlePageClick,
+    handleSearch,
+    handlePageChange,
   } = useUnitsData();
 
-  
+  const handleViewClick = async (partialUnit: any) => {
+    try {
+      const fullUnit = await getUnit(partialUnit.id);
+      modals.openView(fullUnit);
+    } catch (error) {
+      console.error("Error al cargar detalles del módulo", error);
+    }
+  };
   const modals = useUnitsModals();
 
-  const { 
-    isSubmitting, 
-    mutationError, 
-    handleSave, 
-    handleConfirmAction, 
-    handleBulkUpload 
+  const {
+    isSubmitting,
+    mutationError,
+    handleSave,
+    handleConfirmAction,
+    handleBulkUpload,
   } = useUnitsMutations({
     refreshUnits,
     closeForm: modals.closeForm,
@@ -90,16 +96,16 @@ function UnitsPageContent() {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
-      
+
       {/* Barra de Herramientas */}
       <UnitsToolbar
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
-        onSearchChange={handleSearchChange}
-        onAddClick={modals.openCreate}      
-        onBulkUpload={handleBulkUpload}   
+        onSearchChange={handleSearch}
+        onAddClick={modals.openCreate}
+        onBulkUpload={handleBulkUpload}
       />
 
       {/* Tabla de Resultados */}
@@ -110,21 +116,19 @@ function UnitsPageContent() {
           units={units}
           meta={meta}
           onSort={handleSort}
-          onView={modals.openView}         
-          onEdit={modals.openEdit}          
+          onView={handleViewClick}
+          onEdit={modals.openEdit}
           onBan={(u) => modals.openConfirm(u, "ban")}
           onRestore={(u) => modals.openConfirm(u, "restore")}
           onDelete={(u) => modals.openConfirm(u, "delete")}
         />
 
         {/* Paginación */}
-        <div className="mt-4 flex justify-center">
+        <div className="border-t border-gray-200 bg-gray-50">
           <Pagination
             meta={meta}
             links={links}
-            loading={loading}
-            error={error}
-            onPageClick={handlePageClick}
+            onPageClick={handlePageChange}
           />
         </div>
       </div>
@@ -146,13 +150,15 @@ function UnitsPageContent() {
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={mutationError} // Si falla el borrado, se muestra aquí
+        error={mutationError} 
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
         confirmButtonColor={confirmButtonColor}
         onClose={modals.closeConfirm}
-        onConfirm={() => handleConfirmAction(modals.actionUnit, modals.actionType)}
+        onConfirm={() =>
+          handleConfirmAction(modals.actionUnit, modals.actionType)
+        }
       />
 
       {/* 3. Ver Detalle */}
