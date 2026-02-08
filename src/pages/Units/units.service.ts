@@ -10,13 +10,23 @@ export type UnitFilter = "all" | "active" | "inactive";
 
 type UnitId = string | number;
 
+
+
 export const getUnits = async (
   filter: UnitFilter = "all",
   search: string = "",
+  page: number = 1,
+  sortBy: string = "id",           
+  direction: "asc" | "desc" = "asc", 
   signal?: AbortSignal,
 ): Promise<PaginatedUnitsResponse> => {
   const params = new URLSearchParams();
+  
   if (search) params.append("search", search);
+  params.append("page", page.toString());
+    params.append("sort_by", sortBy);
+  params.append("direction", direction);
+
   const response = await api.get<PaginatedUnitsResponse>(
     `/units/${filter}/content`,
     {
@@ -26,6 +36,8 @@ export const getUnits = async (
   );
   return response.data;
 };
+
+
 
 export const getUnit = async (
   id: UnitId,
@@ -77,3 +89,5 @@ export const importUnits = async (
   });
   return response.data;
 };
+
+
