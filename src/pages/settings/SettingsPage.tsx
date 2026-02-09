@@ -16,33 +16,23 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Grid de tarjetas */}
+      {/* Grid principal - Mantiene a todos los hijos alineados */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+        
         {/* Módulos */}
         <button
           type="button"
           onClick={() => navigate("/Unidades")}
-          className="
-            w-full text-left
-            border border-gray-200 rounded-xl
-            p-4 sm:p-5
-            hover:border-[var(--pantone-7421)]
-            hover:shadow-sm
-            transition
-            bg-white
-            focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/30
-          "
+          className="w-full text-left border border-gray-200 rounded-xl p-4 sm:p-5 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/30"
         >
-          <div className="flex items-start gap-3 mb-2">
+          <div className="flex items-start gap-3">
             <div className="p-2 rounded-lg bg-[var(--pantone-7421)]/10 shrink-0">
               <Package className="w-5 h-5 text-[var(--pantone-7421)]" />
             </div>
-
             <div className="min-w-0">
               <h2 className="text-sm font-semibold text-gray-900">Módulos</h2>
               <p className="text-xs text-gray-500 mt-1">
-                Gestiona los módulos/unidades del sistema para organizar la
-                estructura de los censos.
+                Gestiona los módulos/unidades del sistema para organizar la estructura de los censos.
               </p>
             </div>
           </div>
@@ -52,51 +42,31 @@ export default function SettingsPage() {
         <button
           type="button"
           onClick={() => navigate("/Secciones")}
-          className="
-            w-full text-left
-            border border-gray-200 rounded-xl
-            p-4 sm:p-5
-            hover:border-[var(--pantone-7421)]
-            hover:shadow-sm
-            transition
-            bg-white
-            focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/30
-          "
-          >
-          <div className="flex items-start gap-3 mb-2">
+          className="w-full text-left border border-gray-200 rounded-xl p-4 sm:p-5 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/30"
+        >
+          <div className="flex items-start gap-3">
             <div className="p-2 rounded-lg bg-[var(--pantone-7421)]/10 shrink-0">
               <Paperclip className="w-5 h-5 text-[var(--pantone-7421)]" />
             </div>
-
             <div className="min-w-0">
               <h2 className="text-sm font-semibold text-gray-900">Secciones</h2>
               <p className="text-xs text-gray-500 mt-1">
-                Crea y administra las secciones que componen los módulos del
-                censo.
+                Crea y administra las secciones que componen los módulos del censo.
               </p>
             </div>
           </div>
         </button>
 
+        {/* Roles */}
         <button
           type="button"
           onClick={() => navigate("/Roles")}
-          className="
-            w-full text-left
-            border border-gray-200 rounded-xl
-            p-4 sm:p-5
-            hover:border-[var(--pantone-7421)]
-            hover:shadow-sm
-            transition
-            bg-white
-            focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/30
-          "
-          >
-          <div className="flex items-start gap-3 mb-2">
+          className="w-full text-left border border-gray-200 rounded-xl p-4 sm:p-5 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/30"
+        >
+          <div className="flex items-start gap-3">
             <div className="p-2 rounded-lg bg-[var(--pantone-7421)]/10 shrink-0">
               <Paperclip className="w-5 h-5 text-[var(--pantone-7421)]" />
             </div>
-
             <div className="min-w-0">
               <h2 className="text-sm font-semibold text-gray-900">Roles</h2>
               <p className="text-xs text-gray-500 mt-1">
@@ -110,53 +80,40 @@ export default function SettingsPage() {
         <button
           type="button"
           onClick={() => navigate("/Ocupaciones")}
-          className="
-            w-full text-left
-            border border-gray-200 rounded-xl
-            p-4 sm:p-5
-            hover:border-[var(--pantone-7421)]
-            hover:shadow-sm
-            transition
-            bg-white
-            focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/30
-            sm:col-span-2 xl:col-span-1
-          "
+          className="w-full text-left border border-gray-200 rounded-xl p-4 sm:p-5 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/30"
         >
-          <div className="flex items-start gap-3 mb-2">
+          <div className="flex items-start gap-3">
             <div className="p-2 rounded-lg bg-[var(--pantone-7421)]/10 shrink-0">
               <Briefcase className="w-5 h-5 text-[var(--pantone-7421)]" />
             </div>
-
             <div className="min-w-0">
-              <h2 className="text-sm font-semibold text-gray-900">
-                Ocupaciones
-              </h2>
+              <h2 className="text-sm font-semibold text-gray-900">Ocupaciones</h2>
               <p className="text-xs text-gray-500 mt-1">
                 Administra el catálogo de ocupaciones utilizado en el censo.
               </p>
             </div>
           </div>
         </button>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {/* Índices */}
-          <button
-            type="button"
-            onClick={() => navigate("/Indices")}
-            className="w-full text-left border border-gray-200 rounded-lg p-4 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white"
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-md bg-[var(--pantone-7421)]/10">
-                <Hash className="w-5 h-5 text-[var(--pantone-7421)]" />
-              </div>
-              <h2 className="text-sm font-semibold text-gray-900">
-                Índices
-              </h2>
+
+        {/* Índices - Ahora corregido y alineado */}
+        <button
+          type="button"
+          onClick={() => navigate("/Indices")}
+          className="w-full text-left border border-gray-200 rounded-xl p-4 sm:p-5 hover:border-[var(--pantone-7421)] hover:shadow-sm transition bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/30"
+        >
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-[var(--pantone-7421)]/10 shrink-0">
+              <Hash className="w-5 h-5 text-[var(--pantone-7421)]" />
             </div>
-            <p className="text-xs text-gray-500">
-              Administra los índices numéricos para la estructura del censo.
-            </p>
-          </button>
-        </div>
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-gray-900">Índices</h2>
+              <p className="text-xs text-gray-500 mt-1">
+                Administra los índices numéricos para la estructura del censo.
+              </p>
+            </div>
+          </div>
+        </button>
+
       </div>
     </div>
   );
