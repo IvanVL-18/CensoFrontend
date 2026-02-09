@@ -1,17 +1,15 @@
-// src/pages/Indexs/indexs.interfaces.ts
 
+import type { ChangeEvent } from "react";
 
 export interface Index {
   id: string; 
   name: string;
   created_at: string;
   updated_at: string;
-  deleted_at: string; // <-- CORRECCIÓN 1: '?' lo hace opcional (puede no existir)
+  deleted_at: string; 
 }
 
-// --- Interaces para la paginación ---
 
-// Esta es la interfaz para los links DENTRO del objeto 'meta'
 export interface MetaLink {
   url: string | null;
   label: string;
@@ -19,19 +17,19 @@ export interface MetaLink {
   active: boolean;
 }
 
-// Esta es la interfaz para el objeto 'meta' (ajustado a tu API)
+
 export interface Meta {
   total: number;
   per_page: number;
   current_page: number;
   last_page: number;
   from: number;
-  links: MetaLink[]; // <-- Faltaba este array de links
+  links: MetaLink[]; 
   path: string;
   to: number;
 }
 
-// Esta es la interfaz para la respuesta COMPLETA de la API (con paginación)
+
 export interface PaginatedIndexsResponse {
   data: Index[];
   links: {
@@ -40,15 +38,83 @@ export interface PaginatedIndexsResponse {
     prev: string | null;
     next: string | null;
   };
-  meta: Meta; // <-- CORRECCIÓN 2: Usamos la interfaz Meta corregida
+  meta: Meta;
 }
 
-// Esta es la interfaz para crear una nueva unidad
+
 export interface CreateIndexDTO {
   name: string;
-  // Agrega aquí otros campos que necesites para crear
+  
 }
 
-// Esta es la interfaz para actualizar (opcional, pero útil)
-// 'Partial' hace que todos los campos de CreateIndexDTO (como 'name') sean opcionales
+
 export type UpdateIndexDTO = Partial<CreateIndexDTO>;
+
+export interface ExcelFailure {
+  row: number;
+  field: string;
+  errors: string[];
+  invalid_value: any;
+}
+
+export interface BulkErrorModalProps {
+  isOpen: boolean;
+  errors: ExcelFailure[];
+  onClose: () => void;
+}
+
+export type IndexFilter = "all" | "active" | "inactive";
+
+ export interface IndexsToolbarProps {
+  filter: IndexFilter;
+  searchTerm: string;
+  isSubmitting: boolean;
+  onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
+  onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onAddClick: () => void; 
+  onBulkUpload: (file: File) => void;
+}
+
+ export interface IndexsTableProps {
+  indexs: Index[]; 
+  meta: Meta | null;
+  loading: boolean;
+  error: string | null;
+  onSort: (key: keyof Index) => void;
+  onView: (index: Index) => void;
+  onEdit: (index: Index) => void;
+  onBan: (index: Index) => void;
+  onRestore: (index: Index) => void;
+  onDelete: (index: Index) => void;
+}
+
+export interface ViewIndexModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  index: Index | null; 
+}
+
+ export interface PaginationProps {
+  meta: Meta | null;
+  links: PaginatedIndexsResponse["links"] | null;
+  loading: boolean;
+  error: string | null;
+  onPageClick: (url: string | null) => void;
+}
+
+ export interface ConfirmModalProps {
+  isOpen: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+  
+  
+  title: string;
+  message: string; 
+  confirmButtonText?: string; 
+  confirmButtonColor?: 'danger' | 'primary'; 
+  
+  
+  onClose: () => void;
+  onConfirm: () => void;
+} 
+

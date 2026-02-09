@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
-import { getIndexs, getSingleIndex, createIndex, updateIndex,banIndex, restoreIndex,forceDeleteIndex, type IndexFilter } from "./indexs.service";
+import { getIndexs, getSingleIndex, createIndex, updateIndex,banIndex, restoreIndex,forceDeleteIndex, importIndexs, type IndexFilter } from "./indexs.service";
 import { useToast } from "../../context/ToastContext"; 
 
 import type {
@@ -7,6 +7,7 @@ import type {
   PaginatedIndexsResponse,
   Meta,
   CreateIndexDTO,
+  ExcelFailure,
 } from "./indexs.interfaces";
 
 type SortConfig = {
@@ -56,6 +57,8 @@ export function useIndexs() {
 
   const [actionType, setActionType] = useState<'ban' | 'restore' | 'delete' | null>(null);
 
+  const [isBulkErrorOpen, setIsBulkErrorOpen] = useState(false);
+  const [bulkErrors, setBulkErrors] = useState<ExcelFailure[]>([]);
   
 
 
@@ -296,6 +299,38 @@ const handleConfirmAction = useCallback(async () => {
   setModalError(null);
 }, []);
 
+  const handleBulkUpload = useCallback(async (file: File) => {
+    setIsSubmitting(true);
+    setModalError(null);
+    
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await importIndexs(formData);
+      addToast(response.message, "success");
+      reloadIndexs();
+    } catch (err: any) {
+      console.error("Error carga masiva:", err);
+      if (err.bulkErrors && Array.isArray(err.bulkErrors)) {
+        setBulkErrors(err.bulkErrors);
+        setIsBulkErrorOpen(true);
+        addToast("El archivo contiene errores que debes corregir", "warning");
+        reloadIndexs();
+      } else {
+        const msg = err.message || "Error al subir archivo";
+        setModalError(msg);
+        addToast(msg, "danger");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [addToast, reloadIndexs]);
+
+  const closeBulkError = useCallback(() => {
+    setIsBulkErrorOpen(false);
+    setBulkErrors([]);
+  }, []);
   
 
 
@@ -324,6 +359,8 @@ const handleConfirmAction = useCallback(async () => {
     editingIndex,
     isViewModalOpen,
     viewingIndex,
+    isBulkErrorOpen,
+    bulkErrors,
 
     
     handleFilterChange,
@@ -342,6 +379,8 @@ const handleConfirmAction = useCallback(async () => {
     onDelete,
     handleConfirmModalClose, 
     handleConfirmAction,
-    handleViewModalClose
+    handleViewModalClose,
+    handleBulkUpload,
+    closeBulkError
   };
 }

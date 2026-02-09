@@ -1,4 +1,4 @@
-// src/components/indexs.tsx (Corregido con el Patrón de Contexto)
+
 
 import { useIndexs } from "./useIndexs";
 import { IndexsToolbar } from "./IndexsToolbar";
@@ -10,16 +10,13 @@ import { ViewIndexModal } from "./ViewIndexModal";
 // <--- Tus imports están perfectos
 import { ToastProvider, useToast } from "../../context/ToastContext"; 
 import { Toast } from "../../components/Toast";
+import { BulkErrorModal } from "./BulkErrorModal";
 
-// ---
-// 1. Contenedor de Toasts
-//    (Lo sacamos fuera para que sea más limpio)
-// ---
+
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
 
   return (
-    // Aquí definimos la posición de TODOS los toasts
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
       {toasts.map((toast) => (
         <Toast
@@ -33,10 +30,6 @@ function ToastContainer() {
   );
 }
 
-// ---
-// 2. Componente Interno para el Contenido de la Página
-//    (Este componente contiene TODO tu código anterior)
-// ---
 function IndexsPageContent() {
   const {
     loading,
@@ -70,6 +63,10 @@ function IndexsPageContent() {
     handleViewModalClose,
     handleConfirmModalClose, 
     handleConfirmAction,
+    handleBulkUpload,
+    isBulkErrorOpen,
+    bulkErrors,
+    closeBulkError,
   } = useIndexs(); 
 
  
@@ -109,9 +106,11 @@ function IndexsPageContent() {
       <IndexsToolbar
         filter={filter}
         searchTerm={searchTerm}
+        isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
         onAddClick={handleAddClick}
+        onBulkUpload={handleBulkUpload}
       />
 
       <div className="p-4">
@@ -166,6 +165,12 @@ function IndexsPageContent() {
         isOpen={isViewModalOpen}
         index={viewingIndex}
         onClose={handleViewModalClose}
+      />
+
+      <BulkErrorModal
+        isOpen={isBulkErrorOpen}
+        errors={bulkErrors}
+        onClose={closeBulkError}
       />
     </div>
   );

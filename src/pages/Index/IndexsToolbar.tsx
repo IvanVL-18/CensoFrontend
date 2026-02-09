@@ -1,13 +1,15 @@
-import { type ChangeEvent } from "react";
+import { type ChangeEvent, useRef } from "react";
 import {
   Search,
   ChevronDown,
   CirclePlus,
+  FileDown,
   type LucideProps,
 } from "lucide-react";
-import type { IndexFilter } from "./indexs.service"; // Asegúrate que la ruta sea correcta
 
-// --- Definiciones de Iconos (usados solo en este componente) ---
+import AddButton from "../../components/AddButton";
+import type { IndexsToolbarProps } from "./indexs.interfaces";
+
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -22,30 +24,48 @@ const IconCirclePlus = (props: LucideProps) => (
   <CirclePlus {...defaultProps} {...props} />
 );
 
-// --- Definición de Props ---
-
-interface IndexsToolbarProps {
-  filter: IndexFilter;
-  searchTerm: string;
-  onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
-  onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onAddClick: () => void; // Prop para el botón "Agregar"
-}
-
-// --- Componente ---
 
 export function IndexsToolbar({
   filter,
   searchTerm,
+  isSubmitting,
   onFilterChange,
   onSearchChange,
-  onAddClick, // Recibimos la prop
+  onAddClick, 
+  onBulkUpload,
 }: IndexsToolbarProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onBulkUpload(file);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   return (
     <>
       
       <div className="flex justify-between items-center p-4 bg-red-900">
         <h1 className="text-xl md:text-2xl font-bold text-white">Indices</h1>
+        <div className="flex items-center gap-2">
+        <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".xlsx, .xls, .csv"
+            className="hidden"
+          />
+          <AddButton
+            label={isSubmitting ? "Cargando..." : "Carga Masiva"}
+            onClick={() => fileInputRef.current?.click()}
+            variant="green"
+            disabled={isSubmitting}
+            icon={<FileDown size={22} strokeWidth={2.5} />}
+          />
         <button
           onClick={onAddClick} 
           className="
@@ -74,6 +94,7 @@ export function IndexsToolbar({
             Agregar Indice
           </span>
         </button>
+        </div>
       </div>
 
      
@@ -94,7 +115,6 @@ export function IndexsToolbar({
           </div>
         </div>
 
-        {/* Búsqueda */}
         <div className="relative flex w-full md:w-auto">
           <input
             type="text"
