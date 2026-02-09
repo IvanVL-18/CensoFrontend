@@ -21,7 +21,7 @@ import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Index/indexs";
 import Roles from "./pages/Roles/Roles";
-
+import FormTestPage from "./pages/FormIo/CensusQuestionsPage";
 export default function App() {
   return (
     <Routes>
@@ -52,10 +52,13 @@ export default function App() {
         <Route path="/secciones" element={<Sections />} />
         <Route path="/ocupaciones" element={<Occupations />} />
         <Route path="/Roles" element={<Roles />} />
+        
+        <Route path="/Form" element={<FormTestPage />} />
       </Route>
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
+
     </Routes>
   );
 }
