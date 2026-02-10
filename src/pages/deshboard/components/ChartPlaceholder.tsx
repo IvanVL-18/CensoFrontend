@@ -1,4 +1,4 @@
-import type { DonutItem, BarItem } from "../dashboard.types";
+import type { DonutItem, BarItem } from "../../Deshboard/Dashboard.types";
 
 type Props =
   | { kind: "donut"; donutData: DonutItem[] }
