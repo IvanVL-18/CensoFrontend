@@ -1,22 +1,11 @@
 import { X } from "lucide-react";
-// Importa tu interfaz 'rol' desde donde la tengas
-import type { rol } from "./Rol.interfaces";
+import type { ViewRolModalProps } from "../Roles.types";
 
-interface ViewrolModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  rol: rol | null; // El Rol que vamos a mostrar
-}
-
-/**
- * helper para formatear las fechas de Laravel a un formato legible
- */
 const formatDate = (dateString: string | null) => {
   if (!dateString) {
-    return "N/A"; // No aplica (ej. si no ha sido desactivado)
+    return "N/A"; 
   }
   try {
-    // Convierte 'YYYY-MM-DDTHH:MM:SS.mmmmmmZ' a un formato local
     return new Date(dateString).toLocaleString('es-MX', {
       year: 'numeric',
       month: 'long',
@@ -30,9 +19,6 @@ const formatDate = (dateString: string | null) => {
   }
 };
 
-/**
- * Componente de fila para mostrar un detalle
- */
 function DetailRow({ label, value }: { label: string, value: string | null }) {
   return (
     <div>
@@ -44,9 +30,8 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewrolModal({ isOpen, onClose, rol }: ViewrolModalProps) {
-  // Si no está abierto o no hay una unidad, no renderiza nada
-  if (!isOpen || !rol) {
+export function ViewRolModal({ isOpen, onClose, Rol }: ViewRolModalProps) {
+  if (!isOpen || !Rol) {
     return null;
   }
 
@@ -78,15 +63,15 @@ export function ViewrolModal({ isOpen, onClose, rol }: ViewrolModalProps) {
           <div className="p-6 space-y-4">
             <DetailRow 
               label="Nombre del Rol:" 
-              value={rol.name} 
+              value={Rol.name} 
             />
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(rol.created_at)} // Asumiendo que se llama así
+              value={formatDate(Rol.created_at)} 
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(rol.deleted_at)} // Asumiendo que se llama así
+              value={formatDate(Rol.deleted_at)} 
             />
           </div>
 

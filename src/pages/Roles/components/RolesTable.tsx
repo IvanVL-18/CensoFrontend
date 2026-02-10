@@ -7,9 +7,7 @@ import {
   Ban,
   type LucideProps,
 } from "lucide-react";
-import type { rol, Meta } from "./Rol.interfaces"; // Asegúrate que la ruta sea correcta
-
-// --- Definiciones de Iconos (usados solo en la tabla) ---
+import type { RolesTableProps } from "../Roles.types";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -27,30 +25,10 @@ const IconDelete = (props: LucideProps) => (
 const IconCircleArrowUp = (props: LucideProps) => (
   <CircleArrowUp {...defaultProps} {...props} />
 );
-const IconBan = (props: LucideProps) => (
-  <Ban {...defaultProps} {...props} />
-);
-
-// --- Definición de Props ---
-
-interface rolesTableProps {
-  roles: rol[]; // Recibe las unidades YA filtradas y ordenadas
-  meta: Meta | null;
-  loading: boolean;
-  error: string | null;
-  onSort: (key: keyof rol) => void;
-  // Funciones para manejar las acciones
-  onView: (rol: rol) => void;
-  onEdit: (rol: rol) => void;
-  onBan: (rol: rol) => void;
-  onRestore: (rol: rol) => void;
-  onDelete: (rol: rol) => void;
-}
-
-// --- Componente ---
+const IconBan = (props: LucideProps) => <Ban {...defaultProps} {...props} />;
 
 export function RolesTable({
-  roles,
+  Roles,
   meta,
   loading,
   error,
@@ -60,7 +38,7 @@ export function RolesTable({
   onBan,
   onRestore,
   onDelete,
-}: rolesTableProps) {
+}: RolesTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -69,7 +47,7 @@ export function RolesTable({
             {/* 1. Columna "No." */}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
               <button
-                onClick={() => onSort("id")} // Conectado a la prop onSort
+                onClick={() => onSort("id")} 
                 className="
                   flex items-center space-x-1     
                   text-xs font-medium text-gray-500 uppercase tracking-wider
@@ -84,7 +62,7 @@ export function RolesTable({
             {/* 2. Columna "Nombre" */}
             <th className="px-6 py-3 text-left w-full">
               <button
-                onClick={() => onSort("name")} // Conectado a la prop onSort
+                onClick={() => onSort("name")} 
                 className="
                   flex items-center space-x-1     
                   text-xs font-medium text-gray-500 uppercase tracking-wider
@@ -124,10 +102,10 @@ export function RolesTable({
           )}
 
           {/* --- Estado Vacío --- */}
-          {!loading && !error && roles.length === 0 && (
+          {!loading && !error && Roles.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                No se encontraron Rols.
+                No se encontraron Roles.
               </td>
             </tr>
           )}
@@ -135,26 +113,26 @@ export function RolesTable({
           {/* --- Mapeo de datos --- */}
           {!loading &&
             !error &&
-            roles.map((rol, index) => (
-              <tr key={rol.id} className="hover:bg-gray-50">
+            Roles.map((Rol, index) => (
+              <tr key={Rol.id} className="hover:bg-gray-50">
                 {/* Celda "No." */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {meta ? meta.from + index : rol.id}
+                  {meta ? meta.from + index : Rol.id}
                 </td>
 
                 {/* Celda "Nombre" */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {rol.name}
+                  {Rol.name}
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
-                  {!rol.deleted_at ? (
+                  {!Rol.deleted_at ? (
                     <>
                       {/* --- Botón VER (Activo) --- */}
                       <button
                         title="Ver Rol"
-                        onClick={() => onView(rol)} // Conectado a prop
+                        onClick={() => onView(Rol)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -168,7 +146,7 @@ export function RolesTable({
                       {/* --- Botón EDITAR (Activo) --- */}
                       <button
                         title="Editar Rol"
-                        onClick={() => onEdit(rol)} // Conectado a prop
+                        onClick={() => onEdit(Rol)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#1b2469] hover:text-white 
@@ -182,7 +160,7 @@ export function RolesTable({
                       {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
                         title="Desactivar Rol"
-                        onClick={() => onBan(rol)} // Conectado a prop
+                        onClick={() => onBan(Rol)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 
@@ -198,7 +176,7 @@ export function RolesTable({
                       {/* --- Botón VER (Inactivo) --- */}
                       <button
                         title="Ver Rol"
-                        onClick={() => onView(rol)} // Conectado a prop
+                        onClick={() => onView(Rol)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -212,7 +190,7 @@ export function RolesTable({
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
                         title="Restaurar Rol"
-                        onClick={() => onRestore(rol)} // Conectado a prop
+                        onClick={() => onRestore(Rol)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#1b6939] hover:text-white 
@@ -226,7 +204,7 @@ export function RolesTable({
                       {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
                       <button
                         title="Eliminar Permanentemente"
-                        onClick={() => onDelete(rol)} // Conectado a prop
+                        onClick={() => onDelete(Rol)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 

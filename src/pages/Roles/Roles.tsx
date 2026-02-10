@@ -1,16 +1,20 @@
-import { useroles } from "./useRoles";
-import { RolesToolbar } from "./RolesToolbar";
-import { RolesTable } from "./RolesTable";
+import { useRolesData } from "./hooks/useRolesData";
+import { useRolesModals } from "./hooks/useRolesModals";
+import { useRolesMutations } from "./hooks/useRolesMutations";
+import { getRol } from "./Roles.service";
+import { RolesToolbar } from "./components/RolesToolbar";
+import { RolesTable } from "./components/RolesTable";
 import Pagination from "../../components/Pagination";
-import { RolModal } from "./RolModal";
-import { ConfirmModal } from "./ConfirmModal";
-import { ViewrolModal } from "./ViewRolModal";
+import { RolModal } from "./components/RolesModal";
+import { ConfirmModal } from "./components/ConfirmModal";
+import { ViewRolModal } from "./components/ViewRolesModal";
+import { BulkErrorModal } from "./components/BulkErrorModal";
+
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
-
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
       {toasts.map((toast) => (
@@ -27,60 +31,64 @@ function ToastContainer() {
 
 function RolesPageContent() {
   const {
+    Roles,
     loading,
     error,
-    sortedroles,
     meta,
     links,
     filter,
     searchTerm,
-    isModalOpen,
-    isSubmitting,
-    modalError,
-    editingrol,
-    isConfirmModalOpen,
-    actionrol,
-    actionType,
-    isViewModalOpen,
-    viewingrol,
+    refreshRoles,
     handleFilterChange,
-    handleSearchChange,
     handleSort,
-    handlePageClick,
-    handleAddClick,
-    handleModalClose,
-    handleModalSave,
-    onView,
-    onEdit,
-    onBan,
-    onRestore,
-    onDelete,
-    handleViewModalClose,
-    handleConfirmModalClose,
-    handleConfirmAction,
-  } = useroles();
+    handleSearch,
+    handlePageChange,
+  } = useRolesData();
 
-  const modalTitle = editingrol ? "Editar Rol" : "Agregar Rol";
-  const modalInitialName = editingrol ? editingrol.name : "";
+  const handleViewClick = async (partialRol: any) => {
+    try {
+      const fullRol = await getRol(partialRol.id);
+      modals.openView(fullRol);
+    } catch (error) {
+      console.error("Error al cargar detalles del Rol", error);
+    }
+  };
+  const modals = useRolesModals();
+
+  const {
+    isSubmitting,
+    mutationError,
+    handleSave,
+    handleConfirmAction,
+    handleBulkUpload,
+  } = useRolesMutations({
+    refreshRoles,
+    closeForm: modals.closeForm,
+    closeConfirm: modals.closeConfirm,
+    openBulkError: modals.openBulkError,
+  });
+
+  const modalTitle = modals.editingRol ? "Editar Rol" : "Agregar Rol";
+  const modalInitialName = modals.editingRol?.name || "";
 
   let confirmTitle = "";
   let confirmMessage = "";
   let confirmButtonText = "";
   let confirmButtonColor: "danger" | "primary" = "danger";
 
-  if (actionType === "ban") {
+  if (modals.actionType === "ban") {
     confirmTitle = "Desactivar Rol";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el Rol "${actionrol?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres desactivar el Rol "${modals.actionRol?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
-  } else if (actionType === "restore") {
+  } else if (modals.actionType === "restore") {
     confirmTitle = "Restaurar Rol";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el Rol "${actionrol?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres restaurar el Rol "${modals.actionRol?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
-  } else if (actionType === "delete") {
+  } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el Rol "${actionrol?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el Rol "${modals.actionRol?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -88,66 +96,83 @@ function RolesPageContent() {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
+
+      {/* Barra de Herramientas */}
       <RolesToolbar
         filter={filter}
         searchTerm={searchTerm}
+        isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
-        onSearchChange={handleSearchChange}
-        onAddClick={handleAddClick}
+        onSearchChange={handleSearch}
+        onAddClick={modals.openCreate}
+        onBulkUpload={handleBulkUpload}
       />
 
+      {/* Tabla de Resultados */}
       <div className="p-4">
         <RolesTable
           loading={loading}
           error={error}
-          roles={sortedroles}
+          Roles={Roles}
           meta={meta}
           onSort={handleSort}
-          onView={onView}
-          onEdit={onEdit}
-          onBan={onBan}
-          onRestore={onRestore}
-          onDelete={onDelete}
+          onView={handleViewClick}
+          onEdit={modals.openEdit}
+          onBan={(u) => modals.openConfirm(u, "ban")}
+          onRestore={(u) => modals.openConfirm(u, "restore")}
+          onDelete={(u) => modals.openConfirm(u, "delete")}
         />
-        
-        <div className="mt-4 flex justify-center">
+
+        {/* Paginación */}
+        <div className="border-t border-gray-200 bg-gray-50">
           <Pagination
             meta={meta}
             links={links}
-            loading={loading}
-            error={error}
-            onPageClick={handlePageClick}
+            onPageClick={handlePageChange}
           />
         </div>
-
       </div>
 
+      {/* --- MODALES --- */}
+
+      {/* 1. Crear / Editar */}
       <RolModal
-        isOpen={isModalOpen}
+        isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
-        error={modalError}
+        error={mutationError}
         title={modalTitle}
         initialName={modalInitialName}
-        onClose={handleModalClose}
-        onSave={handleModalSave}
+        onClose={modals.closeForm}
+        onSave={(name) => handleSave(name, modals.editingRol)}
       />
 
+      {/* 2. Confirmación (Ban/Restore/Delete) */}
       <ConfirmModal
-        isOpen={isConfirmModalOpen}
+        isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={modalError}
+        error={mutationError} 
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
         confirmButtonColor={confirmButtonColor}
-        onClose={handleConfirmModalClose}
-        onConfirm={handleConfirmAction}
+        onClose={modals.closeConfirm}
+        onConfirm={() =>
+          handleConfirmAction(modals.actionRol, modals.actionType)
+        }
       />
 
-      <ViewrolModal
-        isOpen={isViewModalOpen}
-        rol={viewingrol}
-        onClose={handleViewModalClose}
+      {/* 3. Ver Detalle */}
+      <ViewRolModal
+        isOpen={modals.isViewOpen}
+        Rol={modals.viewingRol}
+        onClose={modals.closeView}
+      />
+
+      {/* 4. Errores de Excel */}
+      <BulkErrorModal
+        isOpen={modals.isBulkErrorOpen}
+        errors={modals.bulkErrors}
+        onClose={modals.closeBulkError}
       />
     </div>
   );
@@ -156,7 +181,7 @@ function RolesPageContent() {
 export default function Roles() {
   return (
     <ToastProvider>
-      <RolesPageContent/>
+      <RolesPageContent />
     </ToastProvider>
   );
 }
