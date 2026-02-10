@@ -1,5 +1,5 @@
-import { type ChangeEvent, useRef } from "react";
-import { CirclePlus, FileDown } from "lucide-react";
+import { type ChangeEvent} from "react";
+import { CirclePlus } from "lucide-react";
 
 import type { PermissionFilter } from "../Permissions.service";
 import { SearchInput } from "../../../components/SearchInput";
@@ -19,23 +19,13 @@ interface PermissionsToolbarProps {
 export function PermissionsToolbar({
   filter,
   searchTerm,
-  isSubmitting,
+ 
   onFilterChange,
   onSearchChange,
   onAddClick,
-  onBulkUpload,
+ 
 }: PermissionsToolbarProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onBulkUpload(file);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
 
   return (
     <>
@@ -43,23 +33,6 @@ export function PermissionsToolbar({
         <h1 className="text-xl md:text-2xl font-bold text-white">Permisos</h1>
 
         <div className="flex items-center gap-2">
-          {/* Input de archivo oculto que solo acepta Excel/CSV */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept=".xlsx, .xls, .csv"
-            className="hidden"
-          />
-
-          <AddButton
-            label={isSubmitting ? "Cargando..." : "Carga Masiva"}
-            onClick={() => fileInputRef.current?.click()}
-            variant="green"
-            disabled={isSubmitting} 
-            icon={<FileDown size={22} strokeWidth={2.5} />}
-          />
-
           <AddButton
             label="Agregar Módulo"
             onClick={onAddClick}
