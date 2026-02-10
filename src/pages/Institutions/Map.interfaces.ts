@@ -4,13 +4,8 @@ export interface Coordinates {
 }
 
 export interface MapDataResponse {
-  geocode: string;      
-  municipality: string; 
-  street?: string;      
-  suburb?: string;     
-}
-
-export interface Coordinates {
-  lat: number;
-  lon: number;
+  geocode: string;
+  municipality: string;
+  street?: string;
+  suburb?: string;
 }
