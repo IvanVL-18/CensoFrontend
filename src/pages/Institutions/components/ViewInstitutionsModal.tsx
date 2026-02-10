@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 // Importa tu interfaz 'Institution' desde donde la tengas
-import type { Institution } from "./Institutions.interfaces";
+import type { Institution } from "../institutions.types";
 
 interface ViewInstitutionModalProps {
   isOpen: boolean;

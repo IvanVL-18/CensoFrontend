@@ -5,8 +5,9 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 // Importación de servicios e interfaces
-import { getCoordinatesFromPostalCode, getInstitutionMapData } from "./Map.service";
-import type { Coordinates } from "./Map.interfaces";
+import { getCoordinatesFromPostalCode, getInstitutionMapData } from "../Map.service";
+/* import type { Coordinates } from "./Map.types"; */
+import type { Coordinates } from "../Map.types"; // <-- Asegúrate que la ruta sea correcta
 
 // Configuración de iconos de Leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';

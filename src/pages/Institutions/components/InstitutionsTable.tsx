@@ -8,7 +8,8 @@ import {
   MapPin, // <-- Importamos el nuevo ícono
   type LucideProps,
 } from "lucide-react";
-import type { Institution, Meta } from "./Institutions.interfaces"; // Asegúrate que la ruta sea correcta
+import type { InstitutionTableProps } from "../institutions.types"; // Asegúrate que la ruta sea correcta
+
 
 // --- Definiciones de Iconos (usados solo en la tabla) ---
 
@@ -33,23 +34,6 @@ const IconBan = (props: LucideProps) => (
   <Ban {...defaultProps} {...props} />
 );
 
-// --- Definición de Props ---
-
-interface InstitutionsTableProps {
-  institutions: Institution[]; // Recibe las instituciones YA filtradas y ordenadas
-  meta: Meta | null;
-  loading: boolean;
-  error: string | null;
-  onSort: (key: keyof Institution) => void;
-  // Funciones para manejar las acciones
-  onShowMap: (institution: Institution) => void; // <-- Nueva prop para el mapa
-  onView: (institution: Institution) => void;
-  onEdit: (institution: Institution) => void;
-  onBan: (institution: Institution) => void;
-  onRestore: (institution: Institution) => void;
-  onDelete: (institution: Institution) => void;
-}
-
 // --- Componente ---
 
 export function InstitutionsTable({
@@ -64,7 +48,7 @@ export function InstitutionsTable({
   onBan,
   onRestore,
   onDelete,
-}: InstitutionsTableProps) {
+}: InstitutionTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">

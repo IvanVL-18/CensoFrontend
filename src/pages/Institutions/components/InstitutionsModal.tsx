@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import type { CreateInstitutionDTO } from "./Institutions.interfaces";
-import { validateInstitution } from "../../utils/validation"; // Importamos nuestra nueva función
+import type { CreateInstitutionDTO } from "../institutions.types";
+import {InstitutionSchema} from "../schemas/institutions.schema"; // Importamos nuestra nueva función
 
 interface InstitutionModalProps {
   isOpen: boolean;
@@ -54,20 +54,25 @@ export function InstitutionModal({
     // `hadAttemptedSubmit` nos ayuda a controlar esto.
     // Pero si ya hay errores, validamos en tiempo real para limpiarlos.
     if (formErrors.length > 0) { // Solo re-valida si ya se mostró un error
-      validateAndSetErrors();
+      validateForm(name,municipality, geocode, typeinst);
     }
   }, [name, municipality, geocode, typeinst]);
 
-  const validateAndSetErrors = () => {
-    const errors = validateInstitution({ name, municipality, geocode, typeinst });
-    setFormErrors(errors);
-    return errors.length === 0;
-  };
-
+  const validateForm = (currentName: string, municipality: string, geocode: string, typeinst: string) => {
+      const result = InstitutionSchema.safeParse({ name: currentName, municipality, geocode, typeinst });
+      if (!result.success) {
+        const errorMessages = result.error.issues.map((err) => err.message);
+        setFormErrors(errorMessages);
+        return false; 
+      } else {
+        setFormErrors([]);
+        return true; 
+      }
+    };
   // Lógica de envío del formulario
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateAndSetErrors()) {
+    if (validateForm(name,municipality, geocode, typeinst)) {
       onSave({ name, municipality, geocode, typeinst }); // Enviamos todo el objeto a onSave
     }
   };

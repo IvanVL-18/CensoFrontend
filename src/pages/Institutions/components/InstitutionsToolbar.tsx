@@ -1,10 +1,12 @@
 import { type ChangeEvent } from "react";
 import { CirclePlus } from "lucide-react";
 
-import type { InstitutionFilter } from "./Institutions.service";
-import { SearchInput } from "../../components/SearchInput";
-import AddButton from "../../components/AddButton";
-import StatusFilterSelect from "../../components/StatusFilterSelect";
+import type { InstitutionFilter } from "../Institutions.service";
+
+import { SearchInput } from "../../../components/SearchInput";
+import AddButton from "../../../components/AddButton";
+import StatusFilterSelect from "../../../components/StatusFilterSelect";
+
 
 interface InstitutionsToolbarProps {
   filter: InstitutionFilter;

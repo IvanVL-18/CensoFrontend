@@ -8,15 +8,16 @@ import {
   restoreInstitution,
   forceDeleteInstitution, 
   type InstitutionFilter 
-} from "./Institutions.service";
-import { useToast } from "../../context/ToastContext"; // <--- 1. IMPORTAR
+} from "../Institutions.service";
+
+import { useToast } from "../../../context/ToastContext";
 
 import type {
   Institution,
   PaginatedInstitutionsResponse,
   Meta,
   CreateInstitutionDTO,
-} from "./Institutions.interfaces";
+} from "../institutions.types";
 
 type SortConfig = {
   key: keyof Institution;
