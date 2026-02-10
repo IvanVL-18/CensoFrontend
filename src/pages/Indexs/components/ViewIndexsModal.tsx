@@ -1,16 +1,11 @@
 import { X } from "lucide-react";
-
-import type { ViewIndexModalProps } from "./indexs.interfaces";
-
-
-
+import type { ViewIndexModalProps } from "../Indexs.types";
 
 const formatDate = (dateString: string | null) => {
   if (!dateString) {
     return "N/A"; 
   }
   try {
-  
     return new Date(dateString).toLocaleString('es-MX', {
       year: 'numeric',
       month: 'long',
@@ -24,7 +19,6 @@ const formatDate = (dateString: string | null) => {
   }
 };
 
-
 function DetailRow({ label, value }: { label: string, value: string | null }) {
   return (
     <div>
@@ -36,27 +30,25 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewIndexModal({ isOpen, onClose, index }: ViewIndexModalProps) {
-  
-  if (!isOpen || !index) {
+export function ViewIndexModal({ isOpen, onClose, Index }: ViewIndexModalProps) {
+  if (!isOpen || !Index) {
     return null;
   }
 
   return (
-    <>
-      
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* 1. Fondo Difuminado (Blur) */}
       <div 
-        className="fixed inset-0 bg-blue bg-opacity-30 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}>
-      </div>
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
 
-      
-      <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+      {/* 2. Contenedor del Modal */}
+      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden z-10">
           
-       
+          {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">Detalle del Indice</h2>
+            <h2 className="text-xl font-bold text-white">Detalle del Índice</h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300"
@@ -66,23 +58,23 @@ export function ViewIndexModal({ isOpen, onClose, index }: ViewIndexModalProps) 
             </button>
           </div>
 
-          
+          {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
             <DetailRow 
-              label="Nombre del indice:" 
-              value={index.name} 
+              label="Nombre del Índice:" 
+              value={Index.name} 
             />
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(index.created_at)} 
+              value={formatDate(Index.created_at)} 
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(index.deleted_at)} 
+              value={formatDate(Index.deleted_at)} 
             />
           </div>
 
-          
+          {/* Pie de página del Modal (Solo 1 botón) */}
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
             <button
               type="button"
@@ -97,7 +89,6 @@ export function ViewIndexModal({ isOpen, onClose, index }: ViewIndexModalProps) 
             </button>
           </div>
         </div>
-      </div>
-    </>
+    </div>
   );
 }

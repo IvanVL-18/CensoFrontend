@@ -7,9 +7,7 @@ import {
   Ban,
   type LucideProps,
 } from "lucide-react";
-import type { IndexsTableProps } from "./indexs.interfaces"; 
-
-
+import type { CategoriesTableProps } from "../Categories.types";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -27,15 +25,10 @@ const IconDelete = (props: LucideProps) => (
 const IconCircleArrowUp = (props: LucideProps) => (
   <CircleArrowUp {...defaultProps} {...props} />
 );
-const IconBan = (props: LucideProps) => (
-  <Ban {...defaultProps} {...props} />
-);
+const IconBan = (props: LucideProps) => <Ban {...defaultProps} {...props} />;
 
-
-
-
-export function IndexsTable({
-  indexs,
+export function CategoriesTable({
+  Categories,
   meta,
   loading,
   error,
@@ -45,12 +38,13 @@ export function IndexsTable({
   onBan,
   onRestore,
   onDelete,
-}: IndexsTableProps) {
+}: CategoriesTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
+            {/* 1. Columna "No." */}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
               <button
                 onClick={() => onSort("id")} 
@@ -65,10 +59,10 @@ export function IndexsTable({
               </button>
             </th>
 
-
+            {/* 2. Columna "Nombre" */}
             <th className="px-6 py-3 text-left w-full">
               <button
-                onClick={() => onSort("name")}
+                onClick={() => onSort("name")} 
                 className="
                   flex items-center space-x-1     
                   text-xs font-medium text-gray-500 uppercase tracking-wider
@@ -80,12 +74,14 @@ export function IndexsTable({
               </button>
             </th>
 
+            {/* 3. Columna "Opciones" */}
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
               Opciones
             </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
+          {/* --- Estados de Carga y Error --- */}
           {loading && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
@@ -105,32 +101,38 @@ export function IndexsTable({
             </tr>
           )}
 
-          {!loading && !error && indexs.length === 0 && (
+          {/* --- Estado Vacío --- */}
+          {!loading && !error && Categories.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                No se encontraron Indices.
+                No se encontraron categorías.
               </td>
             </tr>
           )}
 
+          {/* --- Mapeo de datos --- */}
           {!loading &&
             !error &&
-            indexs.map((indexData, i) => (
-              <tr key={indexData.id} className="hover:bg-gray-50">
+            Categories.map((Category, index) => (
+              <tr key={Category.id} className="hover:bg-gray-50">
+                {/* Celda "No." */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {meta ? meta.from + i : indexData.id}
+                  {meta ? meta.from + index : Category.id}
                 </td>
 
+                {/* Celda "Nombre" */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {indexData.name}
+                  {Category.name}
                 </td>
 
+                {/* Celda "Opciones" con lógica condicional */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
-                  {!indexData.deleted_at ? (
+                  {!Category.deleted_at ? (
                     <>
+                      {/* --- Botón VER (Activo) --- */}
                       <button
-                        title="Ver Indice"
-                        onClick={() => onView(indexData)} 
+                        title="Ver categoría"
+                        onClick={() => onView(Category)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -141,9 +143,10 @@ export function IndexsTable({
                         <IconView />
                       </button>
 
+                      {/* --- Botón EDITAR (Activo) --- */}
                       <button
-                        title="Editar Indice"
-                        onClick={() => onEdit(indexData)} 
+                        title="Editar categoría"
+                        onClick={() => onEdit(Category)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#1b2469] hover:text-white 
@@ -154,9 +157,10 @@ export function IndexsTable({
                         <IconEdit />
                       </button>
 
+                      {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
-                        title="Desactivar Indice"
-                        onClick={() => onBan(indexData)} 
+                        title="Desactivar categoría"
+                        onClick={() => onBan(Category)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 
@@ -169,9 +173,10 @@ export function IndexsTable({
                     </>
                   ) : (
                     <>
+                      {/* --- Botón VER (Inactivo) --- */}
                       <button
-                        title="Ver Indice"
-                        onClick={() => onView(indexData)} 
+                        title="Ver categoría"
+                        onClick={() => onView(Category)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -182,9 +187,10 @@ export function IndexsTable({
                         <IconView />
                       </button>
 
+                      {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
-                        title="Restaurar Indice"
-                        onClick={() => onRestore(indexData)} 
+                        title="Restaurar categoría"
+                        onClick={() => onRestore(Category)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#1b6939] hover:text-white 
@@ -195,9 +201,10 @@ export function IndexsTable({
                         <IconCircleArrowUp />
                       </button>
 
+                      {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
                       <button
                         title="Eliminar Permanentemente"
-                        onClick={() => onDelete(indexData)} 
+                        onClick={() => onDelete(Category)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 
