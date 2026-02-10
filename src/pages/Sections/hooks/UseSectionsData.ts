@@ -1,113 +1,108 @@
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  type ChangeEvent,
-} from "react";
-import axios from "axios";
-import api from "../../../lib/Axios";
-import { getSections, type SectionFilter } from "../sections.service";
-import type { Section, PaginatedSectionsResponse, Meta } from "../Sections.types";
-
-type SortConfig = {
-  key: keyof Section;
-  direction: "ascending" | "descending";
-};
+import { useState, useEffect, useCallback, type ChangeEvent } from "react";
+import { getSections, type sectionFilter } from "../Sections.service";
+import type {
+  section,
+  PaginatedSectionsResponse,
+  Meta,
+} from "../Sections.types";
 
 export function useSectionsData() {
-  const [sections, setSections] = useState<Section[]>([]);
-  const [links, setLinks] = useState<PaginatedSectionsResponse["links"] | null>(null);
+  const [Sections, setSections] = useState<section[]>([]);
+  const [links, setLinks] = useState<PaginatedSectionsResponse["links"] | null>(
+    null,
+  );
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  const [filter, setFilter] = useState<SectionFilter>("all");
+  const [filter, setFilter] = useState<sectionFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const [sortConfig, setSortConfig] = useState<SortConfig>({
-    key: "name",
-    direction: "ascending",
+  const [page, setPage] = useState(1);
+
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "asc" | "desc";
+  }>({
+    key: "id",
+    direction: "asc",
   });
 
   const [reloadToken, setReloadToken] = useState(0);
   const refreshSections = useCallback(() => setReloadToken((t) => t + 1), []);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
 
-    getSections(filter, searchTerm, controller.signal)
-      .then((response) => {
-        setSections(response.data);
-        setLinks(response.links);
-        setMeta(response.meta);
+    getSections(
+      filter,
+      debouncedSearch,
+      page,
+      sortConfig.key,
+      sortConfig.direction,
+      controller.signal,
+    )
+      .then((data) => {
+        setSections(data.data);
+        setLinks(data.links);
+        setMeta(data.meta);
         setError(null);
       })
       .catch((err) => {
-        if (axios.isCancel(err) || err.name === "CanceledError") return;
+        if (err.name === "CanceledError" || err.code === "ERR_CANCELED") return;
         console.error(err);
-        setError(`Error al cargar las Secciones: ${err.message}`);
+        setError("Error al cargar los datos.");
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
 
     return () => controller.abort();
-  }, [filter, searchTerm, reloadToken]);
+  }, [filter, debouncedSearch, page, sortConfig, reloadToken]);
 
-  const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setFilter(e.target.value as SectionFilter);
-  }, []);
+  const handleFilterChange = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>) => {
+      setFilter(e.target.value as sectionFilter);
+      setPage(1);
+    },
+    [],
+  );
 
-  const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   }, []);
 
-  const handlePageClick = useCallback((url: string | null) => {
+  const handlePageChange = useCallback((url: string | null) => {
     if (!url) return;
-    const targetUrl = new URL(url);
-    const params = new URLSearchParams(targetUrl.search);
-    if (searchTerm) params.set("search", searchTerm);
+    try {
+      const urlObj = new URL(url);
+      const pageParam = urlObj.searchParams.get("page");
+      if (pageParam) setPage(Number(pageParam));
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
-    setLoading(true);
-    api.get<PaginatedSectionsResponse>(`/sections/${filter}/content?${params.toString()}`)
-      .then((response) => {
-        setSections(response.data.data);
-        setLinks(response.data.links);
-        setMeta(response.data.meta);
-        setError(null);
-      })
-      .catch((err) => {
-        if (axios.isCancel(err)) return;
-        setError(`Error paginación: ${err.message}`);
-      })
-      .finally(() => setLoading(false));
-  }, [filter, searchTerm]);
-
-  const handleSort = useCallback((key: keyof Section) => {
-    setSortConfig((c) => ({
-      key,
-      direction: c.key === key && c.direction === "ascending" ? "descending" : "ascending",
+  const handleSort = useCallback((key: keyof section) => {
+    setSortConfig((current) => ({
+      key: key as string,
+      direction:
+        current.key === key && current.direction === "asc" ? "desc" : "asc",
     }));
   }, []);
 
-  const sortedSections = useMemo(() => {
-    const items = [...sections];
-    items.sort((a, b) => {
-      const valA = a[sortConfig.key];
-      const valB = b[sortConfig.key];
-      if (valA == null) return 1;
-      if (valB == null) return -1;
-      if (valA < valB) return sortConfig.direction === "ascending" ? -1 : 1;
-      if (valA > valB) return sortConfig.direction === "ascending" ? 1 : -1;
-      return 0;
-    });
-    return items;
-  }, [sections, sortConfig]);
-
   return {
-    sections: sortedSections,
+    Sections,
     loading,
     error,
     meta,
@@ -116,8 +111,8 @@ export function useSectionsData() {
     searchTerm,
     refreshSections,
     handleFilterChange,
-    handleSearchChange,
-    handlePageClick,
+    handleSearch,
+    handlePageChange,
     handleSort,
   };
 }

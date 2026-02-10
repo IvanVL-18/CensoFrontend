@@ -1,13 +1,13 @@
 import { type ChangeEvent, useRef } from "react";
 import { CirclePlus, FileDown } from "lucide-react";
 
-import type { SectionFilter } from "../sections.service";
+import type { sectionFilter } from "../Sections.service";
 import { SearchInput } from "../../../components/SearchInput";
 import AddButton from "../../../components/AddButton";
 import StatusFilterSelect from "../../../components/StatusFilterSelect";
 
 interface SectionsToolbarProps {
-  filter: SectionFilter;
+  filter: sectionFilter;
   searchTerm: string;
   isSubmitting: boolean;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
@@ -40,7 +40,7 @@ export function SectionsToolbar({
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-red-900">
-        <h1 className="text-xl md:text-2xl font-bold text-white">Secciones</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-white">Módulos</h1>
 
         <div className="flex items-center gap-2">
           {/* Input de archivo oculto que solo acepta Excel/CSV */}

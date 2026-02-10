@@ -105,7 +105,7 @@ export function SectionsTable({
           {!loading && !error && Sections.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                No se encontraron Secciones.
+                No se encontraron Modulos.
               </td>
             </tr>
           )}
@@ -113,26 +113,26 @@ export function SectionsTable({
           {/* --- Mapeo de datos --- */}
           {!loading &&
             !error &&
-            Sections.map((Section, index) => (
-              <tr key={Section.id} className="hover:bg-gray-50">
+            Sections.map((section, index) => (
+              <tr key={section.id} className="hover:bg-gray-50">
                 {/* Celda "No." */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {meta ? meta.from + index : Section.id}
+                  {meta ? meta.from + index : section.id}
                 </td>
 
                 {/* Celda "Nombre" */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {Section.name}
+                  {section.name}
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
-                  {!Section.deleted_at ? (
+                  {!section.deleted_at ? (
                     <>
                       {/* --- Botón VER (Activo) --- */}
                       <button
-                        title="Ver Seccion"
-                        onClick={() => onView(Section)} 
+                        title="Ver Modulo"
+                        onClick={() => onView(section)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -145,8 +145,8 @@ export function SectionsTable({
 
                       {/* --- Botón EDITAR (Activo) --- */}
                       <button
-                        title="Editar Seccion"
-                        onClick={() => onEdit(Section)} 
+                        title="Editar Modulo"
+                        onClick={() => onEdit(section)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#1b2469] hover:text-white 
@@ -159,8 +159,8 @@ export function SectionsTable({
 
                       {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
-                        title="Desactivar Seccion"
-                        onClick={() => onBan(Section)} 
+                        title="Desactivar Modulo"
+                        onClick={() => onBan(section)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 
@@ -175,8 +175,8 @@ export function SectionsTable({
                     <>
                       {/* --- Botón VER (Inactivo) --- */}
                       <button
-                        title="Ver Seccion"
-                        onClick={() => onView(Section)} 
+                        title="Ver Modulo"
+                        onClick={() => onView(section)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -189,8 +189,8 @@ export function SectionsTable({
 
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
-                        title="Restaurar Seccion"
-                        onClick={() => onRestore(Section)} 
+                        title="Restaurar Modulo"
+                        onClick={() => onRestore(section)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#1b6939] hover:text-white 
@@ -204,7 +204,7 @@ export function SectionsTable({
                       {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
                       <button
                         title="Eliminar Permanentemente"
-                        onClick={() => onDelete(Section)} 
+                        onClick={() => onDelete(section)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 
