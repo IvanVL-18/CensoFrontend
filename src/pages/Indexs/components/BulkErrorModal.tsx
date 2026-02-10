@@ -1,16 +1,17 @@
 import { X, AlertCircle } from "lucide-react";
-import type { BulkErrorModalProps } from "./indexs.interfaces";
+import type { BulkErrorModalProps } from "../Indexs.types";
 
 export function BulkErrorModal({
   isOpen,
   errors,
   onClose,
 }: BulkErrorModalProps) {
-  if (!isOpen || !Array.isArray(errors) || errors.length === 0) return null; 
+  if (!isOpen || errors.length === 0) return null;
 
   return (
     <div className="fixed inset-0 bg-[#00000080] z-[60] flex items-center justify-center p-4 backdrop-blur-sm transition-all">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden border border-gray-200">
+        {/* Cabecera - Siguiendo el estilo del Header de tu tabla */}
         <div className="flex justify-between items-center p-5 bg-[#691b31] text-white">
           <div className="flex items-center gap-3">
             <AlertCircle size={24} className="text-[#9d7e43]" />
@@ -31,6 +32,7 @@ export function BulkErrorModal({
           </button>
         </div>
 
+        {/* Cuerpo con Tabla Estilizada como la original */}
         <div className="overflow-y-auto flex-grow">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -70,7 +72,7 @@ export function BulkErrorModal({
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
                     <div className="flex flex-wrap gap-1">
-                      {err.errors?.map((msg, i) => (
+                      {err.errors.map((msg, i) => (
                         <span
                           key={i}
                           className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100"
@@ -83,13 +85,21 @@ export function BulkErrorModal({
                 </tr>
               ))}
             </tbody>
-          </table> 
+          </table>
         </div>
 
+        {/* Footer - Con el estilo de tus botones de acción */}
         <div className="p-4 bg-gray-50 border-t border-gray-200 flex justify-end">
           <button
             onClick={onClose}
-            className="bg-[#691b31] text-white hover:bg-[#4d1324] active:scale-95 px-8 py-2.5 rounded-lg font-bold text-sm transition-all shadow-md"
+            className="
+              bg-[#691b31] text-white 
+              hover:bg-[#4d1324] 
+              active:scale-95
+              px-8 py-2.5 rounded-lg 
+              font-bold text-sm
+              transition-all shadow-md
+            "
           >
             Entendido, corregir el archivo.
           </button>
