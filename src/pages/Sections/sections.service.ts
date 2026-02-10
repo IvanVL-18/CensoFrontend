@@ -1,76 +1,93 @@
 import api from "../../lib/Axios";
 import type {
-  Section,
+  section,
   PaginatedSectionsResponse,
-  CreateSectionDTO,
-  UpdateSectionDTO,
+  CreatesectionDTO,
+  UpdatesectionDTO,
 } from "./Sections.types";
 
-export type SectionFilter = "all" | "active" | "inactive";
-type SectionId = string | number;
+export type sectionFilter = "all" | "active" | "inactive";
+
+type sectionId = string | number;
+
+
 
 export const getSections = async (
-  filter: SectionFilter = "all",
+  filter: sectionFilter = "all",
   search: string = "",
+  page: number = 1,
+  sortBy: string = "id",           
+  direction: "asc" | "desc" = "asc", 
   signal?: AbortSignal,
 ): Promise<PaginatedSectionsResponse> => {
   const params = new URLSearchParams();
-  if (search) params.append("search", search);
   
+  if (search) params.append("search", search);
+  params.append("page", page.toString());
+    params.append("sort_by", sortBy);
+  params.append("direction", direction);
+
   const response = await api.get<PaginatedSectionsResponse>(
-    `/sections/${filter}/content`,
-    { params, signal }
+    `/Sections/${filter}/content`,
+    {
+      params: params,
+      signal,
+    },
   );
   return response.data;
 };
 
-export const getSection = async (
-  id: SectionId,
+
+
+export const getsection = async (
+  id: sectionId,
   signal?: AbortSignal,
-): Promise<Section> => {
-  const response = await api.get<{ data: Section } | Section>(`/sections/${id}`, {
+): Promise<section> => {
+  const response = await api.get<{ data: section } | section>(`/Sections/${id}`, {
     signal,
   });
   return (response.data as any).data ?? response.data;
 };
 
-export const createSection = async (
-  sectionData: CreateSectionDTO,
-): Promise<{ message: string; data?: Section }> => {
-  const response = await api.post("/sections", sectionData);
+export const createsection = async (
+  sectionData: CreatesectionDTO,
+): Promise<{ message: string; data?: section }> => {
+  const response = await api.post("/Sections", sectionData);
   return response.data;
 };
 
-export const updateSection = async (
-  id: SectionId,
-  sectionData: UpdateSectionDTO,
+export const updatesection = async (
+  id: sectionId,
+  sectionData: UpdatesectionDTO,
 ): Promise<{ message: string }> => {
-  const response = await api.put(`/sections/${id}`, sectionData);
+  const response = await api.put(`/Sections/${id}`, sectionData);
   return response.data;
 };
 
-export const deleteSection = async (id: SectionId): Promise<{ message: string }> => {
-  const response = await api.delete(`/sections/${id}`); // Soft delete (ban)
+export const bansection = async (id: sectionId): Promise<{ message: string }> => {
+  const response = await api.delete(`/Sections/${id}`);
   return response.data;
 };
 
-export const restoreSection = async (id: SectionId): Promise<{ message: string }> => {
-  const response = await api.post(`/sections/${id}/restore`);
+export const restoresection = async (id: sectionId): Promise<{ message: string }> => {
+  const response = await api.post(`/Sections/${id}/restore`);
   return response.data;
 };
 
-export const forceDeleteSection = async (
-  id: SectionId,
+export const forceDeletesection = async (
+  id: sectionId,
 ): Promise<{ message: string }> => {
-  const response = await api.delete(`/sections/${id}/force-delete`);
+  const response = await api.delete(`/Sections/${id}/force-delete`);
   return response.data;
 };
 
 export const importSections = async (
   formData: FormData,
 ): Promise<{ message: string }> => {
-  const response = await api.post("/sections/import", formData, {
+  const response = await api.post("/Sections/import", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
 };
+
+
