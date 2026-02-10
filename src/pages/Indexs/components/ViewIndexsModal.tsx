@@ -36,16 +36,15 @@ export function ViewIndexModal({ isOpen, onClose, Index }: ViewIndexModalProps) 
   }
 
   return (
-    <>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* 1. Fondo Difuminado (Blur) */}
       <div 
-        className="fixed inset-0 bg-blue bg-opacity-30 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}>
-      </div>
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
 
       {/* 2. Contenedor del Modal */}
-      <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden z-10">
           
           {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
@@ -90,7 +89,6 @@ export function ViewIndexModal({ isOpen, onClose, Index }: ViewIndexModalProps) 
             </button>
           </div>
         </div>
-      </div>
-    </>
+    </div>
   );
 }

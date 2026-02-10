@@ -28,7 +28,7 @@ export const getIndexs = async (
   params.append("direction", direction);
 
   const response = await api.get<PaginatedIndexsResponse>(
-    `/Indexs/${filter}/content`,
+    `/index/${filter}/content`,
     {
       params: params,
       signal,
@@ -43,7 +43,7 @@ export const getIndex = async (
   id: IndexId,
   signal?: AbortSignal,
 ): Promise<Index> => {
-  const response = await api.get<{ data: Index } | Index>(`/indexs/${id}`, {
+  const response = await api.get<{ data: Index } | Index>(`/index/${id}`, {
     signal,
   });
   return (response.data as any).data ?? response.data;
@@ -52,7 +52,7 @@ export const getIndex = async (
 export const createIndex = async (
   IndexData: CreateIndexDTO,
 ): Promise<{ message: string; data?: Index }> => {
-  const response = await api.post("/indexs", IndexData);
+  const response = await api.post("/index", IndexData);
   return response.data;
 };
 
@@ -60,34 +60,32 @@ export const updateIndex = async (
   id: IndexId,
   IndexData: UpdateIndexDTO,
 ): Promise<{ message: string }> => {
-  const response = await api.put(`/indexs/${id}`, IndexData);
+  const response = await api.put(`/index/${id}`, IndexData);
   return response.data;
 };
 
 export const banIndex = async (id: IndexId): Promise<{ message: string }> => {
-  const response = await api.delete(`/indexs/${id}`);
+  const response = await api.delete(`/index/${id}`);
   return response.data;
 };
 
 export const restoreIndex = async (id: IndexId): Promise<{ message: string }> => {
-  const response = await api.post(`/indexs/${id}/restore`);
+  const response = await api.post(`/index/${id}/restore`);
   return response.data;
 };
 
 export const forceDeleteIndex = async (
   id: IndexId,
 ): Promise<{ message: string }> => {
-  const response = await api.delete(`/indexs/${id}/force-delete`);
+  const response = await api.delete(`/index/${id}/force-delete`);
   return response.data;
 };
 
 export const importIndexs = async (
   formData: FormData,
 ): Promise<{ message: string }> => {
-  const response = await api.post("/indexs/import", formData, {
+  const response = await api.post("/index/import", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
 };
-
-
