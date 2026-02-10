@@ -7,7 +7,7 @@ import type {
 } from "./institutions.types";
 
 export type InstitutionFilter = "all" | "active" | "inactive";
-
+//commit ivan v asfasf
 type InstitutionId = string | number;
 
 
