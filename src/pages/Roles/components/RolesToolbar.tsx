@@ -1,17 +1,19 @@
 import { type ChangeEvent } from "react";
-import { CirclePlus  } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 
-import type { rolFilter } from "./Rol.service";
-import { SearchInput } from "../../components/SearchInput";
-import AddButton from "../../components/AddButton";
-import StatusFilterSelect from "../../components/StatusFilterSelect";
+import type { RolFilter } from "../Roles.service";
+import { SearchInput } from "../../../components/SearchInput";
+import AddButton from "../../../components/AddButton";
+import StatusFilterSelect from "../../../components/StatusFilterSelect";
 
-interface rolesToolbarProps {
-  filter: rolFilter;
+interface RolesToolbarProps {
+  filter: RolFilter;
   searchTerm: string;
+  isSubmitting: boolean;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void;
+  onBulkUpload: (file: File) => void;
 }
 
 export function RolesToolbar({
@@ -20,13 +22,13 @@ export function RolesToolbar({
   onFilterChange,
   onSearchChange,
   onAddClick,
-}: rolesToolbarProps) {
+}: RolesToolbarProps) {
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-red-900">
         <h1 className="text-xl md:text-2xl font-bold text-white">Roles</h1>
+
         <div className="flex items-center gap-2">
-        
           <AddButton
             label="Agregar Rol"
             onClick={onAddClick}
