@@ -24,10 +24,19 @@ export function RolModal({
   }, [isOpen, initialName]);
   const validateForm = (currentName: string) => {
     const result = Roleschema.safeParse({ name: currentName });
+    const errors: string[] = [];
+
     if (!result.success) {
-      const errorMessages = result.error.issues.map((err) => err.message);
-      setFormErrors(errorMessages);
-      return false; 
+      errors.push(...result.error.issues.map((err) => err.message));
+    }
+
+    if (/\d/.test(currentName)) {
+      errors.push("El nombre no puede contener números");
+    }
+
+    if (errors.length > 0) {
+      setFormErrors(errors);
+      return false;
     } else {
       setFormErrors([]);
       return true; 
