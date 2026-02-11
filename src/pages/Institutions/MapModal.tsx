@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { X, LoaderCircle } from "lucide-react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Circle, // ✅ IMPORTANTE
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 // Importación de servicios e interfaces
-import {
-  getCoordinatesFromPostalCode,
-  getInstitutionMapData,
-} from "./Map.service";
+import { getCoordinatesFromPostalCode, getInstitutionMapData } from "./Map.service";
 import type { Coordinates } from "./Map.interfaces";
 
 // Configuración de iconos de Leaflet
@@ -124,7 +127,18 @@ export function MapModal({
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
 
-              {/* ✅ PIN ARRASTRABLE */}
+              {/* 🔦 ZONA ILUMINADA CERCA DE LA INSTITUCIÓN */}
+              <Circle
+                center={[coordinates.lat, coordinates.lon]}
+                radius={250} // ✅ metros (ajusta 150, 200, 300 según te guste)
+                pathOptions={{
+                  color: "#FFD700",     // borde dorado
+                  fillColor: "#FFF3B0", // relleno suave
+                  fillOpacity: 0.35,
+                }}
+              />
+
+              {/* 📍 PIN ARRASTRABLE */}
               <DraggableMarker
                 coordinates={coordinates}
                 institutionName={institutionName}
