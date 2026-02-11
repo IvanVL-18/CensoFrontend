@@ -9,14 +9,14 @@ export type CentralizedInstitutionsResponse = {
   total_institutions: number;
 };
 
-export type QuestionByCensoItem = {
+export type QuestionsByCensoItem = {
   id: string | number;
   name: string;
   total_preguntas: number;
 };
 
 export type QuestionsByCensoResponse = {
-  data: QuestionByCensoItem[];
+  data: QuestionsByCensoItem[];
 };
 
 export type MetaLink = {
@@ -43,7 +43,7 @@ export type Links = {
 };
 
 export type QuestionnaireItem = {
-  id: string;
+  id: string; 
   name: string;
   deleted_at?: string | null;
 };

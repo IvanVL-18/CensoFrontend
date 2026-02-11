@@ -5,45 +5,30 @@ import type {
   CentralizedInstitutionsResponse,
   QuestionsByCensoResponse,
   PaginatedCensosResponse,
-} from "./Dashboard.types";
+} from "./dashboard.types";
 
-export const getDashboardCount = async (
-  model: CountModel,
-  signal?: AbortSignal
-): Promise<CountResponse> => {
-  const res = await api.get<CountResponse>(`/dashboard/count/${model}`, {
-    signal,
-  });
+export const getDashboardCount = async (model: CountModel) => {
+  const res = await api.get<CountResponse>(`/count/${model}`);
   return res.data;
 };
 
-export const getCentralizedInstitutions = async (
-  signal?: AbortSignal
-): Promise<CentralizedInstitutionsResponse> => {
+export const getCentralizedInstitutions = async () => {
   const res = await api.get<CentralizedInstitutionsResponse>(
-    `/dashboard/institutions/centralized-count`,
-    { signal }
+    `/institutions/centralized/count`
   );
   return res.data;
 };
 
-export const getQuestionsByCenso = async (
-  signal?: AbortSignal
-): Promise<QuestionsByCensoResponse> => {
+export const getQuestionsByCenso = async () => {
   const res = await api.get<QuestionsByCensoResponse>(
-    `/dashboard/questions-by-censo`,
-    { signal }
+    `/dashboard/questions-by-censo`
   );
   return res.data;
 };
 
-export const getAllCensos = async (
-  page: number = 1,
-  signal?: AbortSignal
-): Promise<PaginatedCensosResponse> => {
-  const res = await api.get<PaginatedCensosResponse>(`/dashboard/censos`, {
+export const getAllCensos = async (page: number = 1) => {
+  const res = await api.get<PaginatedCensosResponse>(`/dashboard/get-censos`, {
     params: { page },
-    signal,
   });
   return res.data;
 };

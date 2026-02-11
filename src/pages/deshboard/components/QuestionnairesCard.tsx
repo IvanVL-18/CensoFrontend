@@ -1,7 +1,7 @@
 import { ArrowUpDown, Eye, type LucideProps } from "lucide-react";
 import { SearchInput } from "../../../components/SearchInput";
 import Pagination from "../../../components/Pagination";
-import type { QuestionnaireItem, Links, Meta } from "../../Deshboard/Dashboard.types";
+import type { QuestionnaireItem, Links, Meta } from "../../Deshboard/dashboard.types";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -19,10 +19,8 @@ type Props = {
   onSearchChange: (v: string) => void;
 
   items: QuestionnaireItem[];
-
   onView: (id: string) => void;
 
-  // paginación
   meta?: Meta | null;
   links?: Links | null;
   loading?: boolean;
@@ -30,6 +28,7 @@ type Props = {
   onPageClick?: (url: string | null) => void;
   onPageNumber?: (page: number) => void;
   baseUrl?: string;
+
   onSort?: (field: "id" | "name") => void;
 };
 
@@ -53,7 +52,7 @@ export default function QuestionnairesCard({
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="bg-[#7A0C2E] px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-white font-semibold text-sm">{title}</h2>
+        <h2 className="text-white font-semibold text-base">{title}</h2>
 
         <div className="w-full sm:w-[260px]">
           <SearchInput
@@ -107,10 +106,7 @@ export default function QuestionnairesCard({
 
             {!loading && error && (
               <tr>
-                <td
-                  colSpan={3}
-                  className="text-center p-6 text-red-600 font-semibold"
-                >
+                <td colSpan={3} className="text-center p-6 text-red-600 font-semibold">
                   {error}
                 </td>
               </tr>
@@ -119,7 +115,7 @@ export default function QuestionnairesCard({
             {!loading && !error && items.length === 0 && (
               <tr>
                 <td colSpan={3} className="text-center p-6 text-gray-500">
-                  No se encontraron cuestionarios.
+                  No se encontraron Censos.
                 </td>
               </tr>
             )}

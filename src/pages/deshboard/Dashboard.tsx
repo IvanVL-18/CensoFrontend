@@ -9,31 +9,29 @@ import type {
   QuestionnaireItem,
   Meta,
   Links,
-} from "../Deshboard/Dashboard.types";
+  QuestionsByCensoItem,
+} from "./dashboard.types";
 
 import {
   getDashboardCount,
   getCentralizedInstitutions,
   getAllCensos,
   getQuestionsByCenso,
-} from "../Deshboard/Dashboard.service";
+} from "./Dashboard.service";
+
+type SortField = "id" | "name";
+type SortDir = "asc" | "desc";
 
 export default function Dashboard() {
-  // Totales (StatCards)
-  const [usersTotal, setUsersTotal] = useState<number>(0);
-  const [instTotal, setInstTotal] = useState<number>(0);
-  const [censosTotal, setCensosTotal] = useState<number>(0);
+  const [usersTotal, setUsersTotal] = useState(0);
+  const [instTotal, setInstTotal] = useState(0);
+  const [censosTotal, setCensosTotal] = useState(0);
 
-  // Donut
-  const [centralized, setCentralized] = useState<number>(0);
-  const [decentralized, setDecentralized] = useState<number>(0);
+  const [centralizedCount, setCentralizedCount] = useState(0);
+  const [totalInstitutions, setTotalInstitutions] = useState(0);
 
-  // Questions by censo (por si luego lo usas en otra gráfica)
-  const [qByCenso, setQByCenso] = useState<{ name: string; total: number }[]>(
-    []
-  );
+  const [qByCenso, setQByCenso] = useState<{ name: string; total: number }[]>([],);
 
-  // Tabla censos
   const [items, setItems] = useState<QuestionnaireItem[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [links, setLinks] = useState<Links | null>(null);
@@ -42,77 +40,83 @@ export default function Dashboard() {
   const [loadingTable, setLoadingTable] = useState(false);
   const [errorTable, setErrorTable] = useState<string | null>(null);
 
-  // --- Carga inicial ---
-  useEffect(() => {
-    const controller = new AbortController();
+  const [sortField, setSortField] = useState<SortField>("id");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
+  useEffect(() => {
     (async () => {
       try {
-        // 1) Totales
         const [u, i, c] = await Promise.all([
-          getDashboardCount("users", controller.signal),
-          getDashboardCount("institutions", controller.signal),
-          getDashboardCount("censos", controller.signal),
+          getDashboardCount("users"),
+          getDashboardCount("institutions"),
+          getDashboardCount("censos"),
         ]);
 
-        setUsersTotal(u.total);
-        setInstTotal(i.total);
-        setCensosTotal(c.total);
+        setUsersTotal(u.total ?? 0);
+        setInstTotal(i.total ?? 0);
+        setCensosTotal(c.total ?? 0);
 
-        // 2) Donut
-        const inst = await getCentralizedInstitutions(controller.signal);
-        const totalInst = inst.total_institutions ?? 0;
-        const totalCentral = inst.total_centralized_institutions ?? 0;
+        const inst = await getCentralizedInstitutions();
+        setCentralizedCount(inst.total_centralized_institutions ?? 0);
+        setTotalInstitutions(inst.total_institutions ?? 0);
 
-        setCentralized(totalCentral);
-        setDecentralized(Math.max(totalInst - totalCentral, 0));
-
-        // 3) Preguntas por censo (si lo quieres luego)
-        const qb = await getQuestionsByCenso(controller.signal);
+        const qb = await getQuestionsByCenso();
         setQByCenso(
-          (qb.data ?? []).map((x) => ({
-            name: x.name,
-            total: Number(x.total_preguntas ?? 0),
-          }))
+          (qb.data ?? []).map((x: QuestionsByCensoItem) => ({
+            name: String(x.name ?? ""),
+            total: Number((x as any).total_preguntas ?? 0),
+          })),
         );
 
-        // 4) Tabla inicial
-        await fetchCensos(1, controller.signal);
+        await fetchCensos(1);
       } catch (e: any) {
         console.error("Dashboard error:", e?.message || e);
       }
     })();
-
-    return () => controller.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchCensos = async (page: number, signal?: AbortSignal) => {
+  const fetchCensos = async (page: number) => {
     try {
       setLoadingTable(true);
       setErrorTable(null);
 
-      const res = await getAllCensos(page, signal);
+      const res = await getAllCensos(page);
       setItems(res.data ?? []);
       setMeta(res.meta ?? null);
       setLinks(res.links ?? null);
     } catch (e: any) {
-      setErrorTable(
-        e?.response?.data?.message || e?.message || "Error al cargar censos"
-      );
+      setErrorTable(e?.message || "Error al cargar censos");
     } finally {
       setLoadingTable(false);
     }
   };
 
-  // Search en frontend
+    const handleSort = (field: SortField) => {
+      if (field === sortField) {
+        setSortDir(sortDir === "asc" ? "desc" : "asc");
+        return;
+      }
+      setSortField(field);
+      setSortDir("asc");
+    };
+
+
   const filteredItems = useMemo(() => {
     const s = search.trim().toLowerCase();
-    if (!s) return items;
-    return items.filter((x) => (x.name || "").toLowerCase().includes(s));
-  }, [items, search]);
 
-  // Pagination por URL
+    let arr = items;
+    if (s) {
+      arr = arr.filter((x) => (x.name || "").toLowerCase().includes(s));
+    }
+
+    if (sortField === "name") {
+      const dir = sortDir === "asc" ? 1 : -1;
+      return [...arr].sort((a, b) => a.name.localeCompare(b.name) * dir);
+    }
+
+    return sortDir === "asc" ? arr : [...arr].reverse();
+  }, [items, search, sortField, sortDir]);
+
   const handlePageClick = (url: string | null) => {
     if (!url) return;
 
@@ -120,9 +124,7 @@ export default function Dashboard() {
       const u = new URL(url);
       const page = Number(u.searchParams.get("page") || "1");
       fetchCensos(page);
-      return;
     } catch {
-      // si viene relative
       const match = url.match(/page=(\d+)/);
       const page = match ? Number(match[1]) : 1;
       fetchCensos(page);
@@ -132,13 +134,12 @@ export default function Dashboard() {
   const handlePageNumber = (page: number) => fetchCensos(page);
 
   const handleViewCenso = (id: string) => {
-    // aquí conectas navegación o modal
-    console.log("Ver censo:", id);
+    console.log("Ver cuestionario:", id);
   };
 
   return (
     <div className="space-y-6">
-      {/* Cards de arriba */}
+      {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="USUARIOS"
@@ -151,16 +152,16 @@ export default function Dashboard() {
           icon={<Building2 className="h-5 w-5 text-green-600" />}
         />
         <StatCard
-          title="CUESTIONARIOS"
+          title="CENSOS"
           value={censosTotal.toLocaleString()}
           icon={<ClipboardList className="h-5 w-5 text-cyan-600" />}
         />
       </div>
 
-      {/* Tabla + Gráficas */}
+      {/* Tabla + gráficas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <QuestionnairesCard
-          title="Cuestionarios"
+          title="Censos"
           searchValue={search}
           onSearchChange={setSearch}
           items={filteredItems}
@@ -171,13 +172,14 @@ export default function Dashboard() {
           error={errorTable}
           onPageClick={handlePageClick}
           onPageNumber={handlePageNumber}
-          baseUrl={"/dashboard/censos"}
+          baseUrl={"/dashboard/get-censos"}
+          onSort={handleSort}
         />
 
         <ChartsCard
           title="Gráficas"
-          centralized={centralized}
-          decentralized={decentralized}
+          centralizedCount={centralizedCount}
+          totalInstitutions={totalInstitutions}
           questionsByCenso={qByCenso}
         />
       </div>
