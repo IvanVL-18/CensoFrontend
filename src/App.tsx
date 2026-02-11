@@ -6,7 +6,7 @@ import HomePage from "./pages/Home/page/HomePage";
 import DashboardPage from "./pages/Deshboard/Dashboard";
 import ChartsPage from "./pages/Grapher/page/ChartsPage";
 import ReportsPage from "./pages/Reports/ReportsPage";
-import SettingsPage from "./pages/Settings/SettingsPage";
+import ConfigurationsPage from "./pages/Configuration/Configuration";
 import DashboardLayout from "./components/DashboardLayout";
 
 import Units from "./pages/Units/units";
@@ -45,7 +45,7 @@ export default function App() {
 
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />
-        <Route path="/configuracion" element={<SettingsPage />} />
+        <Route path="/configuracion" element={<ConfigurationsPage />} />
 
         {/* Catálogos */}
         <Route path="/unidades" element={<Units />} />
