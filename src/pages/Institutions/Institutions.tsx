@@ -70,12 +70,10 @@ function InstitutionsPageContent() {
   const modalTitle = editingInstitution
     ? "Editar Institución"
     : "Agregar Institución";
-  const initialName = editingInstitution ? editingInstitution.name : "";
-  const initialMunicipality = editingInstitution
-    ? editingInstitution.municipality
-    : "";
-  const initialGeocode = editingInstitution ? editingInstitution.geocode : "";
-  const initialType = editingInstitution ? editingInstitution.typeinst : "";
+  const initialName = editingInstitution?.name || "";
+  const initialMunicipality = editingInstitution?.municipality || "";
+  const initialGeocode = editingInstitution?.geocode || "";
+  const initialType = editingInstitution?.typeinst || "";
 
   let confirmTitle = "";
   let confirmMessage = "";

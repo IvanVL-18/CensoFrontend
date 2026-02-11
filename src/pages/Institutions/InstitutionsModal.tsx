@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import type { CreateInstitutionDTO } from "./Institutions.interfaces";
-import { validateInstitution } from "../../utils/validation"; // Importamos nuestra nueva función
-
+import type { CreateInstitutionDTO, UpdateInstitutionDTO } from "./Institutions.interfaces";
+import { validateInstitution } from "../../utils/validation"; 
 interface InstitutionModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
@@ -13,7 +12,7 @@ interface InstitutionModalProps {
   initialGeocode?: string;
   initialType?: string;
   onClose: () => void;
-  onSave: (formData: CreateInstitutionDTO) => Promise<void>;
+  onSave: (formData: CreateInstitutionDTO | UpdateInstitutionDTO) => Promise<void>;
 }
 
 export function InstitutionModal({
@@ -33,27 +32,25 @@ export function InstitutionModal({
   const [geocode, setGeocode] = useState(initialGeocode);
   const [typeinst, setTypeinst] = useState(initialType);
 
-  // Manejo de errores del formulario
+ 
   const [formErrors, setFormErrors] = useState<string[]>([]);
 
-  // Sincronizar el estado con las props iniciales cuando cambian (para editar)
+  
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
       setMunicipality(initialMunicipality);
       setGeocode(initialGeocode);
       setTypeinst(initialType);
-      // Limpiamos los errores de formulario de la sesión anterior al abrir
+    
       setFormErrors([]);
     }
   }, [isOpen, initialName, initialMunicipality, initialGeocode, initialType]);
 
-  // Efecto para validar el formulario en cada cambio de los inputs
+  
   useEffect(() => {
-    // No mostramos errores hasta que el usuario intente guardar por primera vez.
-    // `hadAttemptedSubmit` nos ayuda a controlar esto.
-    // Pero si ya hay errores, validamos en tiempo real para limpiarlos.
-    if (formErrors.length > 0) { // Solo re-valida si ya se mostró un error
+    
+    if (formErrors.length > 0) { 
       validateAndSetErrors();
     }
   }, [name, municipality, geocode, typeinst]);
@@ -64,15 +61,23 @@ export function InstitutionModal({
     return errors.length === 0;
   };
 
-  // Lógica de envío del formulario
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateAndSetErrors()) {
-      onSave({ name, municipality, geocode, typeinst }); // Enviamos todo el objeto a onSave
+     
+      const dataToSend: UpdateInstitutionDTO = {};
+
+      if (name !== initialName) dataToSend.name = name;
+      if (municipality !== initialMunicipality) dataToSend.municipality = municipality;
+      if (geocode !== initialGeocode) dataToSend.geocode = geocode;
+      if (typeinst !== initialType) dataToSend.typeinst = typeinst;
+
+      onSave(dataToSend);
     }
   };
 
-  // Manejador para cambios en los campos del formulario
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     if (id === "institutionName") setName(value);
@@ -81,7 +86,7 @@ export function InstitutionModal({
     if (id === "typeinst") setTypeinst(value);
   };
 
-  // Si el modal no está abierto, no renderizamos nada
+ 
   if (!isOpen) return null;
 
   return (
@@ -116,7 +121,7 @@ export function InstitutionModal({
               <input
                 type="text"
                 id="institutionName"
-                value={name}
+                value={name || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar nombre..."
                 className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('nombre')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
@@ -136,7 +141,7 @@ export function InstitutionModal({
               <input
                 type="text"
                 id="municipality"
-                value={municipality}
+                value={municipality || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar municipio..."
                 className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('municipalidad')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
@@ -153,9 +158,9 @@ export function InstitutionModal({
                 Código Postal / Geocódigo:
               </label>
               <input
-                type="text" // Aseguramos que sea de tipo texto
+                type="text" 
                 id="geocode"
-                value={geocode}
+                value={geocode || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar código..."
                 className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('geocódigo')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
@@ -174,7 +179,7 @@ export function InstitutionModal({
               <input
                 type="text"
                 id="typeinst"
-                value={typeinst}
+                value={typeinst || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar tipo..."
                 className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('tipo')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
