@@ -34,7 +34,7 @@ export function PermissionsToolbar({
 
         <div className="flex items-center gap-2">
           <AddButton
-            label="Agregar Módulo"
+            label="Agregar Permiso"
             onClick={onAddClick}
             variant="gold"
             icon={<CirclePlus size={22} strokeWidth={2.5} />}

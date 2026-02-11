@@ -50,7 +50,7 @@ function PermissionsPageContent() {
       const fullPermission = await getPermission(partialPermission.id);
       modals.openView(fullPermission);
     } catch (error) {
-      console.error("Error al cargar detalles del módulo", error);
+      console.error("Error al cargar detalles del Permiso", error);
     }
   };
   const modals = usePermissionsModals();
@@ -68,7 +68,7 @@ function PermissionsPageContent() {
     openBulkError: modals.openBulkError,
   });
 
-  const modalTitle = modals.editingPermission ? "Editar Módulo" : "Agregar Módulo";
+  const modalTitle = modals.editingPermission ? "Editar Permiso" : "Agregar Permiso";
   const modalInitialName = modals.editingPermission?.name || "";
 
   let confirmTitle = "";
@@ -77,18 +77,18 @@ function PermissionsPageContent() {
   let confirmButtonColor: "danger" | "primary" = "danger";
 
   if (modals.actionType === "ban") {
-    confirmTitle = "Desactivar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${modals.actionPermission?.name}"?`;
+    confirmTitle = "Desactivar Permiso";
+    confirmMessage = `¿Estás seguro de que quieres desactivar el Permiso "${modals.actionPermission?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (modals.actionType === "restore") {
-    confirmTitle = "Restaurar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${modals.actionPermission?.name}"?`;
+    confirmTitle = "Restaurar Permiso";
+    confirmMessage = `¿Estás seguro de que quieres restaurar el Permiso "${modals.actionPermission?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${modals.actionPermission?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el Permiso "${modals.actionPermission?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }

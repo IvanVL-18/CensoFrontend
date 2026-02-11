@@ -49,7 +49,7 @@ export function ViewPermissionModal({ isOpen, onClose, Permission }: ViewPermiss
           
           {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">Detalle del Módulo</h2>
+            <h2 className="text-xl font-bold text-white">Detalle del Permiso</h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300"
@@ -62,7 +62,7 @@ export function ViewPermissionModal({ isOpen, onClose, Permission }: ViewPermiss
           {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
             <DetailRow 
-              label="Nombre del módulo:" 
+              label="Nombre del permiso:" 
               value={Permission.name} 
             />
             <DetailRow 
