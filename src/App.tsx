@@ -1,20 +1,20 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import LoginPage from "./pages/Login/page/LoginPage";
-import HomePage from "./pages/Home/page/HomePage";
-import DashboardPage from "./pages/Deshboard/DashboardPage";
-import ChartsPage from "./pages/Grapher/page/ChartsPage";
-import ReportsPage from "./pages/Reports/ReportsPage";
-import SettingsPage from "./pages/Settings/SettingsPage";
+import LoginPage from "./pages/login/page/LoginPage";
+import HomePage from "./pages/home/page/HomePage";
+import DashboardPage from "./pages/deshboard/DashboardPage";
+import ChartsPage from "./pages/grapher/page/ChartsPage";
+import ReportsPage from "./pages/reports/ReportsPage";
+import SettingsPage from "./pages/settings/SettingsPage";
 import DashboardLayout from "./components/DashboardLayout";
 
 import Units from "./pages/Units/units";
-import Census from "./pages/Census/CensosPage";
-import CreateCensusPage from "./pages/Census/CreateCensus";
-import CensusUnitsPage from "./pages/Census/CensusUnitsPage";
-import CensusSectionsPage from "./pages/Census/CensusSectionsPage";   
-import CensusQuestionsPage from "./pages/Census/CensusQuestionsPage"; 
+import Census from "./pages/census/CensosPage";
+import CreateCensusPage from "./pages/census/CreateCensus";
+import CensusUnitsPage from "./pages/census/CensusUnitsPage";
+import CensusSectionsPage from "./pages/census/CensusSectionsPage";   
+import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; 
 
 import Sections from "./pages/Sections/Sections";
 import Insitutions from "./pages/Institutions/Institutions";
