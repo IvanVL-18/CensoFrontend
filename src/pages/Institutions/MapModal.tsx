@@ -1,20 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { X, LoaderCircle } from "lucide-react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  Circle, // ✅ IMPORTANTE
-} from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Importación de servicios e interfaces
-import { getCoordinatesFromPostalCode, getInstitutionMapData } from "./Map.service";
+// Servicios
+import {
+  getCoordinatesFromPostalCode,
+  getInstitutionMapData,
+} from "./Map.service";
+import { updateInstitutionCoordinates } from "./Institutions.service";
+
 import type { Coordinates } from "./Map.interfaces";
 
-// Configuración de iconos de Leaflet
+// Iconos Leaflet
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
@@ -45,6 +44,10 @@ export function MapModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isOpen) return;
+
+    setError(null);
+
     if (isOpen && institutionId) {
       const fetchLocation = async () => {
         setLoading(true);
@@ -57,10 +60,15 @@ export function MapModal({
             throw new Error("Datos de ubicación no válidos.");
           }
 
+          if (mapData.lat !== null && mapData.lon !== null) {
+            setCoordinates({ lat: mapData.lat, lon: mapData.lon });
+            return;
+          }
+
           const coords = await getCoordinatesFromPostalCode(
             mapData.geocode,
             mapData.municipality,
-            mapData.street || null
+            mapData.street || null,
           );
 
           if (coords) {
@@ -69,7 +77,7 @@ export function MapModal({
             setError("No se encontró la ubicación exacta.");
           }
         } catch (err: any) {
-          setError(err.message);
+          setError(err.message || "Error al obtener la ubicación.");
         } finally {
           setLoading(false);
         }
@@ -84,7 +92,7 @@ export function MapModal({
   return (
     <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl h-3/4 flex flex-col overflow-hidden">
-        {/* Header institucional */}
+        {/* Header */}
         <div className="flex justify-between items-center p-4 bg-red-900 text-white">
           <h2 className="text-xl font-bold truncate">
             Ubicación de {institutionName}
@@ -97,7 +105,7 @@ export function MapModal({
           </button>
         </div>
 
-        {/* Área del Mapa / Estados */}
+        {/* Contenido */}
         <div className="flex-grow relative bg-gray-100">
           {loading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-20">
@@ -105,7 +113,9 @@ export function MapModal({
                 className="animate-spin text-red-900 mb-2"
                 size={48}
               />
-              <p className="text-gray-700 font-medium">Buscando en el mapa...</p>
+              <p className="text-gray-700 font-medium">
+                Buscando en el mapa...
+              </p>
             </div>
           )}
 
@@ -127,24 +137,35 @@ export function MapModal({
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
 
-              {/* 🔦 ZONA ILUMINADA CERCA DE LA INSTITUCIÓN */}
+              {/* 🔦 Zona iluminada */}
               <Circle
                 center={[coordinates.lat, coordinates.lon]}
-                radius={250} // ✅ metros (ajusta 150, 200, 300 según te guste)
+                radius={250}
                 pathOptions={{
-                  color: "#FFD700",     // borde dorado
-                  fillColor: "#FFF3B0", // relleno suave
+                  color: "#FFD700",
+                  fillColor: "#FFF3B0",
                   fillOpacity: 0.35,
                 }}
               />
 
-              {/* 📍 PIN ARRASTRABLE */}
               <DraggableMarker
                 coordinates={coordinates}
                 institutionName={institutionName}
-                onChange={(newCoords) => {
+                onChange={async (newCoords) => {
                   setCoordinates(newCoords);
-                  console.log("📍 Nueva ubicación:", newCoords);
+                  console.log(" Nueva ubicación:", newCoords);
+
+                  if (!institutionId) return;
+
+                  try {
+                    await updateInstitutionCoordinates(institutionId, {
+                      lat: newCoords.lat,
+                      lon: newCoords.lon,
+                    });
+                    console.log("Coordenadas guardadas en BD");
+                  } catch (e: any) {
+                    console.error(" Error guardando coords:", e?.message || e);
+                  }
                 }}
               />
             </MapContainer>
@@ -155,7 +176,6 @@ export function MapModal({
   );
 }
 
-/** ✅ Componente de marcador arrastrable */
 function DraggableMarker({
   coordinates,
   institutionName,

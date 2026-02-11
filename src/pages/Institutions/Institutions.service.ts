@@ -44,7 +44,7 @@ export const getInstitutions = (
   }).then(handleJsonResponse);
 };
 
-// Cambiamos a Promise<any> para recibir el { message: "..." } al crear
+
 export const createInstitution = (institutionData: CreateInstitutionDTO): Promise<any> => {
   const url = `${API_URL}/institutions`;
 
@@ -76,7 +76,14 @@ export const updateInstitution = (
   }).then(handleJsonResponse);
 };
 
-// --- Acciones de Confirmación (Usan handleJsonResponse para el mensaje de éxito) ---
+  export const updateInstitutionCoordinates = (
+    id: string,
+    coords: { lat: number; lon: number }
+  ): Promise<any> => {
+    return updateInstitution(id, coords);
+  };
+
+
 
 export const banInstitution = (id: string): Promise<{ message: string }> => {
   const url = `${API_URL}/institutions/${id}`;
@@ -117,7 +124,7 @@ export const getInstitution = (id: string | number): Promise<Institution> => {
   })
     .then(handleJsonResponse)
     .then((response) => {
-      // Al igual que en create/update, manejamos si viene en .data
+      
       return response.data ?? response;
     })  
     .catch((error) => {

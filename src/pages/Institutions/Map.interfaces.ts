@@ -6,6 +6,8 @@ export interface Coordinates {
 export interface MapDataResponse {
   geocode: string;
   municipality: string;
+  lat: number | null;   
+  lon: number | null;   
   street?: string;
   suburb?: string;
 }

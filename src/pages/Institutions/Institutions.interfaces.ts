@@ -9,9 +9,11 @@ export interface Institution {
   municipality: string;
   geocode: string;
   typeinst: string;
+  lat?: number;   
+  lon?: number;   
   created_at: string;
   updated_at: string;
-  deleted_at: string | null; // Puede ser null si la institución está activa
+  deleted_at: string | null; 
 }
 
 /**
