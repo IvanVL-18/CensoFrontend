@@ -3,11 +3,13 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from "./pages/login/page/LoginPage";
 import HomePage from "./pages/home/page/HomePage";
-import DashboardPage from "./pages/deshboard/Dashboard";
+import Dashboard from "./pages/deshboard/Dashboard";
 import ChartsPage from "./pages/grapher/page/ChartsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
 import ConfigurationsPage from "./pages/Configuration/Configuration";
 import DashboardLayout from "./components/DashboardLayout";
+
+import Users from "./pages/Users/Users";
 
 import Units from "./pages/Units/units";
 import Census from "./pages/census/CensosPage";
@@ -35,7 +37,8 @@ export default function App() {
       <Route element={<DashboardLayout />}>
         <Route path="/" element={<Navigate to="/inicio" replace />} />
         <Route path="/inicio" element={<HomePage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/usuarios" element={<Users />} />
         <Route path="/instituciones" element={<Insitutions />} />
         <Route path="/indices" element={<Index />} />
 
