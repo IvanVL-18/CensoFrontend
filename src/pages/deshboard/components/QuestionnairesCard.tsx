@@ -1,7 +1,7 @@
 import { ArrowUpDown, Eye, type LucideProps } from "lucide-react";
 import { SearchInput } from "../../../components/SearchInput";
 import Pagination from "../../../components/Pagination";
-import type { QuestionnaireItem, Links, Meta } from "../../Deshboard/dashboard.types";
+import type { QuestionnaireItem, Links, Meta } from "../dashboard.types";
 
 const defaultProps = {
   strokeWidth: 1.75,
