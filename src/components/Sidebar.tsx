@@ -10,6 +10,7 @@ import {
   BarChart3,
   CalendarRange,
   Settings,
+  FolderOpen
 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
@@ -24,6 +25,9 @@ const items = [
   { to: "/instituciones", icon: Landmark, label: "Instituciones" },
   { to: "/censos", icon: ClipboardList, label: "Censos" },
   { to: "/graficador", icon: BarChart3, label: "Graficador" },
+  { to: "/categorias", icon: FolderOpen, label: "Categoria" },
+
+  
   {
     to: "/reportes",
     icon: CalendarRange,

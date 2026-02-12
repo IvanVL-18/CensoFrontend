@@ -1,39 +1,97 @@
+import api from "../../lib/Axios";
 import type {
   Institution,
   PaginatedInstitutionsResponse,
   CreateInstitutionDTO,
   UpdateInstitutionDTO,
-} from "./Institutions.interfaces";
-
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+} from "./institutions.types";
 
 export type InstitutionFilter = "all" | "active" | "inactive";
+//commit ivan v asfasf
+type InstitutionId = string | number;
 
-/**
- * 🛠️ Helper Unificado
- * Procesa la respuesta, maneja errores y extrae el 'message' de Laravel.
- */
-const handleJsonResponse = async (response: Response) => {
-  const text = await response.text();
-  let data;
 
-  try {
-    data = text ? JSON.parse(text) : {};
-  } catch (error) {
-    throw new Error(`Error al procesar respuesta del servidor: ${text.slice(0, 100)}`);
-  }
+export const getInstitutions = async (
+  filter: InstitutionFilter = "all",
+  search: string = "",
+  page: number = 1,
+  sortBy: string = "id",           
+  direction: "asc" | "desc" = "asc", 
+  signal?: AbortSignal,
+): Promise<PaginatedInstitutionsResponse> => {
+  const params = new URLSearchParams();
+  
+  if (search) params.append("search", search);
+  params.append("page", page.toString());
+    params.append("sort_by", sortBy);
+  params.append("direction", direction);
 
-  if (!response.ok) {
-    // Si el backend manda un error, usamos su mensaje específico
-    throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
-  }
-
-  return data;
+  const response = await api.get<PaginatedInstitutionsResponse>(
+    `/institutions/${filter}/content`,
+    {
+      params: params,
+      signal,
+    },
+  );
+  return response.data;
 };
 
-// --- SERVICIOS ---
+export const getInstitution = async (
+  id: InstitutionId,
+  signal?: AbortSignal,
+): Promise<Institution> => {
+  const response = await api.get<{ data: Institution } | Institution>(`/institutions/${id}`, {
+    signal,
+  });
+  return (response.data as any).data ?? response.data;
+};
 
-export const getInstitutions = (
+export const createInstitution = async (
+  unitData: CreateInstitutionDTO,
+): Promise<{ message: string; data?: Institution }> => {
+  const response = await api.post("/institutions", unitData);
+  return response.data;
+};
+
+export const updateInstitution = async (
+  id: InstitutionId,
+  institutionData: UpdateInstitutionDTO,
+): Promise<{ message: string }> => {
+  const response = await api.put(`/institutions/${id}`, institutionData);
+  return response.data;
+};
+
+export const banInstitution = async (id: InstitutionId): Promise<{ message: string }> => {
+  const response = await api.delete(`/institutions/${id}`);
+  return response.data;
+};
+
+export const restoreInstitution = async (id: InstitutionId): Promise<{ message: string }> => {
+  const response = await api.post(`/institutions/${id}/restore`);
+  return response.data;
+};
+
+export const forceDeleteInstitution = async (
+  id: InstitutionId,
+): Promise<{ message: string }> => {
+  const response = await api.delete(`/institutions/${id}/force-delete`);
+  return response.data;
+};
+
+export const importInstitutions = async (
+  formData: FormData,
+): Promise<{ message: string }> => {
+  const response = await api.post("/units/import", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
+
+
+
+
+/* export const getInstitutions = (
   filter: InstitutionFilter = "all"
 ): Promise<PaginatedInstitutionsResponse> => {
   const url = `${API_URL}/institutions/${filter}/content`;
@@ -124,4 +182,4 @@ export const getInstitution = (id: string | number): Promise<Institution> => {
       console.error(`Error al obtener la unidad ${id}:`, error);
       throw error;
     });
-};
+}; */
