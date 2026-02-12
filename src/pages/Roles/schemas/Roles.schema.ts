@@ -7,6 +7,9 @@ export const Roleschema = z.object({
     .min(5, "El nombre debe tener al menos 5 caracteres.")
     .max(25, "El nombre no puede exceder los 25 caracteres.") 
     .regex(/^[\p{L}\p{M}\p{N}\s'.,-]+$/u, "El campo nombre no puede contener emojis ni símbolos especiales.")
+    .refine((val) => !/\d/.test(val), {
+      message: "El nombre no puede contener números"
+    })
 });
 
 export type RolFormData = z.infer<typeof Roleschema>;

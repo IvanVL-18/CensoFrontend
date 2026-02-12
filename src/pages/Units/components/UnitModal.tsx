@@ -36,9 +36,7 @@ export function UnitModal({
       errors.push(...result.error.issues.map((err) => err.message));
     }
 
-    if (/\d/.test(currentName)) {
-      errors.push("El nombre no puede contener números");
-    }
+   
 
     if (errors.length > 0) {
       setFormErrors(errors);

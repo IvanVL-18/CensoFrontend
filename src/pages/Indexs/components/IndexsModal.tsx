@@ -36,6 +36,8 @@ export function IndexModal({
       errors.push(...result.error.issues.map((err) => err.message));
     }
 
+    
+
     if (errors.length > 0) {
       setFormErrors(errors);
       return false;
@@ -72,6 +74,7 @@ export function IndexModal({
   const hasServerError = !!error;
   const isNearLimit = charCount >= MAX_LENGTH - 10 && charCount <= MAX_LENGTH;
   const isAtLimit = charCount >= MAX_LENGTH;
+  const endsWithZero = name.trim().endsWith('0');
 
   return (
     <>
@@ -117,7 +120,7 @@ export function IndexModal({
                 maxLength={MAX_LENGTH}
                 className={`
                   border rounded-lg p-2 w-full focus:outline-none focus:ring-2
-                  ${(hasClientErrors || hasServerError)
+                  ${(hasClientErrors || hasServerError || endsWithZero)
                     ? 'border-red-500 focus:ring-red-400' 
                     : isAtLimit
                       ? 'border-red-300 focus:ring-red-400'
@@ -166,7 +169,7 @@ export function IndexModal({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || hasClientErrors}
+                disabled={isSubmitting || hasClientErrors || endsWithZero}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
