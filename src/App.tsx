@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from "./pages/login/page/LoginPage";
 import HomePage from "./pages/home/page/HomePage";
-import DashboardPage from "./pages/deshboard/DashboardPage";
+import DashboardPage from "./pages/deshboard/Dashboard";
 import ChartsPage from "./pages/grapher/page/ChartsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
 import SettingsPage from "./pages/settings/SettingsPage";
