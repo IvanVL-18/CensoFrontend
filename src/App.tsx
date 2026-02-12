@@ -6,7 +6,7 @@ import HomePage from "./pages/home/page/HomePage";
 import DashboardPage from "./pages/deshboard/Dashboard";
 import ChartsPage from "./pages/grapher/page/ChartsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
-import SettingsPage from "./pages/settings/SettingsPage";
+import ConfigurationsPage from "./pages/Configuration/Configuration";
 import DashboardLayout from "./components/DashboardLayout";
 
 import Units from "./pages/Units/units";
@@ -17,7 +17,6 @@ import CensusSectionsPage from "./pages/census/CensusSectionsPage";
 import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; 
 
 import Sections from "./pages/Sections/Sections";
-/* import Insitutions from "./pages/Institutionenees/Institutions"; */
 import Insitutions from "./pages/institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Indexs/Indexs";
@@ -49,7 +48,7 @@ export default function App() {
 
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />
-        <Route path="/configuracion" element={<SettingsPage />} />
+        <Route path="/configuracion" element={<ConfigurationsPage />} />
 
         {/* Catálogos */}
         <Route path="/unidades" element={<Units />} />
