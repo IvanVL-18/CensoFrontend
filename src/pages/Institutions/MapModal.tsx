@@ -31,6 +31,7 @@ interface MapModalProps {
   onClose: () => void;
   institutionId: string | null;
   institutionName: string | null;
+  editable?: boolean;
 }
 
 export function MapModal({
@@ -38,6 +39,7 @@ export function MapModal({
   onClose,
   institutionId,
   institutionName,
+  editable = false,
 }: MapModalProps) {
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [loading, setLoading] = useState(false);
@@ -151,20 +153,21 @@ export function MapModal({
               <DraggableMarker
                 coordinates={coordinates}
                 institutionName={institutionName}
+                draggable={editable}
                 onChange={async (newCoords) => {
                   setCoordinates(newCoords);
-                  console.log(" Nueva ubicación:", newCoords);
+                  console.log("Nueva ubicación:", newCoords);
 
-                  if (!institutionId) return;
-
-                  try {
-                    await updateInstitutionCoordinates(institutionId, {
-                      lat: newCoords.lat,
-                      lon: newCoords.lon,
-                    });
-                    console.log("Coordenadas guardadas en BD");
-                  } catch (e: any) {
-                    console.error(" Error guardando coords:", e?.message || e);
+                  if (editable && institutionId) {
+                    try {
+                      await updateInstitutionCoordinates(institutionId, {
+                        lat: newCoords.lat,
+                        lon: newCoords.lon,
+                      });
+                      console.log("Coordenadas guardadas en BD");
+                    } catch (err) {
+                      console.error("Error guardando coordenadas:", err);
+                    }
                   }
                 }}
               />
@@ -179,17 +182,19 @@ export function MapModal({
 function DraggableMarker({
   coordinates,
   institutionName,
+  draggable,
   onChange,
 }: {
   coordinates: Coordinates;
   institutionName: string | null;
+  draggable: boolean;
   onChange: (coords: Coordinates) => void;
 }) {
   const markerRef = useRef<L.Marker | null>(null);
 
   return (
     <Marker
-      draggable={true}
+      draggable={draggable}
       position={[coordinates.lat, coordinates.lon]}
       ref={(ref) => {
         markerRef.current = ref;

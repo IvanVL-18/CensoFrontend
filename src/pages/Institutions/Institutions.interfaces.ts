@@ -9,8 +9,8 @@ export interface Institution {
   municipality: string;
   geocode: string;
   typeinst: string;
-  lat?: number;   
-  lon?: number;   
+  lat: number | null;
+  lon: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null; 

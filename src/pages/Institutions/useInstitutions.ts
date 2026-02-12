@@ -49,6 +49,8 @@ export function useInstitutions() {
  
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [mapInstitution, setMapInstitution] = useState<Institution | null>(null);
+  const [mapEditable, setMapEditable] = useState(false);
+
 
   const handleViewModalClose = useCallback(() => {
     setIsViewModalOpen(false);
@@ -73,14 +75,20 @@ export function useInstitutions() {
   const [actionType, setActionType] = useState<'ban' | 'restore' | 'delete' | null>(null);
 
   
-  const onShowMap = useCallback((institution: Institution) => {
-  setMapInstitution(institution);
-  setIsMapModalOpen(true);
-}, []);
+ const onShowMap = useCallback(
+  (institution: Institution, editable: boolean = false) => {
+    setMapInstitution(institution);
+    setMapEditable(editable);
+    setIsMapModalOpen(true);
+  },
+  []
+);
+
 
   const handleMapModalClose = () => {
     setIsMapModalOpen(false);
     setMapInstitution(null);
+    setMapEditable(false);
   };
   
   
@@ -353,6 +361,8 @@ const onView = useCallback(async (unit: Institution) => {
     viewingInstitution,
     isMapModalOpen,
     mapInstitution,
+    mapEditable,
+
 
 
     handleFilterChange,

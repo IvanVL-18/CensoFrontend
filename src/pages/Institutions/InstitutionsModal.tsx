@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
-import type { CreateInstitutionDTO, UpdateInstitutionDTO } from "./Institutions.interfaces";
-import { validateInstitution } from "../../utils/validation"; 
+import { X, MapPinned } from "lucide-react";
+import type {
+  CreateInstitutionDTO,
+  UpdateInstitutionDTO,
+} from "./Institutions.interfaces";
+import { validateInstitution } from "../../utils/validation";
+import { FormErrors } from "./FormErrors";
+
 interface InstitutionModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
@@ -11,8 +16,13 @@ interface InstitutionModalProps {
   initialMunicipality?: string;
   initialGeocode?: string;
   initialType?: string;
+  isEditMode?: boolean;
+  onEditLocation?: () => void;
+
   onClose: () => void;
-  onSave: (formData: CreateInstitutionDTO | UpdateInstitutionDTO) => Promise<void>;
+  onSave: (
+    formData: CreateInstitutionDTO | UpdateInstitutionDTO,
+  ) => Promise<void>;
 }
 
 export function InstitutionModal({
@@ -24,6 +34,9 @@ export function InstitutionModal({
   initialMunicipality = "",
   initialGeocode = "",
   initialType = "",
+  isEditMode = false,
+  onEditLocation,
+
   onClose,
   onSave,
 }: InstitutionModalProps) {
@@ -32,44 +45,60 @@ export function InstitutionModal({
   const [geocode, setGeocode] = useState(initialGeocode);
   const [typeinst, setTypeinst] = useState(initialType);
 
- 
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
 
-  
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
       setMunicipality(initialMunicipality);
       setGeocode(initialGeocode);
       setTypeinst(initialType);
-    
       setFormErrors([]);
+      setHasChanges(false);
     }
   }, [isOpen, initialName, initialMunicipality, initialGeocode, initialType]);
 
-  
   useEffect(() => {
-    
-    if (formErrors.length > 0) { 
-      validateAndSetErrors();
+    if (isOpen) {
+      const changed =
+        name !== initialName ||
+        municipality !== initialMunicipality ||
+        geocode !== initialGeocode ||
+        typeinst !== initialType;
+      setHasChanges(changed);
     }
-  }, [name, municipality, geocode, typeinst]);
+  }, [
+    name,
+    municipality,
+    geocode,
+    typeinst,
+    initialName,
+    initialMunicipality,
+    initialGeocode,
+    initialType,
+    isOpen,
+  ]);
 
   const validateAndSetErrors = () => {
-    const errors = validateInstitution({ name, municipality, geocode, typeinst });
+    const errors = validateInstitution({
+      name,
+      municipality,
+      geocode,
+      typeinst,
+    });
     setFormErrors(errors);
     return errors.length === 0;
   };
 
-  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateAndSetErrors()) {
-     
       const dataToSend: UpdateInstitutionDTO = {};
 
       if (name !== initialName) dataToSend.name = name;
-      if (municipality !== initialMunicipality) dataToSend.municipality = municipality;
+      if (municipality !== initialMunicipality)
+        dataToSend.municipality = municipality;
       if (geocode !== initialGeocode) dataToSend.geocode = geocode;
       if (typeinst !== initialType) dataToSend.typeinst = typeinst;
 
@@ -77,7 +106,6 @@ export function InstitutionModal({
     }
   };
 
-  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     if (id === "institutionName") setName(value);
@@ -86,7 +114,6 @@ export function InstitutionModal({
     if (id === "typeinst") setTypeinst(value);
   };
 
- 
   if (!isOpen) return null;
 
   return (
@@ -124,11 +151,19 @@ export function InstitutionModal({
                 value={name || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar nombre..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('nombre')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
+                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some((e) => e.toLowerCase().includes("nombre")) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
                 disabled={isSubmitting}
                 autoFocus
-                aria-invalid={formErrors.some(e => e.toLowerCase().includes('nombre')) ? "true" : "false"}
-                aria-describedby={formErrors.some(e => e.toLowerCase().includes('nombre')) ? "form-errors" : undefined}
+                aria-invalid={
+                  formErrors.some((e) => e.toLowerCase().includes("nombre"))
+                    ? "true"
+                    : "false"
+                }
+                aria-describedby={
+                  formErrors.some((e) => e.toLowerCase().includes("nombre"))
+                    ? "form-errors"
+                    : undefined
+                }
               />
 
               {/* Municipalidad */}
@@ -144,10 +179,22 @@ export function InstitutionModal({
                 value={municipality || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar municipio..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('municipalidad')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
+                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some((e) => e.toLowerCase().includes("municipalidad")) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
                 disabled={isSubmitting}
-                aria-invalid={formErrors.some(e => e.toLowerCase().includes('municipalidad')) ? "true" : "false"}
-                aria-describedby={formErrors.some(e => e.toLowerCase().includes('municipalidad')) ? "form-errors" : undefined}
+                aria-invalid={
+                  formErrors.some((e) =>
+                    e.toLowerCase().includes("municipalidad"),
+                  )
+                    ? "true"
+                    : "false"
+                }
+                aria-describedby={
+                  formErrors.some((e) =>
+                    e.toLowerCase().includes("municipalidad"),
+                  )
+                    ? "form-errors"
+                    : undefined
+                }
               />
 
               {/* Geocódigo */}
@@ -158,15 +205,23 @@ export function InstitutionModal({
                 Código Postal / Geocódigo:
               </label>
               <input
-                type="text" 
+                type="text"
                 id="geocode"
                 value={geocode || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar código..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('geocódigo')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
+                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some((e) => e.toLowerCase().includes("geocódigo")) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
                 disabled={isSubmitting}
-                aria-invalid={formErrors.some(e => e.toLowerCase().includes('geocódigo')) ? "true" : "false"}
-                aria-describedby={formErrors.some(e => e.toLowerCase().includes('geocódigo')) ? "form-errors" : undefined}
+                aria-invalid={
+                  formErrors.some((e) => e.toLowerCase().includes("geocódigo"))
+                    ? "true"
+                    : "false"
+                }
+                aria-describedby={
+                  formErrors.some((e) => e.toLowerCase().includes("geocódigo"))
+                    ? "form-errors"
+                    : undefined
+                }
               />
 
               {/* Tipo */}
@@ -182,30 +237,45 @@ export function InstitutionModal({
                 value={typeinst || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar tipo..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('tipo')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
+                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some((e) => e.toLowerCase().includes("tipo")) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
                 disabled={isSubmitting}
-                aria-invalid={formErrors.some(e => e.toLowerCase().includes('tipo')) ? "true" : "false"}
-                aria-describedby={formErrors.some(e => e.toLowerCase().includes('tipo')) ? "form-errors" : undefined}
+                aria-invalid={
+                  formErrors.some((e) => e.toLowerCase().includes("tipo"))
+                    ? "true"
+                    : "false"
+                }
+                aria-describedby={
+                  formErrors.some((e) => e.toLowerCase().includes("tipo"))
+                    ? "form-errors"
+                    : undefined
+                }
               />
 
               {/* Mostramos los errores */}
-              {formErrors.length > 0 && (
-                <div id="form-errors" className="text-red-500 text-xs mt-2">
-                  {formErrors.map((error, idx) => (
-                    <p key={idx}>{error}</p>
-                  ))}
-                </div>
-              )}
+              <div id="form-errors">
+                <FormErrors errors={formErrors} />
+              </div>
 
               {/* Mostramos error del servidor */}
               {error && (
-                <div id="form-errors-server" className="text-red-500 text-xs mt-2">
-                  <p>{error}</p>
+                <div id="form-errors-server">
+                  <FormErrors errors={[error]} />
                 </div>
               )}
             </div>
 
             <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
+              {isEditMode && (
+                <button
+                  type="button"
+                  onClick={onEditLocation}
+                  disabled={isSubmitting}
+                  className="w-10 h-10 flex items-center justify-center bg-white border border-[#691b31] text-[#691b31] rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <MapPinned size={18} />
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={onClose}
@@ -216,7 +286,7 @@ export function InstitutionModal({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || formErrors.length > 0}
+                disabled={isSubmitting || formErrors.length > 0 || !hasChanges}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}

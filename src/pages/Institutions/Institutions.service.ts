@@ -76,12 +76,18 @@ export const updateInstitution = (
   }).then(handleJsonResponse);
 };
 
-  export const updateInstitutionCoordinates = (
-    id: string,
-    coords: { lat: number; lon: number }
-  ): Promise<any> => {
-    return updateInstitution(id, coords);
+export const updateInstitutionCoordinates = (
+  id: string,
+  coords: { lat: number; lon: number }
+): Promise<any> => {
+  const payload: UpdateInstitutionDTO = {
+    lat: coords.lat,
+    lon: coords.lon,
   };
+
+  return updateInstitution(id, payload);
+};
+
 
 
 

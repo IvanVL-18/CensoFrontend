@@ -47,6 +47,7 @@ function InstitutionsPageContent() {
     viewingInstitution,
     isMapModalOpen,
     mapInstitution,
+    mapEditable,
     handleFilterChange,
     handleSearchChange,
     handleSort,
@@ -149,7 +150,11 @@ function InstitutionsPageContent() {
         initialMunicipality={initialMunicipality}
         initialGeocode={initialGeocode}
         initialType={initialType}
-        onClose={handleModalClose} // La función del hook
+        isEditMode={!!editingInstitution}
+        onEditLocation={() => {
+          if (editingInstitution) onShowMap(editingInstitution, true);
+        }}
+        onClose={handleModalClose}
         onSave={handleModalSave}
       />
 
@@ -171,12 +176,13 @@ function InstitutionsPageContent() {
         onClose={handleViewModalClose}
       />
 
-     <MapModal
-  isOpen={isMapModalOpen}
-  onClose={handleMapModalClose}
-  institutionId={mapInstitution?.id || null}
-  institutionName={mapInstitution?.name || null}
-/>
+      <MapModal
+        isOpen={isMapModalOpen}
+        onClose={handleMapModalClose}
+        institutionId={mapInstitution?.id || null}
+        institutionName={mapInstitution?.name || null}
+        editable={mapEditable}
+      />
     </div>
   );
 }
