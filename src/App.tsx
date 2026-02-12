@@ -1,12 +1,12 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import LoginPage from "./pages/Login/page/LoginPage";
-import HomePage from "./pages/Home/page/HomePage";
-import DashboardPage from "./pages/Deshboard/Dashboard";
-import ChartsPage from "./pages/Grapher/page/ChartsPage";
-import ReportsPage from "./pages/Reports/ReportsPage";
-import SettingsPage from "./pages/Settings/SettingsPage";
+import LoginPage from "./pages/login/page/LoginPage";
+import HomePage from "./pages/home/page/HomePage";
+import DashboardPage from "./pages/deshboard/Dashboard";
+import ChartsPage from "./pages/grapher/page/ChartsPage";
+import ReportsPage from "./pages/reports/ReportsPage";
+import SettingsPage from "./pages/settings/SettingsPage";
 import DashboardLayout from "./components/DashboardLayout";
 
 import Units from "./pages/Units/units";
