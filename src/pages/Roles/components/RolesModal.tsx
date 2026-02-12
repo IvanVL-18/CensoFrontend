@@ -60,7 +60,6 @@ export function RolModal({
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     
-    // Limitar la longitud máxima a 65 caracteres
     if (newName.length <= MAX_LENGTH) {
       setName(newName);
       setCharCount(newName.length);

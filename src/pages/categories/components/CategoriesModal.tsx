@@ -5,7 +5,7 @@ import type { CategoryModalProps } from "../Categories.types";
 import { Categorieschema } from "../schemas/Categories.schema"; 
 
 // Obtener el máximo de caracteres del schema
-const MAX_LENGTH = 65; // Ajusta este valor según tu schema
+const MAX_LENGTH = 65; 
 
 export function CategoryModal({
   isOpen,
@@ -36,7 +36,6 @@ export function CategoryModal({
       errors.push(...result.error.issues.map((err) => err.message));
     }
 
-    // Validación para números (ajustar según requerimientos del backend)
     if (/\d/.test(currentName)) {
       errors.push("El nombre no puede contener números");
     }
@@ -61,7 +60,6 @@ export function CategoryModal({
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     
-    // Limitar la longitud máxima
     if (newName.length <= MAX_LENGTH) {
       setName(newName);
       setCharCount(newName.length);
