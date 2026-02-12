@@ -4,6 +4,9 @@ import { FormErrors } from "./FormErrors";
 import type { RolModalProps } from "../Roles.types";
 import { Roleschema } from "../schemas/Roles.schema"; 
 
+// Límite máximo de caracteres para el rol
+const MAX_LENGTH = 25;
+
 export function RolModal({
   isOpen,
   isSubmitting,
@@ -15,13 +18,16 @@ export function RolModal({
 }: RolModalProps) {
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [charCount, setCharCount] = useState(initialName.length);
 
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
       setFormErrors([]);
+      setCharCount(initialName.length);
     }
   }, [isOpen, initialName]);
+  
   const validateForm = (currentName: string) => {
     const result = Roleschema.safeParse({ name: currentName });
     const errors: string[] = [];
@@ -42,7 +48,7 @@ export function RolModal({
       return true; 
     }
   };
-//lolo
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const isValid = validateForm(name);
@@ -53,8 +59,13 @@ export function RolModal({
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
-    setName(newName);
-    validateForm(newName);
+    
+    // Limitar la longitud máxima a 65 caracteres
+    if (newName.length <= MAX_LENGTH) {
+      setName(newName);
+      setCharCount(newName.length);
+      validateForm(newName);
+    }
   };
 
   if (!isOpen) {
@@ -63,6 +74,8 @@ export function RolModal({
 
   const hasClientErrors = formErrors.length > 0;
   const hasServerError = !!error;
+  const isNearLimit = charCount >= MAX_LENGTH - 10 && charCount <= MAX_LENGTH;
+  const isAtLimit = charCount >= MAX_LENGTH;
 
   return (
     <>
@@ -82,25 +95,58 @@ export function RolModal({
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
-              <label htmlFor="RolName" className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre del rol:
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="RolName" className="block text-sm font-medium text-gray-700">
+                  Nombre del rol:
+                </label>
+                <span 
+                  className={`text-xs font-medium ${
+                    isAtLimit 
+                      ? 'text-red-600' 
+                      : isNearLimit 
+                        ? 'text-amber-600' 
+                        : 'text-gray-500'
+                  }`}
+                >
+                  {charCount}/{MAX_LENGTH} caracteres
+                </span>
+              </div>
+              
               <input
                 type="text"
                 id="RolName"
                 value={name}
                 onChange={handleNameChange}
                 placeholder="Ingresar nombre..."
+                maxLength={MAX_LENGTH}
                 className={`
                   border rounded-lg p-2 w-full focus:outline-none focus:ring-2
                   ${(hasClientErrors || hasServerError)
                     ? 'border-red-500 focus:ring-red-400' 
-                    : 'border-gray-300 focus:ring-[#DDC9A3]'
+                    : isAtLimit
+                      ? 'border-red-300 focus:ring-red-400'
+                      : isNearLimit
+                        ? 'border-amber-300 focus:ring-amber-400'
+                        : 'border-gray-300 focus:ring-[#DDC9A3]'
                   }
                 `}
                 disabled={isSubmitting}
                 autoFocus
               />
+
+              {/* Barra de progreso de caracteres */}
+              <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-300 ${
+                    isAtLimit 
+                      ? 'bg-red-600' 
+                      : isNearLimit 
+                        ? 'bg-amber-500' 
+                        : 'bg-[#DDC9A3]'
+                  }`}
+                  style={{ width: `${(charCount / MAX_LENGTH) * 100}%` }}
+                />
+              </div>
 
               <div id="form-errors-client">
                 <FormErrors errors={formErrors} />
