@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { BarChart3 } from "lucide-react";
-import GeneralCharts from "../../grapher/components/GeneralCharts";
-import QuestionnaireCharts from "../../grapher/components/QuestionnaireCharts";
+import GeneralCharts from "../components/GeneralCharts";
+import QuestionnaireCharts from "../components/QuestionnaireCharts";
 import type { ChartKind, GeneralSummary, InstitutionStat } from "../components/charts";
 
 function isValidKind(value: string | null): value is ChartKind {
