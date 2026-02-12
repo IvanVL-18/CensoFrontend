@@ -4,16 +4,9 @@ import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Servicios
-import {
-  getCoordinatesFromPostalCode,
-  getInstitutionMapData,
-} from "./Map.service";
-import { updateInstitutionCoordinates } from "./Institutions.service";
-
+import { getCoordinatesFromPostalCode, getInstitutionMapData } from "./Map.service";
 import type { Coordinates } from "./Map.interfaces";
 
-// Iconos Leaflet
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
@@ -23,15 +16,23 @@ const DefaultIcon = L.icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
-
 L.Marker.prototype.options.icon = DefaultIcon;
 
 interface MapModalProps {
   isOpen: boolean;
   onClose: () => void;
+
   institutionId: string | null;
   institutionName: string | null;
-  editable?: boolean;
+
+  /** ✅ Si ya tienes coords guardadas en BD o “pendientes”, pásalas aquí */
+  initialCoords?: Coordinates | null;
+
+  /** ✅ Aquí NO guardamos, solo “devolvemos” coords al padre */
+  onPickLocation?: (coords: Coordinates) => void;
+
+  /** ✅ Si está en modo edición, permitir drag */
+  draggable?: boolean;
 }
 
 export function MapModal({
@@ -39,18 +40,25 @@ export function MapModal({
   onClose,
   institutionId,
   institutionName,
-  editable = false,
+  initialCoords = null,
+  onPickLocation,
+  draggable = false,
 }: MapModalProps) {
-  const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
+  const [localCoords, setLocalCoords] = useState<Coordinates | null>(initialCoords);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    setError(null);
+    // Si ya nos dieron coords (BD o pendientes), las usamos primero
+    if (initialCoords) {
+      setLocalCoords(initialCoords);
+      return;
+    }
 
-    if (isOpen && institutionId) {
+    // Si no hay coords, entonces sí geocodificamos con geocode + municipality
+    if (institutionId) {
       const fetchLocation = async () => {
         setLoading(true);
         setError(null);
@@ -62,24 +70,25 @@ export function MapModal({
             throw new Error("Datos de ubicación no válidos.");
           }
 
-          if (mapData.lat !== null && mapData.lon !== null) {
-            setCoordinates({ lat: mapData.lat, lon: mapData.lon });
+          // ✅ Si tu API ya manda lat/lon, úsalo directo
+          if (typeof mapData.lat === "number" && typeof mapData.lon === "number") {
+            setLocalCoords({ lat: mapData.lat, lon: mapData.lon });
             return;
           }
 
           const coords = await getCoordinatesFromPostalCode(
             mapData.geocode,
             mapData.municipality,
-            mapData.street || null,
+            mapData.street || null
           );
 
           if (coords) {
-            setCoordinates(coords);
+            setLocalCoords(coords);
           } else {
             setError("No se encontró la ubicación exacta.");
           }
         } catch (err: any) {
-          setError(err.message || "Error al obtener la ubicación.");
+          setError(err.message);
         } finally {
           setLoading(false);
         }
@@ -87,37 +96,33 @@ export function MapModal({
 
       fetchLocation();
     }
-  }, [isOpen, institutionId]);
+  }, [isOpen, institutionId, initialCoords]);
 
   if (!isOpen) return null;
+
+  const handleClose = () => {
+    // ✅ Al cerrar, regresamos la última ubicación elegida (si existe)
+    if (localCoords && onPickLocation) {
+      onPickLocation(localCoords);
+    }
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl h-3/4 flex flex-col overflow-hidden">
-        {/* Header */}
         <div className="flex justify-between items-center p-4 bg-red-900 text-white">
-          <h2 className="text-xl font-bold truncate">
-            Ubicación de {institutionName}
-          </h2>
-          <button
-            onClick={onClose}
-            className="hover:bg-red-800 p-1 rounded transition-colors"
-          >
+          <h2 className="text-xl font-bold truncate">Ubicación de {institutionName}</h2>
+          <button onClick={handleClose} className="hover:bg-red-800 p-1 rounded transition-colors">
             <X size={24} />
           </button>
         </div>
 
-        {/* Contenido */}
         <div className="flex-grow relative bg-gray-100">
           {loading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-20">
-              <LoaderCircle
-                className="animate-spin text-red-900 mb-2"
-                size={48}
-              />
-              <p className="text-gray-700 font-medium">
-                Buscando en el mapa...
-              </p>
+              <LoaderCircle className="animate-spin text-red-900 mb-2" size={48} />
+              <p className="text-gray-700 font-medium">Buscando en el mapa...</p>
             </div>
           )}
 
@@ -127,9 +132,9 @@ export function MapModal({
             </div>
           )}
 
-          {coordinates && !loading && (
+          {localCoords && !loading && (
             <MapContainer
-              center={[coordinates.lat, coordinates.lon]}
+              center={[localCoords.lat, localCoords.lon]}
               zoom={15}
               scrollWheelZoom={true}
               style={{ height: "100%", width: "100%" }}
@@ -139,9 +144,8 @@ export function MapModal({
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
 
-              {/* 🔦 Zona iluminada */}
               <Circle
-                center={[coordinates.lat, coordinates.lon]}
+                center={[localCoords.lat, localCoords.lon]}
                 radius={250}
                 pathOptions={{
                   color: "#FFD700",
@@ -151,24 +155,11 @@ export function MapModal({
               />
 
               <DraggableMarker
-                coordinates={coordinates}
+                coordinates={localCoords}
                 institutionName={institutionName}
-                draggable={editable}
-                onChange={async (newCoords) => {
-                  setCoordinates(newCoords);
-                  console.log("Nueva ubicación:", newCoords);
-
-                  if (editable && institutionId) {
-                    try {
-                      await updateInstitutionCoordinates(institutionId, {
-                        lat: newCoords.lat,
-                        lon: newCoords.lon,
-                      });
-                      console.log("Coordenadas guardadas en BD");
-                    } catch (err) {
-                      console.error("Error guardando coordenadas:", err);
-                    }
-                  }
+                draggable={draggable}
+                onChange={(newCoords) => {
+                  setLocalCoords(newCoords);
                 }}
               />
             </MapContainer>
@@ -206,7 +197,6 @@ function DraggableMarker({
 
           const pos = marker.getLatLng();
           const newCoords: Coordinates = { lat: pos.lat, lon: pos.lng };
-
           onChange(newCoords);
         },
       }}
@@ -214,9 +204,11 @@ function DraggableMarker({
       <Popup>
         <div>
           <div className="font-bold">{institutionName}</div>
-          <div className="text-xs text-gray-600">
-            Arrastra el pin para ajustar la ubicación.
-          </div>
+          {draggable ? (
+            <div className="text-xs text-gray-600">Arrastra el pin para ajustar la ubicación.</div>
+          ) : (
+            <div className="text-xs text-gray-600">Solo visualización.</div>
+          )}
         </div>
       </Popup>
     </Marker>

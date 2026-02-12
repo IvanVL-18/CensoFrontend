@@ -1,15 +1,21 @@
-import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
-import { 
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  type ChangeEvent,
+} from "react";
+import {
   getInstitutions,
-  getInstitution, 
-  createInstitution, 
+  getInstitution,
+  createInstitution,
   updateInstitution,
-  banInstitution, 
+  banInstitution,
   restoreInstitution,
-  forceDeleteInstitution, 
-  type InstitutionFilter 
+  forceDeleteInstitution,
+  type InstitutionFilter,
 } from "./Institutions.service";
-import { useToast } from "../../context/ToastContext"; 
+import { useToast } from "../../context/ToastContext";
 
 import type {
   Institution,
@@ -25,73 +31,94 @@ type SortConfig = {
 };
 
 export function useInstitutions() {
- 
-  const { addToast } = useToast(); 
+  const { addToast } = useToast();
   const [isViewLoading, setIsViewLoading] = useState(false);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
-  const [links, setLinks] = useState<PaginatedInstitutionsResponse["links"] | null>(null);
+  const [links, setLinks] = useState<
+    PaginatedInstitutionsResponse["links"] | null
+  >(null);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  
   const [filter, setFilter] = useState<InstitutionFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "created_at",
     direction: "ascending",
-    
   });
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingInstitution, setViewingInstitution] = useState<Institution | null>(null);
-  
- 
+  const [viewingInstitution, setViewingInstitution] =
+    useState<Institution | null>(null);
+
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
-  const [mapInstitution, setMapInstitution] = useState<Institution | null>(null);
+  const [mapInstitution, setMapInstitution] = useState<Institution | null>(
+    null,
+  );
   const [mapEditable, setMapEditable] = useState(false);
 
+  const [isEditMapOpen, setIsEditMapOpen] = useState(false);
+  const [pendingCoords, setPendingCoords] = useState<{ lat: number; lon: number } | null>(null);
 
   const handleViewModalClose = useCallback(() => {
     setIsViewModalOpen(false);
     setViewingInstitution(null);
   }, []);
 
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
-  
-  const [reloadToken, setReloadToken] = useState(0);
-  const reloadInstitutions = useCallback(() => setReloadToken((t) => t + 1), []);
-  
-  const [editingInstitution, setEditingInstitution] = useState<Institution | null>(null);
 
-  
+  const [reloadToken, setReloadToken] = useState(0);
+  const reloadInstitutions = useCallback(
+    () => setReloadToken((t) => t + 1),
+    [],
+  );
+
+  const [editingInstitution, setEditingInstitution] =
+    useState<Institution | null>(null);
+ 
+
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
-  const [actionInstitution, setActionInstitution] = useState<Institution | null>(null);
-  
-  const [actionType, setActionType] = useState<'ban' | 'restore' | 'delete' | null>(null);
+  const [actionInstitution, setActionInstitution] =
+    useState<Institution | null>(null);
 
-  
- const onShowMap = useCallback(
-  (institution: Institution, editable: boolean = false) => {
-    setMapInstitution(institution);
-    setMapEditable(editable);
-    setIsMapModalOpen(true);
-  },
-  []
-);
+  const [actionType, setActionType] = useState<
+    "ban" | "restore" | "delete" | null
+  >(null);
 
+  const onShowMap = useCallback(
+    (institution: Institution, editable: boolean = false) => {
+      setMapInstitution(institution);
+      setMapEditable(editable);
+      setIsMapModalOpen(true);
+    },
+    [],
+  );
+  
+  const onEditLocation = useCallback(() => {
+    if (!editingInstitution) return;
+    setIsEditMapOpen(true);
+  }, [editingInstitution]);
+
+
+  const onCloseEditMap = useCallback(() => {
+    setIsEditMapOpen(false);
+  }, []);
+
+ 
+  const onPickLocation = useCallback((coords: { lat: number; lon: number }) => {
+    setPendingCoords(coords);
+  }, []);
 
   const handleMapModalClose = () => {
     setIsMapModalOpen(false);
     setMapInstitution(null);
     setMapEditable(false);
   };
-  
-  
+
   useEffect(() => {
     setLoading(true);
     getInstitutions(filter)
@@ -108,8 +135,7 @@ export function useInstitutions() {
       .finally(() => {
         setLoading(false);
       });
-  }, [filter, reloadToken]); 
-
+  }, [filter, reloadToken]);
 
   const loadInstitutionsByUrl = useCallback((url: string) => {
     setLoading(true);
@@ -130,11 +156,12 @@ export function useInstitutions() {
       });
   }, []);
 
-
-
-  const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setFilter(e.target.value as InstitutionFilter);
-  }, []);
+  const handleFilterChange = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>) => {
+      setFilter(e.target.value as InstitutionFilter);
+    },
+    [],
+  );
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -146,7 +173,7 @@ export function useInstitutions() {
         loadInstitutionsByUrl(url);
       }
     },
-    [loadInstitutionsByUrl]
+    [loadInstitutionsByUrl],
   );
 
   const handleSort = useCallback((key: keyof Institution) => {
@@ -162,17 +189,15 @@ export function useInstitutions() {
     });
   }, []);
 
-  
   const filteredInstitutions = useMemo(() => {
     return institutions.filter((institution) =>
-      institution.name.toLowerCase().includes(searchTerm.toLowerCase())
+      institution.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [institutions, searchTerm]);
 
   const sortedInstitutions = useMemo(() => {
     let sortableItems = [...filteredInstitutions];
     sortableItems.sort((a, b) => {
-      
       const valA = a[sortConfig.key];
       const valB = b[sortConfig.key];
       if (valA == null) return 1;
@@ -188,171 +213,173 @@ export function useInstitutions() {
     return sortableItems;
   }, [filteredInstitutions, sortConfig]);
 
- 
   const handleAddClick = useCallback(() => {
     setEditingInstitution(null);
-    setModalError(null); 
+    setModalError(null);
     setIsModalOpen(true);
   }, []);
-  
 
   const handleModalClose = useCallback(() => {
     setIsModalOpen(false);
-    setModalError(null); 
+    setModalError(null);
     setEditingInstitution(null);
   }, []);
 
-  
   const handleModalSave = useCallback(
-  async (institutionData: CreateInstitutionDTO | UpdateInstitutionDTO) => {
-    setIsSubmitting(true);
-    setModalError(null);
+    async (institutionData: CreateInstitutionDTO | UpdateInstitutionDTO) => {
+      setIsSubmitting(true);
+      setModalError(null);
 
-    try {
-      let response: any; 
+      try {
+        let response: any;
 
-      if (editingInstitution) {
-       
-        response = await updateInstitution(editingInstitution.id, institutionData);
-      } else {
-       
-        response = await createInstitution(institutionData as CreateInstitutionDTO);
+        if (editingInstitution) {
+          response = await updateInstitution(
+            editingInstitution.id,
+            institutionData,
+          );
+        } else {
+          response = await createInstitution(
+            institutionData as CreateInstitutionDTO,
+          );
+        }
+
+        addToast(response.message, "success");
+
+        setIsModalOpen(false);
+        setEditingInstitution(null);
+        reloadInstitutions();
+      } catch (err: any) {
+        console.error("Error al guardar la institución:", err);
+
+        const errorMessage = err.message || "Ocurrió un error inesperado";
+        setModalError(errorMessage);
+        addToast(errorMessage, "danger");
+      } finally {
+        setIsSubmitting(false);
       }
-
-      
-      addToast(response.message, "success");
-
-      setIsModalOpen(false);
-      setEditingInstitution(null);
-      reloadInstitutions();
-
-    } catch (err: any) {
-      console.error("Error al guardar la institución:", err);
-    
-      const errorMessage = err.message || "Ocurrió un error inesperado";
-      setModalError(errorMessage);
-      addToast(errorMessage, "danger");
-    } finally {
-      setIsSubmitting(false);
-    }
-  },
-  [reloadInstitutions, editingInstitution, addToast]
-);
+    },
+    [reloadInstitutions, editingInstitution, addToast],
+  );
 
   const handleConfirmModalClose = useCallback(() => {
     setIsConfirmModalOpen(false);
     setActionInstitution(null);
     setActionType(null);
-    setModalError(null); 
+    setModalError(null);
   }, []);
 
   const handleConfirmAction = useCallback(async () => {
-  if (!actionInstitution || !actionType) return;
+    if (!actionInstitution || !actionType) return;
 
-  setIsSubmitting(true);
-  setModalError(null);
+    setIsSubmitting(true);
+    setModalError(null);
 
-  try {
-    let response: any;
+    try {
+      let response: any;
 
-    if (actionType === 'ban') {
-      response = await banInstitution(actionInstitution.id);
-    } else if (actionType === 'restore') {
-      response = await restoreInstitution(actionInstitution.id);
-    } else if (actionType === 'delete') { 
-      response = await forceDeleteInstitution(actionInstitution.id);
+      if (actionType === "ban") {
+        response = await banInstitution(actionInstitution.id);
+      } else if (actionType === "restore") {
+        response = await restoreInstitution(actionInstitution.id);
+      } else if (actionType === "delete") {
+        response = await forceDeleteInstitution(actionInstitution.id);
+      }
+
+      if (response) {
+        const toastType =
+          actionType === "ban"
+            ? "warning"
+            : actionType === "delete"
+              ? "danger"
+              : "success";
+
+        handleConfirmModalClose();
+        reloadInstitutions();
+
+        addToast(response.message, toastType);
+      }
+    } catch (err: any) {
+      console.error("Error al procesar la acción:", err);
+      const errorMessage =
+        err.message || "Ocurrió un error al procesar la solicitud";
+      setModalError(errorMessage);
+      addToast(errorMessage, "danger");
+    } finally {
+      setIsSubmitting(false);
     }
+  }, [
+    actionInstitution,
+    actionType,
+    reloadInstitutions,
+    handleConfirmModalClose,
+    addToast,
+  ]);
 
-    
-    if (response) {
-      const toastType = actionType === 'ban' ? "warning" : actionType === 'delete' ? "danger" : "success";
+  const onView = useCallback(
+    async (unit: Institution) => {
+      setIsViewLoading(true);
 
-      handleConfirmModalClose(); 
-      reloadInstitutions();
-      
-     
-      addToast(response.message, toastType);
-    }
-
-  } catch (err: any) {
-    console.error("Error al procesar la acción:", err);
-    const errorMessage = err.message || "Ocurrió un error al procesar la solicitud";
-    setModalError(errorMessage);
-    addToast(errorMessage, "danger");
-  } finally {
-    setIsSubmitting(false);
-  }
-}, [actionInstitution, actionType, reloadInstitutions, handleConfirmModalClose, addToast]);
-
-
-
-const onView = useCallback(async (unit: Institution) => {
- 
-  setIsViewLoading(true); 
-  
-  try {
-    const unitData = await getInstitution(unit.id);
-    setViewingInstitution(unitData);
-    setIsViewModalOpen(true);
-  } catch (err) {
-    console.error("Error al obtener detalle de la unidad:", err);
-    const errorMessage = (err as Error).message || "No se pudo cargar el detalle.";
-    addToast(errorMessage, "danger");
-  } finally {
-    setIsViewLoading(false); 
-  }
-}, [addToast]);
+      try {
+        const unitData = await getInstitution(unit.id);
+        setViewingInstitution(unitData);
+        setIsViewModalOpen(true);
+      } catch (err) {
+        console.error("Error al obtener detalle de la unidad:", err);
+        const errorMessage =
+          (err as Error).message || "No se pudo cargar el detalle.";
+        addToast(errorMessage, "danger");
+      } finally {
+        setIsViewLoading(false);
+      }
+    },
+    [addToast],
+  );
 
   const onEdit = useCallback((institution: Institution) => {
-    setEditingInstitution(institution); 
+    setEditingInstitution(institution);
+    setPendingCoords(null);
     setModalError(null);
-    setIsModalOpen(true); 
+    setIsModalOpen(true);
   }, []);
 
   const onBan = useCallback((institution: Institution) => {
     setActionInstitution(institution);
-    setActionType('ban');
-    setIsConfirmModalOpen(true); 
+    setActionType("ban");
+    setIsConfirmModalOpen(true);
     setModalError(null);
   }, []);
 
   const onRestore = useCallback((institution: Institution) => {
     setActionInstitution(institution);
-    setActionType('restore');
+    setActionType("restore");
     setIsConfirmModalOpen(true);
     setModalError(null);
   }, []);
 
   const onDelete = useCallback((institution: Institution) => {
-  setActionInstitution(institution);
-  setActionType('delete'); 
-  setIsConfirmModalOpen(true);
-  setModalError(null);
-}, []);
+    setActionInstitution(institution);
+    setActionType("delete");
+    setIsConfirmModalOpen(true);
+    setModalError(null);
+  }, []);
 
-  
-
-  
   return {
-    
     loading,
     isViewLoading,
     error,
-    
-   
+
     sortedInstitutions,
     meta,
     links,
-    
-    
+
     filter,
     searchTerm,
 
     isConfirmModalOpen,
     actionInstitution,
     actionType,
-    
-    
+
     isModalOpen,
     isSubmitting,
     modalError,
@@ -363,14 +390,11 @@ const onView = useCallback(async (unit: Institution) => {
     mapInstitution,
     mapEditable,
 
-
-
     handleFilterChange,
     handleSearchChange,
     handleSort,
     handlePageClick,
 
-    
     handleAddClick,
     handleModalClose,
     handleModalSave,
@@ -384,5 +408,11 @@ const onView = useCallback(async (unit: Institution) => {
     handleConfirmAction,
     handleViewModalClose,
     handleMapModalClose,
+
+  pendingCoords,
+  isEditMapOpen,
+  onEditLocation,
+  onCloseEditMap,
+  onPickLocation,
   };
 }

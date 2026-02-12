@@ -19,6 +19,8 @@ interface InstitutionModalProps {
   isEditMode?: boolean;
   onEditLocation?: () => void;
 
+  pendingCoords?: { lat: number; lon: number } | null;
+
   onClose: () => void;
   onSave: (
     formData: CreateInstitutionDTO | UpdateInstitutionDTO,
@@ -36,6 +38,8 @@ export function InstitutionModal({
   initialType = "",
   isEditMode = false,
   onEditLocation,
+
+  pendingCoords,
 
   onClose,
   onSave,
@@ -65,7 +69,9 @@ export function InstitutionModal({
         name !== initialName ||
         municipality !== initialMunicipality ||
         geocode !== initialGeocode ||
-        typeinst !== initialType;
+        typeinst !== initialType ||
+        !!pendingCoords;
+
       setHasChanges(changed);
     }
   }, [
@@ -77,6 +83,7 @@ export function InstitutionModal({
     initialMunicipality,
     initialGeocode,
     initialType,
+    pendingCoords,
     isOpen,
   ]);
 
@@ -101,6 +108,12 @@ export function InstitutionModal({
         dataToSend.municipality = municipality;
       if (geocode !== initialGeocode) dataToSend.geocode = geocode;
       if (typeinst !== initialType) dataToSend.typeinst = typeinst;
+
+      
+    if (pendingCoords) {
+      dataToSend.lat = pendingCoords.lat;
+      dataToSend.lon = pendingCoords.lon;
+    }
 
       onSave(dataToSend);
     }

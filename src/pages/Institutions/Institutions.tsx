@@ -8,6 +8,7 @@ import { ViewInstitutionModal } from "./ViewInstitutionsModal";
 import { MapModal } from "./MapModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
+import { EditLocationModal } from "./EditLocationModal";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
@@ -47,7 +48,6 @@ function InstitutionsPageContent() {
     viewingInstitution,
     isMapModalOpen,
     mapInstitution,
-    mapEditable,
     handleFilterChange,
     handleSearchChange,
     handleSort,
@@ -65,6 +65,11 @@ function InstitutionsPageContent() {
     handleConfirmModalClose,
     handleMapModalClose,
     handleConfirmAction,
+    pendingCoords,
+    isEditMapOpen,
+    onEditLocation,
+    onCloseEditMap,
+    onPickLocation,
   } = useInstitutions();
 
   // Si 'editingInstitution' tiene datos, el título es "Editar". Si no, "Agregar".
@@ -151,9 +156,8 @@ function InstitutionsPageContent() {
         initialGeocode={initialGeocode}
         initialType={initialType}
         isEditMode={!!editingInstitution}
-        onEditLocation={() => {
-          if (editingInstitution) onShowMap(editingInstitution, true);
-        }}
+        onEditLocation={onEditLocation}
+        pendingCoords={pendingCoords} 
         onClose={handleModalClose}
         onSave={handleModalSave}
       />
@@ -181,7 +185,22 @@ function InstitutionsPageContent() {
         onClose={handleMapModalClose}
         institutionId={mapInstitution?.id || null}
         institutionName={mapInstitution?.name || null}
-        editable={mapEditable}
+      />
+
+      <EditLocationModal
+        isOpen={isEditMapOpen}
+        onClose={onCloseEditMap}
+        institution={editingInstitution}
+        currentCoords={
+          editingInstitution?.lat != null && editingInstitution?.lon != null
+            ? {
+                lat: Number(editingInstitution.lat),
+                lon: Number(editingInstitution.lon),
+              }
+            : null
+        }
+        pendingCoords={pendingCoords}
+        onPick={onPickLocation}
       />
     </div>
   );
