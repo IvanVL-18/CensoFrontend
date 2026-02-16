@@ -1,11 +1,11 @@
-import { useInstitutions } from "./useInstitutions";
-import { InstitutionsToolbar } from "./InstitutionsToolbar";
-import { InstitutionsTable } from "./InstitutionsTable";
+import { useInstitutions } from "./hooks/useInstitutions";
+import { InstitutionsToolbar } from "./components/InstitutionsToolbar";
+import { InstitutionsTable } from "./components/InstitutionsTable";
 import Pagination from "../../components/Pagination";
-import { InstitutionModal } from "./InstitutionsModal";
-import { ConfirmModal } from "./ConfirmModal";
-import { ViewInstitutionModal } from "./ViewInstitutionsModal";
-import { MapModal } from "./MapModal";
+import { InstitutionModal } from "./components/InstitutionsModal";
+import { ConfirmModal } from "./components/ConfirmModal";
+import { ViewInstitutionModal } from "./components/ViewInstitutionsModal";
+import { MapModal } from "./components/MapModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 import { EditLocationModal } from "./EditLocationModal";

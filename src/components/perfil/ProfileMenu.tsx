@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import ProfileModal from "./ProfileModal";
+import ProfileModal from "../../components/Perfil/ProfileModal";
 
 export default function ProfileMenu() {
   const [dropdownOpen, setDropdownOpen] = useState(false);

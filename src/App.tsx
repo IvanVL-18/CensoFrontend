@@ -3,10 +3,10 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from "./pages/login/page/LoginPage";
 import HomePage from "./pages/home/page/HomePage";
-import DashboardPage from "./pages/deshboard/DashboardPage";
+import DashboardPage from "./pages/deshboard/Dashboard";
 import ChartsPage from "./pages/grapher/page/ChartsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
-import SettingsPage from "./pages/settings/SettingsPage";
+import ConfigurationsPage from "./pages/Configuration/Configuration";
 import DashboardLayout from "./components/DashboardLayout";
 
 import Units from "./pages/Units/units";
@@ -17,10 +17,11 @@ import CensusSectionsPage from "./pages/census/CensusSectionsPage";
 import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; 
 
 import Sections from "./pages/Sections/Sections";
-import Insitutions from "./pages/Institutions/Institutions";
+import Insitutions from "./pages/institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Indexs/Indexs";
 import Roles from "./pages/Roles/Roles";
+import Permissions from "./pages/Permissions/Permissions";
 
 import Categories from "./pages/categories/Categories";
 
@@ -47,13 +48,14 @@ export default function App() {
 
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />
-        <Route path="/configuracion" element={<SettingsPage />} />
+        <Route path="/configuracion" element={<ConfigurationsPage />} />
 
         {/* Catálogos */}
         <Route path="/unidades" element={<Units />} />
         <Route path="/secciones" element={<Sections />} />
         <Route path="/ocupaciones" element={<Occupations />} />
         <Route path="/Roles" element={<Roles />} />
+        <Route path="/permisos" element={<Permissions />} />
         <Route path="/categorias" element={<Categories />} />
       </Route>
 

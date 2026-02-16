@@ -1,34 +1,25 @@
-import axios from "axios";
-import type { Coordinates, MapDataResponse } from "./Map.interfaces";
+import api from "../../lib/Axios";
+import type { Coordinates, MapDataResponse } from "./Map.types";
 
-// Map.service.ts
 
 export const getInstitutionMapData = async (
-  id: string
-): Promise<MapDataResponse | null> => {
-  try {
-    // Puedes usar tu env si quieres, pero dejo tu URL tal cual la tenías
-    const response = await axios.get(
-      `http://localhost:8000/api/institutions/${id}/get-map`,
-      {
-        headers: {
-          Accept: "application/json",
-        },
-      }
-    );
+  id: string,
+  signal?: AbortSignal
+): Promise<MapDataResponse> => {
+  const response = await api.get<MapDataResponse>(`/institutions/${id}/get-map`, {
+    signal,
+  });
 
-    return response.data;
-  } catch (error: any) {
-    console.error("Error en la petición:", error.response?.data || error.message);
-    return null;
-  }
+  
+  return (response.data as any).data ?? response.data;
 };
 
+
 export const getCoordinatesFromPostalCode = async (
-  geocode: string, // CP
+  geocode: string, 
   municipality: string | null,
-  street: string | null = null, // calle si existe
-  state: string | null = "Hidalgo" // opcional, ayuda a precisión
+  street: string | null = null, 
+  state: string | null = "Hidalgo" 
 ): Promise<Coordinates | null> => {
   const apiKey = import.meta.env.VITE_GEOAPIFY_KEY;
 
@@ -39,11 +30,8 @@ export const getCoordinatesFromPostalCode = async (
     return null;
   }
 
-  // Entre más completo, mejor: calle, municipio, estado, CP, México
-  const parts = [street, municipality, state, geocode, "Mexico"].filter(
-    Boolean
-  ) as string[];
-
+  
+  const parts = [street, municipality, state, geocode, "Mexico"].filter(Boolean) as string[];
   const text = parts.join(", ");
 
   const url =
@@ -58,9 +46,7 @@ export const getCoordinatesFromPostalCode = async (
 
   try {
     const response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-      },
+      headers: { Accept: "application/json" },
     });
 
     if (!response.ok) throw new Error("Error en Geoapify");
@@ -83,3 +69,4 @@ export const getCoordinatesFromPostalCode = async (
     return null;
   }
 };
+

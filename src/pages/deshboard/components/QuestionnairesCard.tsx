@@ -1,35 +1,35 @@
-import { Eye } from "lucide-react";
+import { ArrowUpDown, Eye, type LucideProps } from "lucide-react";
 import { SearchInput } from "../../../components/SearchInput";
-import Pagination from "../../../components/Pagination"; 
-import type { QuestionnaireItem } from "../dashboard.types";
+import Pagination from "../../../components/Pagination";
+import type { QuestionnaireItem, Links, Meta } from "../dashboard.types";
 
-type MetaLike = {
-  current_page: number | number[];
-  last_page: number | number[];
+const defaultProps = {
+  strokeWidth: 1.75,
+  size: 22,
 };
 
-type LinksObj = {
-  first: string | null;
-  last: string | null;
-  prev: string | null;
-  next: string | null;
-};
+const IconSort = (props: LucideProps) => (
+  <ArrowUpDown {...defaultProps} {...props} />
+);
+const IconView = (props: LucideProps) => <Eye {...defaultProps} {...props} />;
 
 type Props = {
   title: string;
   searchValue: string;
   onSearchChange: (v: string) => void;
+
   items: QuestionnaireItem[];
   onView: (id: string) => void;
 
-  meta?: MetaLike | null;
-  links?: LinksObj | null;
+  meta?: Meta | null;
+  links?: Links | null;
   loading?: boolean;
   error?: string | null;
   onPageClick?: (url: string | null) => void;
-
   onPageNumber?: (page: number) => void;
   baseUrl?: string;
+
+  onSort?: (field: "id" | "name") => void;
 };
 
 export default function QuestionnairesCard({
@@ -46,11 +46,13 @@ export default function QuestionnairesCard({
   onPageClick,
   onPageNumber,
   baseUrl,
+
+  onSort,
 }: Props) {
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="bg-[#7A0C2E] px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-white font-semibold text-sm">{title}</h2>
+        <h2 className="text-white font-semibold text-base">{title}</h2>
 
         <div className="w-full sm:w-[260px]">
           <SearchInput
@@ -61,75 +63,111 @@ export default function QuestionnairesCard({
         </div>
       </div>
 
-      {/* Tabla */}
-      <div className="w-full overflow-x-auto">
-        <div className="min-w-[520px]">
-          <div className="grid grid-cols-[70px_1fr_110px] px-4 py-3 text-xs font-semibold text-slate-600 bg-slate-50 border-b border-slate-200">
-            <div>#</div>
-            <div className="flex items-center gap-2">
-              <span>Nombre</span>
-              <span className="text-slate-400">↑↓</span>
-            </div>
-            <div className="text-right">Acción</div>
-          </div>
-
-          <div className="divide-y divide-slate-100">
-            {items.length === 0 ? (
-              <div className="px-4 py-10 text-center">
-                <p className="text-sm font-medium text-slate-900">
-                  No hay resultados
-                </p>
-                <p className="text-sm text-slate-500 mt-1">
-                  Intenta con otro término.
-                </p>
-              </div>
-            ) : (
-              items.map((it, idx) => (
-                <div
-                  key={it.id}
-                  className="grid grid-cols-[70px_1fr_110px] items-center px-4 py-3 hover:bg-slate-50 transition"
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                <button
+                  type="button"
+                  onClick={() => onSort?.("id")}
+                  className="flex items-center space-x-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-opacity-75 transition-colors"
                 >
-                  <div className="text-sm text-slate-700 font-semibold">
-                    {idx + 1}
-                  </div>
+                  <span>No°</span>
+                  <IconSort size={16} strokeWidth={2.5} />
+                </button>
+              </th>
 
-                  <div
-                    className="text-sm text-slate-800 truncate"
+              <th className="px-6 py-3 text-left w-full">
+                <button
+                  type="button"
+                  onClick={() => onSort?.("name")}
+                  className="flex items-center space-x-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-opacity-75 transition-colors"
+                >
+                  <span>Nombre</span>
+                  <IconSort size={16} strokeWidth={2.5} />
+                </button>
+              </th>
+
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
+                Opciones
+              </th>
+            </tr>
+          </thead>
+
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loading && (
+              <tr>
+                <td colSpan={3} className="text-center p-6 text-gray-500">
+                  Cargando...
+                </td>
+              </tr>
+            )}
+
+            {!loading && error && (
+              <tr>
+                <td colSpan={3} className="text-center p-6 text-red-600 font-semibold">
+                  {error}
+                </td>
+              </tr>
+            )}
+
+            {!loading && !error && items.length === 0 && (
+              <tr>
+                <td colSpan={3} className="text-center p-6 text-gray-500">
+                  No se encontraron Censos.
+                </td>
+              </tr>
+            )}
+
+            {!loading &&
+              !error &&
+              items.map((it, index) => (
+                <tr key={it.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {meta ? meta.from + index : index + 1}
+                  </td>
+
+                  <td
+                    className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
                     title={it.name}
                   >
                     {it.name}
-                  </div>
+                  </td>
 
-                  <div className="flex justify-end">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
                     <button
-                      type="button"
-                      onClick={() => onView(it.id)}
-                      className="h-9 w-9 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-white transition flex items-center justify-center"
                       title="Ver"
+                      onClick={() => onView(it.id)}
+                      className="
+                        bg-white text-[#691b31]
+                        hover:bg-[#9d7e43] hover:text-white
+                        active:bg-[#691b31] active:text-white
+                        p-2 rounded-lg leading-none transition-colors
+                      "
                     >
-                      <Eye className="h-4 w-4 text-[#B08B57]" />
+                      <IconView />
                     </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {meta && (
-            <div className="mt-4 pb-4 flex justify-center">
-              <Pagination
-                meta={meta}
-                links={links}
-                loading={loading}
-                error={error}
-                onPageClick={onPageClick}
-                onPageNumber={onPageNumber}
-                baseUrl={baseUrl}
-              />
-            </div>
-          )}
-        </div>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
       </div>
+
+      {meta && (
+        <div className="mt-4 pb-4 flex justify-center">
+          <Pagination
+            meta={meta}
+            links={links}
+            loading={loading}
+            error={error}
+            onPageClick={onPageClick}
+            onPageNumber={onPageNumber}
+            baseUrl={baseUrl}
+          />
+        </div>
+      )}
     </div>
   );
 }
