@@ -2,9 +2,8 @@ import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import type { IndexModalProps } from "../Indexs.types";
-import { Indexschema } from "../schemas/Indexsschema"; 
+import { Indexschema } from "../schemas/Indexsschema";
 
-// Límite máximo de caracteres para el índice
 const MAX_LENGTH = 40;
 
 export function IndexModal({
@@ -19,98 +18,110 @@ export function IndexModal({
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [charCount, setCharCount] = useState(initialName.length);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setServerError(error || null);
+  }, [error]);
 
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
       setFormErrors([]);
+      setServerError(null);
       setCharCount(initialName.length);
     }
   }, [isOpen, initialName]);
-  
+
   const validateForm = (currentName: string) => {
     const result = Indexschema.safeParse({ name: currentName });
-    const errors: string[] = [];
-
-    if (!result.success) {
-      errors.push(...result.error.issues.map((err) => err.message));
-    }
-
     
-
-    if (errors.length > 0) {
+    if (!result.success) {
+      const errors = result.error.issues.map((err) => err.message);
       setFormErrors(errors);
       return false;
-    } else {
-      setFormErrors([]);
-      return true; 
     }
+    
+    setFormErrors([]);
+    return true;
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const isValid = validateForm(name);
-    if (isValid) {
-      onSave(name); 
+    if (validateForm(name)) {
+      onSave(name);
     }
   };
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     
-    // Limitar la longitud máxima a 40 caracteres
     if (newName.length <= MAX_LENGTH) {
       setName(newName);
       setCharCount(newName.length);
       validateForm(newName);
+      setServerError(null);
     }
   };
 
-  if (!isOpen) {
-    return null;
-  }
+  const handleClose = () => {
+    setName("");
+    setFormErrors([]);
+    setServerError(null);
+    setCharCount(0);
+    onClose();
+  };
 
-  const hasClientErrors = formErrors.length > 0;
-  const hasServerError = !!error;
+  if (!isOpen) return null;
+
+  const hasErrors = formErrors.length > 0 || !!serverError;
   const isNearLimit = charCount >= MAX_LENGTH - 10 && charCount <= MAX_LENGTH;
   const isAtLimit = charCount >= MAX_LENGTH;
   const endsWithZero = name.trim().endsWith('0');
+
+  const getInputBorderColor = () => {
+    if (hasErrors || endsWithZero) return 'border-red-500 focus:ring-red-400';
+    if (isAtLimit) return 'border-red-300 focus:ring-red-400';
+    if (isNearLimit) return 'border-amber-300 focus:ring-amber-400';
+    return 'border-gray-300 focus:ring-[#DDC9A3]';
+  };
+
+  const getProgressBarColor = () => {
+    if (isAtLimit) return 'bg-red-600';
+    if (isNearLimit) return 'bg-amber-500';
+    return 'bg-[#DDC9A3]';
+  };
+
+  const getCharCountColor = () => {
+    if (isAtLimit) return 'text-red-600';
+    if (isNearLimit) return 'text-amber-600';
+    return 'text-gray-500';
+  };
 
   return (
     <>
       <div
         className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}
-      ></div>
-
+        onClick={handleClose}
+      />
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button onClick={onClose} className="text-white hover:text-gray-300">
+            <button onClick={handleClose} className="text-white hover:text-gray-300">
               <X size={24} />
             </button>
           </div>
-
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
               <div className="flex justify-between items-center mb-2">
                 <label htmlFor="IndexName" className="block text-sm font-medium text-gray-700">
                   Nombre del Índice:
                 </label>
-                <span 
-                  className={`text-xs font-medium ${
-                    isAtLimit 
-                      ? 'text-red-600' 
-                      : isNearLimit 
-                        ? 'text-amber-600' 
-                        : 'text-gray-500'
-                  }`}
-                >
+                <span className={`text-xs font-medium ${getCharCountColor()}`}>
                   {charCount}/{MAX_LENGTH} caracteres
                 </span>
               </div>
-              
               <input
                 type="text"
                 id="IndexName"
@@ -118,50 +129,23 @@ export function IndexModal({
                 onChange={handleNameChange}
                 placeholder="Ejemplo: 1.1.1"
                 maxLength={MAX_LENGTH}
-                className={`
-                  border rounded-lg p-2 w-full focus:outline-none focus:ring-2
-                  ${(hasClientErrors || hasServerError || endsWithZero)
-                    ? 'border-red-500 focus:ring-red-400' 
-                    : isAtLimit
-                      ? 'border-red-300 focus:ring-red-400'
-                      : isNearLimit
-                        ? 'border-amber-300 focus:ring-amber-400'
-                        : 'border-gray-300 focus:ring-[#DDC9A3]'
-                  }
-                `}
+                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor()}`}
                 disabled={isSubmitting}
                 autoFocus
               />
-
-              {/* Barra de progreso de caracteres */}
               <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-300 ${
-                    isAtLimit 
-                      ? 'bg-red-600' 
-                      : isNearLimit 
-                        ? 'bg-amber-500' 
-                        : 'bg-[#DDC9A3]'
-                  }`}
+                <div
+                  className={`h-full transition-all duration-300 ${getProgressBarColor()}`}
                   style={{ width: `${(charCount / MAX_LENGTH) * 100}%` }}
                 />
               </div>
-
-              <div id="form-errors-client">
-                <FormErrors errors={formErrors} />
-              </div>
-
-              {error && (
-                 <div id="form-errors-server">
-                   <FormErrors errors={[error]} />
-                 </div>
-              )}
+              <FormErrors errors={formErrors} />
+              {serverError && <FormErrors errors={[serverError]} />}
             </div>
-
             <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
                 disabled={isSubmitting}
                 className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95 disabled:opacity-50"
               >
@@ -169,7 +153,7 @@ export function IndexModal({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || hasClientErrors || endsWithZero}
+                disabled={isSubmitting || formErrors.length > 0 || endsWithZero}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
