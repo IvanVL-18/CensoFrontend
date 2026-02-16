@@ -1,14 +1,15 @@
-import { useInstitutions } from "./hooks/useInstitutions";
-import { InstitutionsToolbar } from "./components/InstitutionsToolbar";
-import { InstitutionsTable } from "./components/InstitutionsTable";
+import { useInstitutions } from "../Institutions/hooks/useInstitutions";
+import { InstitutionsToolbar } from "../Institutions/components/InstitutionsToolbar"
+;
+import { InstitutionsTable } from "../Institutions/components/InstitutionsTable";
 import Pagination from "../../components/Pagination";
-import { InstitutionModal } from "./components/InstitutionsModal";
-import { ConfirmModal } from "./components/ConfirmModal";
-import { ViewInstitutionModal } from "./components/ViewInstitutionsModal";
-import { MapModal } from "./components/MapModal";
+import { InstitutionModal } from "../Institutions/components/InstitutionsModal";
+import { ConfirmModal } from "../Institutions/components/ConfirmModal";
+import { ViewInstitutionModal } from "../Institutions/components/ViewInstitutionsModal";
+import { MapModal } from "../Institutions/components/MapModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
-import { EditLocationModal } from "./EditLocationModal";
+import  { EditLocationModal } from "../Institutions/EditLocationModal";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();

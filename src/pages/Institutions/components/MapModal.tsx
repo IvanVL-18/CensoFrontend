@@ -20,7 +20,7 @@ type Props = {
   pendingCoords?: { lat: number; lon: number } | null;
 };
 
-export default function MapModal({
+export function MapModal({
   isOpen,
   onClose,
   institution,

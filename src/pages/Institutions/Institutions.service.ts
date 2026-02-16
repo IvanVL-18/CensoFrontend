@@ -4,7 +4,7 @@ import type {
   PaginatedInstitutionsResponse,
   CreateInstitutionDTO,
   UpdateInstitutionDTO,
-} from "./institutions.types";
+} from "../Institutions/institutions.types";
 
 export type InstitutionFilter = "all" | "active" | "inactive";
 //commit ivan v asfasf

@@ -4,9 +4,10 @@ import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-import { getCoordinatesFromPostalCode } from "./Map.service";
-import type { Coordinates } from "./Map.interfaces";
-import type { Institution } from "./Institutions.interfaces";
+import  { getCoordinatesFromPostalCode } from "../Institutions/Map.service";
+import type { Coordinates } from "../Institutions/Map.types";
+import type { Institution } from "../Institutions/institutions.types";
+
 
 // iconos leaflet
 import icon from "leaflet/dist/images/marker-icon.png";

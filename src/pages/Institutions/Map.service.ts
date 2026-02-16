@@ -1,5 +1,5 @@
 import api from "../../lib/Axios";
-import type { Coordinates, MapDataResponse } from "./Map.types";
+import type { Coordinates, MapDataResponse } from "../Institutions/Map.types";
 
 
 export const getInstitutionMapData = async (
