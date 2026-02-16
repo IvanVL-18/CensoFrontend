@@ -184,8 +184,7 @@ function InstitutionsPageContent() {
       <MapModal
         isOpen={isMapModalOpen}
         onClose={handleMapModalClose}
-        institutionId={mapInstitution?.id || null}
-        institutionName={mapInstitution?.name || null}
+        institution={mapInstitution}
       />
 
       <EditLocationModal
