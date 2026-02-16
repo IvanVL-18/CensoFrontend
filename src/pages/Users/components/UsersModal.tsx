@@ -1,375 +1,266 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { X, Eye, EyeOff } from "lucide-react";
 import { FormErrors } from "./FormErrors";
-import type {
-  UserModalProps,
-  CreateUserDTO,
-  UpdateUserDTO,
-} from "../Users.types";
-import { Userschema } from "../schemas/Users.schema";
-
-type FormState = {
-  name: string;
-  lastname: string;
-  phone: string;
-  movil: string;
-  address: string;
-  email: string;
-  password: string;
-  password_confirmation: string;
-  occupation_id: string;
-  role_id: string;
-};
-
-const emptyForm: FormState = {
-  name: "",
-  lastname: "",
-  phone: "",
-  movil: "",
-  address: "",
-  email: "",
-  password: "",
-  password_confirmation: "",
-  occupation_id: "",
-  role_id: "",
-};
-
-const ROLE_OPTIONS = [
-  { value: "1", label: "Encuestado" },
-  { value: "2", label: "Manager" },
-  { value: "3", label: "Administración" },
-  { value: "4", label: "Super Administrador" },
-];
+import type { UserModalProps } from "../Users.types";
+import {
+  CreateUserSchema,
+  UpdateUserSchema,
+} from "../schemas/Users.schema";
 
 export function UserModal({
   isOpen,
   isSubmitting,
   error,
   title,
-  mode,
-  initialValues,
+  initialEmail = "",
+  initialPassword = "",
+  initialRoleId = "",
+  roles = [],
   onClose,
   onSave,
 }: UserModalProps) {
-  const [form, setForm] = useState<FormState>(emptyForm);
-  const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [email, setEmail] = useState(initialEmail);
+  const [password, setPassword] = useState(initialPassword);
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [roleId, setRoleId] = useState(initialRoleId);
+
   const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConf, setShowPasswordConf] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] =
+    useState(false);
+
+  const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [touched, setTouched] = useState(false);
+
+  const isEditing = Boolean(initialEmail);
+
+  const schema = useMemo(
+    () => (isEditing ? UpdateUserSchema : CreateUserSchema),
+    [isEditing]
+  );
 
   useEffect(() => {
     if (!isOpen) return;
 
-    setForm({
-      name: initialValues?.name ?? "",
-      lastname: (initialValues as any)?.lastname ?? "",
-      phone: (initialValues as any)?.phone ?? "",
-      movil: (initialValues as any)?.movil ?? "",
-      address: (initialValues as any)?.address ?? "",
-      email: (initialValues as any)?.email ?? "",
-      occupation_id: (initialValues as any)?.occupation_id ?? "",
-      role_id: (initialValues as any)?.role_id ?? "",
-      password: "",
-      password_confirmation: "",
-    });
-
-    setFormErrors([]);
+    setEmail(initialEmail ?? "");
+    setPassword(initialPassword ?? "");
+    setPasswordConfirmation("");
+    setRoleId(""); 
     setShowPassword(false);
-    setShowPasswordConf(false);
-  }, [isOpen, initialValues]);
+    setShowPasswordConfirmation(false);
+    setFormErrors([]);
+    setTouched(false);
+  }, [isOpen, initialEmail, initialPassword]);
 
-  const validateForm = (values: FormState) => {
-    const payload =
-      mode === "edit" && !values.password
-        ? { ...values, password: undefined, password_confirmation: undefined }
-        : values;
+  useEffect(() => {
+    if (!touched) return;
 
-    const z = Userschema.safeParse(payload);
+    const result = schema.safeParse(buildPayload());
 
-    const errors: string[] = [];
-    if (!z.success) errors.push(...z.error.issues.map((i) => i.message));
-
-    if (mode === "create") {
-      if (!values.password) errors.push("La contraseña es obligatoria.");
-      if (!values.password_confirmation)
-        errors.push("La confirmación de contraseña es obligatoria.");
-
-      if (
-        values.password &&
-        values.password_confirmation &&
-        values.password !== values.password_confirmation
-      ) {
-        errors.push("Las contraseñas no coinciden.");
-      }
+    if (!result.success) {
+      setFormErrors(result.error.issues.map((i) => i.message));
     } else {
-      if (values.password) {
-        if (!values.password_confirmation) {
-          errors.push("Confirma la contraseña para poder actualizarla.");
-        } else if (values.password !== values.password_confirmation) {
-          errors.push("Las contraseñas no coinciden.");
-        }
-      }
+      setFormErrors([]);
     }
+  }, [email, password, passwordConfirmation, roleId]);
 
-    setFormErrors(errors);
-    return errors.length === 0;
-  };
 
-  const handleChange =
-    (key: keyof FormState) => (e: ChangeEvent<HTMLInputElement>) => {
-      const next = { ...form, [key]: e.target.value };
-      setForm(next);
-      validateForm(next);
-    };
-
-  const handleRoleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const next = { ...form, role_id: e.target.value };
-    setForm(next);
-    validateForm(next);
-  };
+  const buildPayload = () => ({
+    email: String(email ?? ""),
+    password: String(password ?? ""),
+    password_confirmation: String(passwordConfirmation ?? ""),
+    role_id: String(roleId ?? ""),
+  });
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!validateForm(form)) return;
+    setTouched(true);
 
-    if (mode === "create") {
-      const payload: CreateUserDTO = {
-        name: form.name,
-        lastname: form.lastname,
-        phone: form.phone,
-        movil: form.movil,
-        address: form.address,
-        email: form.email,
-        password: form.password,
-        password_confirmation: form.password_confirmation,
-        occupation_id: form.occupation_id,
-        role_id: form.role_id,
-      };
-      onSave(payload);
+    const result = schema.safeParse(buildPayload());
+
+    if (!result.success) {
+      setFormErrors(result.error.issues.map((i) => i.message));
       return;
     }
 
-    const payload: UpdateUserDTO = {
-      name: form.name,
-      lastname: form.lastname,
-      phone: form.phone,
-      movil: form.movil,
-      address: form.address,
-      email: form.email,
-      occupation_id: form.occupation_id,
-      role_id: form.role_id,
-      ...(form.password
-        ? {
-            password: form.password,
-            password_confirmation: form.password_confirmation,
-          }
-        : {}),
-    };
+    onSave(buildPayload());
+  };
 
-    onSave(payload);
+  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTouched(true);
+    setEmail(e.target.value);
+  };
+
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTouched(true);
+    setPassword(e.target.value);
+  };
+
+  const handlePasswordConfirmationChange = (
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    setTouched(true);
+    setPasswordConfirmation(e.target.value);
+  };
+
+  const handleRoleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setTouched(true);
+    setRoleId(e.target.value);
   };
 
   if (!isOpen) return null;
 
+  const inputBase =
+    "border rounded-lg p-2 w-full focus:outline-none focus:ring-2 border-gray-300 focus:ring-[#DDC9A3]";
+
   return (
     <>
-      <div className="fixed inset-0 bg-black/60 z-40" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+        onClick={onClose}
+      />
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col">
-          <div className="flex justify-between items-center p-4 bg-red-900 rounded-t-lg">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden">
+
+          <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button
-              onClick={onClose}
-              className="text-white hover:text-gray-300"
-            >
-              <X size={24} />
+            <button onClick={onClose} className="text-white">
+              <X size={22} />
             </button>
           </div>
-          <div className="p-6 overflow-y-auto flex-1">
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Nombre:"
-                  value={form.name}
-                  onChange={handleChange("name")}
+
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Correo
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  placeholder="ej. usuario@dominio.com"
+                  className={inputBase}
+                  disabled={isSubmitting}
                 />
-                <Input
-                  label="Apellido:"
-                  value={form.lastname}
-                  onChange={handleChange("lastname")}
-                />
+              </div>
 
-                <Input
-                  label="Teléfono (10):"
-                  value={form.phone}
-                  onChange={handleChange("phone")}
-                />
-                <Input
-                  label="Móvil (10):"
-                  value={form.movil}
-                  onChange={handleChange("movil")}
-                />
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Rol
+                </label>
+                <select
+                  value={roleId}
+                  onChange={handleRoleChange}
+                  className={inputBase}
+                  disabled={isSubmitting || roles.length === 0}
+                >
+                  <option value="">Selecciona un rol...</option>
+                  {roles.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                <div className="md:col-span-2">
-                  <Input
-                    label="Dirección:"
-                    value={form.address}
-                    onChange={handleChange("address")}
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Contraseña
+                </label>
 
-                <div className="md:col-span-2">
-                  <Input
-                    label="Correo:"
-                    type="email"
-                    value={form.email}
-                    onChange={handleChange("email")}
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <PasswordInput
-                    label={`Contraseña ${mode === "create" ? "(obligatoria)" : "(opcional)"}`}
-                    value={form.password}
-                    show={showPassword}
-                    onToggle={() => setShowPassword((s) => !s)}
-                    onChange={handleChange("password")}
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <PasswordInput
-                    label={`Confirmar contraseña ${
-                      mode === "create"
-                        ? "(obligatoria)"
-                        : "(solo si cambias contraseña)"
-                    }`}
-                    value={form.password_confirmation}
-                    show={showPasswordConf}
-                    onToggle={() => setShowPasswordConf((s) => !s)}
-                    onChange={handleChange("password_confirmation")}
-                  />
-                </div>
-
-                <Input
-                  label="Ocupación (ID):"
-                  value={form.occupation_id}
-                  onChange={handleChange("occupation_id")}
-                />
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Rol:
-                  </label>
-                  <select
-                    value={form.role_id}
-                    onChange={handleRoleChange}
-                    className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={handlePasswordChange}
+                    placeholder="Ingresar contraseña..."
+                    className={`${inputBase} pr-10`}
                     disabled={isSubmitting}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-2 flex items-center"
                   >
-                    <option value="">Seleccionar rol</option>
-                    {ROLE_OPTIONS.map((r) => (
-                      <option key={r.value} value={r.value}>
-                        {r.label}
-                      </option>
-                    ))}
-                  </select>
+                    {showPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
                 </div>
               </div>
 
-              <div className="mt-4">
-                <FormErrors errors={formErrors} />
-                {error && <FormErrors errors={[error]} />}
-              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Confirmar contraseña
+                </label>
 
-              <div className="flex justify-end items-center gap-4 mt-6">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  disabled={isSubmitting}
-                  className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95 disabled:opacity-50"
-                >
-                  Cancelar
-                </button>
+                <div className="relative">
+                  <input
+                    type={showPasswordConfirmation ? "text" : "password"}
+                    value={passwordConfirmation}
+                    onChange={handlePasswordConfirmationChange}
+                    placeholder="Confirmar contraseña..."
+                    className={`${inputBase} pr-10`}
+                    disabled={isSubmitting}
+                  />
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
-                >
-                  {isSubmitting ? "Guardando..." : "Guardar"}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPasswordConfirmation(!showPasswordConfirmation)
+                    }
+                    className="absolute inset-y-0 right-2 flex items-center"
+                  >
+                    {showPasswordConfirmation ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
               </div>
-            </form>
-          </div>
+            </div>
+
+            {(formErrors.length > 0 || error) && (
+              <div className="px-6 pb-4">
+                <FormErrors
+                  errors={error ? [error] : formErrors}
+                />
+              </div>
+            )}
+
+            <div className="flex justify-end gap-4 p-4 bg-gray-50">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg"
+              >
+                {isSubmitting ? "Guardando..." : "Guardar"}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </>
-  );
-}
-
-function Input({
-  label,
-  type = "text",
-  value,
-  onChange,
-}: {
-  label: string;
-  type?: string;
-  value: string;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
-      />
-    </div>
-  );
-}
-
-function PasswordInput({
-  label,
-  value,
-  show,
-  onToggle,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  show: boolean;
-  onToggle: () => void;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-      </label>
-
-      <div className="relative">
-        <input
-          type={show ? "text" : "password"}
-          value={value}
-          onChange={onChange}
-          className="border border-gray-300 rounded-lg p-2 w-full pr-10 focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
-        />
-
-        <button
-          type="button"
-          onClick={onToggle}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900"
-          aria-label={show ? "Ocultar contraseña" : "Mostrar contraseña"}
-        >
-          {show ? <EyeOff size={18} /> : <Eye size={18} />}
-        </button>
-      </div>
-    </div>
   );
 }

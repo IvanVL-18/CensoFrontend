@@ -1,16 +1,10 @@
 export interface User {
   id: string;
-  name: string;
-  lastname: string | null;
-  phone: string | null;
-  movil: string | null;
-  address: string | null;
   email: string;
-  occupation_id: string | null;
-  role_id: string | null;
   created_at: string;
   updated_at: string;
-  deleted_at: string | null;
+  deleted_at: string;
+  role_id?: string;
 }
 
 export interface MetaLink {
@@ -71,38 +65,6 @@ export interface FormErrorsProps {
   errors: string[];
 }
 
-/** DTOs alineados a tu migración */
-export interface CreateUserDTO {
-  name: string;
-  email: string;
-  password: string;
-  password_confirmation: string;
-
-  lastname?: string;
-  phone?: string;
-  movil?: string;
-  address?: string;
-  occupation_id?: string;
-  role_id?: string;
-}
-
-export type UpdateUserDTO = Partial<CreateUserDTO>;
-
-
-export interface UserModalProps {
-  isOpen: boolean;
-  isSubmitting: boolean;
-  error: string | null;
-  title: string;
-  mode: "create" | "edit";
-
-  // 👇 CAMBIO CLAVE:
-  initialValues?: Partial<User> | null;
-
-  onClose: () => void;
-  onSave: (data: CreateUserDTO | UpdateUserDTO) => void;
-}
-
 export interface UsersTableProps {
   Users: User[];
   meta: Meta | null;
@@ -121,3 +83,45 @@ export interface ViewUserModalProps {
   onClose: () => void;
   User: User | null;
 }
+
+export type RoleOption = {
+  label: string;
+  value: string; 
+};
+
+export type UserModalPayload = {
+  email: string;
+  password: string;
+  password_confirmation: string;
+  role_id: string; 
+};
+
+export interface CreateUserDTO {
+  email: string;
+  password: string;
+  password_confirmation: string;
+  role_id: string;
+}
+
+export type UpdateUserDTO = {
+  email: string;
+  role_id: string; 
+  password?: string;
+  password_confirmation?: string;
+};
+
+export type UserModalProps = {
+  isOpen: boolean;
+  isSubmitting: boolean;
+  error?: string | null;
+  title: string;
+
+  initialEmail?: string;
+  initialPassword?: string;
+  initialRoleId?: string;
+
+  roles?: RoleOption[];
+
+  onClose: () => void;
+  onSave: (payload: UserModalPayload) => void;
+};
