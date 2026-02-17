@@ -1,23 +1,35 @@
-import { useEffect, useMemo, useState } from "react";
-import { X, Crosshair, Check } from "lucide-react";
+import { useEffect, useMemo, useState} from "react";
+import { X, LoaderCircle } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
 import type { Institution } from "../institutions.types";
+import type { Coordinates } from "../Map.types";
 import { getInstitutionMapData, getCoordinatesFromPostalCode } from "../Map.service";
+
+
+import icon from "leaflet/dist/images/marker-icon.png";
+import iconShadow from "leaflet/dist/images/marker-shadow.png";
+
+const DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-
   institution: Institution | null;
 
   
   editable?: boolean;
-
- 
-  onPickLocation?: (coords: { lat: number; lon: number }) => void;
-
-  
   pendingCoords?: { lat: number; lon: number } | null;
+  onPickLocation?: (coords: { lat: number; lon: number }) => void;
 };
 
 export function MapModal({
@@ -25,216 +37,171 @@ export function MapModal({
   onClose,
   institution,
   editable = false,
+  pendingCoords = null,
   onPickLocation,
-  pendingCoords,
 }: Props) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [lat, setLat] = useState<number | null>(null);
-  const [lon, setLon] = useState<number | null>(null);
-
-  // Para mostrar una dirección aproximada (opcional)
+  const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [street, setStreet] = useState<string | null>(null);
   const [suburb, setSuburb] = useState<string | null>(null);
 
-  // Base coords: si hay pendingCoords, son prioridad
-  const effectiveCoords = useMemo(() => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  
+  const seedCoords = useMemo(() => {
     if (pendingCoords) return pendingCoords;
-    if (lat != null && lon != null) return { lat, lon };
+
+    const lat = (institution as any)?.lat;
+    const lon = (institution as any)?.lon;
+
+    if (lat != null && lon != null && !Number.isNaN(Number(lat)) && !Number.isNaN(Number(lon))) {
+      return { lat: Number(lat), lon: Number(lon) };
+    }
+
     return null;
-  }, [pendingCoords, lat, lon]);
+  }, [pendingCoords, institution]);
 
   useEffect(() => {
     if (!isOpen || !institution) return;
 
     setError(null);
-    setLoading(true);
 
-    // 1) Intentar traer data desde backend (institutions/{id}/get-map)
-    getInstitutionMapData(institution.id)
-      .then((data) => {
-        // data puede venir como {lat, lon} o null según tu service
-        if (data) {
-          setLat(data.lat ?? null);
-          setLon(data.lon ?? null);
-          setStreet(data.street ?? null);
-          setSuburb(data.suburb ?? null);
-        } else {
-          setLat(null);
-          setLon(null);
-          setStreet(null);
-          setSuburb(null);
-        }
-      })
-      .catch((err: any) => {
-        setError(err?.message ?? "Error al cargar mapa.");
-      })
-      .finally(() => setLoading(false));
-  }, [isOpen, institution]);
 
-  const handleAutoLocate = async () => {
-    if (!institution) return;
-
-    setError(null);
-    setLoading(true);
-
-    try {
-      const coords = await getCoordinatesFromPostalCode(
-        institution.geocode,
-        institution.municipality,
-        null,
-        "Hidalgo",
-      );
-
-      if (!coords) {
-        setError("No se pudo obtener una ubicación con ese código postal.");
-        return;
-      }
-
-      setLat(coords.lat);
-      setLon(coords.lon);
-
-      if (editable && onPickLocation) {
-        onPickLocation(coords); 
-      }
-    } catch (e: any) {
-      setError(e?.message ?? "Error al geocodificar.");
-    } finally {
-      setLoading(false);
+    if (seedCoords) {
+      setCoordinates({ lat: seedCoords.lat, lon: seedCoords.lon });
+      return;
     }
-  };
 
-  const handlePick = (newLat: number, newLon: number) => {
-    if (!editable || !onPickLocation) return;
-    onPickLocation({ lat: newLat, lon: newLon });
-  };
+    const run = async () => {
+      setLoading(true);
+      try {
+       
+        const safeId = encodeURIComponent(String(institution.id));
+        const data: any = await getInstitutionMapData(safeId);
+
+        
+        const dbLat = data?.lat;
+        const dbLon = data?.lon;
+
+        setStreet(data?.street ?? null);
+        setSuburb(data?.suburb ?? null);
+
+        if (dbLat != null && dbLon != null) {
+          setCoordinates({ lat: Number(dbLat), lon: Number(dbLon) });
+          return;
+        }
+
+        
+        const geo = await getCoordinatesFromPostalCode(
+          institution.geocode,
+          institution.municipality ?? null,
+          null,
+          "Hidalgo",
+        );
+
+        if (geo) {
+          setCoordinates(geo);
+          return;
+        }
+
+        setCoordinates(null);
+        setError("No se encontró la ubicación exacta para esta institución.");
+      } catch (e: any) {
+        setCoordinates(null);
+        setError(e?.message ?? "Error al cargar la ubicación.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    run();
+  }, [isOpen, institution, seedCoords]);
 
   if (!isOpen) return null;
 
   return (
-    <>
-      <div
-        className="fixed inset-0 bg-[#000000ab] z-40"
-        onClick={onClose}
-      />
+    <div className="fixed inset-0 bg-[#000000ab] z-[60] flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl h-3/4 flex flex-col overflow-hidden">
+      
+        <div className="flex justify-between items-center p-4 bg-red-900 text-white">
+          <h2 className="text-xl font-bold truncate">
+            Mapa: {institution?.name}
+          </h2>
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-hidden">
-          <div className="flex justify-between items-center p-4 bg-red-900">
-            <div className="text-white">
-              <h2 className="text-xl font-bold">
-                Mapa de Institución
-              </h2>
-              {institution?.name && (
-                <p className="text-sm opacity-90">{institution.name}</p>
-              )}
+          <button onClick={onClose} className="hover:bg-red-800 p-1 rounded" aria-label="Cerrar">
+            <X size={24} />
+          </button>
+        </div>
+
+       
+        <div className="flex-grow relative bg-gray-100">
+          {loading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-20">
+              <LoaderCircle className="animate-spin text-red-900 mb-2" size={48} />
+              <p className="text-gray-700 font-medium">Cargando mapa...</p>
             </div>
+          )}
 
-            <button
-              onClick={onClose}
-              className="text-white hover:text-gray-200"
-              aria-label="Cerrar"
+          {error && !loading && (
+            <div className="h-full flex items-center justify-center text-red-700 font-semibold p-8 text-center">
+              <p>{error}</p>
+            </div>
+          )}
+
+          {coordinates && !loading && (
+            <MapContainer
+              center={[coordinates.lat, coordinates.lon]}
+              zoom={16}
+              scrollWheelZoom
+              style={{ height: "100%", width: "100%" }}
             >
-              <X size={24} />
-            </button>
-          </div>
+              <TileLayer
+                attribution="&copy; OpenStreetMap"
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
 
-          <div className="p-4">
-            {error && (
-              <div className="mb-3 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
-                {error}
-              </div>
-            )}
+              
+              <Circle
+                center={[coordinates.lat, coordinates.lon]}
+                radius={250}
+                pathOptions={{
+                  color: "#FFD700",
+                  fillColor: "#FFF3B0",
+                  fillOpacity: 0.35,
+                }}
+              />
 
-            <div className="flex flex-wrap gap-2 items-center mb-3">
-              <button
-                type="button"
-                onClick={handleAutoLocate}
-                disabled={loading || !institution}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-[#691b31] text-[#691b31] hover:bg-gray-50 disabled:opacity-50"
-              >
-                <Crosshair size={16} />
-                Auto-ubicar por CP
-              </button>
-
-              {editable && effectiveCoords && (
-                <div className="inline-flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
-                  <Check size={16} />
-                  Seleccionado: {effectiveCoords.lat.toFixed(6)}, {effectiveCoords.lon.toFixed(6)}
-                </div>
-              )}
-            </div>
-
-            {/* INFO */}
-            <div className="text-sm text-gray-700 mb-3">
-              <div>
-                <b>Municipio:</b> {institution?.municipality ?? "—"}
-              </div>
-              <div>
-                <b>Geocódigo:</b> {institution?.geocode ?? "—"}
-              </div>
-              {(street || suburb) && (
-                <div className="mt-1">
-                  <b>Referencia:</b>{" "}
-                  {[street, suburb].filter(Boolean).join(", ")}
-                </div>
-              )}
-            </div>
-
-           
-            <div className="border rounded-lg overflow-hidden">
-              <div className="bg-gray-100 p-3 text-sm text-gray-700">
-                {loading ? "Cargando..." : "Vista previa de mapa (placeholder)"}
-              </div>
-
-              <div
-                className="h-[380px] bg-white flex items-center justify-center text-gray-500 select-none"
-                onClick={() => {
-                 
-                  if (!effectiveCoords) return;
-                  handlePick(effectiveCoords.lat + 0.0005, effectiveCoords.lon + 0.0005);
+            
+              <Marker
+                position={[coordinates.lat, coordinates.lon]}
+                draggable={false}
+                eventHandlers={{
+                  dragend: (e) => {
+                    if (!editable || !onPickLocation) return;
+                    const m = e.target as L.Marker;
+                    const pos = m.getLatLng();
+                    const next = { lat: pos.lat, lon: pos.lng };
+                    setCoordinates(next);
+                    onPickLocation(next);
+                  },
                 }}
               >
-                {effectiveCoords ? (
-                  <div className="text-center">
-                    <div className="font-semibold text-gray-800">
-                      Coordenadas actuales
+                <Popup>
+                  <div>
+                    <div className="font-bold">{institution?.name}</div>
+                    <div className="text-xs text-gray-600">
+                      {street || suburb ? [street, suburb].filter(Boolean).join(", ") : "Ubicación guardada"}
                     </div>
-                    <div>
-                      {effectiveCoords.lat}, {effectiveCoords.lon}
-                    </div>
-                    {editable && (
-                      <div className="text-xs mt-2 text-gray-500">
-                        (Click aquí para simular seleccionar otra ubicación)
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <div className="font-semibold text-gray-800">
-                      Sin coordenadas aún
-                    </div>
-                    <div className="text-xs mt-2">
-                      Usa “Auto-ubicar por CP” o asigna coordenadas.
+                    <div className="text-xs text-gray-600">
+                      {coordinates.lat.toFixed(6)}, {coordinates.lon.toFixed(6)}
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
+                </Popup>
+              </Marker>
+            </MapContainer>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

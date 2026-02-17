@@ -181,11 +181,15 @@ function InstitutionsPageContent() {
         onClose={handleViewModalClose}
       />
 
-      <MapModal
-        isOpen={isMapModalOpen}
-        onClose={handleMapModalClose}
-        institution={mapInstitution}
-      />
+<MapModal
+  isOpen={isMapModalOpen}
+  onClose={handleMapModalClose}
+  institution={mapInstitution}
+  editable
+  pendingCoords={pendingCoords}
+  onPickLocation={onPickLocation}
+/>
+
 
       <EditLocationModal
         isOpen={isEditMapOpen}
