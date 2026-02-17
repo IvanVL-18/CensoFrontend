@@ -10,8 +10,6 @@ export type UnitFilter = "all" | "active" | "inactive";
 
 type UnitId = string | number;
 
-
-
 export const getUnits = async (
   filter: UnitFilter = "all",
   search: string = "",

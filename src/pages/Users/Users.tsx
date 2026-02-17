@@ -37,20 +37,18 @@ function ToastContainer() {
 function UsersPageContent() {
   const {
     Users,
+    setUsers, 
     loading,
     error,
     meta,
     links,
-    filter,
-    searchTerm,
     refreshUsers,
-    handleFilterChange,
     handleSort,
-    handleSearch,
     handlePageChange,
   } = useUsersData();
 
   const modals = useUsersModals();
+
   const [roles, setRoles] = useState<RoleOption[]>([]);
   const [rolesError, setRolesError] = useState<string | null>(null);
 
@@ -59,7 +57,6 @@ function UsersPageContent() {
 
     getRolesSelector(controller.signal)
       .then((data) => {
-        console.log("roles loaded:", data);
         setRoles(data);
         setRolesError(null);
       })
@@ -71,7 +68,6 @@ function UsersPageContent() {
         ) {
           return;
         }
-
         console.error("roles error:", err);
         setRoles([]);
         setRolesError("No se pudieron cargar los roles.");
@@ -100,6 +96,7 @@ function UsersPageContent() {
     closeForm: modals.closeForm,
     closeConfirm: modals.closeConfirm,
     openBulkError: modals.openBulkError,
+    setUsers,
   });
 
   const modalTitle = modals.editingUser ? "Editar Usuario" : "Agregar Usuario";
@@ -132,11 +129,7 @@ function UsersPageContent() {
       <ToastContainer />
 
       <UsersToolbar
-        filter={filter}
-        searchTerm={searchTerm}
         isSubmitting={isSubmitting}
-        onFilterChange={handleFilterChange}
-        onSearchChange={handleSearch}
         onAddClick={modals.openCreate}
         onBulkUpload={handleBulkUpload}
       />
@@ -159,6 +152,7 @@ function UsersPageContent() {
           <Pagination meta={meta} links={links} onPageClick={handlePageChange} />
         </div>
       </div>
+
       <UserModal
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
@@ -166,11 +160,12 @@ function UsersPageContent() {
         title={modalTitle}
         initialEmail={modalInitialEmail}
         initialPassword=""
-        initialRoleId={modals.editingUser?.role_id ?? ""} // si tu API no lo manda, se queda ""
+        initialRoleId={modals.editingUser?.role_id ?? ""}
         roles={roles}
         onClose={modals.closeForm}
         onSave={(data) => handleSave(data, modals.editingUser)}
       />
+
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
@@ -182,11 +177,13 @@ function UsersPageContent() {
         onClose={modals.closeConfirm}
         onConfirm={() => handleConfirmAction(modals.actionUser, modals.actionType)}
       />
+
       <ViewUserModal
         isOpen={modals.isViewOpen}
         User={modals.viewingUser}
         onClose={modals.closeView}
       />
+
       <BulkErrorModal
         isOpen={modals.isBulkErrorOpen}
         errors={modals.bulkErrors}

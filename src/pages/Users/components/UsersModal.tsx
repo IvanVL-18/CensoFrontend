@@ -1,17 +1,8 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { X, Eye, EyeOff } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import type { UserModalProps } from "../Users.types";
-import {
-  CreateUserSchema,
-  UpdateUserSchema,
-} from "../schemas/Users.schema";
+import { CreateUserSchema, UpdateUserSchema } from "../schemas/Users.schema";
 
 export function UserModal({
   isOpen,

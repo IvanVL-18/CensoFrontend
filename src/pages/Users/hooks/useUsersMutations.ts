@@ -8,18 +8,15 @@ import {
   forceDeleteUser,
   importUsers,
 } from "../Users.service";
-import type {
-  User,
-  CreateUserDTO,
-  UpdateUserDTO,
-  UserModalPayload,
-} from "../Users.types";
+import type { User, CreateUserDTO, UpdateUserDTO, UserModalPayload } from "../Users.types";
 
 interface UseUsersMutationsProps {
   refreshUsers: () => void;
   closeForm: () => void;
   closeConfirm: () => void;
   openBulkError: (errors: any[]) => void;
+
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
 }
 
 export function useUsersMutations({
@@ -27,6 +24,7 @@ export function useUsersMutations({
   closeForm,
   closeConfirm,
   openBulkError,
+  setUsers,
 }: UseUsersMutationsProps) {
   const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,8 +36,6 @@ export function useUsersMutations({
       setMutationError(null);
 
       try {
-        let response;
-
         if (editingUser) {
           const payload: UpdateUserDTO = {
             email: data.email,
@@ -52,7 +48,8 @@ export function useUsersMutations({
               : {}),
           };
 
-          response = await updateUser(editingUser.id, payload);
+          const res = await updateUser(editingUser.id, payload);
+          addToast(res.message, "success");
         } else {
           const payload: CreateUserDTO = {
             email: data.email,
@@ -61,12 +58,12 @@ export function useUsersMutations({
             role_id: data.role_id,
           };
 
-          response = await createUser(payload);
+          const res = await createUser(payload);
+          addToast(res.message, "success");
         }
 
-        addToast(response.message, "success");
         closeForm();
-        refreshUsers();
+        refreshUsers(); 
       } catch (err: any) {
         const msg = err.response?.data?.message || err.message || "Error al guardar";
         setMutationError(msg);
@@ -79,29 +76,54 @@ export function useUsersMutations({
   );
 
   const handleConfirmAction = useCallback(
-    async (User: User | null, type: "ban" | "restore" | "delete" | null) => {
-      if (!User || !type) return;
+    async (userItem: User | null, type: "ban" | "restore" | "delete" | null) => {
+      if (!userItem || !type) return;
 
       setIsSubmitting(true);
+      setMutationError(null);
+
       try {
-        let response: { message: string } | undefined;
+        if (type === "ban") {
+          const res = await banUser(userItem.id);
+          const now = new Date().toISOString();
+          setUsers((prev) =>
+            prev.map((u) => (u.id === userItem.id ? { ...u, deleted_at: now } : u)),
+          );
 
-        if (type === "ban") response = await banUser(User.id);
-        if (type === "restore") response = await restoreUser(User.id);
-        if (type === "delete") response = await forceDeleteUser(User.id);
-
-        if (response) {
-          addToast(response.message, type === "delete" ? "warning" : "success");
+          addToast(res.message, "success");
           closeConfirm();
-          refreshUsers();
+          return;
+        }
+
+        if (type === "restore") {
+          const res = await restoreUser(userItem.id);
+
+          setUsers((prev) =>
+            prev.map((u) => (u.id === userItem.id ? { ...u, deleted_at: null } : u)),
+          );
+
+          addToast(res.message, "success");
+          closeConfirm();
+          return;
+        }
+
+        if (type === "delete") {
+          const res = await forceDeleteUser(userItem.id);
+          setUsers((prev) => prev.filter((u) => u.id !== userItem.id));
+          addToast(res.message, "warning");
+          closeConfirm();
+          return;
         }
       } catch (err: any) {
-        addToast(err.message || "Error al procesar la acción", "danger");
+        const msg =
+          err.response?.data?.message || err.message || "Error al procesar la acción";
+        setMutationError(msg);
+        addToast(msg, "danger");
       } finally {
         setIsSubmitting(false);
       }
     },
-    [addToast, closeConfirm, refreshUsers],
+    [addToast, closeConfirm, setUsers],
   );
 
   const handleBulkUpload = useCallback(
@@ -111,8 +133,8 @@ export function useUsersMutations({
       formData.append("file", file);
 
       try {
-        const response = await importUsers(formData);
-        addToast(response.message || "Importación exitosa", "success");
+        const res = await importUsers(formData);
+        addToast(res.message || "Importación exitosa", "success");
         refreshUsers();
       } catch (err: any) {
         if (err.status === 422 && err.data?.errors) {

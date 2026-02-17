@@ -1,12 +1,4 @@
-import {
-  ArrowUpDown,
-  Eye,
-  Edit,
-  Trash2,
-  CircleArrowUp,
-  Ban,
-  type LucideProps,
-} from "lucide-react";
+import { ArrowUpDown, Eye, Edit, Trash2, CircleArrowUp, Ban, type LucideProps } from "lucide-react";
 import type { UsersTableProps } from "../Users.types";
 
 const defaultProps = {

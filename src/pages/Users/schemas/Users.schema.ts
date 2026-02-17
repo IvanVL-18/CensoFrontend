@@ -19,7 +19,7 @@ export const CreateUserSchema = z
     email: emailRule,
     password: passwordRule,
     password_confirmation: z.string().min(1, "Confirma la contraseña"),
-    role_id: z.string().min(1, "Selecciona un rol"), // encriptado
+    role_id: z.string().min(1, "Selecciona un rol"), 
   })
   .refine((data) => data.password === data.password_confirmation, {
     message: "La confirmación de la contraseña no coincide.",

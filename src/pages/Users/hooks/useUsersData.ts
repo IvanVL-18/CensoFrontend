@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, type ChangeEvent } from "react";
-import { getUsers, type UserFilter } from "../Users.service";
+import { useState, useEffect, useCallback } from "react";
+import { getUsers } from "../Users.service";
 import type { User, PaginatedUsersResponse, Meta } from "../Users.types";
 
 export function useUsersData() {
@@ -8,38 +8,17 @@ export function useUsersData() {
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<UserFilter>("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   const [page, setPage] = useState(1);
-
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" }>({
-    key: "id",
-    direction: "asc",
-  });
-
   const [reloadToken, setReloadToken] = useState(0);
-  const refreshUsers = useCallback(() => setReloadToken((t) => t + 1), []);
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-      setPage(1);
-    }, 500);
 
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+  const refreshUsers = useCallback(() => setReloadToken((t) => t + 1), []);
+
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
 
-    getUsers(
-      filter,
-      debouncedSearch,
-      page,
-      sortConfig.key,
-      sortConfig.direction,
-      controller.signal,
-    )
+    getUsers(page, controller.signal)
       .then((data) => {
         setUsers(data.data);
         setLinks(data.links);
@@ -62,15 +41,7 @@ export function useUsersData() {
       });
 
     return () => controller.abort();
-  }, [filter, debouncedSearch, page, sortConfig, reloadToken]);
-  const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setFilter(e.target.value as UserFilter);
-    setPage(1);
-  }, []);
-
-  const handleSearch = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  }, []);
+  }, [page, reloadToken]);
 
   const handlePageChange = useCallback((url: string | null) => {
     if (!url) return;
@@ -83,24 +54,16 @@ export function useUsersData() {
     }
   }, []);
 
-  const handleSort = useCallback((key: keyof User) => {
-    setSortConfig((current) => ({
-      key: key as string,
-      direction: current.key === key && current.direction === "asc" ? "desc" : "asc",
-    }));
-  }, []);
+  const handleSort = useCallback((_key: keyof User) => {}, []);
 
   return {
     Users,
+    setUsers, 
     loading,
     error,
     meta,
     links,
-    filter,
-    searchTerm,
     refreshUsers,
-    handleFilterChange,
-    handleSearch,
     handlePageChange,
     handleSort,
   };
