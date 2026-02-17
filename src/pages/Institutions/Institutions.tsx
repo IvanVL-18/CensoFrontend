@@ -73,7 +73,7 @@ function InstitutionsPageContent() {
     onPickLocation,
   } = useInstitutions();
 
-  // Si 'editingInstitution' tiene datos, el título es "Editar". Si no, "Agregar".
+ 
   const modalTitle = editingInstitution
     ? "Editar Institución"
     : "Agregar Institución";
@@ -106,10 +106,10 @@ function InstitutionsPageContent() {
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
-      {/* Contenedor de Toasts */}
+
       <ToastContainer />
 
-      {/* Cabecera y Filtros */}
+     
       <InstitutionsToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -118,23 +118,22 @@ function InstitutionsPageContent() {
         onAddClick={handleAddClick}
       />
 
-      {/* Contenido Principal (Tabla y Paginación) */}
+   
       <div className="p-4">
-        {/* Tabla de datos */}
         <InstitutionsTable
           loading={loading}
           error={error}
           institutions={sortedInstitutions}
           meta={paginationMeta}
           onSort={handleSort}
-          onShowMap={onShowMap} // <-- Pasamos la nueva función
+          onShowMap={onShowMap}
           onView={onView}
           onEdit={onEdit}
           onBan={onBan}
           onRestore={onRestore}
           onDelete={onDelete}
         />
-        {/* --- Paginación --- */}
+  
         <div className="mt-4 flex justify-center">
           <Pagination
             meta={paginationMeta}
@@ -146,7 +145,7 @@ function InstitutionsPageContent() {
         </div>
       </div>
 
-      {/* Modales */}
+      
       <InstitutionModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
@@ -210,7 +209,7 @@ function InstitutionsPageContent() {
   );
 }
 
-// Componente Principal (Exportado)
+
 export default function Institutions() {
   return (
     <ToastProvider>

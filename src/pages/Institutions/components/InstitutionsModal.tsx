@@ -81,7 +81,7 @@ export function InstitutionModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    // 1) Detectar cambios (para habilitar "Guardar")
+
     const changed =
       name !== initialName ||
       municipality !== initialMunicipality ||
@@ -91,11 +91,11 @@ export function InstitutionModal({
 
     setHasChanges(changed);
 
-    // 2) Si ya hay errores mostrados, revalidar para limpiarlos al escribir
+    
     if (formErrors.length > 0) {
       validateForm(name, municipality, geocode, typeinst);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, [
     name,
     municipality,
@@ -112,11 +112,10 @@ export function InstitutionModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validar antes de enviar
+   
     if (!validateForm(name, municipality, geocode, typeinst)) return;
 
-    // Si está editando: mandar SOLO cambios
-    // Si está creando: mandar todo
+  
     if (isEditMode) {
       const dataToSend: UpdateInstitutionDTO = {};
 
@@ -134,7 +133,7 @@ export function InstitutionModal({
       return;
     }
 
-    // Crear
+    
     const createPayload: CreateInstitutionDTO = {
       name,
       municipality,

@@ -9,7 +9,7 @@ import type { Coordinates } from "../Institutions/Map.types";
 import type { Institution } from "../Institutions/institutions.types";
 
 
-// iconos leaflet
+
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
@@ -165,7 +165,7 @@ export function EditLocationModal({
   );
 }
 
-/** pin arrastrable */
+
 function DraggableMarker({
   coordinates,
   institutionName,
