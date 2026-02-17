@@ -17,13 +17,15 @@ import CensusSectionsPage from "./pages/census/CensusSectionsPage";
 import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; 
 
 import Sections from "./pages/Sections/Sections";
-import Insitutions from "./pages/institutions/Institutions";
+import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Indexs/Indexs";
 import Roles from "./pages/Roles/Roles";
 import Permissions from "./pages/Permissions/Permissions";
 
 import Categories from "./pages/categories/Categories";
+import Catalogs from "./pages/catalogs/Catalogs";
+
 
 export default function App() {
   return (
@@ -57,6 +59,7 @@ export default function App() {
         <Route path="/Roles" element={<Roles />} />
         <Route path="/permisos" element={<Permissions />} />
         <Route path="/categorias" element={<Categories />} />
+        <Route path="/catalogos" element={<Catalogs />} />
       </Route>
 
       {/* Fallback */}

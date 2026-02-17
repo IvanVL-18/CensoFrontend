@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Package, Paperclip, Briefcase, Hash, Layers, HelpCircle, Shield } from "lucide-react";
+import { Package, Paperclip, Briefcase, Hash, Layers, HelpCircle, Shield, FileText} from "lucide-react";
 
 import ConfigurationLayout from "./components/ConfigurationLayout";
 import ConfigurationNavCard from "./components/ConfigurationNavCard";
@@ -54,6 +54,13 @@ export default function ConfigurationPage() {
         to: "/Roles",
         icon: <Shield className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
+      {
+        title: "Catalogos",
+        description: "Administra los catalogos y permisos del sistema para controlar el acceso a los distintos módulos del censo.",
+        to: "/Catalogos",
+        icon: <FileText className="w-5 h-5 text-[var(--pantone-7421)]" />,
+      },
+         
 
     ],
     []
