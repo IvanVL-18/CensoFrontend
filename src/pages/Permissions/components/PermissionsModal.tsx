@@ -24,7 +24,7 @@ export function PermissionModal({
       setFormErrors([]);
       setServerError(null);
     }
-  }, [isOpen, initialName]);
+  }, [isOpen, initialName]); 
 
   useEffect(() => {
     if (prevIsSubmitting.current && !isSubmitting && error) {
