@@ -28,7 +28,7 @@ export const getOccupations = async (
   params.append("direction", direction);
 
   const response = await api.get<PaginatedOccupationsResponse>(
-    `/Occupations/${filter}/content`,
+    `/occupations/${filter}/content`,
     {
       params: params,
       signal,
