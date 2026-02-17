@@ -17,7 +17,7 @@ const emailRule = z
 export const CreateUserSchema = z
   .object({
     email: emailRule,
-    password: passwordRule,
+    password: passwordRule, 
     password_confirmation: z.string().min(1, "Confirma la contraseña"),
     role_id: z.string().min(1, "Selecciona un rol"), 
   })
