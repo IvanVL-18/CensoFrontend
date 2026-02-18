@@ -20,7 +20,7 @@ export function CatalogModal({
 }: CatalogModalProps) {
   const [name, setName] = useState(initialName);
   const [slug, setSlug] = useState(initialSlug);
-  const [unitId, setUnitId] = useState(initialUnitId);
+  const [unitId, setUnitId] = useState(initialUnitId.toString()); // Asegurar que es string
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
   const [nameCharCount, setNameCharCount] = useState(initialName.length);
@@ -34,13 +34,15 @@ export function CatalogModal({
     if (isOpen) {
       setName(initialName);
       setSlug(initialSlug);
-      setUnitId(initialUnitId);
+      setUnitId(initialUnitId ? initialUnitId.toString() : ""); // Asegurar conversión
       setFormErrors([]);
       setServerError(null);
       setNameCharCount(initialName.length);
       setSlugCharCount(initialSlug.length);
     }
   }, [isOpen, initialName, initialSlug, initialUnitId]);
+
+  // ... resto del código igual
 
   const validateForm = (currentName: string, currentSlug: string, currentUnitId: string) => {
     const errors: string[] = [];

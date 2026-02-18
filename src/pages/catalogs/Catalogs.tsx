@@ -121,12 +121,13 @@ function CatalogsPageContent() {
     }
   };
 
-  const modalConfig = {
-    title: modals.editingCatalog ? "Editar catálogo" : "Agregar catálogo",
-    initialName: modals.editingCatalog?.name || "",
-    initialSlug: modals.editingCatalog?.slug || "",
-    initialUnitId: modals.editingCatalog?.unit_id?.toString() || "",
-  };
+  // En Catalogs.tsx, modifica el modalConfig:
+const modalConfig = {
+  title: modals.editingCatalog ? "Editar catálogo" : "Agregar catálogo",
+  initialName: modals.editingCatalog?.name || "",
+  initialSlug: modals.editingCatalog?.slug || "",
+  initialUnitId: modals.editingCatalog?.unit_id?.toString() || "", // Esto está bien
+};
 
   const confirmModal = modals.actionType && modals.actionCatalog
     ? confirmConfig[modals.actionType]

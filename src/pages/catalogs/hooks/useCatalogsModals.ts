@@ -31,9 +31,17 @@ export function useCatalogsModals() {
     setFormState({ isOpen: true, catalog: null });
   }, []);
 
-  const openEdit = useCallback((catalog: Catalog) => {
-    setFormState({ isOpen: true, catalog });
-  }, []);
+  // En useCatalogsModals.ts
+const openEdit = useCallback((catalog: Catalog) => {
+  // Asegurar que catalog tiene la estructura esperada
+  setFormState({ 
+    isOpen: true, 
+    catalog: {
+      ...catalog,
+      unit_id: catalog.unit_id?.toString() || catalog.unit_id // Asegurar string
+    } 
+  });
+}, []);
 
   const closeForm = useCallback(() => {
     setFormState({ isOpen: false, catalog: null });
