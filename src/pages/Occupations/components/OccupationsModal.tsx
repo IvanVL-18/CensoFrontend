@@ -54,6 +54,7 @@ export function OccupationModal({
 
   const hasClientErrors = formErrors.length > 0;
   const hasServerError = !!error;
+  const isUnchanged = name === initialName;
 
   return (
     <>
@@ -115,7 +116,7 @@ export function OccupationModal({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || hasClientErrors}
+                disabled={isSubmitting || hasClientErrors || isUnchanged}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
