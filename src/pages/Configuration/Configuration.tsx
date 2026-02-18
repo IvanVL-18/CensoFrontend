@@ -39,7 +39,7 @@ export default function ConfigurationPage() {
       {
         title: "Áreas",
         description: "Administra las áreas institucionales relacionadas con la estructura del censo.",
-        to: "/Area",
+        to: "/Areas",
         icon: <Layers className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {

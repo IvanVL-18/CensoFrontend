@@ -11,6 +11,8 @@ import DashboardLayout from "./components/DashboardLayout";
 
 import Users from "./pages/Users/Users";
 
+import Areas from "./pages/Areas/Areas";
+
 import Units from "./pages/Units/units";
 import Census from "./pages/census/CensosPage";
 import CreateCensusPage from "./pages/census/CreateCensus";
@@ -57,9 +59,11 @@ export default function App() {
         <Route path="/unidades" element={<Units />} />
         <Route path="/secciones" element={<Sections />} />
         <Route path="/ocupaciones" element={<Occupations />} />
-        <Route path="/Roles" element={<Roles />} />
+        <Route path="/roles" element={<Roles />} />
         <Route path="/permisos" element={<Permissions />} />
         <Route path="/categorias" element={<Categories />} />
+        <Route path="/areas" element={<Areas />} />
+        
       </Route>
 
       {/* Fallback */}
