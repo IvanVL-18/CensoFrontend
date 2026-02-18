@@ -43,7 +43,7 @@ export const getOccupation = async (
   id: OccupationId,
   signal?: AbortSignal,
 ): Promise<Occupation> => {
-  const response = await api.get<{ data: Occupation } | Occupation>(`/Occupations/${id}`, {
+  const response = await api.get<{ data: Occupation } | Occupation>(`/occupations/${id}`, {
     signal,
   });
   return (response.data as any).data ?? response.data;
@@ -52,7 +52,7 @@ export const getOccupation = async (
 export const createOccupation = async (
   OccupationData: CreateOccupationDTO,
 ): Promise<{ message: string; data?: Occupation }> => {
-  const response = await api.post("/Occupations", OccupationData);
+  const response = await api.post("/occupations", OccupationData);
   return response.data;
 };
 
@@ -60,31 +60,31 @@ export const updateOccupation = async (
   id: OccupationId,
   OccupationData: UpdateOccupationDTO,
 ): Promise<{ message: string }> => {
-  const response = await api.put(`/Occupations/${id}`, OccupationData);
+  const response = await api.put(`/occupations/${id}`, OccupationData);
   return response.data;
 };
 
 export const banOccupation = async (id: OccupationId): Promise<{ message: string }> => {
-  const response = await api.delete(`/Occupations/${id}`);
+  const response = await api.delete(`/occupations/${id}`);
   return response.data;
 };
 
 export const restoreOccupation = async (id: OccupationId): Promise<{ message: string }> => {
-  const response = await api.post(`/Occupations/${id}/restore`);
+  const response = await api.post(`/occupations/${id}/restore`);
   return response.data;
 };
 
 export const forceDeleteOccupation = async (
   id: OccupationId,
 ): Promise<{ message: string }> => {
-  const response = await api.delete(`/Occupations/${id}/force-delete`);
+  const response = await api.delete(`/occupations/${id}/force-delete`);
   return response.data;
 };
 
 export const importOccupations = async (
   formData: FormData,
 ): Promise<{ message: string }> => {
-  const response = await api.post("/Occupations/import", formData, {
+  const response = await api.post("/occupations/import", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
