@@ -2,9 +2,7 @@ import { X } from "lucide-react";
 import type { ViewCatalogModalProps } from "../Catalogs.types";
 
 const formatDate = (dateString: string | null) => {
-  if (!dateString) {
-    return "N/A"; 
-  }
+  if (!dateString) return "N/A";
   try {
     return new Date(dateString).toLocaleString('es-MX', {
       year: 'numeric',
@@ -14,42 +12,35 @@ const formatDate = (dateString: string | null) => {
       minute: '2-digit',
       second: '2-digit'
     });
-  } catch (e) {
+  } catch {
     return "Fecha inválida";
   }
 };
 
-function DetailRow({ label, value }: { label: string, value: string | null }) {
+function DetailRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-500">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-gray-500">{label}</label>
       <p className="text-lg text-gray-900 font-semibold">{value || "N/A"}</p>
     </div>
   );
 }
 
 export function ViewCatalogModal({ isOpen, onClose, Catalog }: ViewCatalogModalProps) {
-  if (!isOpen || !Catalog) {
-    return null;
-  }
+  if (!isOpen || !Catalog) return null;
+
+  const unitDisplay = Catalog.unit_name || Catalog.unit?.name || null;
 
   return (
     <>
-      {/* 1. Fondo Difuminado (Blur) */}
-      <div 
+      <div
         className="fixed inset-0 bg-blue bg-opacity-30 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}>
-      </div>
-
-      {/* 2. Contenedor del Modal */}
+        onClick={onClose}
+      />
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-          
-          {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">Detalle del Catalogo</h2>
+            <h2 className="text-xl font-bold text-white">Detalle del Catálogo</h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300"
@@ -59,32 +50,19 @@ export function ViewCatalogModal({ isOpen, onClose, Catalog }: ViewCatalogModalP
             </button>
           </div>
 
-          {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
-            <DetailRow 
-              label="Nombre del catalogo:" 
-              value={Catalog.name} 
-            />
-            <DetailRow 
-              label="Fecha de creación:" 
-              value={formatDate(Catalog.created_at)} 
-            />
-            <DetailRow 
-              label="Fecha de desactivación:" 
-              value={formatDate(Catalog.deleted_at)} 
-            />
+            <DetailRow label="Nombre del catálogo:" value={Catalog.name} />
+            <DetailRow label="Slug:" value={Catalog.slug} />
+            <DetailRow label="Unidad:" value={unitDisplay} />
+            <DetailRow label="Fecha de creación:" value={formatDate(Catalog.created_at)} />
+            <DetailRow label="Fecha de desactivación:" value={formatDate(Catalog.deleted_at)} />
           </div>
 
-          {/* Pie de página del Modal (Solo 1 botón) */}
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
             <button
               type="button"
               onClick={onClose}
-              className="
-                bg-[#C3A67C] text-white font-bold 
-                py-2 px-6 rounded-lg 
-                hover:brightness-95
-              "
+              className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95"
             >
               Cerrar
             </button>

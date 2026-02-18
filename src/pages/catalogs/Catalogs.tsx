@@ -16,7 +16,6 @@ import type { Unit } from "./Catalogs.types";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
-  
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
       {toasts.map(toast => (
@@ -48,7 +47,7 @@ const confirmConfig = {
     title: "Eliminar Permanentemente",
     buttonText: "Eliminar",
     color: "danger" as const,
-    getMessage: (name: string) => 
+    getMessage: (name: string) =>
       `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el catálogo "${name}"? Esta acción no se puede deshacer.`,
   },
 };
@@ -73,19 +72,39 @@ function CatalogsPageContent() {
   } = useCatalogsData();
 
   useEffect(() => {
-    const fetchUnits = async () => {
+    const fetchAllUnits = async () => {
       setLoadingUnits(true);
       try {
-        const response = await getUnits();
-        const unitsData = response.data || response;
-        
-        setUnits(
-          Array.isArray(unitsData) 
-            ? unitsData 
-            : unitsData?.data && Array.isArray(unitsData.data) 
-              ? unitsData.data 
-              : []
-        );
+        let allUnits: Unit[] = [];
+        let currentPage = 1;
+        let lastPage = 1;
+
+        do {
+          const response = await getUnits('all', '', currentPage);
+          const responseData = response.data || response;
+          const pageUnits = Array.isArray(responseData)
+            ? responseData
+            : responseData?.data && Array.isArray(responseData.data)
+            ? responseData.data
+            : [];
+
+          allUnits = [...allUnits, ...pageUnits];
+
+          const newLastPage =
+            response.meta?.last_page ??
+            responseData?.last_page ??
+            responseData?.meta?.last_page;
+
+          if (newLastPage) {
+            lastPage = newLastPage;
+          } else {
+            break;
+          }
+
+          currentPage++;
+        } while (currentPage <= lastPage);
+
+        setUnits(allUnits);
       } catch (error) {
         console.error("Error al cargar unidades:", error);
         setUnits([]);
@@ -93,8 +112,8 @@ function CatalogsPageContent() {
         setLoadingUnits(false);
       }
     };
-    
-    fetchUnits();
+
+    fetchAllUnits();
   }, []);
 
   const modals = useCatalogsModals();
@@ -121,13 +140,13 @@ function CatalogsPageContent() {
     }
   };
 
-  // En Catalogs.tsx, modifica el modalConfig:
-const modalConfig = {
-  title: modals.editingCatalog ? "Editar catálogo" : "Agregar catálogo",
-  initialName: modals.editingCatalog?.name || "",
-  initialSlug: modals.editingCatalog?.slug || "",
-  initialUnitId: modals.editingCatalog?.unit_id?.toString() || "", // Esto está bien
-};
+  const modalConfig = {
+    title: modals.editingCatalog ? "Editar catálogo" : "Agregar catálogo",
+    initialName: modals.editingCatalog?.name || "",
+    initialSlug: modals.editingCatalog?.slug || "",
+    initialUnitId: modals.editingCatalog?.unit_id || "",
+    initialUnitName: modals.editingCatalog?.unit_name || modals.editingCatalog?.unit?.name || "",
+  };
 
   const confirmModal = modals.actionType && modals.actionCatalog
     ? confirmConfig[modals.actionType]
@@ -178,9 +197,10 @@ const modalConfig = {
         initialName={modalConfig.initialName}
         initialSlug={modalConfig.initialSlug}
         initialUnitId={modalConfig.initialUnitId}
+        initialUnitName={modalConfig.initialUnitName}
         units={units}
         onClose={modals.closeForm}
-        onSave={(name, slug, unitId) => 
+        onSave={(name, slug, unitId) =>
           handleSave(name, slug, unitId, modals.editingCatalog)
         }
       />

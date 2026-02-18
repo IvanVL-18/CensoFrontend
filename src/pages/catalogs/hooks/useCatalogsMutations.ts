@@ -35,7 +35,7 @@ export function useCatalogsMutations({
       try {
         const catalogData = { name, slug, unit_id: unitId };
         const response = editingCatalog
-          ? await updateCatalog(editingCatalog.id, catalogData)
+          ? await updateCatalog(editingCatalog.id, catalogData )
           : await createCatalog(catalogData);
 
         if (response) {

@@ -1,6 +1,7 @@
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
+import { Catalogschema } from "../schemas/Catalogs.schema"; // Ajusta la ruta según tu proyecto
 import type { CatalogModalProps } from "../Catalogs.types";
 
 const NAME_MAX_LENGTH = 125;
@@ -14,17 +15,20 @@ export function CatalogModal({
   initialName = "",
   initialSlug = "",
   initialUnitId = "",
+  initialUnitName = "",
   units,
   onClose,
   onSave,
 }: CatalogModalProps) {
-  const [name, setName] = useState(initialName);
-  const [slug, setSlug] = useState(initialSlug);
-  const [unitId, setUnitId] = useState(initialUnitId.toString()); // Asegurar que es string
-  const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [unitId, setUnitId] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; slug?: string; unit?: string }>({});
   const [serverError, setServerError] = useState<string | null>(null);
-  const [nameCharCount, setNameCharCount] = useState(initialName.length);
-  const [slugCharCount, setSlugCharCount] = useState(initialSlug.length);
+  const [nameCharCount, setNameCharCount] = useState(0);
+  const [slugCharCount, setSlugCharCount] = useState(0);
+
+  const errorMessages = Object.values(fieldErrors).filter(Boolean) as string[];
 
   useEffect(() => {
     setServerError(error || null);
@@ -32,39 +36,51 @@ export function CatalogModal({
 
   useEffect(() => {
     if (isOpen) {
+      const normalizedUnitId = initialUnitId ? String(initialUnitId).trim() : "";
+      const normalizedUnitName = initialUnitName?.trim().toLowerCase() || "";
+      let finalUnitId = normalizedUnitId;
+
+      const unitById = units.find(u => String(u.id).trim() === normalizedUnitId);
+      if (unitById) {
+        finalUnitId = unitById.id;
+      } else if (normalizedUnitName && units.length > 0) {
+        const unitByName = units.find(u => u.name.trim().toLowerCase() === normalizedUnitName);
+        if (unitByName) {
+          finalUnitId = unitByName.id;
+        }
+      }
+
       setName(initialName);
       setSlug(initialSlug);
-      setUnitId(initialUnitId ? initialUnitId.toString() : ""); // Asegurar conversión
-      setFormErrors([]);
-      setServerError(null);
+      setUnitId(finalUnitId);
       setNameCharCount(initialName.length);
       setSlugCharCount(initialSlug.length);
+      setFieldErrors({});
+      setServerError(null);
     }
-  }, [isOpen, initialName, initialSlug, initialUnitId]);
+  }, [isOpen, initialName, initialSlug, initialUnitId, initialUnitName, units]);
 
-  // ... resto del código igual
-
+  // Validación basada en el esquema Zod (sin lógica manual para name/slug)
   const validateForm = (currentName: string, currentSlug: string, currentUnitId: string) => {
-    const errors: string[] = [];
+    // 1. Validar name y slug con Zod
+    const result = Catalogschema.safeParse({ name: currentName, slug: currentSlug });
+    
+    const errors: { name?: string; slug?: string; unit?: string } = {};
 
-    if (!currentName.trim()) {
-      errors.push("El nombre del catálogo es obligatorio");
-    } else if (currentName.length < 3) {
-      errors.push("El nombre debe tener al menos 3 caracteres");
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as 'name' | 'slug';
+        errors[field] = issue.message;
+      });
     }
 
-    if (!currentSlug.trim()) {
-      errors.push("El slug es obligatorio");
-    } else if (currentSlug.length < 3) {
-      errors.push("El slug debe tener al menos 3 caracteres");
-    }
-
+    // 2. Validar unitId manualmente (opcional, si no está en el esquema)
     if (!currentUnitId) {
-      errors.push("Debe seleccionar una unidad");
+      errors.unit = "Debe seleccionar una unidad";
     }
 
-    setFormErrors(errors);
-    return errors.length === 0;
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = (e: FormEvent) => {
@@ -101,7 +117,7 @@ export function CatalogModal({
     setName("");
     setSlug("");
     setUnitId("");
-    setFormErrors([]);
+    setFieldErrors({});
     setServerError(null);
     setNameCharCount(0);
     setSlugCharCount(0);
@@ -110,12 +126,10 @@ export function CatalogModal({
 
   if (!isOpen) return null;
 
-  const hasErrors = formErrors.length > 0 || !!serverError;
-
-  const getFieldStyles = (value: string, maxLength: number, currentCharCount: number) => {
+  // Utilidades para estilos dinámicos (igual que en CategoryModal)
+  const getFieldStyles = (value: string, maxLength: number, currentCharCount: number, hasFieldError: boolean) => {
     const isNearLimit = currentCharCount >= maxLength - 10 && currentCharCount <= maxLength;
     const isAtLimit = currentCharCount >= maxLength;
-    const hasFieldError = hasErrors && !value.trim();
 
     const getBorderColor = () => {
       if (hasFieldError) return 'border-red-500 focus:ring-red-400';
@@ -143,8 +157,16 @@ export function CatalogModal({
     };
   };
 
-  const nameStyles = getFieldStyles(name, NAME_MAX_LENGTH, nameCharCount);
-  const slugStyles = getFieldStyles(slug, SLUG_MAX_LENGTH, slugCharCount);
+  const hasNameError = !!fieldErrors.name;
+  const hasSlugError = !!fieldErrors.slug;
+  const hasUnitError = !!fieldErrors.unit;
+
+  const nameStyles = getFieldStyles(name, NAME_MAX_LENGTH, nameCharCount, hasNameError);
+  const slugStyles = getFieldStyles(slug, SLUG_MAX_LENGTH, slugCharCount, hasSlugError);
+
+  const unitBorderColor = hasUnitError
+    ? 'border-red-500 focus:ring-red-400'
+    : 'border-gray-300 focus:ring-[#DDC9A3]';
 
   return (
     <>
@@ -163,7 +185,7 @@ export function CatalogModal({
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6 space-y-4">
-              {/* Campo nombre */}
+              {/* Campo Nombre */}
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <label htmlFor="catalogName" className="block text-sm font-medium text-gray-700">
@@ -191,7 +213,7 @@ export function CatalogModal({
                 </div>
               </div>
 
-              {/* Campo slug */}
+              {/* Campo Slug */}
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <label htmlFor="catalogSlug" className="block text-sm font-medium text-gray-700">
@@ -218,7 +240,7 @@ export function CatalogModal({
                 </div>
               </div>
 
-              {/* Campo unidad */}
+              {/* Campo Unidad */}
               <div>
                 <label htmlFor="unitId" className="block text-sm font-medium text-gray-700 mb-2">
                   Unidad:
@@ -227,9 +249,7 @@ export function CatalogModal({
                   id="unitId"
                   value={unitId}
                   onChange={handleUnitChange}
-                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${
-                    hasErrors && !unitId ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-[#DDC9A3]'
-                  }`}
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${unitBorderColor}`}
                   disabled={isSubmitting}
                 >
                   <option value="">Seleccionar una unidad</option>
@@ -241,7 +261,8 @@ export function CatalogModal({
                 </select>
               </div>
 
-              <FormErrors errors={formErrors} />
+              {/* Mostrar errores de validación y de servidor */}
+              <FormErrors errors={errorMessages} />
               {serverError && <FormErrors errors={[serverError]} />}
             </div>
 
@@ -256,7 +277,7 @@ export function CatalogModal({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || formErrors.length > 0}
+                disabled={isSubmitting || errorMessages.length > 0}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}

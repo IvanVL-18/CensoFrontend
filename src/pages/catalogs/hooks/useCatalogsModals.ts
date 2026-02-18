@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import type { Catalog } from "../Catalogs.types";
+import { getCatalog } from "../Catalogs.service";
 
 export function useCatalogsModals() {
   const [formState, setFormState] = useState({
@@ -31,17 +32,26 @@ export function useCatalogsModals() {
     setFormState({ isOpen: true, catalog: null });
   }, []);
 
-  // En useCatalogsModals.ts
-const openEdit = useCallback((catalog: Catalog) => {
-  // Asegurar que catalog tiene la estructura esperada
-  setFormState({ 
-    isOpen: true, 
-    catalog: {
-      ...catalog,
-      unit_id: catalog.unit_id?.toString() || catalog.unit_id // Asegurar string
-    } 
-  });
-}, []);
+  const openEdit = useCallback(async (catalog: Catalog) => {
+    try {
+      const fullCatalog = await getCatalog(catalog.id);
+      const unitId = fullCatalog.unit_id
+        ? String(fullCatalog.unit_id)
+        : (fullCatalog.unit?.id ? String(fullCatalog.unit.id) : "");
+      const unitName = fullCatalog.unit_name?.trim() || fullCatalog.unit?.name?.trim() || "";
+
+      setFormState({
+        isOpen: true,
+        catalog: {
+          ...fullCatalog,
+          unit_id: unitId,
+          unit_name: unitName,
+        },
+      });
+    } catch (error) {
+      console.error("Error al cargar detalles:", error);
+    }
+  }, []);
 
   const closeForm = useCallback(() => {
     setFormState({ isOpen: false, catalog: null });

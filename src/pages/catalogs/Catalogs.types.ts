@@ -1,8 +1,10 @@
+// Catalogs.types.ts
 export interface Catalog {
   id: string;
   name: string;
   slug: string;
   unit_id: string;
+  unit_name?: string; 
   unit?: {
     id: string;
     name: string;
@@ -11,7 +13,6 @@ export interface Catalog {
   updated_at: string;
   deleted_at: string;
 }
-
 export interface Unit {
   id: string;
   name: string;
@@ -83,6 +84,7 @@ export interface FormErrorsProps {
   errors: string[];
 }
 
+// Catalogs.types.ts
 export interface CatalogModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
@@ -91,6 +93,7 @@ export interface CatalogModalProps {
   initialName?: string;
   initialSlug?: string;
   initialUnitId?: string;
+  initialUnitName?: string; 
   units: Unit[];
   onClose: () => void;
   onSave: (name: string, slug: string, unitId: string) => void;
@@ -106,7 +109,7 @@ export interface CatalogsTableProps {
   onEdit: (Catalog: Catalog) => void;
   onBan: (Catalog: Catalog) => void;
   onRestore: (Catalog: Catalog) => void;
-  onDelete: (Catalog: Catalog) => void; // Corregido: Catalog en lugar de SchemaCatalog
+  onDelete: (Catalog: Catalog) => void; 
 }
 
 export interface ViewCatalogModalProps {
