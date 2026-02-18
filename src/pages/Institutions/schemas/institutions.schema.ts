@@ -14,12 +14,13 @@ export const InstitutionSchema = z.object({
     .regex(/^\d+$/, "El geocódigo solo debe contener números."),
     municipality: z.string()
       .trim()
-      .min(1, "La municipalidad es obligatoria."),
+      .min(1, "La municipalidad es obligatoria.")
+      .regex(/^[\p{L}\p{M}\s]+$/u, "El campo municipalidad no puede contener números, emojis ni símbolos especiales."),
     typeinst: z.string()
       .trim()
       .min(1, "El tipo de institución es obligatorio.")
+      .regex(/^[\p{L}\p{M}\s]+$/u, "El campo tipo no puede contener números, emojis ni símbolos especiales.")
 
 });
 
 export type InstitutionFormData = z.infer<typeof InstitutionSchema>;
-
