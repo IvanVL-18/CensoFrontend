@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import type { ViewsectionModalProps } from "../Sections.types";
+import type { ViewSectionModalProps } from "../Sections.types";
 
 const formatDate = (dateString: string | null) => {
   if (!dateString) {
@@ -30,8 +30,8 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewsectionModal({ isOpen, onClose, section }: ViewsectionModalProps) {
-  if (!isOpen || !section) {
+export function ViewSectionModal({ isOpen, onClose, Section }: ViewSectionModalProps) {
+  if (!isOpen || !Section) {
     return null;
   }
 
@@ -49,7 +49,7 @@ export function ViewsectionModal({ isOpen, onClose, section }: ViewsectionModalP
           
           {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">Detalle del Módulo</h2>
+            <h2 className="text-xl font-bold text-white">Detalle de la Sección</h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300"
@@ -62,16 +62,16 @@ export function ViewsectionModal({ isOpen, onClose, section }: ViewsectionModalP
           {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
             <DetailRow 
-              label="Nombre del módulo:" 
-              value={section.name} 
+              label="Nombre de la Sección:" 
+              value={Section.name} 
             />
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(section.created_at)} 
+              value={formatDate(Section.created_at)} 
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(section.deleted_at)} 
+              value={formatDate(Section.deleted_at)} 
             />
           </div>
 

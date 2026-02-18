@@ -1,47 +1,47 @@
 import { useState, useCallback } from "react";
-import type { section } from "../Sections.types";
+import type { Section } from "../Sections.types";
 
 export function useSectionsModals() {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingsection, setEditingsection] = useState<section | null>(null);
+  const [editingSection, setEditingSection] = useState<Section | null>(null);
 
   const openCreate = useCallback(() => {
-    setEditingsection(null);
+    setEditingSection(null);
     setIsFormOpen(true);
   }, []);
 
-  const openEdit = useCallback((section: section) => {
-    setEditingsection(section);
+  const openEdit = useCallback((Section: Section) => {
+    setEditingSection(Section);
     setIsFormOpen(true);
   }, []);
 
   const closeForm = useCallback(() => {
     setIsFormOpen(false);
-    setEditingsection(null);
+    setEditingSection(null);
   }, []);
 
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [viewingsection, setViewingsection] = useState<section | null>(null);
+  const [viewingSection, setViewingSection] = useState<Section | null>(null);
 
-  const openView = useCallback((section: section) => {
-    setViewingsection(section);
+  const openView = useCallback((Section: Section) => {
+    setViewingSection(Section);
     setIsViewOpen(true);
   }, []);
 
   const closeView = useCallback(() => {
     setIsViewOpen(false);
-    setViewingsection(null);
+    setViewingSection(null);
   }, []);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [actionsection, setActionsection] = useState<section | null>(null);
+  const [actionSection, setActionSection] = useState<Section | null>(null);
   const [actionType, setActionType] = useState<
     "ban" | "restore" | "delete" | null
   >(null);
 
   const openConfirm = useCallback(
-    (section: section, type: "ban" | "restore" | "delete") => {
-      setActionsection(section);
+    (Section: Section, type: "ban" | "restore" | "delete") => {
+      setActionSection(Section);
       setActionType(type);
       setIsConfirmOpen(true);
     },
@@ -50,7 +50,7 @@ export function useSectionsModals() {
 
   const closeConfirm = useCallback(() => {
     setIsConfirmOpen(false);
-    setActionsection(null);
+    setActionSection(null);
     setActionType(null);
   }, []);
 
@@ -69,18 +69,18 @@ export function useSectionsModals() {
 
   return {
     isFormOpen,
-    editingsection,
+    editingSection,
     openCreate,
     openEdit,
     closeForm,
 
     isViewOpen,
-    viewingsection,
+    viewingSection,
     openView,
     closeView,
 
     isConfirmOpen,
-    actionsection,
+    actionSection,
     actionType,
     openConfirm,
     closeConfirm,

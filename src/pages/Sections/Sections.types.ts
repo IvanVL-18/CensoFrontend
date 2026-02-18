@@ -1,7 +1,7 @@
-export interface section {
+export interface Section {
   id: string;
   name: string;
-  created_at: string;
+  created_at: string; 
   updated_at: string;
   deleted_at: string;
 }
@@ -25,7 +25,7 @@ export interface Meta {
 }
 
 export interface PaginatedSectionsResponse {
-  data: section[];
+  data: Section[];
   links: {
     first: string | null;
     last: string | null;
@@ -63,7 +63,7 @@ export interface FormErrorsProps {
   errors: string[];
 }
 
-export interface sectionModalProps {
+export interface SectionModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null;
@@ -74,23 +74,23 @@ export interface sectionModalProps {
 }
 
 export interface SectionsTableProps {
-  Sections: section[]; 
+  Sections: Section[]; 
   meta: Meta | null;
   loading: boolean;
   error: string | null;
-  onSort: (key: keyof section) => void;
-  onView: (section: section) => void;
-  onEdit: (section: section) => void;
-  onBan: (section: section) => void;
-  onRestore: (section: section) => void;
-  onDelete: (section: section) => void;
+  onSort: (key: keyof Section) => void;
+  onView: (Section: Section) => void;
+  onEdit: (Section: Section) => void;
+  onBan: (Section: Section) => void;
+  onRestore: (Section: Section) => void;
+  onDelete: (Section: Section) => void;
 }
-export interface ViewsectionModalProps {
+export interface ViewSectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  section: section | null; 
+  Section: Section | null; 
 }
-export interface CreatesectionDTO {
+export interface CreateSectionDTO {
   name: string;
 }
-export type UpdatesectionDTO = Partial<CreatesectionDTO>;
+export type UpdateSectionDTO = Partial<CreateSectionDTO>;

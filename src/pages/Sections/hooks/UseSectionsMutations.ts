@@ -1,14 +1,14 @@
 import { useState, useCallback } from "react";
 import { useToast } from "../../../context/ToastContext";
 import {
-  createsection,
-  updatesection,
-  bansection,
-  restoresection,
-  forceDeletesection,
+  createSection,
+  updateSection,
+  banSection,
+  restoreSection,
+  forceDeleteSection,
   importSections,
-} from "../Sections.service";
-import type { section } from "../Sections.types";
+} from "../sections.service";
+import type { Section } from "../Sections.types";
 
 interface UseSectionsMutationsProps {
   refreshSections: () => void;
@@ -28,17 +28,17 @@ export function useSectionsMutations({
   const [mutationError, setMutationError] = useState<string | null>(null);
 
   const handleSave = useCallback(
-    async (name: string, editingsection?: section | null) => {
+    async (name: string, editingSection?: Section | null) => {
       setIsSubmitting(true);
       setMutationError(null);
 
       try {
         let response;
-        const sectionData = { name };
-        if (editingsection) {
-          response = await updatesection(editingsection.id, sectionData);
+        const SectionData = { name };
+        if (editingSection) {
+          response = await updateSection(editingSection.id, SectionData);
         } else {
-          response = await createsection(sectionData);
+          response = await createSection(SectionData);
         }
 
         addToast(response.message, "success");
@@ -57,19 +57,19 @@ export function useSectionsMutations({
   );
 
   const handleConfirmAction = useCallback(
-    async (section: section | null, type: "ban" | "restore" | "delete" | null) => {
-      if (!section || !type) return;
+    async (Section: Section | null, type: "ban" | "restore" | "delete" | null) => {
+      if (!Section || !type) return;
 
       setIsSubmitting(true);
       try {
         let response: { message: string } | undefined;
 
         if (type === "ban") {
-          response = await bansection(section.id);
+          response = await banSection(Section.id);
         } else if (type === "restore") {
-          response = await restoresection(section.id);
+          response = await restoreSection(Section.id);
         } else if (type === "delete") {
-          response = await forceDeletesection(section.id);
+          response = await forceDeleteSection(Section.id);
         }
 
         if (response) {
