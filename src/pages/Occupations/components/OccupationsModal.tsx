@@ -15,13 +15,20 @@ export function OccupationModal({
 }: OccupationModalProps) {
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [showServerError, setShowServerError] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
       setFormErrors([]);
+      setShowServerError(false);
     }
   }, [isOpen, initialName]);
+
+  useEffect(() => {
+    if (error) setShowServerError(true);
+  }, [error]);
+
   const validateForm = (currentName: string) => {
     const result = Occupationschema.safeParse({ name: currentName });
     if (!result.success) {
@@ -45,6 +52,7 @@ export function OccupationModal({
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setName(newName);
+    if (showServerError) setShowServerError(false);
     validateForm(newName);
   };
 
@@ -53,7 +61,7 @@ export function OccupationModal({
   }
 
   const hasClientErrors = formErrors.length > 0;
-  const hasServerError = !!error;
+  const hasServerError = !!error && showServerError;
   const isUnchanged = name === initialName;
 
   return (
@@ -98,7 +106,7 @@ export function OccupationModal({
                 <FormErrors errors={formErrors} />
               </div>
 
-              {error && (
+              {error && showServerError && (
                  <div id="form-errors-server">
                    <FormErrors errors={[error]} />
                  </div>
