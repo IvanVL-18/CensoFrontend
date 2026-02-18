@@ -28,7 +28,7 @@ export const getSections = async (
   params.append("direction", direction);
 
   const response = await api.get<PaginatedSectionsResponse>(
-    `/Sections/${filter}/content`,
+    `/sections/${filter}/content`,
     {
       params: params,
       signal,
@@ -89,5 +89,3 @@ export const importSections = async (
   });
   return response.data;
 };
-
-
