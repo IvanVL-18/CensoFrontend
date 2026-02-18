@@ -1,19 +1,19 @@
 import api from "../../lib/Axios";
 import type {
-  section,
+  Section,
   PaginatedSectionsResponse,
-  CreatesectionDTO,
-  UpdatesectionDTO,
+  CreateSectionDTO,
+  UpdateSectionDTO,
 } from "./Sections.types";
 
-export type sectionFilter = "all" | "active" | "inactive";
+export type SectionFilter = "all" | "active" | "inactive";
 
-type sectionId = string | number;
+type SectionId = string | number;
 
 
 
 export const getSections = async (
-  filter: sectionFilter = "all",
+  filter: SectionFilter = "all",
   search: string = "",
   page: number = 1,
   sortBy: string = "id",           
@@ -39,52 +39,52 @@ export const getSections = async (
 
 
 
-export const getsection = async (
-  id: sectionId,
+export const getSection = async (
+  id: SectionId,
   signal?: AbortSignal,
-): Promise<section> => {
-  const response = await api.get<{ data: section } | section>(`/Sections/${id}`, {
+): Promise<Section> => {
+  const response = await api.get<{ data: Section } | Section>(`/sections/${id}`, {
     signal,
   });
   return (response.data as any).data ?? response.data;
 };
 
-export const createsection = async (
-  sectionData: CreatesectionDTO,
-): Promise<{ message: string; data?: section }> => {
-  const response = await api.post("/Sections", sectionData);
+export const createSection = async (
+  SectionData: CreateSectionDTO,
+): Promise<{ message: string; data?: Section }> => {
+  const response = await api.post("/sections", SectionData);
   return response.data;
 };
 
-export const updatesection = async (
-  id: sectionId,
-  sectionData: UpdatesectionDTO,
+export const updateSection = async (
+  id: SectionId,
+  SectionData: UpdateSectionDTO,
 ): Promise<{ message: string }> => {
-  const response = await api.put(`/Sections/${id}`, sectionData);
+  const response = await api.put(`/sections/${id}`, SectionData);
   return response.data;
 };
 
-export const bansection = async (id: sectionId): Promise<{ message: string }> => {
-  const response = await api.delete(`/Sections/${id}`);
+export const banSection = async (id: SectionId): Promise<{ message: string }> => {
+  const response = await api.delete(`/sections/${id}`);
   return response.data;
 };
 
-export const restoresection = async (id: sectionId): Promise<{ message: string }> => {
-  const response = await api.post(`/Sections/${id}/restore`);
+export const restoreSection = async (id: SectionId): Promise<{ message: string }> => {
+  const response = await api.post(`/sections/${id}/restore`);
   return response.data;
 };
 
-export const forceDeletesection = async (
-  id: sectionId,
+export const forceDeleteSection = async (
+  id: SectionId,
 ): Promise<{ message: string }> => {
-  const response = await api.delete(`/Sections/${id}/force-delete`);
+  const response = await api.delete(`/sections/${id}/force-delete`);
   return response.data;
 };
 
 export const importSections = async (
   formData: FormData,
 ): Promise<{ message: string }> => {
-  const response = await api.post("/Sections/import", formData, {
+  const response = await api.post("/sections/import", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;

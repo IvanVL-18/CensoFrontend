@@ -1,13 +1,13 @@
 import { useSectionsData } from "./hooks/useSectionsData";
-import { useSectionsModals } from "./hooks/useSectionsModals";
-import { useSectionsMutations } from "./hooks/useSectionsMutations";
-import { getsection } from "./Sections.service";
+import { useSectionsModals } from "./hooks/UseSectionsModals";
+import { useSectionsMutations } from "./hooks/UseSectionsMutations";
+import { getSection } from "./sections.service";
 import { SectionsToolbar } from "./components/SectionsToolbar";
 import { SectionsTable } from "./components/SectionsTable";
 import Pagination from "../../components/Pagination";
 import { SectionModal } from "./components/SectionsModal";
 import { ConfirmModal } from "./components/ConfirmModal";
-import { ViewsectionModal } from "./components/ViewSectionsModal";
+import { ViewSectionModal } from "./components/ViewSectionsModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 
 import { ToastProvider, useToast } from "../../context/ToastContext";
@@ -45,12 +45,12 @@ function SectionsPageContent() {
     handlePageChange,
   } = useSectionsData();
 
-  const handleViewClick = async (partialsection: any) => {
+  const handleViewClick = async (partialSection: any) => {
     try {
-      const fullsection = await getsection(partialsection.id);
-      modals.openView(fullsection);
+      const fullSection = await getSection(partialSection.id);
+      modals.openView(fullSection);
     } catch (error) {
-      console.error("Error al cargar detalles del módulo", error);
+      console.error("Error al cargar detalles de la Sección", error);
     }
   };
   const modals = useSectionsModals();
@@ -68,8 +68,8 @@ function SectionsPageContent() {
     openBulkError: modals.openBulkError,
   });
 
-  const modalTitle = modals.editingsection ? "Editar Módulo" : "Agregar Módulo";
-  const modalInitialName = modals.editingsection?.name || "";
+  const modalTitle = modals.editingSection ? "Editar Sección" : "Agregar Sección";
+  const modalInitialName = modals.editingSection?.name || "";
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -77,18 +77,18 @@ function SectionsPageContent() {
   let confirmButtonColor: "danger" | "primary" = "danger";
 
   if (modals.actionType === "ban") {
-    confirmTitle = "Desactivar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${modals.actionsection?.name}"?`;
+    confirmTitle = "Desactivar Sección";
+    confirmMessage = `¿Estás seguro de que quieres desactivar el Sección "${modals.actionSection?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (modals.actionType === "restore") {
-    confirmTitle = "Restaurar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${modals.actionsection?.name}"?`;
+    confirmTitle = "Restaurar Sección";
+    confirmMessage = `¿Estás seguro de que quieres restaurar la Sección "${modals.actionSection?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${modals.actionsection?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la Sección "${modals.actionSection?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -143,28 +143,28 @@ function SectionsPageContent() {
         title={modalTitle}
         initialName={modalInitialName}
         onClose={modals.closeForm}
-        onSave={(name) => handleSave(name, modals.editingsection)}
+        onSave={(name) => handleSave(name, modals.editingSection)}
       />
 
       {/* 2. Confirmación (Ban/Restore/Delete) */}
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={mutationError}
+        error={mutationError} 
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
         confirmButtonColor={confirmButtonColor}
         onClose={modals.closeConfirm}
         onConfirm={() =>
-          handleConfirmAction(modals.actionsection, modals.actionType)
+          handleConfirmAction(modals.actionSection, modals.actionType)
         }
       />
 
       {/* 3. Ver Detalle */}
-      <ViewsectionModal
+      <ViewSectionModal
         isOpen={modals.isViewOpen}
-        section={modals.viewingsection}
+        Section={modals.viewingSection}
         onClose={modals.closeView}
       />
 
@@ -181,7 +181,7 @@ function SectionsPageContent() {
 export default function Sections() {
   return (
     <ToastProvider>
-      <SectionsPageContent/>
+      <SectionsPageContent />
     </ToastProvider>
   );
 }
