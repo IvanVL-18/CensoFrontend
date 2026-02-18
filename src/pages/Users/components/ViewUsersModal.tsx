@@ -2,58 +2,54 @@ import { X } from "lucide-react";
 import type { ViewUserModalProps } from "../Users.types";
 
 const formatDate = (dateString: string | null) => {
-  if (!dateString) return "N/A";
+  if (!dateString) {
+    return "N/A"; 
+  }
   try {
-    return new Date(dateString).toLocaleString("es-MX", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
+    return new Date(dateString).toLocaleString('es-MX', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
     });
-  } catch {
+  } catch (e) {
     return "Fecha inválida";
   }
 };
 
-const safeText = (value: string | null | undefined) => {
-  const v = (value ?? "").toString().trim();
-  return v.length > 0 ? v : "N/A";
-};
-
-function DetailRow({ label, value }: { label: string; value: string }) {
+function DetailRow({ label, value }: { label: string, value: string | null }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-500">{label}</label>
-      <p className="text-base text-gray-900 font-semibold break-words">
-        {value}
-      </p>
+      <label className="block text-sm font-medium text-gray-500">
+        {label}
+      </label>
+      <p className="text-lg text-gray-900 font-semibold">{value || "N/A"}</p>
     </div>
   );
 }
 
 export function ViewUserModal({ isOpen, onClose, User }: ViewUserModalProps) {
-  if (!isOpen || !User) return null;
-
-  const fullName =
-    [User.name, User.lastname]
-      .filter((x) => (x ?? "").trim().length > 0)
-      .join(" ") || "N/A";
+  if (!isOpen || !User) {
+    return null;
+  }
 
   return (
     <>
-      <div
+      {/* 1. Fondo Difuminado (Blur) */}
+      <div 
         className="fixed inset-0 bg-blue bg-opacity-30 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}
-      />
+        onClick={onClose}>
+      </div>
 
+      {/* 2. Contenedor del Modal */}
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-lg overflow-hidden">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+          
+          {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">
-              Detalle del Usuario
-            </h2>
+            <h2 className="text-xl font-bold text-white">Detalle del Usuario</h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300"
@@ -63,43 +59,32 @@ export function ViewUserModal({ isOpen, onClose, User }: ViewUserModalProps) {
             </button>
           </div>
 
+          {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
-            <DetailRow label="Nombre completo:" value={fullName} />
-            <DetailRow label="Correo:" value={safeText(User.email)} />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DetailRow label="Teléfono:" value={safeText(User.phone)} />
-              <DetailRow label="Móvil:" value={safeText(User.movil)} />
-            </div>
-
-            <DetailRow label="Dirección:" value={safeText(User.address)} />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DetailRow
-                label="Rol (role_id):"
-                value={safeText(User.role_id)}
-              />
-              <DetailRow
-                label="Ocupación (occupation_id):"
-                value={safeText(User.occupation_id)}
-              />
-            </div>
-
-            <DetailRow
-              label="Fecha de creación:"
-              value={formatDate(User.created_at)}
+            <DetailRow 
+              label="Nombre del Usuario:" 
+              value={User.name} 
             />
-            <DetailRow
-              label="Fecha de desactivación:"
-              value={formatDate(User.deleted_at)}
+            <DetailRow 
+              label="Fecha de creación:" 
+              value={formatDate(User.created_at)} 
+            />
+            <DetailRow 
+              label="Fecha de desactivación:" 
+              value={formatDate(User.deleted_at)} 
             />
           </div>
 
+          {/* Pie de página del Modal (Solo 1 botón) */}
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
             <button
               type="button"
               onClick={onClose}
-              className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95"
+              className="
+                bg-[#C3A67C] text-white font-bold 
+                py-2 px-6 rounded-lg 
+                hover:brightness-95
+              "
             >
               Cerrar
             </button>

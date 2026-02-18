@@ -1,19 +1,9 @@
 export interface User {
   id: string;
-
-  name: string | null;
-  lastname: string | null;
-  phone: string | null;
-  movil: string | null;
-  address: string | null;
-
-  email: string;
-  role_id: string | null;
-  occupation_id: string | null;
-
+  name: string;
   created_at: string;
   updated_at: string;
-  deleted_at: string | null;
+  deleted_at: string;
 }
 
 export interface MetaLink {
@@ -24,10 +14,10 @@ export interface MetaLink {
 }
 
 export interface Meta {
-  total: number;
-  per_page: number;
-  current_page: number;
-  last_page: number;
+  total: number[];
+  per_page: number[];
+  current_page: number[];
+  last_page: number[];
   from: number;
   links: MetaLink[];
   path: string;
@@ -44,7 +34,6 @@ export interface PaginatedUsersResponse {
   };
   meta: Meta;
 }
-
 export interface ExcelFailure {
   row: number;
   field: string;
@@ -74,63 +63,34 @@ export interface FormErrorsProps {
   errors: string[];
 }
 
+export interface UserModalProps {
+  isOpen: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+  title: string;
+  initialName?: string;
+  onClose: () => void;
+  onSave: (name: string) => void;
+}
+
 export interface UsersTableProps {
-  Users: User[];
+  Users: User[]; 
   meta: Meta | null;
   loading: boolean;
   error: string | null;
-  onSort: (key: keyof User) => void; 
+  onSort: (key: keyof User) => void;
   onView: (User: User) => void;
   onEdit: (User: User) => void;
   onBan: (User: User) => void;
   onRestore: (User: User) => void;
   onDelete: (User: User) => void;
 }
-
 export interface ViewUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  User: User | null;
+  User: User | null; 
 }
-
-export type RoleOption = {
-  label: string;
-  value: string;
-};
-
-export type UserModalPayload = {
-  email: string;
-  password: string;
-  password_confirmation: string;
-  role_id: string;
-};
-
 export interface CreateUserDTO {
-  email: string;
-  password: string;
-  password_confirmation: string;
-  role_id: string;
+  name: string;
 }
-
-export type UpdateUserDTO = {
-  email: string;
-  role_id: string;
-  password?: string;
-  password_confirmation?: string;
-};
-
-export type UserModalProps = {
-  isOpen: boolean;
-  isSubmitting: boolean;
-  error?: string | null;
-  title: string;
-
-  initialEmail?: string;
-  initialPassword?: string;
-  initialRoleId?: string;
-
-  roles?: RoleOption[];
-
-  onClose: () => void;
-  onSave: (payload: UserModalPayload) => void;
-};
+export type UpdateUserDTO = Partial<CreateUserDTO>;

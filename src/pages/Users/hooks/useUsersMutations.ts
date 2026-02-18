@@ -8,15 +8,13 @@ import {
   forceDeleteUser,
   importUsers,
 } from "../Users.service";
-import type { User, CreateUserDTO, UpdateUserDTO, UserModalPayload } from "../Users.types";
+import type { User } from "../Users.types";
 
 interface UseUsersMutationsProps {
   refreshUsers: () => void;
   closeForm: () => void;
   closeConfirm: () => void;
   openBulkError: (errors: any[]) => void;
-
-  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
 }
 
 export function useUsersMutations({
@@ -24,48 +22,31 @@ export function useUsersMutations({
   closeForm,
   closeConfirm,
   openBulkError,
-  setUsers,
 }: UseUsersMutationsProps) {
   const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
 
   const handleSave = useCallback(
-    async (data: UserModalPayload, editingUser?: User | null) => {
+    async (name: string, editingUser?: User | null) => {
       setIsSubmitting(true);
       setMutationError(null);
 
       try {
+        let response;
+        const UserData = { name };
         if (editingUser) {
-          const payload: UpdateUserDTO = {
-            email: data.email,
-            role_id: data.role_id,
-            ...(data.password.trim()
-              ? {
-                  password: data.password,
-                  password_confirmation: data.password_confirmation,
-                }
-              : {}),
-          };
-
-          const res = await updateUser(editingUser.id, payload);
-          addToast(res.message, "success");
+          response = await updateUser(editingUser.id, UserData);
         } else {
-          const payload: CreateUserDTO = {
-            email: data.email,
-            password: data.password,
-            password_confirmation: data.password_confirmation,
-            role_id: data.role_id,
-          };
-
-          const res = await createUser(payload);
-          addToast(res.message, "success");
+          response = await createUser(UserData);
         }
 
+        addToast(response.message, "success");
         closeForm();
-        refreshUsers(); 
+        refreshUsers();
       } catch (err: any) {
-        const msg = err.response?.data?.message || err.message || "Error al guardar";
+        const msg =
+          err.response?.data?.message || err.message || "Error al guardar";
         setMutationError(msg);
         addToast(msg, "danger");
       } finally {
@@ -76,54 +57,34 @@ export function useUsersMutations({
   );
 
   const handleConfirmAction = useCallback(
-    async (userItem: User | null, type: "ban" | "restore" | "delete" | null) => {
-      if (!userItem || !type) return;
+    async (User: User | null, type: "ban" | "restore" | "delete" | null) => {
+      if (!User || !type) return;
 
       setIsSubmitting(true);
-      setMutationError(null);
-
       try {
+        let response: { message: string } | undefined;
+
         if (type === "ban") {
-          const res = await banUser(userItem.id);
-          const now = new Date().toISOString();
-          setUsers((prev) =>
-            prev.map((u) => (u.id === userItem.id ? { ...u, deleted_at: now } : u)),
-          );
-
-          addToast(res.message, "success");
-          closeConfirm();
-          return;
+          response = await banUser(User.id);
+        } else if (type === "restore") {
+          response = await restoreUser(User.id);
+        } else if (type === "delete") {
+          response = await forceDeleteUser(User.id);
         }
 
-        if (type === "restore") {
-          const res = await restoreUser(userItem.id);
-
-          setUsers((prev) =>
-            prev.map((u) => (u.id === userItem.id ? { ...u, deleted_at: null } : u)),
-          );
-
-          addToast(res.message, "success");
+        if (response) {
+          const toastType = type === "delete" ? "warning" : "success";
+          addToast(response.message, toastType);
           closeConfirm();
-          return;
-        }
-
-        if (type === "delete") {
-          const res = await forceDeleteUser(userItem.id);
-          setUsers((prev) => prev.filter((u) => u.id !== userItem.id));
-          addToast(res.message, "warning");
-          closeConfirm();
-          return;
+          refreshUsers();
         }
       } catch (err: any) {
-        const msg =
-          err.response?.data?.message || err.message || "Error al procesar la acción";
-        setMutationError(msg);
-        addToast(msg, "danger");
+        addToast(err.message || "Error al procesar la acción", "danger");
       } finally {
         setIsSubmitting(false);
       }
     },
-    [addToast, closeConfirm, setUsers],
+    [addToast, closeConfirm, refreshUsers],
   );
 
   const handleBulkUpload = useCallback(
@@ -133,10 +94,11 @@ export function useUsersMutations({
       formData.append("file", file);
 
       try {
-        const res = await importUsers(formData);
-        addToast(res.message || "Importación exitosa", "success");
+        const response = await importUsers(formData);
+        addToast(response.message || "Importación exitosa", "success");
         refreshUsers();
       } catch (err: any) {
+        console.error("Error en carga masiva:", err);
         if (err.status === 422 && err.data?.errors) {
           openBulkError(err.data.errors);
           addToast("El archivo contiene errores que debes corregir", "warning");
