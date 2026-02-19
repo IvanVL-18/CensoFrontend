@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, type FormEvent, type ChangeEvent } from "react";
-import { X } from "lucide-react";
+import { X, Eye, EyeClosed } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { UserSchema } from "../schemas/Users.schema"; 
 import type { Rol } from "../../Roles/Roles.types";
@@ -42,6 +42,7 @@ export function UserModal({
     institution_id: "",
   });
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Detectar si hay cambios respecto a la data inicial
   const hasChanges = useMemo(() => {
@@ -51,7 +52,7 @@ export function UserModal({
     const normalize = (val: any) => (val === null || val === undefined) ? "" : String(val).trim();
 
     const emailChanged = normalize(formData.email) !== normalize(initialData.email);
-    const passwordChanged = formData.password !== ""; // Si el campo pass tiene algo, es un cambio
+    const passwordChanged = normalize(formData.password) !== normalize(initialData.password);
 
     // Helper para obtener el nombre de la opción seleccionada en los catálogos
     const getSelectedName = (list: any[], id: string | number) => {
@@ -80,18 +81,26 @@ export function UserModal({
     if (isOpen) {
       // Helper para encontrar el ID en el catálogo comparando nombres (útil para IDs encriptados)
       const findIdInCatalog = (catalog: any[], relation: any, fallbackId: any) => {
+        // 1. Prioridad: Coincidencia por Nombre (para saltar encriptación)
         if (relation && relation.name) {
           const match = catalog.find(
             (item) => String(item.name).trim().toLowerCase() === String(relation.name).trim().toLowerCase()
           );
           if (match) return match.id;
         }
-        return relation?.id || fallbackId || "";
+        
+        // 2. Fallback: Coincidencia directa de ID (por si no hay encriptación o coinciden)
+        if (fallbackId) {
+             const directMatch = catalog.find(item => String(item.id) === String(fallbackId));
+             if (directMatch) return directMatch.id;
+        }
+
+        return "";
       };
 
       setFormData({
         email: initialData?.email || "",
-        password: "", // La contraseña siempre inicia vacía
+        password: initialData?.password || "",
         password_confirmation: "",
         role_id: findIdInCatalog(roles, initialData?.role, initialData?.role_id),
         occupation_id: findIdInCatalog(occupations, initialData?.occupation, initialData?.occupation_id),
@@ -162,8 +171,17 @@ export function UserModal({
 
               {/* Password */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Contraseña {initialData ? "(Dejar en blanco para mantener)" : ""}:</label>
-                <input type="password" id="password" name="password" value={formData.password} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]" />
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Contraseña {initialData ? "(Dejar vacía para no cambiar)" : "(Obligatoria)"}:</label>
+                <div className="relative">
+                  <input type={showPassword ? "text" : "password"} id="password" name="password" value={formData.password} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
 
               {/* Confirm Password */}
@@ -193,6 +211,7 @@ export function UserModal({
                 <label htmlFor="area_id" className="block text-sm font-medium text-gray-700 mb-1">Área:</label>
                 <select id="area_id" name="area_id" value={formData.area_id} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]">
                   <option value="">Seleccionar Área</option>
+                  {areas.length === 0 && <option disabled>Cargando áreas...</option>}
                   {areas.map((area: any) => <option key={area.id} value={area.id}>{area.name}</option>)}
                 </select>
               </div>

@@ -36,6 +36,10 @@ export function useUsersMutations({
         let response;
         if (editingUser) {
           const updateData: UpdateUserDTO = { ...userData };
+          if (updateData.email === editingUser.email) {
+            delete updateData.email;
+          }
+
           if (!updateData.password) {
             delete updateData.password;
             delete updateData.password_confirmation;

@@ -8,7 +8,11 @@ const getRelatedData = async (endpoint: string, signal?: AbortSignal) => {
   try {
     const response = await api.get(`/${endpoint}`, { signal });
     return response.data.data || response.data;
-  } catch (error) {
+  } catch (error: any) {
+    // Ignoramos errores de cancelación (ocurren al navegar rápido o en React Strict Mode)
+    if (error.name === "CanceledError" || error.code === "ERR_CANCELED") {
+      return [];
+    }
     console.warn(`No se pudo cargar ${endpoint}`, error);
     return [];
   }
@@ -68,7 +72,7 @@ export function useUsersData() {
           await Promise.all([
             getRelatedData("roles", signal),
             getRelatedData("occupations", signal),
-            getRelatedData("areas", signal),
+            getRelatedData("area", signal),
             getRelatedData("institutions", signal),
           ]);
         setRoles(rolesData);
