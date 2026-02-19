@@ -44,22 +44,10 @@ export function UnitsTable({
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            {/* 1. Columna "No." */}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-              <button
-                onClick={() => onSort("id")} 
-                className="
-                  flex items-center space-x-1     
-                  text-xs font-medium text-gray-500 uppercase tracking-wider
-                  hover:text-opacity-75 transition-colors
-                "
-              >
-                <span>No°</span>
-                <IconSort size={16} strokeWidth={2.5} />
-              </button>
+              <span>No°</span>
             </th>
 
-            {/* 2. Columna "Nombre" */}
             <th className="px-6 py-3 text-left w-full">
               <button
                 onClick={() => onSort("name")} 
@@ -74,14 +62,12 @@ export function UnitsTable({
               </button>
             </th>
 
-            {/* 3. Columna "Opciones" */}
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
               Opciones
             </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {/* --- Estados de Carga y Error --- */}
           {loading && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
@@ -101,7 +87,6 @@ export function UnitsTable({
             </tr>
           )}
 
-          {/* --- Estado Vacío --- */}
           {!loading && !error && units.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
@@ -110,26 +95,21 @@ export function UnitsTable({
             </tr>
           )}
 
-          {/* --- Mapeo de datos --- */}
           {!loading &&
             !error &&
             units.map((unit, index) => (
               <tr key={unit.id} className="hover:bg-gray-50">
-                {/* Celda "No." */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {meta ? meta.from + index : unit.id}
                 </td>
 
-                {/* Celda "Nombre" */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {unit.name}
                 </td>
 
-                {/* Celda "Opciones" con lógica condicional */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
                   {!unit.deleted_at ? (
                     <>
-                      {/* --- Botón VER (Activo) --- */}
                       <button
                         title="Ver Modulo"
                         onClick={() => onView(unit)} 
@@ -143,7 +123,6 @@ export function UnitsTable({
                         <IconView />
                       </button>
 
-                      {/* --- Botón EDITAR (Activo) --- */}
                       <button
                         title="Editar Modulo"
                         onClick={() => onEdit(unit)} 
@@ -157,7 +136,6 @@ export function UnitsTable({
                         <IconEdit />
                       </button>
 
-                      {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
                         title="Desactivar Modulo"
                         onClick={() => onBan(unit)} 
@@ -173,7 +151,6 @@ export function UnitsTable({
                     </>
                   ) : (
                     <>
-                      {/* --- Botón VER (Inactivo) --- */}
                       <button
                         title="Ver Modulo"
                         onClick={() => onView(unit)} 
@@ -187,7 +164,6 @@ export function UnitsTable({
                         <IconView />
                       </button>
 
-                      {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
                         title="Restaurar Modulo"
                         onClick={() => onRestore(unit)} 
@@ -201,7 +177,6 @@ export function UnitsTable({
                         <IconCircleArrowUp />
                       </button>
 
-                      {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
                       <button
                         title="Eliminar Permanentemente"
                         onClick={() => onDelete(unit)} 
