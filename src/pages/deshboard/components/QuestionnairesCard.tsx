@@ -68,14 +68,7 @@ export default function QuestionnairesCard({
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-                <button
-                  type="button"
-                  onClick={() => onSort?.("id")}
-                  className="flex items-center space-x-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-opacity-75 transition-colors"
-                >
-                  <span>No°</span>
-                  <IconSort size={16} strokeWidth={2.5} />
-                </button>
+                <span>No°</span>
               </th>
 
               <th className="px-6 py-3 text-left w-full">
