@@ -13,6 +13,8 @@ export default function ChartsCard({
   totalInstitutions,
   questionsByCenso,
 }: Props) {
+  const barMinWidth = Math.max((questionsByCenso?.length ?? 0) * 140, 600);
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="bg-[#7A0C2E] px-4 py-5.5">
@@ -39,19 +41,21 @@ export default function ChartsCard({
           />
         </div>
 
-        {/* Preguntas por censo (barras) */}
         <div>
           <h3 className="text-sm font-semibold text-slate-800 mb-3">
             Preguntas por censo
           </h3>
-
-          <ChartPlaceholder
-            kind="bar"
-            barData={(questionsByCenso ?? []).map((x) => ({
-              label: x.name,
-              value: x.total,
-            }))}
-          />
+          <div className="w-full overflow-x-auto pb-2">
+            <div style={{ minWidth: barMinWidth }}>
+              <ChartPlaceholder
+                kind="bar"
+                barData={(questionsByCenso ?? []).map((x) => ({
+                  label: x.name,
+                  value: x.total,
+                }))}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
