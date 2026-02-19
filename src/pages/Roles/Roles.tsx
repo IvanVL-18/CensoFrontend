@@ -16,7 +16,7 @@ import { Toast } from "../../components/Toast";
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2">
       {toasts.map((toast) => (
         <Toast
           key={toast.id}
@@ -45,19 +45,12 @@ function RolesPageContent() {
     handlePageChange,
   } = useRolesData();
 
-  const handleViewClick = async (partialRol: any) => {
-    try {
-      const fullRol = await getRol(partialRol.id);
-      modals.openView(fullRol);
-    } catch (error) {
-      console.error("Error al cargar detalles del Rol", error);
-    }
-  };
   const modals = useRolesModals();
 
   const {
     isSubmitting,
     mutationError,
+    clearMutationError, 
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
@@ -67,6 +60,15 @@ function RolesPageContent() {
     closeConfirm: modals.closeConfirm,
     openBulkError: modals.openBulkError,
   });
+
+  const handleViewClick = async (partialRol: any) => {
+    try {
+      const fullRol = await getRol(partialRol.id);
+      modals.openView(fullRol);
+    } catch (error) {
+      console.error("Error al cargar detalles del Rol", error);
+    }
+  };
 
   const modalTitle = modals.editingRol ? "Editar Rol" : "Agregar Rol";
   const modalInitialName = modals.editingRol?.name || "";
@@ -96,19 +98,19 @@ function RolesPageContent() {
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
-
-      {/* Barra de Herramientas */}
       <RolesToolbar
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
-        onAddClick={modals.openCreate}
+        onAddClick={() => {
+          clearMutationError();
+          modals.openCreate();
+        }}
         onBulkUpload={handleBulkUpload}
       />
 
-      {/* Tabla de Resultados */}
       <div className="p-4">
         <RolesTable
           loading={loading}
@@ -117,58 +119,66 @@ function RolesPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={modals.openEdit}
-          onBan={(u) => modals.openConfirm(u, "ban")}
-          onRestore={(u) => modals.openConfirm(u, "restore")}
-          onDelete={(u) => modals.openConfirm(u, "delete")}
+          onEdit={(r) => {
+            clearMutationError();
+            modals.openEdit(r);
+          }}
+          onBan={(r) => {
+            clearMutationError();
+            modals.openConfirm(r, "ban");
+          }}
+          onRestore={(r) => {
+            clearMutationError();
+            modals.openConfirm(r, "restore");
+          }}
+          onDelete={(r) => {
+            clearMutationError();
+            modals.openConfirm(r, "delete");
+          }}
         />
 
-        {/* Paginación */}
         <div className="border-t border-gray-200 bg-gray-50">
-          <Pagination
-            meta={meta}
-            links={links}
-            onPageClick={handlePageChange}
-          />
+          <Pagination meta={meta} links={links} onPageClick={handlePageChange} />
         </div>
       </div>
 
-      {/* --- MODALES --- */}
-
-      {/* 1. Crear / Editar */}
       <RolModal
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
         title={modalTitle}
         initialName={modalInitialName}
-        onClose={modals.closeForm}
+        onClose={() => {
+          clearMutationError();
+          modals.closeForm();
+        }}
         onSave={(name) => handleSave(name, modals.editingRol)}
+        onClearServerError={clearMutationError}
       />
 
-      {/* 2. Confirmación (Ban/Restore/Delete) */}
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={mutationError} 
+        error={mutationError}
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
         confirmButtonColor={confirmButtonColor}
-        onClose={modals.closeConfirm}
+        onClose={() => {
+          clearMutationError();
+          modals.closeConfirm();
+        }}
         onConfirm={() =>
           handleConfirmAction(modals.actionRol, modals.actionType)
         }
       />
 
-      {/* 3. Ver Detalle */}
       <ViewRolModal
         isOpen={modals.isViewOpen}
         Rol={modals.viewingRol}
         onClose={modals.closeView}
       />
 
-      {/* 4. Errores de Excel */}
       <BulkErrorModal
         isOpen={modals.isBulkErrorOpen}
         errors={modals.bulkErrors}

@@ -1,27 +1,27 @@
 export interface Rol {
-  id: string;
+  id: string | number;
   name: string;
   created_at: string;
   updated_at: string;
-  deleted_at: string;
+  deleted_at: string | null;
 }
 
 export interface MetaLink {
   url: string | null;
   label: string;
-  page: number | null;
   active: boolean;
+  page?: number | null;
 }
 
 export interface Meta {
-  total: number[];
-  per_page: number[];
-  current_page: number[];
-  last_page: number[];
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
   from: number;
+  to: number;
   links: MetaLink[];
   path: string;
-  to: number;
 }
 
 export interface PaginatedRolesResponse {
@@ -34,6 +34,7 @@ export interface PaginatedRolesResponse {
   };
   meta: Meta;
 }
+
 export interface ExcelFailure {
   row: number;
   field: string;
@@ -71,10 +72,12 @@ export interface RolModalProps {
   initialName?: string;
   onClose: () => void;
   onSave: (name: string) => void;
+
+  onClearServerError: () => void;
 }
 
 export interface RolesTableProps {
-  Roles: Rol[]; 
+  Roles: Rol[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
@@ -85,12 +88,15 @@ export interface RolesTableProps {
   onRestore: (Rol: Rol) => void;
   onDelete: (Rol: Rol) => void;
 }
+
 export interface ViewRolModalProps {
   isOpen: boolean;
   onClose: () => void;
-  Rol: Rol | null; 
+  Rol: Rol | null;
 }
+
 export interface CreateRolDTO {
   name: string;
 }
+
 export type UpdateRolDTO = Partial<CreateRolDTO>;

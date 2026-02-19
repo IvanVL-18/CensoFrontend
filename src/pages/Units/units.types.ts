@@ -1,27 +1,27 @@
 export interface Unit {
-  id: string;
+  id: string | number;
   name: string;
   created_at: string;
   updated_at: string;
-  deleted_at: string;
+  deleted_at: string | null;
 }
 
 export interface MetaLink {
   url: string | null;
   label: string;
-  page: number | null;
   active: boolean;
+  page?: number | null;
 }
 
 export interface Meta {
-  total: number[];
-  per_page: number[];
-  current_page: number[];
-  last_page: number[];
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
   from: number;
+  to: number;
   links: MetaLink[];
   path: string;
-  to: number;
 }
 
 export interface PaginatedUnitsResponse {
@@ -34,6 +34,7 @@ export interface PaginatedUnitsResponse {
   };
   meta: Meta;
 }
+
 export interface ExcelFailure {
   row: number;
   field: string;
@@ -71,10 +72,12 @@ export interface UnitModalProps {
   initialName?: string;
   onClose: () => void;
   onSave: (name: string) => void;
+
+  onClearServerError: () => void;
 }
 
 export interface UnitsTableProps {
-  units: Unit[]; 
+  units: Unit[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
@@ -85,12 +88,15 @@ export interface UnitsTableProps {
   onRestore: (unit: Unit) => void;
   onDelete: (unit: Unit) => void;
 }
+
 export interface ViewUnitModalProps {
   isOpen: boolean;
   onClose: () => void;
-  unit: Unit | null; 
+  unit: Unit | null;
 }
+
 export interface CreateUnitDTO {
   name: string;
 }
+
 export type UpdateUnitDTO = Partial<CreateUnitDTO>;

@@ -16,7 +16,7 @@ import { Toast } from "../../components/Toast";
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2">
       {toasts.map((toast) => (
         <Toast
           key={toast.id}
@@ -45,19 +45,12 @@ function UnitsPageContent() {
     handlePageChange,
   } = useUnitsData();
 
-  const handleViewClick = async (partialUnit: any) => {
-    try {
-      const fullUnit = await getUnit(partialUnit.id);
-      modals.openView(fullUnit);
-    } catch (error) {
-      console.error("Error al cargar detalles del módulo", error);
-    }
-  };
   const modals = useUnitsModals();
 
   const {
     isSubmitting,
     mutationError,
+    clearMutationError, 
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
@@ -67,6 +60,15 @@ function UnitsPageContent() {
     closeConfirm: modals.closeConfirm,
     openBulkError: modals.openBulkError,
   });
+
+  const handleViewClick = async (partialUnit: any) => {
+    try {
+      const fullUnit = await getUnit(partialUnit.id);
+      modals.openView(fullUnit);
+    } catch (error) {
+      console.error("Error al cargar detalles del módulo", error);
+    }
+  };
 
   const modalTitle = modals.editingUnit ? "Editar Módulo" : "Agregar Módulo";
   const modalInitialName = modals.editingUnit?.name || "";
@@ -97,18 +99,19 @@ function UnitsPageContent() {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
 
-      {/* Barra de Herramientas */}
       <UnitsToolbar
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
-        onAddClick={modals.openCreate}
+        onAddClick={() => {
+          clearMutationError();
+          modals.openCreate();
+        }}
         onBulkUpload={handleBulkUpload}
       />
 
-      {/* Tabla de Resultados */}
       <div className="p-4">
         <UnitsTable
           loading={loading}
@@ -117,58 +120,64 @@ function UnitsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={modals.openEdit}
-          onBan={(u) => modals.openConfirm(u, "ban")}
-          onRestore={(u) => modals.openConfirm(u, "restore")}
-          onDelete={(u) => modals.openConfirm(u, "delete")}
+          onEdit={(u) => {
+            clearMutationError();
+            modals.openEdit(u);
+          }}
+          onBan={(u) => {
+            clearMutationError();
+            modals.openConfirm(u, "ban");
+          }}
+          onRestore={(u) => {
+            clearMutationError();
+            modals.openConfirm(u, "restore");
+          }}
+          onDelete={(u) => {
+            clearMutationError();
+            modals.openConfirm(u, "delete");
+          }}
         />
 
-        {/* Paginación */}
         <div className="border-t border-gray-200 bg-gray-50">
-          <Pagination
-            meta={meta}
-            links={links}
-            onPageClick={handlePageChange}
-          />
+          <Pagination meta={meta} links={links} onPageClick={handlePageChange} />
         </div>
       </div>
 
-      {/* --- MODALES --- */}
-
-      {/* 1. Crear / Editar */}
       <UnitModal
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
         title={modalTitle}
         initialName={modalInitialName}
-        onClose={modals.closeForm}
+        onClose={() => {
+          clearMutationError();
+          modals.closeForm();
+        }}
         onSave={(name) => handleSave(name, modals.editingUnit)}
+        onClearServerError={clearMutationError}
       />
 
-      {/* 2. Confirmación (Ban/Restore/Delete) */}
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={mutationError} 
+        error={mutationError}
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
         confirmButtonColor={confirmButtonColor}
-        onClose={modals.closeConfirm}
-        onConfirm={() =>
-          handleConfirmAction(modals.actionUnit, modals.actionType)
-        }
+        onClose={() => {
+          clearMutationError();
+          modals.closeConfirm();
+        }}
+        onConfirm={() => handleConfirmAction(modals.actionUnit, modals.actionType)}
       />
 
-      {/* 3. Ver Detalle */}
       <ViewUnitModal
         isOpen={modals.isViewOpen}
         unit={modals.viewingUnit}
         onClose={modals.closeView}
       />
 
-      {/* 4. Errores de Excel */}
       <BulkErrorModal
         isOpen={modals.isBulkErrorOpen}
         errors={modals.bulkErrors}
