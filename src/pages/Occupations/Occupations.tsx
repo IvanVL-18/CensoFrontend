@@ -1,23 +1,21 @@
-import { useOccupations } from "./useOccupation";
-import { OccupationsToolbar } from "./OccupationsToolbar";
-import { OccupationsTable } from "./OccupationsTable";
+import { useOccupationsData } from "./hooks/useOccupationsData";
+import { useOccupationsModals } from "./hooks/useOccupationsModals";
+import { useOccupationsMutations } from "./hooks/useOccupationsMutations";
+import { getOccupation } from "./Occupations.service";
+import { OccupationsToolbar } from "./components/OccupationsToolbar";
+import { OccupationsTable } from "./components/OccupationsTable";
 import Pagination from "../../components/Pagination";
-import { OccupationModal } from "./OccupationsModal";
-import { ConfirmModal } from "./ConfirmModal";
-import { ViewOccupationModal } from "./ViewOccupationModal";
-// <--- Tus imports están perfectos
+import { OccupationModal } from "./components/OccupationsModal";
+import { ConfirmModal } from "./components/ConfirmModal";
+import { ViewOccupationModal } from "./components/ViewOccupationsModal";
+import { BulkErrorModal } from "./components/BulkErrorModal";
+
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
-// ---
-// 1. Contenedor de Toasts
-//    (Lo sacamos fuera para que sea más limpio)
-// ---
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
-
   return (
-    // Aquí definimos la posición de TODOS los toasts
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
       {toasts.map((toast) => (
         <Toast
@@ -31,159 +29,155 @@ function ToastContainer() {
   );
 }
 
-// ---
-// 2. Componente Interno para el Contenido de la Página
-//    (Este componente contiene TODO tu código anterior)
-// ---
 function OccupationsPageContent() {
   const {
+    Occupations,
     loading,
     error,
-    sortedOccupations,
     meta,
     links,
     filter,
     searchTerm,
-    isModalOpen,
-    isSubmitting,
-    modalError,
-    editingOccupation,
-    isConfirmModalOpen,
-    actionOccupation,
-    actionType,
-    isViewModalOpen,
-    viewingOccupation,
-    institutions,
+    refreshOccupations,
     handleFilterChange,
-    handleSearchChange,
     handleSort,
-    handlePageClick,
-    handleAddClick,
-    handleModalClose,
-    handleModalSave,
-    onView,
-    onEdit,
-    onBan,
-    onRestore,
-    onDelete,
-    handleViewModalClose,
-    handleConfirmModalClose,
+    handleSearch,
+    handlePageChange,
+  } = useOccupationsData();
+
+  const handleViewClick = async (partialOccupation: any) => {
+    try {
+      const fullOccupation = await getOccupation(partialOccupation.id);
+      modals.openView(fullOccupation);
+    } catch (error) {
+      console.error("Error al cargar detalles de la Ocupación", error);
+    }
+  };
+  const modals = useOccupationsModals();
+
+  const {
+    isSubmitting,
+    mutationError,
+    handleSave,
     handleConfirmAction,
-  } = useOccupations(); // <--- Ahora esta llamada es SEGURA porque está DENTRO del Provider
+    handleBulkUpload,
+  } = useOccupationsMutations({
+    refreshOccupations,
+    closeForm: modals.closeForm,
+    closeConfirm: modals.closeConfirm,
+    openBulkError: modals.openBulkError,
+  });
 
-  // Si 'editingOccupation' tiene datos, el título es "Editar". Si no, "Agregar".
-  const modalTitle = editingOccupation
-    ? "Editar Ocupación"
-    : "Agregar Ocupación";
-
-  // Si 'editingOccupation' tiene datos, pasamos el nombre. Si no, pasamos "".
-  const modalInitialName = editingOccupation ? editingOccupation.name : "";
-
-  // Si 'editingOccupation' tiene datos, pasamos el ID de su institución. Si no, pasamos "".
-  const modalInitialInstitutionId = editingOccupation
-    ? editingOccupation.institution_id
-    : "";
+  const modalTitle = modals.editingOccupation ? "Editar Ocupación" : "Agregar Ocupación";
+  const modalInitialName = modals.editingOccupation?.name || "";
 
   let confirmTitle = "";
   let confirmMessage = "";
   let confirmButtonText = "";
-  // Asignamos un tipo explícito a la variable
   let confirmButtonColor: "danger" | "primary" = "danger";
-  if (actionType === "ban") {
+
+  if (modals.actionType === "ban") {
     confirmTitle = "Desactivar Ocupación";
-    confirmMessage = `¿Estás seguro de que quieres desactivar la ocupación "${actionOccupation?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres desactivar el Ocupación "${modals.actionOccupation?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
-  } else if (actionType === "restore") {
+  } else if (modals.actionType === "restore") {
     confirmTitle = "Restaurar Ocupación";
-    confirmMessage = `¿Estás seguro de que quieres restaurar la ocupación "${actionOccupation?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres restaurar el Ocupación "${modals.actionOccupation?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
-  } else if (actionType === "delete") {
+  } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la ocupación "${actionOccupation?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el Ocupación "${modals.actionOccupation?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
-      {" "}
-      {/* Añadido 'relative' por si acaso */}
-      {/* 3. Renderizamos el contenedor de Toasts */}
       <ToastContainer />
-      {/* --- Cabecera y Filtros --- */}
+
+      {/* Barra de Herramientas */}
       <OccupationsToolbar
         filter={filter}
         searchTerm={searchTerm}
+        isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
-        onSearchChange={handleSearchChange}
-        onAddClick={handleAddClick}
+        onSearchChange={handleSearch}
+        onAddClick={modals.openCreate}
+        onBulkUpload={handleBulkUpload}
       />
-      {/* --- Contenido Principal (Tabla y Paginación) --- */}
+
+      {/* Tabla de Resultados */}
       <div className="p-4">
-        {/* --- Tabla de datos --- */}
         <OccupationsTable
           loading={loading}
           error={error}
-          occupation={sortedOccupations}
+          Occupations={Occupations}
           meta={meta}
           onSort={handleSort}
-          onView={onView}
-          onEdit={onEdit}
-          onBan={onBan}
-          onRestore={onRestore}
-          onDelete={onDelete}
+          onView={handleViewClick}
+          onEdit={modals.openEdit}
+          onBan={(u) => modals.openConfirm(u, "ban")}
+          onRestore={(u) => modals.openConfirm(u, "restore")}
+          onDelete={(u) => modals.openConfirm(u, "delete")}
         />
 
-        {/* --- Paginación --- */}
-        <div className="mt-4 flex justify-center">
+        {/* Paginación */}
+        <div className="border-t border-gray-200 bg-gray-50">
           <Pagination
             meta={meta}
             links={links}
-            loading={loading}
-            error={error}
-            onPageClick={handlePageClick}
+            onPageClick={handlePageChange}
           />
         </div>
       </div>
-      {/* --- Modales --- */}
+
+      {/* --- MODALES --- */}
+
+      {/* 1. Crear / Editar */}
       <OccupationModal
-        isOpen={isModalOpen}
+        isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
-        error={modalError}
+        error={mutationError}
         title={modalTitle}
         initialName={modalInitialName}
-        // --- Props añadidas ---
-        initialInstitutionId={modalInitialInstitutionId}
-        institutions={institutions}
-        onClose={handleModalClose}
-        onSave={handleModalSave}
+        onClose={modals.closeForm}
+        onSave={(name) => handleSave(name, modals.editingOccupation)}
       />
+
+      {/* 2. Confirmación (Ban/Restore/Delete) */}
       <ConfirmModal
-        isOpen={isConfirmModalOpen}
+        isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={modalError}
+        error={mutationError} 
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
         confirmButtonColor={confirmButtonColor}
-        onClose={handleConfirmModalClose}
-        onConfirm={handleConfirmAction}
+        onClose={modals.closeConfirm}
+        onConfirm={() =>
+          handleConfirmAction(modals.actionOccupation, modals.actionType)
+        }
       />
+
+      {/* 3. Ver Detalle */}
       <ViewOccupationModal
-        isOpen={isViewModalOpen}
-        occupation={viewingOccupation}
-        onClose={handleViewModalClose}
+        isOpen={modals.isViewOpen}
+        Occupation={modals.viewingOccupation}
+        onClose={modals.closeView}
+      />
+
+      {/* 4. Errores de Excel */}
+      <BulkErrorModal
+        isOpen={modals.isBulkErrorOpen}
+        errors={modals.bulkErrors}
+        onClose={modals.closeBulkError}
       />
     </div>
   );
 }
 
-// ---
-// 3. Componente Principal (Exportado)
-//    Su única función es "proveer" el contexto de Toasts
-// ---
 export default function Occupations() {
   return (
     <ToastProvider>

@@ -1,13 +1,13 @@
 import { type ChangeEvent, useRef } from "react";
 import { CirclePlus, FileDown } from "lucide-react";
 
-import type { sectionFilter } from "../Sections.service";
+import type { SectionFilter } from "../sections.service";
 import { SearchInput } from "../../../components/SearchInput";
 import AddButton from "../../../components/AddButton";
 import StatusFilterSelect from "../../../components/StatusFilterSelect";
 
 interface SectionsToolbarProps {
-  filter: sectionFilter;
+  filter: SectionFilter;
   searchTerm: string;
   isSubmitting: boolean;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
@@ -40,10 +40,9 @@ export function SectionsToolbar({
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-red-900">
-        <h1 className="text-xl md:text-2xl font-bold text-white">Módulos</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-white">Secciónes</h1>
 
         <div className="flex items-center gap-2">
-          {/* Input de archivo oculto que solo acepta Excel/CSV */}
           <input
             type="file"
             ref={fileInputRef}
@@ -56,12 +55,12 @@ export function SectionsToolbar({
             label={isSubmitting ? "Cargando..." : "Carga Masiva"}
             onClick={() => fileInputRef.current?.click()}
             variant="green"
-            disabled={isSubmitting} 
+            disabled={isSubmitting}
             icon={<FileDown size={22} strokeWidth={2.5} />}
           />
 
           <AddButton
-            label="Agregar Módulo"
+            label="Agregar Sección"
             onClick={onAddClick}
             variant="gold"
             icon={<CirclePlus size={22} strokeWidth={2.5} />}

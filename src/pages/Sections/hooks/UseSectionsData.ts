@@ -1,56 +1,55 @@
 import { useState, useEffect, useCallback, type ChangeEvent } from "react";
-import { getSections, type sectionFilter } from "../Sections.service";
-import type {
-  section,
-  PaginatedSectionsResponse,
-  Meta,
-} from "../Sections.types";
+import { getSections, type SectionFilter } from "../sections.service";
+import type { Section, PaginatedSectionsResponse, Meta } from "../Sections.types";
 
 export function useSectionsData() {
-  const [Sections, setSections] = useState<section[]>([]);
-  const [links, setLinks] = useState<PaginatedSectionsResponse["links"] | null>(
-    null,
-  );
+  const [Sections, setSections] = useState<Section[]>([]);
+  const [links, setLinks] = useState<PaginatedSectionsResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<sectionFilter>("all");
+
+  // --- FILTROS Y ESTADOS ---
+  const [filter, setFilter] = useState<SectionFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  // Estado para guardar el término "confirmado" después de que el usuario deje de escribir
+  const [debouncedSearch, setDebouncedSearch] = useState(""); 
+  
+  const [page, setPage] = useState(1); 
 
-  const [page, setPage] = useState(1);
-
-  const [sortConfig, setSortConfig] = useState<{
-    key: string;
-    direction: "asc" | "desc";
-  }>({
-    key: "id",
+  // --- ORDENAMIENTO ---
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" }>({
+    key: "id", // Orden por defecto (No.)
     direction: "asc",
   });
 
   const [reloadToken, setReloadToken] = useState(0);
   const refreshSections = useCallback(() => setReloadToken((t) => t + 1), []);
 
+  // 1. EFECTO DEBOUNCE (Optimización de Búsqueda)
+  // Espera 500ms después de que dejes de escribir para actualizar la búsqueda real
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-      setPage(1);
+      setPage(1); // Resetear a pág 1 cuando cambie la búsqueda real
     }, 500);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // 2. EFECTO DE CARGA DE DATOS
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
 
+    // Usamos debouncedSearch en lugar de searchTerm directo
     getSections(
-      filter,
-      debouncedSearch,
-      page,
-      sortConfig.key,
-      sortConfig.direction,
-      controller.signal,
+      filter, 
+      debouncedSearch, 
+      page, 
+      sortConfig.key,      // Enviamos columna
+      sortConfig.direction, // Enviamos dirección
+      controller.signal
     )
       .then((data) => {
         setSections(data.data);
@@ -68,18 +67,18 @@ export function useSectionsData() {
       });
 
     return () => controller.abort();
-  }, [filter, debouncedSearch, page, sortConfig, reloadToken]);
+  }, [filter, debouncedSearch, page, sortConfig, reloadToken]); // Agregamos sortConfig a dependencias
 
-  const handleFilterChange = useCallback(
-    (e: ChangeEvent<HTMLSelectElement>) => {
-      setFilter(e.target.value as sectionFilter);
-      setPage(1);
-    },
-    [],
-  );
+  // --- HANDLERS ---
+
+  const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
+    setFilter(e.target.value as SectionFilter);
+    setPage(1);
+  }, []);
 
   const handleSearch = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    // Nota: No reseteamos page aquí, lo hace el useEffect del debounce
   }, []);
 
   const handlePageChange = useCallback((url: string | null) => {
@@ -88,16 +87,15 @@ export function useSectionsData() {
       const urlObj = new URL(url);
       const pageParam = urlObj.searchParams.get("page");
       if (pageParam) setPage(Number(pageParam));
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   }, []);
 
-  const handleSort = useCallback((key: keyof section) => {
+  // 3. IMPLEMENTACIÓN DEL SORT
+  const handleSort = useCallback((key: keyof Section) => {
     setSortConfig((current) => ({
       key: key as string,
-      direction:
-        current.key === key && current.direction === "asc" ? "desc" : "asc",
+      // Si damos click en la misma columna, invertimos dirección. Si es nueva, empezamos en asc.
+      direction: current.key === key && current.direction === "asc" ? "desc" : "asc",
     }));
   }, []);
 
@@ -113,6 +111,6 @@ export function useSectionsData() {
     handleFilterChange,
     handleSearch,
     handlePageChange,
-    handleSort,
+    handleSort, // Ya funciona de verdad
   };
 }

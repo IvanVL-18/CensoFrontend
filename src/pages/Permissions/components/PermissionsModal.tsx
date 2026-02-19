@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import type { PermissionModalProps } from "../Permissions.types";
@@ -15,13 +15,26 @@ export function PermissionModal({
 }: PermissionModalProps) {
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const prevIsSubmitting = useRef(isSubmitting);
 
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
       setFormErrors([]);
+      setServerError(null);
     }
-  }, [isOpen, initialName]);
+  }, [isOpen, initialName]); 
+
+  useEffect(() => {
+    if (prevIsSubmitting.current && !isSubmitting && error) {
+      setServerError(error);
+    } else if (!error && serverError) {
+      setServerError(null);
+    }
+    prevIsSubmitting.current = isSubmitting;
+  }, [isSubmitting, error, serverError]);
+
   const validateForm = (currentName: string) => {
     const result = Permissionschema.safeParse({ name: currentName });
     if (!result.success) {
@@ -46,6 +59,7 @@ export function PermissionModal({
     const newName = e.target.value;
     setName(newName);
     validateForm(newName);
+    if (serverError) setServerError(null);
   };
 
   if (!isOpen) {
@@ -53,7 +67,7 @@ export function PermissionModal({
   }
 
   const hasClientErrors = formErrors.length > 0;
-  const hasServerError = !!error;
+  const hasServerError = !!serverError;
 
   return (
     <>
@@ -97,9 +111,9 @@ export function PermissionModal({
                 <FormErrors errors={formErrors} />
               </div>
 
-              {error && (
+              {serverError && (
                  <div id="form-errors-server">
-                   <FormErrors errors={[error]} />
+                   <FormErrors errors={[serverError]} />
                  </div>
               )}
             </div>

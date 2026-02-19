@@ -12,7 +12,7 @@ export function useUnitsModals() {
 
   const openEdit = useCallback((unit: Unit) => {
     setEditingUnit(unit);
-    setIsFormOpen(true);
+    setIsFormOpen(true); 
   }, []);
 
   const closeForm = useCallback(() => {

@@ -1,22 +1,11 @@
 import { X } from "lucide-react";
-// Importa tu interfaz 'Occupation' desde donde la tengas
-import type { Occupation} from "./Occupations.interfaces";
+import type { ViewOccupationModalProps } from "../Occupations.types";
 
-interface ViewOccupationModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  occupation: Occupation | null; // La ocupación que vamos a mostrar
-}
-
-/**
- * helper para formatear las fechas de Laravel a un formato legible
- */
 const formatDate = (dateString: string | null) => {
   if (!dateString) {
-    return "N/A"; // No aplica (ej. si no ha sido desactivado)
+    return "N/A"; 
   }
   try {
-    // Convierte 'YYYY-MM-DDTHH:MM:SS.mmmmmmZ' a un formato local
     return new Date(dateString).toLocaleString('es-MX', {
       year: 'numeric',
       month: 'long',
@@ -30,9 +19,6 @@ const formatDate = (dateString: string | null) => {
   }
 };
 
-/**
- * Componente de fila para mostrar un detalle
- */
 function DetailRow({ label, value }: { label: string, value: string | null }) {
   return (
     <div>
@@ -44,13 +30,8 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewOccupationModal({
-  isOpen,
-  onClose,
-  occupation,
-}: ViewOccupationModalProps) {
-  // Si no está abierto o no hay una unidad, no renderiza nada
-  if (!isOpen || !occupation) {
+export function ViewOccupationModal({ isOpen, onClose, Occupation }: ViewOccupationModalProps) {
+  if (!isOpen || !Occupation) {
     return null;
   }
 
@@ -81,20 +62,16 @@ export function ViewOccupationModal({
           {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
             <DetailRow 
-              label="Nombre de la Ocupación:" 
-              value={occupation.name} 
-            />
-            <DetailRow 
-              label="Institución:" 
-              value={occupation.institution_name ?? "Sin institución"}
+              label="Nombre de la ocupación:" 
+              value={Occupation.name} 
             />
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(occupation.created_at)} // Asumiendo que se llama así
+              value={formatDate(Occupation.created_at)} 
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(occupation.deleted_at)} // Asumiendo que se llama así
+              value={formatDate(Occupation.deleted_at)} 
             />
           </div>
 

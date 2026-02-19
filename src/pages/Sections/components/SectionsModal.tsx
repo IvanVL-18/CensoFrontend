@@ -1,7 +1,7 @@
-import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
-import type { sectionModalProps } from "../Sections.types";
+import type { SectionModalProps } from "../Sections.types";
 import { Sectionschema } from "../schemas/Sections.schema"; 
 
 export function SectionModal({
@@ -12,16 +12,29 @@ export function SectionModal({
   initialName = "",
   onClose,
   onSave,
-}: sectionModalProps) {
+}: SectionModalProps) {
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const prevIsSubmitting = useRef(isSubmitting);
 
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
       setFormErrors([]);
+      setServerError(null);
     }
-  }, [isOpen, initialName]);
+  }, [isOpen, initialName]); 
+
+  useEffect(() => {
+    if (prevIsSubmitting.current && !isSubmitting && error) {
+      setServerError(error);
+    } else if (!error && serverError) {
+      setServerError(null);
+    }
+    prevIsSubmitting.current = isSubmitting;
+  }, [isSubmitting, error, serverError]);
+
   const validateForm = (currentName: string) => {
     const result = Sectionschema.safeParse({ name: currentName });
     if (!result.success) {
@@ -46,6 +59,7 @@ export function SectionModal({
     const newName = e.target.value;
     setName(newName);
     validateForm(newName);
+    if (serverError) setServerError(null);
   };
 
   if (!isOpen) {
@@ -53,7 +67,8 @@ export function SectionModal({
   }
 
   const hasClientErrors = formErrors.length > 0;
-  const hasServerError = !!error;
+  const hasServerError = !!serverError;
+  const hasChanges = name !== initialName;
 
   return (
     <>
@@ -73,12 +88,12 @@ export function SectionModal({
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
-              <label htmlFor="sectionName" className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre del modulo:
+              <label htmlFor="SectionName" className="block text-sm font-medium text-gray-700 mb-2">
+                Nombre de la Sección:
               </label>
               <input
                 type="text"
-                id="sectionName"
+                id="SectionName"
                 value={name}
                 onChange={handleNameChange}
                 placeholder="Ingresar nombre..."
@@ -97,9 +112,9 @@ export function SectionModal({
                 <FormErrors errors={formErrors} />
               </div>
 
-              {error && (
+              {serverError && (
                  <div id="form-errors-server">
-                   <FormErrors errors={[error]} />
+                   <FormErrors errors={[serverError]} />
                  </div>
               )}
             </div>
@@ -115,7 +130,7 @@ export function SectionModal({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || hasClientErrors}
+                disabled={isSubmitting || hasClientErrors || !hasChanges}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}

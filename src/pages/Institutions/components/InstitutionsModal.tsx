@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
-import type { CreateInstitutionDTO } from "../institutions.types";
-import {InstitutionSchema} from "../schemas/institutions.schema"; // Importamos nuestra nueva función
+import { X, MapPinned } from "lucide-react";
+
+import type { CreateInstitutionDTO, UpdateInstitutionDTO } from "../institutions.types";
+import { InstitutionSchema } from "../schemas/institutions.schema";
+import { FormErrors } from "./FormErrors";
 
 interface InstitutionModalProps {
   isOpen: boolean;
@@ -12,8 +14,11 @@ interface InstitutionModalProps {
   initialMunicipality?: string;
   initialGeocode?: string;
   initialType?: string;
+  isEditMode?: boolean;
+  onEditLocation?: () => void;
+  pendingCoords?: { lat: number; lon: number } | null;
   onClose: () => void;
-  onSave: (formData: CreateInstitutionDTO) => Promise<void>;
+  onSave: (formData: CreateInstitutionDTO | UpdateInstitutionDTO) => Promise<void>;
 }
 
 export function InstitutionModal({
@@ -25,6 +30,9 @@ export function InstitutionModal({
   initialMunicipality = "",
   initialGeocode = "",
   initialType = "",
+  isEditMode = false,
+  onEditLocation,
+  pendingCoords,
   onClose,
   onSave,
 }: InstitutionModalProps) {
@@ -33,51 +41,110 @@ export function InstitutionModal({
   const [geocode, setGeocode] = useState(initialGeocode);
   const [typeinst, setTypeinst] = useState(initialType);
 
-  // Manejo de errores del formulario
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
 
-  // Sincronizar el estado con las props iniciales cuando cambian (para editar)
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
       setMunicipality(initialMunicipality);
       setGeocode(initialGeocode);
       setTypeinst(initialType);
-      // Limpiamos los errores de formulario de la sesión anterior al abrir
       setFormErrors([]);
+      setHasChanges(false);
     }
   }, [isOpen, initialName, initialMunicipality, initialGeocode, initialType]);
 
-  // Efecto para validar el formulario en cada cambio de los inputs
-  useEffect(() => {
-    // No mostramos errores hasta que el usuario intente guardar por primera vez.
-    // `hadAttemptedSubmit` nos ayuda a controlar esto.
-    // Pero si ya hay errores, validamos en tiempo real para limpiarlos.
-    if (formErrors.length > 0) { // Solo re-valida si ya se mostró un error
-      validateForm(name,municipality, geocode, typeinst);
-    }
-  }, [name, municipality, geocode, typeinst]);
+  const validateForm = (
+    currentName: string,
+    currentMunicipality: string,
+    currentGeocode: string,
+    currentTypeinst: string
+  ) => {
+    const result = InstitutionSchema.safeParse({
+      name: currentName,
+      municipality: currentMunicipality,
+      geocode: currentGeocode,
+      typeinst: currentTypeinst,
+    });
 
-  const validateForm = (currentName: string, municipality: string, geocode: string, typeinst: string) => {
-      const result = InstitutionSchema.safeParse({ name: currentName, municipality, geocode, typeinst });
-      if (!result.success) {
-        const errorMessages = result.error.issues.map((err) => err.message);
-        setFormErrors(errorMessages);
-        return false; 
-      } else {
-        setFormErrors([]);
-        return true; 
-      }
-    };
-  // Lógica de envío del formulario
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm(name,municipality, geocode, typeinst)) {
-      onSave({ name, municipality, geocode, typeinst }); // Enviamos todo el objeto a onSave
+    if (!result.success) {
+      const errorMessages = result.error.issues.map((err) => err.message);
+      setFormErrors(errorMessages);
+      return false;
     }
+
+    setFormErrors([]);
+    return true;
   };
 
-  // Manejador para cambios en los campos del formulario
+  useEffect(() => {
+    if (!isOpen) return;
+
+
+    const changed =
+      name !== initialName ||
+      municipality !== initialMunicipality ||
+      geocode !== initialGeocode ||
+      typeinst !== initialType ||
+      !!pendingCoords;
+
+    setHasChanges(changed);
+
+    
+    if (formErrors.length > 0) {
+      validateForm(name, municipality, geocode, typeinst);
+    }
+  
+  }, [
+    name,
+    municipality,
+    geocode,
+    typeinst,
+    initialName,
+    initialMunicipality,
+    initialGeocode,
+    initialType,
+    pendingCoords,
+    isOpen,
+  ]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+   
+    if (!validateForm(name, municipality, geocode, typeinst)) return;
+
+  
+    if (isEditMode) {
+      const dataToSend: UpdateInstitutionDTO = {};
+
+      if (name !== initialName) dataToSend.name = name;
+      if (municipality !== initialMunicipality) dataToSend.municipality = municipality;
+      if (geocode !== initialGeocode) dataToSend.geocode = geocode;
+      if (typeinst !== initialType) dataToSend.typeinst = typeinst;
+
+      if (pendingCoords) {
+        dataToSend.lat = pendingCoords.lat;
+        dataToSend.lon = pendingCoords.lon;
+      }
+
+      await onSave(dataToSend);
+      return;
+    }
+
+    
+    const createPayload: CreateInstitutionDTO = {
+      name,
+      municipality,
+      geocode,
+      typeinst,
+      ...(pendingCoords ? { lat: pendingCoords.lat, lon: pendingCoords.lon } : {}),
+    };
+
+    await onSave(createPayload);
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     if (id === "institutionName") setName(value);
@@ -86,7 +153,6 @@ export function InstitutionModal({
     if (id === "typeinst") setTypeinst(value);
   };
 
-  // Si el modal no está abierto, no renderizamos nada
   if (!isOpen) return null;
 
   return (
@@ -111,7 +177,6 @@ export function InstitutionModal({
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
-              {/* Nombre del módulo */}
               <label
                 htmlFor="institutionName"
                 className="block text-sm font-medium text-gray-700 mb-2"
@@ -121,36 +186,38 @@ export function InstitutionModal({
               <input
                 type="text"
                 id="institutionName"
-                value={name}
+                value={name || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar nombre..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('nombre')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
+                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${
+                  formErrors.some((e) => e.toLowerCase().includes("nombre"))
+                    ? "border-red-500 focus:ring-red-400"
+                    : "border-gray-300 focus:ring-[#DDC9A3]"
+                }`}
                 disabled={isSubmitting}
                 autoFocus
-                aria-invalid={formErrors.some(e => e.toLowerCase().includes('nombre')) ? "true" : "false"}
-                aria-describedby={formErrors.some(e => e.toLowerCase().includes('nombre')) ? "form-errors" : undefined}
               />
 
-              {/* Municipalidad */}
               <label
                 htmlFor="municipality"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 mb-2 mt-4"
               >
                 Municipalidad:
               </label>
               <input
                 type="text"
                 id="municipality"
-                value={municipality}
+                value={municipality || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar municipio..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('municipalidad')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
+                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${
+                  formErrors.some((e) => e.toLowerCase().includes("municipal"))
+                    ? "border-red-500 focus:ring-red-400"
+                    : "border-gray-300 focus:ring-[#DDC9A3]"
+                }`}
                 disabled={isSubmitting}
-                aria-invalid={formErrors.some(e => e.toLowerCase().includes('municipalidad')) ? "true" : "false"}
-                aria-describedby={formErrors.some(e => e.toLowerCase().includes('municipalidad')) ? "form-errors" : undefined}
               />
 
-              {/* Geocódigo */}
               <label
                 htmlFor="geocode"
                 className="block text-sm font-medium text-gray-700 mt-4 mb-2"
@@ -158,54 +225,62 @@ export function InstitutionModal({
                 Código Postal / Geocódigo:
               </label>
               <input
-                type="text" // Aseguramos que sea de tipo texto
+                type="text"
                 id="geocode"
-                value={geocode}
+                value={geocode || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar código..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('geocódigo')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
+                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${
+                  formErrors.some((e) => e.toLowerCase().includes("geoc"))
+                    ? "border-red-500 focus:ring-red-400"
+                    : "border-gray-300 focus:ring-[#DDC9A3]"
+                }`}
                 disabled={isSubmitting}
-                aria-invalid={formErrors.some(e => e.toLowerCase().includes('geocódigo')) ? "true" : "false"}
-                aria-describedby={formErrors.some(e => e.toLowerCase().includes('geocódigo')) ? "form-errors" : undefined}
               />
 
-              {/* Tipo */}
               <label
                 htmlFor="typeinst"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 mb-2 mt-4"
               >
                 Tipo:
               </label>
               <input
                 type="text"
                 id="typeinst"
-                value={typeinst}
+                value={typeinst || ""}
                 onChange={handleInputChange}
                 placeholder="Ingresar tipo..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${formErrors.some(e => e.toLowerCase().includes('tipo')) ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-[#DDC9A3]"}`}
+                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${
+                  formErrors.some((e) => e.toLowerCase().includes("tipo"))
+                    ? "border-red-500 focus:ring-red-400"
+                    : "border-gray-300 focus:ring-[#DDC9A3]"
+                }`}
                 disabled={isSubmitting}
-                aria-invalid={formErrors.some(e => e.toLowerCase().includes('tipo')) ? "true" : "false"}
-                aria-describedby={formErrors.some(e => e.toLowerCase().includes('tipo')) ? "form-errors" : undefined}
               />
 
-              {/* Mostramos los errores */}
-              {formErrors.length > 0 && (
-                <div id="form-errors" className="text-red-500 text-xs mt-2">
-                  {formErrors.map((error, idx) => (
-                    <p key={idx}>{error}</p>
-                  ))}
-                </div>
-              )}
+              <div id="form-errors" className="mt-3">
+                <FormErrors errors={formErrors} />
+              </div>
 
-              {/* Mostramos error del servidor */}
               {error && (
-                <div id="form-errors-server" className="text-red-500 text-xs mt-2">
-                  <p>{error}</p>
+                <div id="form-errors-server" className="mt-2">
+                  <FormErrors errors={[error]} />
                 </div>
               )}
             </div>
 
             <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
+              {isEditMode && (
+                <button
+                  type="button"
+                  onClick={onEditLocation}
+                  disabled={isSubmitting}
+                  className="w-10 h-10 flex items-center justify-center bg-white border border-[#691b31] text-[#691b31] rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <MapPinned size={18} />
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={onClose}
@@ -214,9 +289,10 @@ export function InstitutionModal({
               >
                 Cancelar
               </button>
+
               <button
                 type="submit"
-                disabled={isSubmitting || formErrors.length > 0}
+                disabled={isSubmitting || formErrors.length > 0 || !hasChanges}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}

@@ -6,9 +6,11 @@ export interface Institution {
   municipality: string;
   geocode: string;
   typeinst: string;
+  lat: number | null;
+  lon: number | null;
   created_at: string;
   updated_at: string;
-  deleted_at: string | null; // Puede ser null si la institución está activa
+  deleted_at: string | null; 
 }
 
 export interface MetaLink {
@@ -60,7 +62,7 @@ export interface InstitutionTableProps {
   loading: boolean;
   error: string | null;
   onSort: (key: keyof Institution) => void;
-  onShowMap: (institution: Institution) => void; /* revisar si no sirve el mapa */
+  onShowMap: (institution: Institution) => void; 
   onView: (institution: Institution) => void;
   onEdit: (institution: Institution) => void;
   onBan: (institution: Institution) => void;
@@ -78,30 +80,11 @@ export interface CreateInstitutionDTO {
   municipality: string;
   geocode: string;
   typeinst: string;
+  lat?: number | null;
+  lon?: number | null;
+
 }
 export type UpdateInstitutionDTO = Partial<CreateInstitutionDTO>;
 
 
 
-/* export interface PaginatedInstitutionsResponse {
-  data: Institution[];
-  links: {
-    first: string | null;
-    last: string | null;
-    prev: string | null;
-    next: string | null;
-  };
-  meta: Meta;
-} */
-
-/**
- * DTO (Data Transfer Object) para crear una nueva institución.
- * No incluye 'id', 'created_at', etc., porque son generados por el servidor.
- */
-/* export type CreateInstitutionDTO = Omit<Institution, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>; */
-
-/**
- * DTO para actualizar una institución. Es similar a Create, pero puede ser parcial.
- * `Partial` hace que todas las propiedades sean opcionales.
- */
-/* export type UpdateInstitutionDTO = Partial<CreateInstitutionDTO>; */

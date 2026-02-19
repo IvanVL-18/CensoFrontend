@@ -16,6 +16,12 @@ export function UnitModal({
 }: UnitModalProps) {
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [charCount, setCharCount] = useState(initialName.length);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setServerError(error || null);
+  }, [error]);
 
   useEffect(() => {
     if (isOpen) {
@@ -54,8 +60,11 @@ export function UnitModal({
 
   if (!isOpen) return null;
 
-  const hasClientErrors = formErrors.length > 0;
-  const hasServerError = !!error;
+  const getCharCountColor = () => {
+    if (isAtLimit) return 'text-red-600';
+    if (isNearLimit) return 'text-amber-600';
+    return 'text-gray-500';
+  };
 
   const handleClose = () => {
     onClearServerError();
@@ -77,7 +86,6 @@ export function UnitModal({
               <X size={24} />
             </button>
           </div>
-
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
               <label
@@ -103,9 +111,11 @@ export function UnitModal({
                 disabled={isSubmitting}
                 autoFocus
               />
-
-              <div id="form-errors-client">
-                <FormErrors errors={formErrors} />
+              <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-300 ${getProgressBarColor()}`}
+                  style={{ width: `${(charCount / MAX_LENGTH) * 100}%` }}
+                />
               </div>
 
               {error && (
@@ -114,7 +124,6 @@ export function UnitModal({
                 </div>
               )}
             </div>
-
             <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
               <button
                 type="button"
@@ -127,7 +136,7 @@ export function UnitModal({
 
               <button
                 type="submit"
-                disabled={isSubmitting || hasClientErrors}
+                disabled={isSubmitting || formErrors.length > 0}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}

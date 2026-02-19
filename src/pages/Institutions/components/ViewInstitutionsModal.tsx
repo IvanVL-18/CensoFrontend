@@ -1,22 +1,20 @@
 import { X } from "lucide-react";
-// Importa tu interfaz 'Institution' desde donde la tengas
+
 import type { Institution } from "../institutions.types";
 
 interface ViewInstitutionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  institution: Institution | null; // La institución que vamos a mostrar
+  institution: Institution | null; 
 }
 
-/**
- * helper para formatear las fechas de Laravel a un formato legible
- */
+
 const formatDate = (dateString: string | null) => {
   if (!dateString) {
-    return "N/A"; // No aplica (ej. si no ha sido desactivado)
+    return "N/A"; 
   }
   try {
-    // Convierte 'YYYY-MM-DDTHH:MM:SS.mmmmmmZ' a un formato local
+    
     return new Date(dateString).toLocaleString('es-MX', {
       year: 'numeric',
       month: 'long',
@@ -30,9 +28,7 @@ const formatDate = (dateString: string | null) => {
   }
 };
 
-/**
- * Componente de fila para mostrar un detalle
- */
+
 function DetailRow({ label, value }: { label: string, value: string | null }) {
   return (
     <div>
@@ -45,24 +41,24 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
 }
 
 export function ViewInstitutionModal({ isOpen, onClose, institution }: ViewInstitutionModalProps) {
-  // Si no está abierto o no hay una unidad, no renderiza nada
+
   if (!isOpen || !institution) {
     return null;
   }
 
   return (
     <>
-      {/* 1. Fondo Difuminado (Blur) */}
+     
       <div 
         className="fixed inset-0 bg-blue bg-opacity-30 backdrop-blur-sm z-40 transition-opacity"
         onClick={onClose}>
       </div>
 
-      {/* 2. Contenedor del Modal */}
+     
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
           
-          {/* Cabecera del Modal (como los otros) */}
+         
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">Detalle de la Institución</h2>
             <button
@@ -74,7 +70,7 @@ export function ViewInstitutionModal({ isOpen, onClose, institution }: ViewInsti
             </button>
           </div>
 
-          {/* Cuerpo del Modal (Los 3 campos) */}
+          
           <div className="p-6 space-y-4">
             <DetailRow label="Nombre de la Institución:" value={institution.name} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -85,15 +81,15 @@ export function ViewInstitutionModal({ isOpen, onClose, institution }: ViewInsti
             <hr />
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(institution.created_at)} // Asumiendo que se llama así
+              value={formatDate(institution.created_at)} 
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(institution.deleted_at)} // Asumiendo que se llama así
+              value={formatDate(institution.deleted_at)}
             />
           </div>
 
-          {/* Pie de página del Modal (Solo 1 botón) */}
+        
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
             <button
               type="button"
