@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
+import { useState, useEffect, useMemo, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { UserSchema } from "../schemas/Users.schema"; 
@@ -43,20 +43,64 @@ export function UserModal({
   });
   const [formErrors, setFormErrors] = useState<string[]>([]);
 
+  // Detectar si hay cambios respecto a la data inicial
+  const hasChanges = useMemo(() => {
+    // Si no hay data inicial (modo crear), siempre permitimos guardar (sujeto a validación)
+    if (!initialData) return true;
+
+    const normalize = (val: any) => (val === null || val === undefined) ? "" : String(val).trim();
+
+    const emailChanged = normalize(formData.email) !== normalize(initialData.email);
+    const passwordChanged = formData.password !== ""; // Si el campo pass tiene algo, es un cambio
+
+    // Helper para obtener el nombre de la opción seleccionada en los catálogos
+    const getSelectedName = (list: any[], id: string | number) => {
+      const item = list.find((i) => String(i.id) === String(id));
+      return item ? item.name : "";
+    };
+
+    // Comparamos por texto (nombre) si los IDs no coinciden (útil para IDs encriptados)
+    const checkRelationChange = (currentId: string | number, initialRel: any, catalog: any[]) => {
+      const initialId = initialRel?.id || "";
+      const initialName = initialRel?.name || "";
+      if (normalize(currentId) === normalize(initialId)) return false;
+      const currentName = getSelectedName(catalog, currentId);
+      return normalize(currentName) !== normalize(initialName);
+    };
+
+    const roleChanged = checkRelationChange(formData.role_id, initialData.role, roles);
+    const occupationChanged = checkRelationChange(formData.occupation_id, initialData.occupation, occupations);
+    const areaChanged = checkRelationChange(formData.area_id, initialData.area, areas);
+    const institutionChanged = checkRelationChange(formData.institution_id, initialData.institution, institutions);
+
+    return emailChanged || passwordChanged || roleChanged || occupationChanged || areaChanged || institutionChanged;
+  }, [formData, initialData, roles, occupations, areas, institutions]);
+
   useEffect(() => {
     if (isOpen) {
+      // Helper para encontrar el ID en el catálogo comparando nombres (útil para IDs encriptados)
+      const findIdInCatalog = (catalog: any[], relation: any, fallbackId: any) => {
+        if (relation && relation.name) {
+          const match = catalog.find(
+            (item) => String(item.name).trim().toLowerCase() === String(relation.name).trim().toLowerCase()
+          );
+          if (match) return match.id;
+        }
+        return relation?.id || fallbackId || "";
+      };
+
       setFormData({
         email: initialData?.email || "",
         password: "", // La contraseña siempre inicia vacía
         password_confirmation: "",
-        role_id: initialData?.role_id || "",
-        occupation_id: initialData?.occupation_id || "",
-        area_id: initialData?.area_id || "",
-        institution_id: initialData?.institution_id || "",
+        role_id: findIdInCatalog(roles, initialData?.role, initialData?.role_id),
+        occupation_id: findIdInCatalog(occupations, initialData?.occupation, initialData?.occupation_id),
+        area_id: findIdInCatalog(areas, initialData?.area, initialData?.area_id),
+        institution_id: findIdInCatalog(institutions, initialData?.institution, initialData?.institution_id),
       });
       setFormErrors([]);
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, roles, occupations, areas, institutions]);
 
   const validateForm = (data: typeof formData) => {
     // Nota: Asegúrate de actualizar UserSchema para validar todos los campos nuevos
@@ -178,7 +222,7 @@ export function UserModal({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || hasClientErrors}
+                disabled={isSubmitting || hasClientErrors || !hasChanges}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}

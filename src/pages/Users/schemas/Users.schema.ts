@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
 export const UserSchema = z.object({
+  name: z.string().optional(),
+  lastname: z.string().optional(),
+  phone: z.string().optional(),
+  mobile: z.string().optional(),
+  address: z.string().optional(),
   email: z.string().email("El correo electrónico no es válido."),
   password: z.string().optional(),
   password_confirmation: z.string().optional(),

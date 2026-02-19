@@ -106,6 +106,11 @@ export interface ViewUserModalProps {
   User: User | null; 
 }
 export interface CreateUserDTO {
+  name?: string;
+  lastname?: string;
+  phone?: string;
+  mobile?: string;
+  address?: string;
   email: string;
   password?: string;
   password_confirmation?: string;

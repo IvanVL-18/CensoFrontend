@@ -57,6 +57,17 @@ function UsersPageContent() {
       console.error("Error al cargar detalles del Usuario", error);
     }
   };
+
+  const handleEditClick = async (partialUser: any) => {
+    try {
+      const fullUser = await getUser(partialUser.id);
+      modals.openEdit(fullUser);
+    } catch (error) {
+      console.error("Error al cargar detalles del Usuario para editar", error);
+      modals.openEdit(partialUser);
+    }
+  };
+
   const modals = useUsersModals();
 
   const {
@@ -120,7 +131,7 @@ function UsersPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={modals.openEdit}
+          onEdit={handleEditClick}
           onBan={(u) => modals.openConfirm(u, "ban")}
           onRestore={(u) => modals.openConfirm(u, "restore")}
           onDelete={(u) => modals.openConfirm(u, "delete")}
