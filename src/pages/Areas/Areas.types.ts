@@ -1,27 +1,29 @@
 export interface Area {
-  id: string;
+  id: string | number;
   name: string;
   created_at: string;
   updated_at: string;
-  deleted_at: string;
+  deleted_at: string | null;
 }
 
 export interface MetaLink {
   url: string | null;
   label: string;
-  page: number | null;
   active: boolean;
+  page?: number | null;
 }
 
 export interface Meta {
-  total: number[];
-  per_page: number[];
-  current_page: number[];
-  last_page: number[];
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
+
   from: number;
+  to: number;
+
   links: MetaLink[];
   path: string;
-  to: number;
 }
 
 export interface PaginatedAreasResponse {
@@ -34,6 +36,7 @@ export interface PaginatedAreasResponse {
   };
   meta: Meta;
 }
+
 export interface ExcelFailure {
   row: number;
   field: string;
@@ -71,10 +74,12 @@ export interface AreaModalProps {
   initialName?: string;
   onClose: () => void;
   onSave: (name: string) => void;
+
+  onClearServerError: () => void;
 }
 
 export interface AreasTableProps {
-  Areas: Area[]; 
+  Areas: Area[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
@@ -85,12 +90,15 @@ export interface AreasTableProps {
   onRestore: (Area: Area) => void;
   onDelete: (Area: Area) => void;
 }
+
 export interface ViewAreaModalProps {
   isOpen: boolean;
   onClose: () => void;
-  Area: Area | null; 
+  Area: Area | null;
 }
+
 export interface CreateAreaDTO {
   name: string;
 }
+
 export type UpdateAreaDTO = Partial<CreateAreaDTO>;

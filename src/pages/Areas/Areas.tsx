@@ -45,19 +45,12 @@ function AreasPageContent() {
     handlePageChange,
   } = useAreasData();
 
-  const handleViewClick = async (partialArea: any) => {
-    try {
-      const fullArea = await getArea(partialArea.id);
-      modals.openView(fullArea);
-    } catch (error) {
-      console.error("Error al cargar detalles del Área", error);
-    }
-  };
   const modals = useAreasModals();
 
   const {
     isSubmitting,
     mutationError,
+    clearMutationError, 
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
@@ -67,6 +60,15 @@ function AreasPageContent() {
     closeConfirm: modals.closeConfirm,
     openBulkError: modals.openBulkError,
   });
+
+  const handleViewClick = async (partialArea: any) => {
+    try {
+      const fullArea = await getArea(partialArea.id);
+      modals.openView(fullArea);
+    } catch (error) {
+      console.error("Error al cargar detalles del Área", error);
+    }
+  };
 
   const modalTitle = modals.editingArea ? "Editar Área" : "Agregar Área";
   const modalInitialName = modals.editingArea?.name || "";
@@ -97,18 +99,19 @@ function AreasPageContent() {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
 
-      {/* Barra de Herramientas */}
       <AreasToolbar
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
-        onAddClick={modals.openCreate}
+        onAddClick={() => {
+          clearMutationError(); // ✅
+          modals.openCreate();
+        }}
         onBulkUpload={handleBulkUpload}
       />
 
-      {/* Tabla de Resultados */}
       <div className="p-4">
         <AreasTable
           loading={loading}
@@ -117,58 +120,64 @@ function AreasPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={modals.openEdit}
-          onBan={(u) => modals.openConfirm(u, "ban")}
-          onRestore={(u) => modals.openConfirm(u, "restore")}
-          onDelete={(u) => modals.openConfirm(u, "delete")}
+          onEdit={(a) => {
+            clearMutationError(); 
+            modals.openEdit(a);
+          }}
+          onBan={(a) => {
+            clearMutationError(); 
+            modals.openConfirm(a, "ban");
+          }}
+          onRestore={(a) => {
+            clearMutationError(); 
+            modals.openConfirm(a, "restore");
+          }}
+          onDelete={(a) => {
+            clearMutationError();
+            modals.openConfirm(a, "delete");
+          }}
         />
 
-        {/* Paginación */}
         <div className="border-t border-gray-200 bg-gray-50">
-          <Pagination
-            meta={meta}
-            links={links}
-            onPageClick={handlePageChange}
-          />
+          <Pagination meta={meta} links={links} onPageClick={handlePageChange} />
         </div>
       </div>
 
-      {/* --- MODALES --- */}
-
-      {/* 1. Crear / Editar */}
       <AreaModal
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
         title={modalTitle}
         initialName={modalInitialName}
-        onClose={modals.closeForm}
+        onClose={() => {
+          clearMutationError(); 
+          modals.closeForm();
+        }}
         onSave={(name) => handleSave(name, modals.editingArea)}
+        onClearServerError={clearMutationError} 
       />
 
-      {/* 2. Confirmación (Ban/Restore/Delete) */}
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={mutationError} 
+        error={mutationError}
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
         confirmButtonColor={confirmButtonColor}
-        onClose={modals.closeConfirm}
-        onConfirm={() =>
-          handleConfirmAction(modals.actionArea, modals.actionType)
-        }
+        onClose={() => {
+          clearMutationError(); 
+          modals.closeConfirm();
+        }}
+        onConfirm={() => handleConfirmAction(modals.actionArea, modals.actionType)}
       />
 
-      {/* 3. Ver Detalle */}
       <ViewAreaModal
         isOpen={modals.isViewOpen}
         Area={modals.viewingArea}
         onClose={modals.closeView}
       />
 
-      {/* 4. Errores de Excel */}
       <BulkErrorModal
         isOpen={modals.isBulkErrorOpen}
         errors={modals.bulkErrors}
