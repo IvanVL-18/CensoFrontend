@@ -11,7 +11,7 @@ export type UserFilter = "all" | "active" | "inactive";
 type UserId = string | number;
 
 export const getUsers = async (
-  filter: UserFilter = "all",
+  filter: UserFilter = "all", 
   search: string = "",
   page: number = 1,
   sortBy: string = "id",           

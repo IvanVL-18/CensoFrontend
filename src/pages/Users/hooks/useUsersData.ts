@@ -1,20 +1,39 @@
 import { useState, useEffect, useCallback, type ChangeEvent } from "react";
+import api from "../../../lib/Axios";
 import { getUsers, type UserFilter } from "../Users.service";
 import type { User, PaginatedUsersResponse, Meta } from "../Users.types";
+import type { Rol } from "../../Roles/Roles.types";
+
+const getRelatedData = async (endpoint: string, signal?: AbortSignal) => {
+  try {
+    const response = await api.get(`/${endpoint}`, { signal });
+    return response.data.data || response.data;
+  } catch (error) {
+    console.warn(`No se pudo cargar ${endpoint}`, error);
+    return [];
+  }
+};
 
 export function useUsersData() {
   const [Users, setUsers] = useState<User[]>([]);
   const [links, setLinks] = useState<PaginatedUsersResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingRelated, setLoadingRelated] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+ 
   // --- FILTROS Y ESTADOS ---
   const [filter, setFilter] = useState<UserFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   // Estado para guardar el término "confirmado" después de que el usuario deje de escribir
   const [debouncedSearch, setDebouncedSearch] = useState(""); 
   
+  // --- DATOS PARA SELECTS ---
+  const [roles, setRoles] = useState<Rol[]>([]);
+  const [occupations, setOccupations] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [institutions, setInstitutions] = useState([]);
+
   const [page, setPage] = useState(1); 
 
   // --- ORDENAMIENTO ---
@@ -36,6 +55,39 @@ export function useUsersData() {
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  // 2. EFECTO PARA CARGAR DATOS RELACIONADOS (para los <select>)
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    setLoadingRelated(true);
+
+    const fetchAllRelatedData = async () => {
+      try {
+        const [rolesData, occupationsData, areasData, institutionsData] =
+          await Promise.all([
+            getRelatedData("roles", signal),
+            getRelatedData("occupations", signal),
+            getRelatedData("areas", signal),
+            getRelatedData("institutions", signal),
+          ]);
+        setRoles(rolesData);
+        setOccupations(occupationsData);
+        setAreas(areasData);
+        setInstitutions(institutionsData);
+      } catch (err: any) {
+        if (err.name !== "CanceledError") {
+          setError("Error al cargar opciones para el formulario.");
+        }
+      } finally {
+        if (!signal.aborted) setLoadingRelated(false);
+      }
+    };
+
+    fetchAllRelatedData();
+
+    return () => controller.abort();
+  }, []);
 
   // 2. EFECTO DE CARGA DE DATOS
   useEffect(() => {
@@ -101,12 +153,16 @@ export function useUsersData() {
 
   return {
     Users,
-    loading,
+    loading: loading || loadingRelated, // El loading general depende de ambas cargas
     error,
     meta,
     links,
     filter,
     searchTerm,
+    roles,
+    occupations,
+    areas,
+    institutions,
     refreshUsers,
     handleFilterChange,
     handleSearch,

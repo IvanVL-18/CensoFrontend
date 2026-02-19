@@ -13,7 +13,7 @@ export function useUsersModals() {
   const openEdit = useCallback((User: User) => {
     setEditingUser(User);
     setIsFormOpen(true);
-  }, []);
+  }, []); 
 
   const closeForm = useCallback(() => {
     setIsFormOpen(false);

@@ -5,7 +5,7 @@ export function FormErrors({ errors }: FormErrorsProps) {
     return null;
   }
 
-  return (
+  return (  
     <div
       className="flex p-4 mt-4 text-sm text-red-800 rounded-lg bg-red-50 white:bg-gray-800 white:text-red-400"
       role="alert"

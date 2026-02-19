@@ -5,7 +5,7 @@ export function BulkErrorModal({
   isOpen,
   errors,
   onClose,
-}: BulkErrorModalProps) {
+}: BulkErrorModalProps) { 
   if (!isOpen || errors.length === 0) return null;
 
   return (

@@ -6,7 +6,7 @@ export function ConfirmModal({
   isSubmitting,
   error,
   title,
-  message,
+  message, 
   confirmButtonText = "Confirmar",
   confirmButtonColor = "danger",
   onClose,

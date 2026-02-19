@@ -8,7 +8,7 @@ import {
   forceDeleteUser,
   importUsers,
 } from "../Users.service";
-import type { User } from "../Users.types";
+import type { User, CreateUserDTO, UpdateUserDTO } from "../Users.types";
 
 interface UseUsersMutationsProps {
   refreshUsers: () => void;
@@ -16,7 +16,7 @@ interface UseUsersMutationsProps {
   closeConfirm: () => void;
   openBulkError: (errors: any[]) => void;
 }
-
+ 
 export function useUsersMutations({
   refreshUsers,
   closeForm,
@@ -28,17 +28,21 @@ export function useUsersMutations({
   const [mutationError, setMutationError] = useState<string | null>(null);
 
   const handleSave = useCallback(
-    async (name: string, editingUser?: User | null) => {
+    async (userData: CreateUserDTO, editingUser?: User | null) => {
       setIsSubmitting(true);
       setMutationError(null);
 
       try {
         let response;
-        const UserData = { name };
         if (editingUser) {
-          response = await updateUser(editingUser.id, UserData);
+          const updateData: UpdateUserDTO = { ...userData };
+          if (!updateData.password) {
+            delete updateData.password;
+            delete updateData.password_confirmation;
+          }
+          response = await updateUser(editingUser.id, updateData);
         } else {
-          response = await createUser(UserData);
+          response = await createUser(userData);
         }
 
         addToast(response.message, "success");

@@ -1,9 +1,24 @@
 export interface User {
   id: string;
-  name: string;
+  name: string | null;
+  lastname: string | null;
+  phone: string | null;
+  mobile: string | null;
+  address: string | null;
+  email: string;
+  email_verified_at: string | null;
+  role_id: number;
+  occupation_id: number | null;
+  area_id: number | null;
+  institution_id: number | null;
   created_at: string;
   updated_at: string;
-  deleted_at: string;
+  deleted_at: string | null;
+  // Eager loaded relations
+  role?: { id: number; name: string };
+  occupation?: { id: number; name: string };
+  area?: { id: number; name: string };
+  institution?: { id: number; name: string };
 }
 
 export interface MetaLink {
@@ -17,7 +32,7 @@ export interface Meta {
   total: number[];
   per_page: number[];
   current_page: number[];
-  last_page: number[];
+  last_page: number[]; 
   from: number;
   links: MetaLink[];
   path: string;
@@ -68,9 +83,9 @@ export interface UserModalProps {
   isSubmitting: boolean;
   error: string | null;
   title: string;
-  initialName?: string;
+  initialData?: User | null;
   onClose: () => void;
-  onSave: (name: string) => void;
+  onSave: (data: CreateUserDTO) => void;
 }
 
 export interface UsersTableProps {
@@ -91,6 +106,12 @@ export interface ViewUserModalProps {
   User: User | null; 
 }
 export interface CreateUserDTO {
-  name: string;
+  email: string;
+  password?: string;
+  password_confirmation?: string;
+  role_id?: string | number;
+  occupation_id?: string | number | null;
+  area_id?: string | number | null;
+  institution_id?: string | number | null;
 }
 export type UpdateUserDTO = Partial<CreateUserDTO>;

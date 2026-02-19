@@ -13,7 +13,7 @@ import { BulkErrorModal } from "./components/BulkErrorModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
-function ToastContainer() {
+function ToastContainer() { 
   const { toasts, removeToast } = useToast();
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
@@ -38,6 +38,10 @@ function UsersPageContent() {
     links,
     filter,
     searchTerm,
+    roles,
+    occupations,
+    areas,
+    institutions,
     refreshUsers,
     handleFilterChange,
     handleSort,
@@ -69,7 +73,6 @@ function UsersPageContent() {
   });
 
   const modalTitle = modals.editingUser ? "Editar Usuario" : "Agregar Usuario";
-  const modalInitialName = modals.editingUser?.name || "";
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -141,9 +144,13 @@ function UsersPageContent() {
         isSubmitting={isSubmitting}
         error={mutationError}
         title={modalTitle}
-        initialName={modalInitialName}
+        initialData={modals.editingUser}
+        roles={roles}
+        occupations={occupations}
+        areas={areas}
+        institutions={institutions}
         onClose={modals.closeForm}
-        onSave={(name) => handleSave(name, modals.editingUser)}
+        onSave={(data) => handleSave(data, modals.editingUser)}
       />
 
       {/* 2. Confirmación (Ban/Restore/Delete) */}

@@ -5,7 +5,7 @@ import {
   Trash2,
   CircleArrowUp,
   Ban,
-  type LucideProps,
+  type LucideProps, 
 } from "lucide-react";
 import type { UsersTableProps } from "../Users.types";
 

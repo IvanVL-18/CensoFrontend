@@ -7,7 +7,7 @@ import AddButton from "../../../components/AddButton";
 import StatusFilterSelect from "../../../components/StatusFilterSelect";
 
 interface UsersToolbarProps {
-  filter: UserFilter;
+  filter: UserFilter; 
   searchTerm: string;
   isSubmitting: boolean;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
