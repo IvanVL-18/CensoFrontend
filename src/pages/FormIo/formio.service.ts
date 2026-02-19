@@ -1,13 +1,19 @@
 // src/pages/FormIo/formio.service.ts
-import axios from '../../lib/Axios'; // O tu importación directa de axios si no usas el lib configurado
+import api from "../../lib/Axios";
 import type { ApiPaginationResponse } from './formio.types';
 
-// Asegúrate de que esta URL base coincida con tu .env o hardcodéala para pruebas
-// Basado en tu JSON, la IP es 192.168.20.127:8000
-const API_URL = 'http://192.168.20.127:8000/api'; 
+// 👇 SOLUCIÓN: Usar variables de entorno. 
+// Si usas Vite: import.meta.env.VITE_API_URL
+// Si usas Create React App: process.env.REACT_APP_API_URL
+// Fallback a localhost si no está definida.
 
-export const getQuestionsRender = async (page: number = 1): Promise<ApiPaginationResponse> => {
-    // Llamamos al endpoint que creaste en Laravel
-    const response = await axios.get<ApiPaginationResponse>(`${API_URL}/questions-render?page=${page}`);
-    return response.data;
+
+export const getQuestionsRender = async (
+  id: string | number,
+  signal?: AbortSignal,
+): Promise<{ question_structure: any }> => {
+  const response = await api.get(`/questions/get-component/${id}`, {
+    signal,
+  });
+  return response.data;
 };
