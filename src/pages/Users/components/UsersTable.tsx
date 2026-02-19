@@ -62,14 +62,14 @@ export function UsersTable({
             {/* 2. Columna "Nombre" */}
             <th className="px-6 py-3 text-left w-full">
               <button
-                onClick={() => onSort("name")} 
+                onClick={() => onSort("email")} 
                 className="
                   flex items-center space-x-1     
                   text-xs font-medium text-gray-500 uppercase tracking-wider
                   hover:text-opacity-75 transition-colors
                 "
               >
-                <span>Nombre</span>
+                <span>Correo</span>
                 <IconSort size={16} strokeWidth={2.5} />
               </button>
             </th>
@@ -122,7 +122,7 @@ export function UsersTable({
 
                 {/* Celda "Nombre" */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {User.name}
+                  {User.email}
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}

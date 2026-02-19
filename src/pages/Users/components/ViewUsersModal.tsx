@@ -45,7 +45,7 @@ export function ViewUserModal({ isOpen, onClose, User }: ViewUserModalProps) {
 
       {/* 2. Contenedor del Modal */}
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden max-h-[90vh] flex flex-col">
           
           {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
@@ -60,11 +60,22 @@ export function ViewUserModal({ isOpen, onClose, User }: ViewUserModalProps) {
           </div>
 
           {/* Cuerpo del Modal (Los 3 campos) */}
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-4 overflow-y-auto">
             <DetailRow 
-              label="Nombre del Usuario:" 
-              value={User.name} 
+              label="Nombre Completo:" 
+              value={`${User.name || ""} ${User.lastname || ""}`.trim()} 
             />
+            <DetailRow label="Correo Electrónico:" value={User.email} />
+            <DetailRow label="Teléfono:" value={User.phone} />
+            <DetailRow label="Celular:" value={User.mobile} />
+            <DetailRow label="Dirección:" value={User.address} />
+            
+            <hr className="border-gray-200" />
+            <DetailRow label="Rol:" value={User.role?.name || "N/A"} />
+            <DetailRow label="Ocupación:" value={User.occupation?.name || "N/A"} />
+            <DetailRow label="Área:" value={User.area?.name || "N/A"} />
+            <DetailRow label="Institución:" value={User.institution?.name || "N/A"} />
+            <hr className="border-gray-200" />
             <DetailRow 
               label="Fecha de creación:" 
               value={formatDate(User.created_at)} 
