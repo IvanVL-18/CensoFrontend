@@ -37,17 +37,14 @@ export function ViewUserModal({ isOpen, onClose, User }: ViewUserModalProps) {
 
   return (
     <>
-      {/* 1. Fondo Difuminado (Blur) */}
       <div 
         className="fixed inset-0 bg-blue bg-opacity-30 backdrop-blur-sm z-40 transition-opacity"
         onClick={onClose}>
       </div>
 
-      {/* 2. Contenedor del Modal */}
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden max-h-[90vh] flex flex-col">
-          
-          {/* Cabecera del Modal (como los otros) */}
+
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">Detalle del Usuario</h2>
             <button
@@ -59,7 +56,6 @@ export function ViewUserModal({ isOpen, onClose, User }: ViewUserModalProps) {
             </button>
           </div>
 
-          {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4 overflow-y-auto">
             <DetailRow 
               label="Nombre Completo:" 
@@ -86,7 +82,6 @@ export function ViewUserModal({ isOpen, onClose, User }: ViewUserModalProps) {
             />
           </div>
 
-          {/* Pie de página del Modal (Solo 1 botón) */}
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
             <button
               type="button"

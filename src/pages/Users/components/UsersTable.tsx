@@ -44,7 +44,6 @@ export function UsersTable({
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            {/* 1. Columna "No." */}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
               <button
                 onClick={() => onSort("id")} 
@@ -58,8 +57,6 @@ export function UsersTable({
                 <IconSort size={16} strokeWidth={2.5} />
               </button>
             </th>
-
-            {/* 2. Columna "Nombre" */}
             <th className="px-6 py-3 text-left w-full">
               <button
                 onClick={() => onSort("email")} 
@@ -73,15 +70,12 @@ export function UsersTable({
                 <IconSort size={16} strokeWidth={2.5} />
               </button>
             </th>
-
-            {/* 3. Columna "Opciones" */}
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
               Opciones
             </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {/* --- Estados de Carga y Error --- */}
           {loading && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
@@ -100,8 +94,6 @@ export function UsersTable({
               </td>
             </tr>
           )}
-
-          {/* --- Estado Vacío --- */}
           {!loading && !error && Users.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
@@ -109,27 +101,21 @@ export function UsersTable({
               </td>
             </tr>
           )}
-
-          {/* --- Mapeo de datos --- */}
           {!loading &&
             !error &&
             Users.map((User, index) => (
               <tr key={User.id} className="hover:bg-gray-50">
-                {/* Celda "No." */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {meta ? meta.from + index : User.id}
                 </td>
 
-                {/* Celda "Nombre" */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {User.email}
                 </td>
 
-                {/* Celda "Opciones" con lógica condicional */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
                   {!User.deleted_at ? (
                     <>
-                      {/* --- Botón VER (Activo) --- */}
                       <button
                         title="Ver Usuario"
                         onClick={() => onView(User)} 
@@ -143,7 +129,6 @@ export function UsersTable({
                         <IconView />
                       </button>
 
-                      {/* --- Botón EDITAR (Activo) --- */}
                       <button
                         title="Editar Usuario"
                         onClick={() => onEdit(User)} 
@@ -157,7 +142,6 @@ export function UsersTable({
                         <IconEdit />
                       </button>
 
-                      {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
                         title="Desactivar Usuario"
                         onClick={() => onBan(User)} 
@@ -173,7 +157,6 @@ export function UsersTable({
                     </>
                   ) : (
                     <>
-                      {/* --- Botón VER (Inactivo) --- */}
                       <button
                         title="Ver Usuario"
                         onClick={() => onView(User)} 
@@ -187,7 +170,6 @@ export function UsersTable({
                         <IconView />
                       </button>
 
-                      {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
                         title="Restaurar Usuario"
                         onClick={() => onRestore(User)} 
@@ -201,7 +183,6 @@ export function UsersTable({
                         <IconCircleArrowUp />
                       </button>
 
-                      {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
                       <button
                         title="Eliminar Permanentemente"
                         onClick={() => onDelete(User)} 

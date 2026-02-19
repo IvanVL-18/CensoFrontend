@@ -9,7 +9,6 @@ const getRelatedData = async (endpoint: string, signal?: AbortSignal) => {
     const response = await api.get(`/${endpoint}`, { signal });
     return response.data.data || response.data;
   } catch (error: any) {
-    // Ignoramos errores de cancelación (ocurren al navegar rápido o en React Strict Mode)
     if (error.name === "CanceledError" || error.code === "ERR_CANCELED") {
       return [];
     }
@@ -26,13 +25,10 @@ export function useUsersData() {
   const [loadingRelated, setLoadingRelated] = useState(true);
   const [error, setError] = useState<string | null>(null);
  
-  // --- FILTROS Y ESTADOS ---
+
   const [filter, setFilter] = useState<UserFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  // Estado para guardar el término "confirmado" después de que el usuario deje de escribir
   const [debouncedSearch, setDebouncedSearch] = useState(""); 
-  
-  // --- DATOS PARA SELECTS ---
   const [roles, setRoles] = useState<Rol[]>([]);
   const [occupations, setOccupations] = useState([]);
   const [areas, setAreas] = useState([]);
@@ -40,27 +36,23 @@ export function useUsersData() {
 
   const [page, setPage] = useState(1); 
 
-  // --- ORDENAMIENTO ---
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" }>({
-    key: "id", // Orden por defecto (No.)
+    key: "id", 
     direction: "asc",
   });
 
   const [reloadToken, setReloadToken] = useState(0);
   const refreshUsers = useCallback(() => setReloadToken((t) => t + 1), []);
 
-  // 1. EFECTO DEBOUNCE (Optimización de Búsqueda)
-  // Espera 500ms después de que dejes de escribir para actualizar la búsqueda real
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-      setPage(1); // Resetear a pág 1 cuando cambie la búsqueda real
+      setPage(1); 
     }, 500);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // 2. EFECTO PARA CARGAR DATOS RELACIONADOS (para los <select>)
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
@@ -93,18 +85,16 @@ export function useUsersData() {
     return () => controller.abort();
   }, []);
 
-  // 2. EFECTO DE CARGA DE DATOS
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
 
-    // Usamos debouncedSearch en lugar de searchTerm directo
     getUsers(
       filter, 
       debouncedSearch, 
       page, 
-      sortConfig.key,      // Enviamos columna
-      sortConfig.direction, // Enviamos dirección
+      sortConfig.key,      
+      sortConfig.direction,
       controller.signal
     )
       .then((data) => {
@@ -123,9 +113,7 @@ export function useUsersData() {
       });
 
     return () => controller.abort();
-  }, [filter, debouncedSearch, page, sortConfig, reloadToken]); // Agregamos sortConfig a dependencias
-
-  // --- HANDLERS ---
+  }, [filter, debouncedSearch, page, sortConfig, reloadToken]); 
 
   const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
     setFilter(e.target.value as UserFilter);
@@ -134,7 +122,7 @@ export function useUsersData() {
 
   const handleSearch = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    // Nota: No reseteamos page aquí, lo hace el useEffect del debounce
+
   }, []);
 
   const handlePageChange = useCallback((url: string | null) => {
@@ -146,18 +134,17 @@ export function useUsersData() {
     } catch (e) { console.error(e); }
   }, []);
 
-  // 3. IMPLEMENTACIÓN DEL SORT
   const handleSort = useCallback((key: keyof User) => {
     setSortConfig((current) => ({
       key: key as string,
-      // Si damos click en la misma columna, invertimos dirección. Si es nueva, empezamos en asc.
+
       direction: current.key === key && current.direction === "asc" ? "desc" : "asc",
     }));
   }, []);
 
   return {
     Users,
-    loading: loading || loadingRelated, // El loading general depende de ambas cargas
+    loading: loading || loadingRelated, 
     error,
     meta,
     links,
@@ -171,6 +158,6 @@ export function useUsersData() {
     handleFilterChange,
     handleSearch,
     handlePageChange,
-    handleSort, // Ya funciona de verdad
+    handleSort, 
   };
 }

@@ -4,7 +4,6 @@ import { FormErrors } from "./FormErrors";
 import { UserSchema } from "../schemas/Users.schema"; 
 import type { Rol } from "../../Roles/Roles.types";
 
-// Definimos una interfaz local para las props extendidas
 interface ExtendedUserModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
@@ -44,23 +43,19 @@ export function UserModal({
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Detectar si hay cambios respecto a la data inicial
   const hasChanges = useMemo(() => {
-    // Si no hay data inicial (modo crear), siempre permitimos guardar (sujeto a validación)
     if (!initialData) return true;
 
     const normalize = (val: any) => (val === null || val === undefined) ? "" : String(val).trim();
 
     const emailChanged = normalize(formData.email) !== normalize(initialData.email);
-    const passwordChanged = normalize(formData.password) !== normalize(initialData.password);
+    const passwordChanged = formData.password !== "";
 
-    // Helper para obtener el nombre de la opción seleccionada en los catálogos
     const getSelectedName = (list: any[], id: string | number) => {
       const item = list.find((i) => String(i.id) === String(id));
       return item ? item.name : "";
     };
 
-    // Comparamos por texto (nombre) si los IDs no coinciden (útil para IDs encriptados)
     const checkRelationChange = (currentId: string | number, initialRel: any, catalog: any[]) => {
       const initialId = initialRel?.id || "";
       const initialName = initialRel?.name || "";
@@ -79,17 +74,14 @@ export function UserModal({
 
   useEffect(() => {
     if (isOpen) {
-      // Helper para encontrar el ID en el catálogo comparando nombres (útil para IDs encriptados)
+
       const findIdInCatalog = (catalog: any[], relation: any, fallbackId: any) => {
-        // 1. Prioridad: Coincidencia por Nombre (para saltar encriptación)
         if (relation && relation.name) {
           const match = catalog.find(
             (item) => String(item.name).trim().toLowerCase() === String(relation.name).trim().toLowerCase()
           );
           if (match) return match.id;
         }
-        
-        // 2. Fallback: Coincidencia directa de ID (por si no hay encriptación o coinciden)
         if (fallbackId) {
              const directMatch = catalog.find(item => String(item.id) === String(fallbackId));
              if (directMatch) return directMatch.id;
@@ -100,7 +92,7 @@ export function UserModal({
 
       setFormData({
         email: initialData?.email || "",
-        password: initialData?.password || "",
+        password: "",
         password_confirmation: "",
         role_id: findIdInCatalog(roles, initialData?.role, initialData?.role_id),
         occupation_id: findIdInCatalog(occupations, initialData?.occupation, initialData?.occupation_id),
@@ -112,7 +104,6 @@ export function UserModal({
   }, [isOpen, initialData, roles, occupations, areas, institutions]);
 
   const validateForm = (data: typeof formData) => {
-    // Nota: Asegúrate de actualizar UserSchema para validar todos los campos nuevos
     const result = UserSchema.safeParse(data);
     if (!result.success) {
       const errorMessages = result.error.issues.map((err) => err.message);
@@ -126,11 +117,9 @@ export function UserModal({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    // Descomenta la validación cuando hayas actualizado tu esquema Zod
-    // const isValid = validateForm(formData);
-    // if (isValid) {
+
       onSave(formData); 
-    // }
+  
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -163,13 +152,13 @@ export function UserModal({
 
           <form onSubmit={handleSubmit} noValidate className="flex-1 overflow-y-auto">
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Email */}
+            
               <div className="md:col-span-2">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico:</label>
                 <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]" />
               </div>
 
-              {/* Password */}
+             
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Contraseña {initialData ? "(Dejar vacía para no cambiar)" : "(Obligatoria)"}:</label>
                 <div className="relative">
@@ -184,13 +173,13 @@ export function UserModal({
                 </div>
               </div>
 
-              {/* Confirm Password */}
+             
               <div>
                 <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña:</label>
                 <input type="password" id="password_confirmation" name="password_confirmation" value={formData.password_confirmation} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]" />
               </div>
 
-              {/* Selectores de Relaciones */}
+           
               <div>
                 <label htmlFor="role_id" className="block text-sm font-medium text-gray-700 mb-1">Rol:</label>
                 <select id="role_id" name="role_id" value={formData.role_id} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]">

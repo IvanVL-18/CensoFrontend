@@ -14,7 +14,6 @@ export interface User {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  // Eager loaded relations
   role?: { id: number; name: string };
   occupation?: { id: number; name: string };
   area?: { id: number; name: string };

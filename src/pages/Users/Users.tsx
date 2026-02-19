@@ -111,7 +111,7 @@ function UsersPageContent() {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
 
-      {/* Barra de Herramientas */}
+  
       <UsersToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -122,7 +122,7 @@ function UsersPageContent() {
         onBulkUpload={handleBulkUpload}
       />
 
-      {/* Tabla de Resultados */}
+      
       <div className="p-4">
         <UsersTable
           loading={loading}
@@ -137,7 +137,6 @@ function UsersPageContent() {
           onDelete={(u) => modals.openConfirm(u, "delete")}
         />
 
-        {/* Paginación */}
         <div className="border-t border-gray-200 bg-gray-50">
           <Pagination
             meta={meta}
@@ -147,9 +146,6 @@ function UsersPageContent() {
         </div>
       </div>
 
-      {/* --- MODALES --- */}
-
-      {/* 1. Crear / Editar */}
       <UserModal
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
@@ -164,7 +160,6 @@ function UsersPageContent() {
         onSave={(data) => handleSave(data, modals.editingUser)}
       />
 
-      {/* 2. Confirmación (Ban/Restore/Delete) */}
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
@@ -179,14 +174,12 @@ function UsersPageContent() {
         }
       />
 
-      {/* 3. Ver Detalle */}
       <ViewUserModal
         isOpen={modals.isViewOpen}
         User={modals.viewingUser}
         onClose={modals.closeView}
       />
 
-      {/* 4. Errores de Excel */}
       <BulkErrorModal
         isOpen={modals.isBulkErrorOpen}
         errors={modals.bulkErrors}

@@ -43,7 +43,6 @@ export function UsersToolbar({
         <h1 className="text-xl md:text-2xl font-bold text-white">Usuarios</h1>
 
         <div className="flex items-center gap-2">
-          {/* Input de archivo oculto que solo acepta Excel/CSV */}
           <input
             type="file"
             ref={fileInputRef}
