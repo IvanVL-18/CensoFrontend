@@ -139,7 +139,6 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           title="USUARIOS"
@@ -158,7 +157,6 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Tabla + gráficas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <QuestionnairesCard
           title="Censos"
