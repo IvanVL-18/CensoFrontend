@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X, AlertTriangle } from "lucide-react";
 import type { ViewCatalogModalProps } from "../Catalogs.types";
 
 const formatDate = (dateString: string | null) => {
@@ -29,7 +29,8 @@ function DetailRow({ label, value }: { label: string; value: string | null }) {
 export function ViewCatalogModal({ isOpen, onClose, Catalog }: ViewCatalogModalProps) {
   if (!isOpen || !Catalog) return null;
 
-  const unitDisplay = Catalog.unit_name || Catalog.unit?.name || null;
+  const unitDisplay = Catalog.unit_name || null;
+  const isUnitInactive = Catalog.unit_is_active === false;
 
   return (
     <>
@@ -51,11 +52,45 @@ export function ViewCatalogModal({ isOpen, onClose, Catalog }: ViewCatalogModalP
           </div>
 
           <div className="p-6 space-y-4">
+            {/* Alerta si la unidad está inactiva */}
+            {isUnitInactive && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <div className="flex items-center">
+                  <AlertTriangle className="h-5 w-5 text-yellow-400 mr-2" />
+                  <p className="text-sm text-yellow-700">
+                    <span className="font-bold">Unidad inactiva:</span> Esta unidad ha sido desactivada. El catálogo aún existe pero su unidad ya no está disponible.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <DetailRow label="Nombre del catálogo:" value={Catalog.name} />
             <DetailRow label="Slug:" value={Catalog.slug} />
-            <DetailRow label="Unidad:" value={unitDisplay} />
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-500">Unidad:</label>
+              <div className="flex items-center gap-2">
+                <p className="text-lg text-gray-900 font-semibold">
+                  {unitDisplay}
+                </p>
+                {isUnitInactive && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                    Inactiva
+                  </span>
+                )}
+              </div>
+            </div>
+
             <DetailRow label="Fecha de creación:" value={formatDate(Catalog.created_at)} />
-            <DetailRow label="Fecha de desactivación:" value={formatDate(Catalog.deleted_at)} />
+            
+            {Catalog.deleted_at && (
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Fecha de desactivación:</label>
+                <p className="text-lg text-red-600 font-semibold">
+                  {formatDate(Catalog.deleted_at)}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">

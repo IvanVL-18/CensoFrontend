@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
-import { Catalogschema } from "../schemas/Catalogs.schema"; // Ajusta la ruta según tu proyecto
+import { Catalogschema } from "../schemas/Catalogs.schema";
 import type { CatalogModalProps } from "../Catalogs.types";
 
 const NAME_MAX_LENGTH = 125;
@@ -35,36 +35,31 @@ export function CatalogModal({
   }, [error]);
 
   useEffect(() => {
-    if (isOpen) {
-      const normalizedUnitId = initialUnitId ? String(initialUnitId).trim() : "";
-      const normalizedUnitName = initialUnitName?.trim().toLowerCase() || "";
-      let finalUnitId = normalizedUnitId;
+    if (!isOpen) return;
 
-      const unitById = units.find(u => String(u.id).trim() === normalizedUnitId);
-      if (unitById) {
-        finalUnitId = unitById.id;
-      } else if (normalizedUnitName && units.length > 0) {
-        const unitByName = units.find(u => u.name.trim().toLowerCase() === normalizedUnitName);
-        if (unitByName) {
-          finalUnitId = unitByName.id;
-        }
-      }
+    const normalizedUnitId = initialUnitId ? String(initialUnitId).trim() : "";
+    const normalizedUnitName = initialUnitName?.trim().toLowerCase() || "";
+    let finalUnitId = normalizedUnitId;
 
-      setName(initialName);
-      setSlug(initialSlug);
-      setUnitId(finalUnitId);
-      setNameCharCount(initialName.length);
-      setSlugCharCount(initialSlug.length);
-      setFieldErrors({});
-      setServerError(null);
+    const unitById = units.find(u => String(u.id).trim() === normalizedUnitId);
+    if (unitById) {
+      finalUnitId = unitById.id;
+    } else if (normalizedUnitName && units.length) {
+      const unitByName = units.find(u => u.name.trim().toLowerCase() === normalizedUnitName);
+      if (unitByName) finalUnitId = unitByName.id;
     }
+
+    setName(initialName);
+    setSlug(initialSlug);
+    setUnitId(finalUnitId);
+    setNameCharCount(initialName.length);
+    setSlugCharCount(initialSlug.length);
+    setFieldErrors({});
+    setServerError(null);
   }, [isOpen, initialName, initialSlug, initialUnitId, initialUnitName, units]);
 
-  // Validación basada en el esquema Zod (sin lógica manual para name/slug)
   const validateForm = (currentName: string, currentSlug: string, currentUnitId: string) => {
-    // 1. Validar name y slug con Zod
     const result = Catalogschema.safeParse({ name: currentName, slug: currentSlug });
-    
     const errors: { name?: string; slug?: string; unit?: string } = {};
 
     if (!result.success) {
@@ -74,7 +69,6 @@ export function CatalogModal({
       });
     }
 
-    // 2. Validar unitId manualmente (opcional, si no está en el esquema)
     if (!currentUnitId) {
       errors.unit = "Debe seleccionar una unidad";
     }
@@ -126,7 +120,6 @@ export function CatalogModal({
 
   if (!isOpen) return null;
 
-  // Utilidades para estilos dinámicos (igual que en CategoryModal)
   const getFieldStyles = (value: string, maxLength: number, currentCharCount: number, hasFieldError: boolean) => {
     const isNearLimit = currentCharCount >= maxLength - 10 && currentCharCount <= maxLength;
     const isAtLimit = currentCharCount >= maxLength;
@@ -163,17 +156,13 @@ export function CatalogModal({
 
   const nameStyles = getFieldStyles(name, NAME_MAX_LENGTH, nameCharCount, hasNameError);
   const slugStyles = getFieldStyles(slug, SLUG_MAX_LENGTH, slugCharCount, hasSlugError);
-
   const unitBorderColor = hasUnitError
     ? 'border-red-500 focus:ring-red-400'
     : 'border-gray-300 focus:ring-[#DDC9A3]';
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-[#000000ab] z-40 transition-opacity"
-        onClick={handleClose}
-      />
+      <div className="fixed inset-0 bg-[#000000ab] z-40 transition-opacity" onClick={handleClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
@@ -185,7 +174,6 @@ export function CatalogModal({
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6 space-y-4">
-              {/* Campo Nombre */}
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <label htmlFor="catalogName" className="block text-sm font-medium text-gray-700">
@@ -213,7 +201,6 @@ export function CatalogModal({
                 </div>
               </div>
 
-              {/* Campo Slug */}
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <label htmlFor="catalogSlug" className="block text-sm font-medium text-gray-700">
@@ -240,7 +227,6 @@ export function CatalogModal({
                 </div>
               </div>
 
-              {/* Campo Unidad */}
               <div>
                 <label htmlFor="unitId" className="block text-sm font-medium text-gray-700 mb-2">
                   Unidad:
@@ -261,7 +247,6 @@ export function CatalogModal({
                 </select>
               </div>
 
-              {/* Mostrar errores de validación y de servidor */}
               <FormErrors errors={errorMessages} />
               {serverError && <FormErrors errors={[serverError]} />}
             </div>

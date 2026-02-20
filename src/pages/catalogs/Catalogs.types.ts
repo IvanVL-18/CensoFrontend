@@ -5,9 +5,11 @@ export interface Catalog {
   slug: string;
   unit_id: string;
   unit_name?: string; 
+   unit_is_active?: boolean; 
   unit?: {
     id: string;
     name: string;
+     deleted_at?: string | null;
   };
   created_at: string;
   updated_at: string;
@@ -16,6 +18,7 @@ export interface Catalog {
 export interface Unit {
   id: string;
   name: string;
+  deleted_at?: string | null;
 }
 
 export interface CreateCatalogDTO {
@@ -84,7 +87,6 @@ export interface FormErrorsProps {
   errors: string[];
 }
 
-// Catalogs.types.ts
 export interface CatalogModalProps {
   isOpen: boolean;
   isSubmitting: boolean;

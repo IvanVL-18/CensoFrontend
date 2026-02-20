@@ -54,6 +54,7 @@ const confirmConfig = {
 
 function CatalogsPageContent() {
   const [units, setUnits] = useState<Unit[]>([]);
+  const [originalActiveUnits, setOriginalActiveUnits] = useState<Unit[]>([]); // Guarda solo activas
   const [loadingUnits, setLoadingUnits] = useState(false);
 
   const {
@@ -71,16 +72,18 @@ function CatalogsPageContent() {
     handlePageChange,
   } = useCatalogsData();
 
+  const modals = useCatalogsModals();
+
   useEffect(() => {
-    const fetchAllUnits = async () => {
+    const fetchActiveUnits = async () => {
       setLoadingUnits(true);
       try {
-        let allUnits: Unit[] = [];
+        let activeUnits: Unit[] = [];
         let currentPage = 1;
         let lastPage = 1;
 
         do {
-          const response = await getUnits('all', '', currentPage);
+          const response = await getUnits('active', '', currentPage);
           const responseData = response.data || response;
           const pageUnits = Array.isArray(responseData)
             ? responseData
@@ -88,7 +91,7 @@ function CatalogsPageContent() {
             ? responseData.data
             : [];
 
-          allUnits = [...allUnits, ...pageUnits];
+          activeUnits = [...activeUnits, ...pageUnits];
 
           const newLastPage =
             response.meta?.last_page ??
@@ -104,19 +107,40 @@ function CatalogsPageContent() {
           currentPage++;
         } while (currentPage <= lastPage);
 
-        setUnits(allUnits);
+        setUnits(activeUnits);
+        setOriginalActiveUnits(activeUnits); 
       } catch (error) {
         console.error("Error al cargar unidades:", error);
         setUnits([]);
+        setOriginalActiveUnits([]);
       } finally {
         setLoadingUnits(false);
       }
     };
 
-    fetchAllUnits();
+    fetchActiveUnits();
   }, []);
 
-  const modals = useCatalogsModals();
+  useEffect(() => {
+    const editingCat = modals.editingCatalog;
+    if (editingCat?.unit_id) {
+      const currentUnitId = String(editingCat.unit_id).trim();
+      const exists = originalActiveUnits.some(u => String(u.id).trim() === currentUnitId);
+      if (!exists) {
+        setUnits([
+          ...originalActiveUnits,
+          {
+            id: currentUnitId,
+            name: editingCat.unit_name || 'Unidad desconocida',
+          }
+        ]);
+      } else {
+        setUnits(originalActiveUnits);
+      }
+    } else {
+      setUnits(originalActiveUnits);
+    }
+  }, [modals.editingCatalog, originalActiveUnits]);
 
   const {
     isSubmitting,
