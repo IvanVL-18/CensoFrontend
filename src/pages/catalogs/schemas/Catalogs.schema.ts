@@ -7,9 +7,9 @@ export const Catalogschema = z.object({
     .min(3, "El nombre debe tener al menos 3 caracteres.")
     .max(125, "El nombre no puede exceder los 125 caracteres.")
     .regex(
-      /^[\p{L}\p{M}\s'.,-]+$/u,
-      "El nombre solo puede contener letras, espacios, apóstrofes, puntos, comas y guiones."
-    ),
+  /^[\p{L}\p{M}\s',-]+$/u,
+  "El nombre solo puede contener letras, espacios, apóstrofes, comas y guiones."
+),
   slug: z.string()
   .trim()
   .min(1, "El slug es obligatorio.")

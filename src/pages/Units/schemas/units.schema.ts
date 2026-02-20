@@ -6,10 +6,10 @@ export const unitSchema = z.object({
     .min(1, "El nombre es obligatorio.") 
     .min(5, "El nombre debe tener al menos 5 caracteres.")
     .max(65, "El nombre no puede exceder los 65 caracteres.") 
-    .regex(/^[\p{L}\p{M}\p{N}\s'.,-]+$/u, "El campo nombre no puede contener emojis ni símbolos especiales.")
-    .refine((val) => !/\d/.test(val), {
-      message: "El nombre no puede contener números"
-    })
+    .regex(
+  /^[\p{L}\p{M}\s',-]+$/u,
+  "El nombre solo puede contener letras, espacios, apóstrofes, comas y guiones."
+)
 });
 
 export type UnitFormData = z.infer<typeof unitSchema>;
