@@ -1,6 +1,6 @@
 import React from "react";
 
-type RoleOption = {
+export type RoleOption = {
   id: string;      // (en tu proyecto suele venir encriptado)
   name: string;
 };
@@ -13,6 +13,8 @@ type Props = {
 
   onChange: (field: "roleId" | "description", value: string) => void;
   disabled?: boolean;
+  disableRoleSelect?: boolean;
+  isLoadingRoles?: boolean;
 };
 
 const PermissionRolesForm: React.FC<Props> = ({
@@ -21,6 +23,8 @@ const PermissionRolesForm: React.FC<Props> = ({
   description,
   onChange,
   disabled = false,
+  disableRoleSelect = false,
+  isLoadingRoles = false,
 }) => {
   return (
     <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-12">
@@ -33,11 +37,11 @@ const PermissionRolesForm: React.FC<Props> = ({
         <select
           value={roleId}
           onChange={(e) => onChange("roleId", e.target.value)}
-          disabled={disabled}
+          disabled={disabled || disableRoleSelect || isLoadingRoles}
           className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9D2449]/40 disabled:bg-slate-100"
         >
           <option value="" disabled>
-            Selecciona un rol...
+            {isLoadingRoles ? "Cargando roles..." : "Selecciona un rol..."}
           </option>
 
           {roles.map((r) => (

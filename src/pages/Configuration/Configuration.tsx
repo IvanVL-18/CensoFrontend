@@ -69,15 +69,8 @@ export default function ConfigurationPage() {
   return (
     <ConfigurationLayout title="Configuración">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-        {items.map((item) => (
-          <ConfigurationNavCard
-            key={item.title}
-            title={item.title}
-            description={item.description}
-            icon={item.icon}
-            className={item.className}
-            onClick={() => navigate(item.to)}
-          />
+        {items.map((item, index) => (
+          <ConfigurationNavCard key={index} {...item} onClick={() => navigate(item.to)} />
         ))}
       </div>
     </ConfigurationLayout>

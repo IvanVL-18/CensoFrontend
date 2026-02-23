@@ -1,33 +1,37 @@
 import type { LucideIcon } from "lucide-react";
 
-export type Props = {
-  label?: string;
-  logoSrc?: string; 
-};
-
+// Define las pestañas/secciones principales de permisos
 export type PermissionScope = "home" | "admin" | "operation";
-export type PermissionAction = "view" | "create" | "edit" | "delete";
 
+// Define las acciones posibles que se pueden realizar en un módulo
+export type PermissionAction = "view" | "create" | "edit" | "delete" | "export";
+
+// Mapea cada acción a su etiqueta en español para la UI
 export const ACTION_LABEL: Record<PermissionAction, string> = {
   view: "Ver",
   create: "Crear",
   edit: "Editar",
   delete: "Eliminar",
+  export: "Exportar",
 };
 
-export type PermissionMap = Record<PermissionAction, boolean>;
+// Define el estado de los checkboxes para un solo módulo. Ej: { view: true, create: false }
+export type PermissionMap = Record<string, boolean>; // { view: true, create: false }
 
-export type PermissionsState = Record<string, PermissionMap>;
+// Define el estado completo de todos los permisos. Ej: { "admin.users": { view: true } }
+export type PermissionsState = Record<string, PermissionMap>; // { "admin.users": { view: true } }
 
+// Define la estructura de un objeto para una pestaña
 export type PermissionTab = {
   key: PermissionScope;
   label: string;
   icon: LucideIcon;
 };
 
+// Define la estructura de un objeto para una tarjeta de módulo de permisos
 export type PermissionModule = {
   key: string;
   label: string;
   icon: LucideIcon;
-  actions?: PermissionAction[]; // si un módulo no usa todas
+  actions?: PermissionAction[]; // opcional, si no se define usa todas
 };

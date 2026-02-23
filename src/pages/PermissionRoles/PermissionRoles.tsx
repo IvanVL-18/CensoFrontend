@@ -1,156 +1,200 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Home, Settings, Shield } from "lucide-react";
+import { Home, Settings, Shield, Users, Layers, Building2, Briefcase } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import PermissionRolesToolbar from "./components/PermissionRolesToolbar";
-import PermissionRolesForm, { type RoleOption } from "./components/PermissionRolesForm";
 import PermissionTabs from "./components/PermissionTabs";
-import PermissionModuleCard from "./components/PermissionModuleCard";
 import FormErrors from "./components/FormErrors";
+import GovSwitch from "./components/GovSwitch";
 
-import type { PermissionModule, PermissionScope, PermissionTab } from "./PermissionRoles.types";
-import { usePermissionRolesState } from "./hooks/usePermissionRolesState";
+import { getPermissionRole, updatePermissionRole } from "./PermissionRoles.service";
+import type { Permission } from "./PermissionRoles.service";
 
-// ✅ ya tienes getRol
-import { getRol } from "../Roles/Roles.service";
+type Scope = "home" | "admin" | "operation";
+type Action = "view" | "create" | "edit" | "delete";
 
-// ✅ AGREGA esta función en Roles.service.ts (te la dejo abajo)
-// y luego la importas aquí:
-import { getRolesSelector } from "../Roles/Roles.service";
+const ACTION_LABEL: Record<Action, string> = {
+  view: "Ver",
+  create: "Crear",
+  edit: "Editar",
+  delete: "Eliminar",
+};
 
-const PermissionRoles: React.FC = () => {
+const moduleLabelMap: Record<string, string> = {
+  dashboard: "Dashboard",
+  notifications: "Notificaciones",
+  users: "Usuarios",
+  roles: "Roles",
+  sectors: "Sectores",
+  institutions: "Instituciones",
+  areas: "Áreas",
+  occupations: "Ocupaciones",
+};
+
+const moduleScopeMap: Record<string, Scope> = {
+  dashboard: "home",
+  notifications: "home",
+  users: "admin",
+  roles: "admin",
+  sectors: "admin",
+  institutions: "operation",
+  areas: "operation",
+  occupations: "operation",
+};
+
+const moduleIconMap: Record<string, any> = {
+  dashboard: Home,
+  notifications: Settings,
+  users: Users,
+  roles: Shield,
+  sectors: Layers,
+  institutions: Building2,
+  areas: Layers,
+  occupations: Briefcase,
+};
+
+const normalizeAction = (a: string): Action | null => {
+  const x = a.toLowerCase();
+  if (["view", "ver", "read", "show", "index", "list"].includes(x)) return "view";
+  if (["create", "crear", "store", "add"].includes(x)) return "create";
+  if (["edit", "editar", "update"].includes(x)) return "edit";
+  if (["delete", "eliminar", "destroy", "remove"].includes(x)) return "delete";
+  return null;
+};
+
+const parsePermission = (name: string) => {
+  // soporta: "users.view" o "admin.users.view"
+  const parts = name.split(".");
+  const actionRaw = parts.pop() || "";
+  const module = parts.pop() || "otros";
+  return { module, action: normalizeAction(actionRaw) };
+};
+
+export default function PermissionRoles() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // ✅ llega de la URL: /permission-roles?role=xxxxx
-  const roleParamId = searchParams.get("role");
+  // ENCRIPTADO
+  const roleEnc = searchParams.get("role");
 
-  // Tabs como tu diseño
-  const tabs: PermissionTab[] = [
-    { key: "home", label: "Inicio", icon: Home },
-    { key: "admin", label: "Administración", icon: Shield },
-    { key: "operation", label: "Operación", icon: Settings },
+  const [activeScope, setActiveScope] = useState<Scope>("admin");
+  const [errors, setErrors] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const [roleName, setRoleName] = useState("");
+  const [allPerms, setAllPerms] = useState<Permission[]>([]);
+
+  // ✅ importante: Set<number>
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  const tabs = [
+    { key: "home" as const, label: "Inicio", icon: Home },
+    { key: "admin" as const, label: "Administración", icon: Shield },
+    { key: "operation" as const, label: "Operación", icon: Settings },
   ];
 
-  // Módulos por sección
-  const MODULES_BY_SCOPE: Record<PermissionScope, PermissionModule[]> = {
-    home: [
-      { key: "home.dashboard", label: "Dashboard", icon: Home },
-      { key: "home.notifications", label: "Notificaciones", icon: Settings, actions: ["view"] },
-    ],
-    admin: [
-      { key: "admin.users", label: "Usuarios", icon: Shield },
-      { key: "admin.roles", label: "Roles", icon: Shield },
-      { key: "admin.sectors", label: "Sectores", icon: Settings },
-    ],
-    operation: [
-      { key: "op.institutions", label: "Instituciones", icon: Settings },
-      { key: "op.areas", label: "Áreas", icon: Settings },
-      { key: "op.occupations", label: "Ocupaciones", icon: Settings },
-    ],
-  };
-
-  const allModules = useMemo(() => Object.values(MODULES_BY_SCOPE).flat(), []);
-  const [activeScope, setActiveScope] = useState<PermissionScope>("admin");
-
-  // ✅ ahora el “rol seleccionado” (FK)
-  const [selectedRoleId, setSelectedRoleId] = useState<string>("");
-
-  const [description, setDescription] = useState("");
-  const [errors, setErrors] = useState<string[]>([]);
-
-  // Para banner
-  const [roleName, setRoleName] = useState<string>("");
-
-  // Lista roles para el select
-  const [roles, setRoles] = useState<RoleOption[]>([]);
-  const [rolesLoading, setRolesLoading] = useState<boolean>(true);
-
-  const { perms, setOne, setManyModulesAll, setModuleAll, allowAll } =
-    usePermissionRolesState(allModules);
-
-  const currentModules = MODULES_BY_SCOPE[activeScope];
-
-  const onAllowAllScope = () => {
-    setManyModulesAll(currentModules.map((m) => m.key), true);
-  };
-
-  // ✅ cargar roles para el selector
+  // Cargar permisos del rol + colección completa
   useEffect(() => {
-    let mounted = true;
+    if (!roleEnc) return;
 
     (async () => {
       try {
-        setRolesLoading(true);
-        const list = await getRolesSelector(); // [{id,name}]
-        if (!mounted) return;
-        setRoles(list);
+        setLoading(true);
+        setErrors([]);
+
+        const data = await getPermissionRole(roleEnc);
+
+        setRoleName(data.role?.name ?? "");
+        setAllPerms(data.permissionsCollection ?? []);
+
+        const selectedIds = (data.role?.permissions ?? []).map((p) => p.id);
+        setSelected(new Set(selectedIds));
       } catch (e) {
-        console.error("Error cargando roles para selector", e);
-        if (!mounted) return;
-        setRoles([]);
+        console.error(e);
+        setErrors(["No se pudo cargar permisos del rol."]);
       } finally {
-        if (mounted) setRolesLoading(false);
+        setLoading(false);
       }
     })();
+  }, [roleEnc]);
 
-    return () => {
-      mounted = false;
+  // Construir módulos por scope
+  const modulesByScope = useMemo(() => {
+    type ModuleCard = {
+      moduleKey: string;
+      label: string;
+      icon: any;
+      scope: Scope;
+      actions: Partial<Record<Action, number>>; // action -> permissionId
     };
-  }, []);
 
-  // ✅ si viene role por URL, lo fijamos como seleccionado
-  useEffect(() => {
-    if (!roleParamId) return;
-    setSelectedRoleId(roleParamId);
-  }, [roleParamId]);
+    const map = new Map<string, ModuleCard>();
 
-  // ✅ cargar datos del rol para banner / descripción
-  useEffect(() => {
-    if (!selectedRoleId) return;
+    allPerms.forEach((p) => {
+      const { module, action } = parsePermission(p.name);
+      if (!action) return;
 
-    (async () => {
-      try {
-        const fullRol: any = await getRol(selectedRoleId);
-        setRoleName(fullRol?.name ?? "");
-        if (fullRol?.description) setDescription(fullRol.description);
+      const scope = moduleScopeMap[module] ?? "operation";
+      const label = moduleLabelMap[module] ?? module;
+      const icon = moduleIconMap[module] ?? Settings;
 
-        // ⚠️ aquí después precargamos permisos reales cuando tengas el JSON
-      } catch (e) {
-        console.error("Error al cargar detalles del Rol", e);
+      if (!map.has(module)) {
+        map.set(module, { moduleKey: module, label, icon, scope, actions: {} });
       }
-    })();
-  }, [selectedRoleId]);
+      map.get(module)!.actions[action] = p.id;
+    });
 
-  const onChangeField = (field: "roleId" | "description", value: string) => {
-    if (field === "roleId") {
-      setSelectedRoleId(value);
+    const acc: Record<Scope, ModuleCard[]> = { home: [], admin: [], operation: [] };
+    for (const m of map.values()) acc[m.scope].push(m);
 
-      // opcional: si ya está en el array, pinta el nombre rápido
-      const found = roles.find((r) => r.id === value);
-      if (found) setRoleName(found.name);
+    return acc;
+  }, [allPerms]);
+
+  const currentModules = modulesByScope[activeScope];
+
+  const togglePermission = (permissionId: number, next: boolean) => {
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (next) n.add(permissionId);
+      else n.delete(permissionId);
+      return n;
+    });
+  };
+
+  const allowAll = () => {
+    setSelected(new Set(allPerms.map((p) => p.id)));
+  };
+
+  const allowAllScope = () => {
+    const ids: number[] = [];
+    currentModules.forEach((m) => {
+      Object.values(m.actions).forEach((id) => id && ids.push(id));
+    });
+
+    setSelected((prev) => new Set([...prev, ...ids]));
+  };
+
+  const save = async () => {
+    if (!roleEnc) {
+      setErrors(["No se recibió el rol en la URL."]);
+      return;
     }
 
-    if (field === "description") setDescription(value);
-  };
+    try {
+      setLoading(true);
+      setErrors([]);
 
-  const onSubmit = () => {
-    const nextErrors: string[] = [];
+      // ✅ AQUÍ está la corrección: 2do parámetro es number[]
+      await updatePermissionRole(roleEnc, Array.from(selected));
 
-    if (!selectedRoleId) nextErrors.push("Selecciona un rol.");
-    if (!description.trim()) nextErrors.push("La descripción es obligatoria.");
-
-    setErrors(nextErrors);
-    if (nextErrors.length) return;
-
-    const payload = {
-      role_id: selectedRoleId,
-      description: description.trim(),
-      permissions: perms,
-    };
-
-    console.log("SAVE Permission Role:", payload);
-    alert("Listo ✅ (por ahora solo imprime en consola).");
+      alert("Permisos asignados correctamente ✅");
+      navigate(-1);
+    } catch (e) {
+      console.error(e);
+      setErrors(["No se pudo guardar permisos."]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -159,22 +203,12 @@ const PermissionRoles: React.FC = () => {
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <PermissionRolesToolbar onAllowAll={allowAll} />
 
-          {/* Banner */}
-          {selectedRoleId && (
+          {roleEnc && (
             <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
               <span className="font-semibold text-[#611232]">Asignando permisos a:</span>{" "}
               <span className="text-slate-700">{roleName || "Rol seleccionado"}</span>
             </div>
           )}
-
-          <PermissionRolesForm
-            roleId={selectedRoleId}
-            roles={roles}
-            description={description}
-            onChange={onChangeField}
-            disableRoleSelect={!!roleParamId} // ✅ si viene de modal, no lo cambies
-            isLoadingRoles={rolesLoading}
-          />
 
           <FormErrors errors={errors} />
 
@@ -186,25 +220,75 @@ const PermissionRoles: React.FC = () => {
 
             <button
               type="button"
-              onClick={onAllowAllScope}
-              className="text-sm font-semibold text-[#611232] hover:underline"
+              onClick={allowAllScope}
+              className="text-sm font-semibold text-[#611232] hover:underline disabled:opacity-60"
+              disabled={loading}
             >
               Permitir todo en esta sección
             </button>
           </div>
 
-          <PermissionTabs tabs={tabs} active={activeScope} onChange={setActiveScope} />
+          <PermissionTabs
+            // si tu componente está tipado con PermissionScope, esto sirve igual
+            tabs={tabs as any}
+            active={activeScope as any}
+            onChange={setActiveScope as any}
+          />
+
+          {loading && <p className="mt-4 text-sm text-slate-500">Cargando...</p>}
 
           <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {currentModules.map((m) => (
-              <PermissionModuleCard
-                key={m.key}
-                module={m}
-                value={perms[m.key]}
-                onToggle={(action, next) => setOne(m.key, action, next)}
-                onToggleAll={(next) => setModuleAll(m.key, next)}
-              />
-            ))}
+            {currentModules.map((m) => {
+              const Icon = m.icon;
+              const actions = (Object.keys(ACTION_LABEL) as Action[]).filter((a) => !!m.actions[a]);
+
+              const allOn = actions.length
+                ? actions.every((a) => selected.has(m.actions[a]!))
+                : false;
+
+              return (
+                <div key={m.moduleKey} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#611232]/10">
+                        <Icon className="h-5 w-5 text-[#611232]" />
+                      </div>
+                      <h3 className="text-sm font-semibold text-slate-800">{m.label}</h3>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        actions.forEach((a) => togglePermission(m.actions[a]!, !allOn));
+                      }}
+                      className="text-xs font-semibold text-[#611232] hover:underline"
+                      disabled={!actions.length}
+                    >
+                      {allOn ? "Quitar todo" : "Permitir todo"}
+                    </button>
+                  </div>
+
+                  <div className="mt-4 space-y-3">
+                    {actions.map((a) => {
+                      const pid = m.actions[a]!;
+                      return (
+                        <div key={a} className="flex items-center justify-between gap-3">
+                          <span className="text-sm text-slate-700">{ACTION_LABEL[a]}</span>
+
+                          <GovSwitch
+                            label={`${m.label} - ${ACTION_LABEL[a]}`}
+                            checked={selected.has(pid)}
+                            onCheckedChange={(next: boolean) => togglePermission(pid, next)}
+                            size="sm"
+                            showStateText={false}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -218,8 +302,9 @@ const PermissionRoles: React.FC = () => {
 
             <button
               type="button"
-              onClick={onSubmit}
-              className="rounded-md bg-[#611232] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9D2449]"
+              disabled={loading}
+              onClick={save}
+              className="rounded-md bg-[#611232] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9D2449] disabled:opacity-60"
             >
               Guardar
             </button>
@@ -228,6 +313,4 @@ const PermissionRoles: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default PermissionRoles;
+}
