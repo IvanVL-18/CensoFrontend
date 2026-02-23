@@ -16,7 +16,7 @@ import { Toast } from "../../components/Toast";
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2">
       {toasts.map((toast) => (
         <Toast
           key={toast.id}
@@ -45,19 +45,12 @@ function OccupationsPageContent() {
     handlePageChange,
   } = useOccupationsData();
 
-  const handleViewClick = async (partialOccupation: any) => {
-    try {
-      const fullOccupation = await getOccupation(partialOccupation.id);
-      modals.openView(fullOccupation);
-    } catch (error) {
-      console.error("Error al cargar detalles de la Ocupación", error);
-    }
-  };
   const modals = useOccupationsModals();
 
   const {
     isSubmitting,
     mutationError,
+    clearMutationError,
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
@@ -66,9 +59,22 @@ function OccupationsPageContent() {
     closeForm: modals.closeForm,
     closeConfirm: modals.closeConfirm,
     openBulkError: modals.openBulkError,
+    currentOccupations: Occupations, 
   });
 
-  const modalTitle = modals.editingOccupation ? "Editar Ocupación" : "Agregar Ocupación";
+  const handleViewClick = async (partialOccupation: any) => {
+    try {
+      clearMutationError(); 
+      const fullOccupation = await getOccupation(partialOccupation.id);
+      modals.openView(fullOccupation);
+    } catch (error) {
+      console.error("Error al cargar detalles de la Ocupación", error);
+    }
+  };
+
+  const modalTitle = modals.editingOccupation
+    ? "Editar Ocupación"
+    : "Agregar Ocupación";
   const modalInitialName = modals.editingOccupation?.name || "";
 
   let confirmTitle = "";
@@ -78,17 +84,17 @@ function OccupationsPageContent() {
 
   if (modals.actionType === "ban") {
     confirmTitle = "Desactivar Ocupación";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el Ocupación "${modals.actionOccupation?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres desactivar la Ocupación "${modals.actionOccupation?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (modals.actionType === "restore") {
     confirmTitle = "Restaurar Ocupación";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el Ocupación "${modals.actionOccupation?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres restaurar la Ocupación "${modals.actionOccupation?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el Ocupación "${modals.actionOccupation?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la Ocupación "${modals.actionOccupation?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -104,11 +110,14 @@ function OccupationsPageContent() {
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
-        onAddClick={modals.openCreate}
+        onAddClick={() => {
+          clearMutationError();
+          modals.openCreate();
+        }}
         onBulkUpload={handleBulkUpload}
       />
 
-      {/* Tabla de Resultados */}
+      {/* Tabla */}
       <div className="p-4">
         <OccupationsTable
           loading={loading}
@@ -117,58 +126,70 @@ function OccupationsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={modals.openEdit}
-          onBan={(u) => modals.openConfirm(u, "ban")}
-          onRestore={(u) => modals.openConfirm(u, "restore")}
-          onDelete={(u) => modals.openConfirm(u, "delete")}
+          onEdit={(o) => {
+            clearMutationError();
+            modals.openEdit(o);
+          }}
+          onBan={(o) => {
+            clearMutationError();
+            modals.openConfirm(o, "ban");
+          }}
+          onRestore={(o) => {
+            clearMutationError();
+            modals.openConfirm(o, "restore");
+          }}
+          onDelete={(o) => {
+            clearMutationError();
+            modals.openConfirm(o, "delete");
+          }}
         />
 
         {/* Paginación */}
         <div className="border-t border-gray-200 bg-gray-50">
-          <Pagination
-            meta={meta}
-            links={links}
-            onPageClick={handlePageChange}
-          />
+          <Pagination meta={meta} links={links} onPageClick={handlePageChange} />
         </div>
       </div>
 
-      {/* --- MODALES --- */}
-
-      {/* 1. Crear / Editar */}
+      {/* 1) Crear / Editar */}
       <OccupationModal
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
         title={modalTitle}
         initialName={modalInitialName}
-        onClose={modals.closeForm}
+        onClose={() => {
+          clearMutationError();
+          modals.closeForm();
+        }}
         onSave={(name) => handleSave(name, modals.editingOccupation)}
       />
 
-      {/* 2. Confirmación (Ban/Restore/Delete) */}
+      {/* 2) Confirmación */}
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={mutationError} 
+        error={mutationError}
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
         confirmButtonColor={confirmButtonColor}
-        onClose={modals.closeConfirm}
+        onClose={() => {
+          clearMutationError();
+          modals.closeConfirm();
+        }}
         onConfirm={() =>
           handleConfirmAction(modals.actionOccupation, modals.actionType)
         }
       />
 
-      {/* 3. Ver Detalle */}
+      {/* 3) Ver */}
       <ViewOccupationModal
         isOpen={modals.isViewOpen}
         Occupation={modals.viewingOccupation}
         onClose={modals.closeView}
       />
 
-      {/* 4. Errores de Excel */}
+      {/* 4) Errores Excel */}
       <BulkErrorModal
         isOpen={modals.isBulkErrorOpen}
         errors={modals.bulkErrors}
