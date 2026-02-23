@@ -10,11 +10,11 @@ import ConfigurationsPage from "./pages/Configuration/Configuration";
 import DashboardLayout from "./components/DashboardLayout";
 
 import Units from "./pages/Units/units";
-import Census from "./pages/census/CensosPage";
-import CreateCensusPage from "./pages/census/CreateCensus";
-import CensusUnitsPage from "./pages/census/CensusUnitsPage";
-import CensusSectionsPage from "./pages/census/CensusSectionsPage";   
-import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; 
+import Census from "./pages/census-alma/CensosPage";
+import CreateCensusPage from "./pages/census-alma/CreateCensus";
+import CensusUnitsPage from "./pages/census-alma/CensusUnitsPage";
+import CensusSectionsPage from "./pages/census-alma/CensusSectionsPage";   
+import CensusQuestionsPage from "./pages/census-alma/CensusQuestionsPage"; 
 
 import Sections from "./pages/Sections/Sections";
 import Insitutions from "./pages/Institutions/Institutions";
