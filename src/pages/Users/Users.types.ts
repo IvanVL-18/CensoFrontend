@@ -77,7 +77,7 @@ export interface FormErrorsProps {
   errors: string[];
 }
 
-export interface UserModalProps {
+export interface UserModalProps { 
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null;
