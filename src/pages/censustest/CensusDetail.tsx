@@ -1,8 +1,8 @@
 // src/pages/census/CensusDetail.tsx
 import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import type { Census } from "./census.interfaces";
-import CensusQuestions from "./CensusQuestionsPage";
+import type { Census } from "./census.types";
+/* import CensusQuestions from "./CensusQuestionsPage"; */
 
 type Props = {
   census: Census;
@@ -47,11 +47,11 @@ export default function CensusDetail({ census, onBack }: Props) {
           "
         >
           <ArrowLeft className="w-4 h-4" />
-          Regresar
+          Regresaraaa
         </button>
       </div>
 
-      {view === "questions" ? (
+      {/* {view === "questions" ? (
         <CensusQuestions census={census} />
       ) : (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
@@ -205,7 +205,7 @@ export default function CensusDetail({ census, onBack }: Props) {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

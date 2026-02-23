@@ -10,11 +10,16 @@ import ConfigurationsPage from "./pages/Configuration/Configuration";
 import DashboardLayout from "./components/DashboardLayout";
 
 import Units from "./pages/Units/units";
-import Census from "./pages/census-alma/CensosPage";
+/* rutas del censo */
+import Census from "./pages/censustest/CensosPage";
+import CreateCensusPage from "./pages/censustest/CreateCensus";
+ 
+
+/* import Census from "./pages/census-alma/CensosPage";
 import CreateCensusPage from "./pages/census-alma/CreateCensus";
 import CensusUnitsPage from "./pages/census-alma/CensusUnitsPage";
 import CensusSectionsPage from "./pages/census-alma/CensusSectionsPage";   
-import CensusQuestionsPage from "./pages/census-alma/CensusQuestionsPage"; 
+import CensusQuestionsPage from "./pages/census-alma/CensusQuestionsPage" */
 
 import Sections from "./pages/Sections/Sections";
 import Insitutions from "./pages/Institutions/Institutions";
@@ -45,9 +50,9 @@ export default function App() {
         {/* Censos */}
         <Route path="/censos" element={<Census />} />
         <Route path="/censos/crear" element={<CreateCensusPage />} />
-        <Route path="/censos/unidades" element={<CensusUnitsPage />} />
+        {/* <Route path="/censos/unidades" element={<CensusUnitsPage />} />
         <Route path="/censos/secciones" element={<CensusSectionsPage />} />     
-        <Route path="/censos/preguntas" element={<CensusQuestionsPage />} />    
+        <Route path="/censos/preguntas" element={<CensusQuestionsPage />} />    */} 
 
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />

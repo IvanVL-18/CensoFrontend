@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getSections } from "./sections.service";
-import type { Section, PaginationMeta, CensusFormValues } from "./census.interfaces";
-import { createCensus } from "./censos.service";
+import type { Section, PaginationMeta, CensusFormValues } from "../census.types";
+import { createCensus } from "../censos.service";
 import FormAlert from "./FormAlert";
 
 function validateDraft(draft: CensusFormValues): string[] {

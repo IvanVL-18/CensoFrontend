@@ -1,18 +1,18 @@
-// src/pages/census/units.service.ts
-import type { Unit, PaginationMeta, ContentFilter } from "./census.interfaces";
+// src/pages/census/sections.service.ts
+import type { Section, PaginationMeta, ContentFilter } from "../census.interfaces";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api";
 
 /**
- * GET /units/{content}/content
+ * GET /sections/{content}/content
  * content: 'active' | 'inactive' | 'all'
  */
-export async function getUnits(
+export async function getSections(
   page: number = 1,
   content: ContentFilter = "active"
-): Promise<{ data: Unit[]; meta: PaginationMeta }> {
-  const url = `${API_BASE_URL}/units/${content}/content?page=${page}`;
+): Promise<{ data: Section[]; meta: PaginationMeta }> {
+  const url = `${API_BASE_URL}/sections/${content}/content?page=${page}`;
 
   const res = await fetch(url, {
     headers: {
@@ -21,13 +21,13 @@ export async function getUnits(
   });
 
   if (!res.ok) {
-    throw new Error(`Error al cargar unidades (HTTP ${res.status})`);
+    throw new Error(`Error al cargar secciones (HTTP ${res.status})`);
   }
 
   const json = await res.json();
   const rawData: any[] = json.data ?? [];
 
-  const data: Unit[] = rawData.map((item) => {
+  const data: Section[] = rawData.map((item) => {
     const attrs = item.attributes ?? item;
 
     return {

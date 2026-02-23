@@ -1,5 +1,5 @@
 // src/pages/census/units.service.ts
-import type { Unit, PaginationMeta, ContentFilter } from "./census.interfaces";
+import type { Unit, PaginationMeta, ContentFilter } from "../census.types";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api";
