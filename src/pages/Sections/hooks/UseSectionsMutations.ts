@@ -8,7 +8,7 @@ import {
   forceDeleteSection,
   importSections,
 } from "../sections.service";
-import type { Section } from "../Sections.types";
+import type { Section, CreateSectionDTO } from "../Sections.types";
 
 interface UseSectionsMutationsProps {
   refreshSections: () => void;
@@ -28,17 +28,16 @@ export function useSectionsMutations({
   const [mutationError, setMutationError] = useState<string | null>(null);
 
   const handleSave = useCallback(
-    async (name: string, editingSection?: Section | null) => {
+    async (sectionData: CreateSectionDTO, editingSection?: Section | null) => {
       setIsSubmitting(true);
       setMutationError(null);
 
       try {
         let response;
-        const SectionData = { name };
         if (editingSection) {
-          response = await updateSection(editingSection.id, SectionData);
+          response = await updateSection(editingSection.id, sectionData);
         } else {
-          response = await createSection(SectionData);
+          response = await createSection(sectionData);
         }
 
         addToast(response.message, "success");

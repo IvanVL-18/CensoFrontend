@@ -1,4 +1,4 @@
-import { useSectionsData } from "./hooks/useSectionsData";
+import { useSectionsData } from "./hooks/UseSectionsData";
 import { useSectionsModals } from "./hooks/UseSectionsModals";
 import { useSectionsMutations } from "./hooks/UseSectionsMutations";
 import { getSection } from "./sections.service";
@@ -69,7 +69,6 @@ function SectionsPageContent() {
   });
 
   const modalTitle = modals.editingSection ? "Editar Sección" : "Agregar Sección";
-  const modalInitialName = modals.editingSection?.name || "";
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -141,9 +140,13 @@ function SectionsPageContent() {
         isSubmitting={isSubmitting}
         error={mutationError}
         title={modalTitle}
-        initialName={modalInitialName}
+        initialData={
+          modals.editingSection
+            ? { name: modals.editingSection.name, instructions: modals.editingSection.instructions }
+            : undefined
+        }
         onClose={modals.closeForm}
-        onSave={(name) => handleSave(name, modals.editingSection)}
+        onSave={(data) => handleSave(data, modals.editingSection)}
       />
 
       {/* 2. Confirmación (Ban/Restore/Delete) */}

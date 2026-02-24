@@ -1,6 +1,7 @@
 export interface Section {
   id: string;
   name: string;
+  instructions: string | null;
   created_at: string; 
   updated_at: string;
   deleted_at: string;
@@ -68,9 +69,9 @@ export interface SectionModalProps {
   isSubmitting: boolean;
   error: string | null;
   title: string;
-  initialName?: string;
+  initialData?: CreateSectionDTO;
   onClose: () => void;
-  onSave: (name: string) => void;
+  onSave: (data: CreateSectionDTO) => void;
 }
 
 export interface SectionsTableProps {
@@ -92,5 +93,6 @@ export interface ViewSectionModalProps {
 }
 export interface CreateSectionDTO {
   name: string;
+  instructions?: string | null;
 }
 export type UpdateSectionDTO = Partial<CreateSectionDTO>;

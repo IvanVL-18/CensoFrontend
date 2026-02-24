@@ -1,64 +1,74 @@
-import { useState, useEffect, useRef, type FormEvent, type ChangeEvent } from "react";
+import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import type { SectionModalProps } from "../Sections.types";
-import { Sectionschema } from "../schemas/Sections.schema"; 
+import { Sectionschema } from "../schemas/Sections.schema";
 
 export function SectionModal({
   isOpen,
   isSubmitting,
   error,
   title,
-  initialName = "",
+  initialData,
   onClose,
   onSave,
 }: SectionModalProps) {
-  const [name, setName] = useState(initialName);
+  const [name, setName] = useState("");
+  const [instructions, setInstructions] = useState("");
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
-  const prevIsSubmitting = useRef(isSubmitting);
 
   useEffect(() => {
     if (isOpen) {
-      setName(initialName);
+      setName(initialData?.name || "");
+      setInstructions(initialData?.instructions || "");
       setFormErrors([]);
       setServerError(null);
     }
-  }, [isOpen, initialName]); 
+  }, [isOpen, initialData]);
 
   useEffect(() => {
-    if (prevIsSubmitting.current && !isSubmitting && error) {
+    if (error) {
       setServerError(error);
-    } else if (!error && serverError) {
+    } else {
       setServerError(null);
     }
-    prevIsSubmitting.current = isSubmitting;
-  }, [isSubmitting, error, serverError]);
+  }, [error]);
 
-  const validateForm = (currentName: string) => {
-    const result = Sectionschema.safeParse({ name: currentName });
+  const validateForm = (currentName: string, currentInstructions: string) => {
+    const result = Sectionschema.safeParse({
+      name: currentName,
+      instructions: currentInstructions,
+    });
     if (!result.success) {
       const errorMessages = result.error.issues.map((err) => err.message);
       setFormErrors(errorMessages);
-      return false; 
+      return false;
     } else {
       setFormErrors([]);
-      return true; 
+      return true;
     }
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const isValid = validateForm(name);
+    const isValid = validateForm(name, instructions);
     if (isValid) {
-      onSave(name); 
+      onSave({ name, instructions });
     }
   };
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setName(newName);
-    validateForm(newName);
+    if (formErrors.length > 0) validateForm(newName, instructions);
+    if (serverError) setServerError(null);
+  };
+
+  const handleInstructionsChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const newInstructions = e.target.value;
+    setInstructions(newInstructions);
+    if (formErrors.length > 0) validateForm(name, newInstructions);
     if (serverError) setServerError(null);
   };
 
@@ -68,7 +78,9 @@ export function SectionModal({
 
   const hasClientErrors = formErrors.length > 0;
   const hasServerError = !!serverError;
-  const hasChanges = name !== initialName;
+  const hasChanges =
+    name !== (initialData?.name || "") ||
+    instructions !== (initialData?.instructions || "");
 
   return (
     <>
@@ -106,6 +118,25 @@ export function SectionModal({
                 `}
                 disabled={isSubmitting}
                 autoFocus
+              />
+
+              <label htmlFor="SectionInstructions" className="block text-sm font-medium text-gray-700 mb-2 mt-4">
+                Instrucciones (Opcional):
+              </label>
+              <textarea
+                id="SectionInstructions"
+                value={instructions}
+                onChange={handleInstructionsChange}
+                placeholder="Escribe las instrucciones aquí..."
+                rows={4}
+                className={`
+                  border rounded-lg p-2 w-full focus:outline-none focus:ring-2
+                  ${(hasClientErrors || hasServerError)
+                    ? 'border-red-500 focus:ring-red-400' 
+                    : 'border-gray-300 focus:ring-[#DDC9A3]'
+                  }
+                `}
+                disabled={isSubmitting}
               />
 
               <div id="form-errors-client">
