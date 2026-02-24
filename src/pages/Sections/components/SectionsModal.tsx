@@ -87,14 +87,14 @@ const handleSubmit = (e: FormEvent) => {
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setName(newName);
-    if (formErrors.length > 0) validateForm(newName, instructions);
+    validateForm(newName, instructions);
     if (serverError) setServerError(null);
   };
 
   const handleInstructionsChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const newInstructions = e.target.value;
     setInstructions(newInstructions);
-    if (formErrors.length > 0) validateForm(name, newInstructions);
+    validateForm(name, newInstructions);
     if (serverError) setServerError(null);
   };
 
