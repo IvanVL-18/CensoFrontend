@@ -11,7 +11,7 @@ import DashboardLayout from "./components/DashboardLayout";
 
 import Users from "./pages/Users/Users";
 
-import Modulos from "./pages/Modulos/Modulos";
+import Modules from "./pages/Modules/Modules";
 import Census from "./pages/census/CensosPage";
 import CreateCensusPage from "./pages/census/CreateCensus";
 import CensusUnitsPage from "./pages/census/CensusUnitsPage";
@@ -27,7 +27,7 @@ import Permissions from "./pages/Permissions/Permissions";
 
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
-import Dependencias from "./pages/Dependencias/Dependencias";
+import Dependencies from "./pages/Dependencies/Dependencies";
 
 
 export default function App() {
@@ -57,11 +57,11 @@ export default function App() {
         <Route path="/configuracion" element={<ConfigurationsPage />} />
 
         {/* Catálogos */}
-        <Route path="/Modulos" element={<Modulos />} />
+        <Route path="/Modulos" element={<Modules />} />
         <Route path="/secciones" element={<Sections />} />
         <Route path="/ocupaciones" element={<Occupations />} />
         <Route path="/Roles" element={<Roles />} />
-        <Route path="/Dependencias" element={<Dependencias />} />
+        <Route path="/Dependencias" element={<Dependencies />} />
         <Route path="/permisos" element={<Permissions />} />
         <Route path="/categorias" element={<Categories />} />
         <Route path="/catalogos" element={<Catalogs />} />
