@@ -1,9 +1,9 @@
 export interface Occupation {
-  id: string;
+  id: string | number;
   name: string;
-  created_at: string; 
+  created_at: string;
   updated_at: string;
-  deleted_at: string;
+  deleted_at: string | null;
 }
 
 export interface MetaLink {
@@ -34,6 +34,7 @@ export interface PaginatedOccupationsResponse {
   };
   meta: Meta;
 }
+
 export interface ExcelFailure {
   row: number;
   field: string;
@@ -74,7 +75,7 @@ export interface OccupationModalProps {
 }
 
 export interface OccupationsTableProps {
-  Occupations: Occupation[]; 
+  Occupations: Occupation[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
@@ -85,11 +86,13 @@ export interface OccupationsTableProps {
   onRestore: (Occupation: Occupation) => void;
   onDelete: (Occupation: Occupation) => void;
 }
+
 export interface ViewOccupationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  Occupation: Occupation | null; 
+  Occupation: Occupation | null;
 }
+
 export interface CreateOccupationDTO {
   name: string;
 }

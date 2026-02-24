@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import axios from "axios";
 import { useToast } from "../../../context/ToastContext";
 import {
   createRol,
@@ -17,6 +18,26 @@ interface UseRolesMutationsProps {
   openBulkError: (errors: any[]) => void;
 }
 
+function getErrorMessage(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const data: any = err.response?.data;
+
+    if (typeof data?.message === "string" && data.message.trim()) {
+      return data.message;
+    }
+
+    if (data?.errors && typeof data.errors === "object") {
+      const first = (Object.values(data.errors).flat() as any[])?.[0];
+      if (typeof first === "string" && first.trim()) return first;
+    }
+
+    return err.message || "Error al procesar la solicitud";
+  }
+
+  if (err instanceof Error) return err.message;
+  return "Error al procesar la solicitud";
+}
+
 export function useRolesMutations({
   refreshRoles,
   closeForm,
@@ -27,26 +48,27 @@ export function useRolesMutations({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
 
+  const clearMutationError = useCallback(() => {
+    setMutationError(null);
+  }, []);
+
   const handleSave = useCallback(
     async (name: string, editingRol?: Rol | null) => {
       setIsSubmitting(true);
       setMutationError(null);
 
       try {
-        let response;
-        const RolData = { name };
-        if (editingRol) {
-          response = await updateRol(editingRol.id, RolData);
-        } else {
-          response = await createRol(RolData);
-        }
+        const RolData = { name: name.trim() };
+
+        const response = editingRol
+          ? await updateRol(editingRol.id, RolData)
+          : await createRol(RolData);
 
         addToast(response.message, "success");
         closeForm();
         refreshRoles();
-      } catch (err: any) {
-        const msg =
-          err.response?.data?.message || err.message || "Error al guardar";
+      } catch (err: unknown) {
+        const msg = getErrorMessage(err);
         setMutationError(msg);
         addToast(msg, "danger");
       } finally {
@@ -61,16 +83,14 @@ export function useRolesMutations({
       if (!Rol || !type) return;
 
       setIsSubmitting(true);
+      setMutationError(null);
+
       try {
         let response: { message: string } | undefined;
 
-        if (type === "ban") {
-          response = await banRol(Rol.id);
-        } else if (type === "restore") {
-          response = await restoreRol(Rol.id);
-        } else if (type === "delete") {
-          response = await forceDeleteRol(Rol.id);
-        }
+        if (type === "ban") response = await banRol(Rol.id);
+        else if (type === "restore") response = await restoreRol(Rol.id);
+        else if (type === "delete") response = await forceDeleteRol(Rol.id);
 
         if (response) {
           const toastType = type === "delete" ? "warning" : "success";
@@ -78,8 +98,10 @@ export function useRolesMutations({
           closeConfirm();
           refreshRoles();
         }
-      } catch (err: any) {
-        addToast(err.message || "Error al procesar la acción", "danger");
+      } catch (err: unknown) {
+        const msg = getErrorMessage(err);
+        setMutationError(msg); 
+        addToast(msg, "danger");
       } finally {
         setIsSubmitting(false);
       }
@@ -90,6 +112,8 @@ export function useRolesMutations({
   const handleBulkUpload = useCallback(
     async (file: File) => {
       setIsSubmitting(true);
+      setMutationError(null);
+
       const formData = new FormData();
       formData.append("file", file);
 
@@ -97,15 +121,26 @@ export function useRolesMutations({
         const response = await importRoles(formData);
         addToast(response.message || "Importación exitosa", "success");
         refreshRoles();
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error en carga masiva:", err);
-        if (err.status === 422 && err.data?.errors) {
-          openBulkError(err.data.errors);
-          addToast("El archivo contiene errores que debes corregir", "warning");
-          refreshRoles();
-        } else {
-          addToast(err.message || "Error al subir el archivo", "danger");
+
+        if (axios.isAxiosError(err)) {
+          const status = err.response?.status;
+          const data: any = err.response?.data;
+
+          if (status === 422 && data?.errors) {
+            openBulkError(data.errors);
+            addToast("El archivo contiene errores que debes corregir", "warning");
+            refreshRoles();
+            return;
+          }
+
+          const msg = getErrorMessage(err);
+          addToast(msg, "danger");
+          return;
         }
+
+        addToast("Error al subir el archivo", "danger");
       } finally {
         setIsSubmitting(false);
       }
@@ -116,6 +151,7 @@ export function useRolesMutations({
   return {
     isSubmitting,
     mutationError,
+    clearMutationError, 
     handleSave,
     handleConfirmAction,
     handleBulkUpload,

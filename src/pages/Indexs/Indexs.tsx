@@ -16,7 +16,7 @@ import { Toast } from "../../components/Toast";
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2">
       {toasts.map((toast) => (
         <Toast
           key={toast.id}
@@ -45,19 +45,12 @@ function IndexsPageContent() {
     handlePageChange,
   } = useIndexsData();
 
-  const handleViewClick = async (partialIndex: any) => {
-    try {
-      const fullIndex = await getIndex(partialIndex.id);
-      modals.openView(fullIndex);
-    } catch (error) {
-      console.error("Error al cargar detalles del Índice", error);
-    }
-  };
   const modals = useIndexsModals();
 
   const {
     isSubmitting,
     mutationError,
+    clearMutationError,
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
@@ -67,6 +60,16 @@ function IndexsPageContent() {
     closeConfirm: modals.closeConfirm,
     openBulkError: modals.openBulkError,
   });
+
+  const handleViewClick = async (partialIndex: any) => {
+    try {
+      clearMutationError(); 
+      const fullIndex = await getIndex(partialIndex.id);
+      modals.openView(fullIndex);
+    } catch (error) {
+      console.error("Error al cargar detalles del Índice", error);
+    }
+  };
 
   const modalTitle = modals.editingIndex ? "Editar Índice" : "Agregar Índice";
   const modalInitialName = modals.editingIndex?.name || "";
@@ -97,18 +100,19 @@ function IndexsPageContent() {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
 
-      {/* Barra de Herramientas */}
       <IndexsToolbar
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
-        onAddClick={modals.openCreate}
+        onAddClick={() => {
+          clearMutationError();
+          modals.openCreate();
+        }}
         onBulkUpload={handleBulkUpload}
       />
 
-      {/* Tabla de Resultados */}
       <div className="p-4">
         <IndexsTable
           loading={loading}
@@ -117,58 +121,64 @@ function IndexsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={modals.openEdit}
-          onBan={(u) => modals.openConfirm(u, "ban")}
-          onRestore={(u) => modals.openConfirm(u, "restore")}
-          onDelete={(u) => modals.openConfirm(u, "delete")}
+          onEdit={(i) => {
+            clearMutationError();
+            modals.openEdit(i);
+          }}
+          onBan={(i) => {
+            clearMutationError();
+            modals.openConfirm(i, "ban");
+          }}
+          onRestore={(i) => {
+            clearMutationError();
+            modals.openConfirm(i, "restore");
+          }}
+          onDelete={(i) => {
+            clearMutationError();
+            modals.openConfirm(i, "delete");
+          }}
         />
 
-        {/* Paginación */}
         <div className="border-t border-gray-200 bg-gray-50">
-          <Pagination
-            meta={meta}
-            links={links}
-            onPageClick={handlePageChange}
-          />
+          <Pagination meta={meta} links={links} onPageClick={handlePageChange} />
         </div>
       </div>
 
-      {/* --- MODALES --- */}
-
-      {/* 1. Crear / Editar */}
       <IndexModal
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
         title={modalTitle}
         initialName={modalInitialName}
-        onClose={modals.closeForm}
+        onClose={() => {
+          clearMutationError();
+          modals.closeForm();
+        }}
         onSave={(name) => handleSave(name, modals.editingIndex)}
+        onClearServerError={clearMutationError}
       />
 
-      {/* 2. Confirmación (Ban/Restore/Delete) */}
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={mutationError} 
+        error={mutationError}
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
         confirmButtonColor={confirmButtonColor}
-        onClose={modals.closeConfirm}
-        onConfirm={() =>
-          handleConfirmAction(modals.actionIndex, modals.actionType)
-        }
+        onClose={() => {
+          clearMutationError();
+          modals.closeConfirm();
+        }}
+        onConfirm={() => handleConfirmAction(modals.actionIndex, modals.actionType)}
       />
 
-      {/* 3. Ver Detalle */}
       <ViewIndexModal
         isOpen={modals.isViewOpen}
         Index={modals.viewingIndex}
         onClose={modals.closeView}
       />
 
-      {/* 4. Errores de Excel */}
       <BulkErrorModal
         isOpen={modals.isBulkErrorOpen}
         errors={modals.bulkErrors}

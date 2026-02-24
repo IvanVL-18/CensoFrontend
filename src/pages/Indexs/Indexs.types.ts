@@ -1,9 +1,9 @@
 export interface Index {
-  id: string;
+  id: string | number;
   name: string;
   created_at: string;
   updated_at: string;
-  deleted_at: string;
+  deleted_at: string | null;
 }
 
 export interface MetaLink {
@@ -34,6 +34,7 @@ export interface PaginatedIndexsResponse {
   };
   meta: Meta;
 }
+
 export interface ExcelFailure {
   row: number;
   field: string;
@@ -71,10 +72,11 @@ export interface IndexModalProps {
   initialName?: string;
   onClose: () => void;
   onSave: (name: string) => void;
+  onClearServerError: () => void;
 }
 
 export interface IndexsTableProps {
-  Indexs: Index[]; 
+  Indexs: Index[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
@@ -85,11 +87,13 @@ export interface IndexsTableProps {
   onRestore: (Index: Index) => void;
   onDelete: (Index: Index) => void;
 }
+
 export interface ViewIndexModalProps {
   isOpen: boolean;
   onClose: () => void;
-  Index: Index | null; 
+  Index: Index | null;
 }
+
 export interface CreateIndexDTO {
   name: string;
 }
