@@ -25,7 +25,7 @@ const items = [
   { to: "/instituciones", icon: Landmark, label: "Instituciones" },
   { to: "/censos", icon: ClipboardList, label: "Censos" },
   { to: "/graficador", icon: BarChart3, label: "Graficador" },
-  { to: "/categorias", icon: FolderOpen, label: "Categoria" },
+  { to: "/categorias", icon: FolderOpen, label: "Categorías" },
 
   
   {

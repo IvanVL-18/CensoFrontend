@@ -55,8 +55,8 @@ export default function ConfigurationPage() {
         icon: <Shield className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {
-        title: "Catalogos",
-        description: "Administra los catalogos y permisos del sistema para controlar el acceso a los distintos módulos del censo.",
+        title: "Catálogos",
+        description: "Administra los catálogos y permisos del sistema para controlar el acceso a los distintos módulos del censo.",
         to: "/Catalogos",
         icon: <FileText className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
