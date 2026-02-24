@@ -2,17 +2,17 @@ import { useState, useCallback } from "react";
 import axios from "axios";
 import { useToast } from "../../../context/ToastContext";
 import {
-  createArea,
-  updateArea,
-  banArea,
-  restoreArea,
-  forceDeleteArea,
-  importAreas,
-} from "../Areas.service";
-import type { Area } from "../Areas.types";
+  createDependencia,
+  updateDependencia,
+  banDependencia,
+  restoreDependencia,
+  forceDeleteDependencia,
+  importDependencias,
+} from "../Dependencias.service";
+import type { Dependencia } from "../Dependencias.types";
 
-interface UseAreasMutationsProps {
-  refreshAreas: () => void;
+interface UseDependenciasMutationsProps {
+  refreshDependencias: () => void;
   closeForm: () => void;
   closeConfirm: () => void;
   openBulkError: (errors: any[]) => void;
@@ -38,12 +38,12 @@ function getErrorMessage(err: unknown): string {
   return "Error al procesar la solicitud";
 }
 
-export function useAreasMutations({
-  refreshAreas,
+export function useDependenciasMutations({
+  refreshDependencias,
   closeForm,
   closeConfirm,
   openBulkError,
-}: UseAreasMutationsProps) {
+}: UseDependenciasMutationsProps) {
   const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
@@ -53,20 +53,20 @@ export function useAreasMutations({
   }, []);
 
   const handleSave = useCallback(
-    async (name: string, editingArea?: Area | null) => {
+    async (name: string, editingDependencia?: Dependencia | null) => {
       setIsSubmitting(true);
       setMutationError(null);
 
       try {
-        const AreaData = { name: name.trim() };
+        const DependenciaData = { name: name.trim() };
 
-        const response = editingArea
-          ? await updateArea(editingArea.id, AreaData)
-          : await createArea(AreaData);
+        const response = editingDependencia
+          ? await updateDependencia(editingDependencia.id, DependenciaData)
+          : await createDependencia(DependenciaData);
 
         addToast(response.message, "success");
         closeForm();
-        refreshAreas();
+        refreshDependencias();
       } catch (err: unknown) {
         const msg = getErrorMessage(err);
         setMutationError(msg);
@@ -75,12 +75,12 @@ export function useAreasMutations({
         setIsSubmitting(false);
       }
     },
-    [addToast, closeForm, refreshAreas],
+    [addToast, closeForm, refreshDependencias],
   );
 
   const handleConfirmAction = useCallback(
-    async (Area: Area | null, type: "ban" | "restore" | "delete" | null) => {
-      if (!Area || !type) return;
+    async (Dependencia: Dependencia | null, type: "ban" | "restore" | "delete" | null) => {
+      if (!Dependencia || !type) return;
 
       setIsSubmitting(true);
       setMutationError(null); 
@@ -88,15 +88,15 @@ export function useAreasMutations({
       try {
         let response: { message: string } | undefined;
 
-        if (type === "ban") response = await banArea(Area.id);
-        else if (type === "restore") response = await restoreArea(Area.id);
-        else if (type === "delete") response = await forceDeleteArea(Area.id);
+        if (type === "ban") response = await banDependencia(Dependencia.id);
+        else if (type === "restore") response = await restoreDependencia(Dependencia.id);
+        else if (type === "delete") response = await forceDeleteDependencia(Dependencia.id);
 
         if (response) {
           const toastType = type === "delete" ? "warning" : "success";
           addToast(response.message, toastType);
           closeConfirm();
-          refreshAreas();
+          refreshDependencias();
         }
       } catch (err: unknown) {
         const msg = getErrorMessage(err);
@@ -106,7 +106,7 @@ export function useAreasMutations({
         setIsSubmitting(false);
       }
     },
-    [addToast, closeConfirm, refreshAreas],
+    [addToast, closeConfirm, refreshDependencias],
   );
 
   const handleBulkUpload = useCallback(
@@ -118,9 +118,9 @@ export function useAreasMutations({
       formData.append("file", file);
 
       try {
-        const response = await importAreas(formData);
+        const response = await importDependencias(formData);
         addToast(response.message || "Importación exitosa", "success");
-        refreshAreas();
+        refreshDependencias();
       } catch (err: unknown) {
 
         if (axios.isAxiosError(err)) {
@@ -130,7 +130,7 @@ export function useAreasMutations({
           if (status === 422 && data?.errors) {
             openBulkError(data.errors);
             addToast("El archivo contiene errores que debes corregir", "warning");
-            refreshAreas();
+            refreshDependencias();
             return;
           }
 
@@ -144,7 +144,7 @@ export function useAreasMutations({
         setIsSubmitting(false);
       }
     },
-    [addToast, openBulkError, refreshAreas],
+    [addToast, openBulkError, refreshDependencias],
   );
 
   return {

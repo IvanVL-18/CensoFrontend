@@ -1,5 +1,5 @@
 import { X, AlertCircle } from "lucide-react";
-import type { BulkErrorModalProps } from "../Areas.types";
+import type { BulkErrorModalProps } from "../Dependencias.types";
 
 export function BulkErrorModal({
   isOpen,

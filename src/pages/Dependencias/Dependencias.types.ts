@@ -1,4 +1,4 @@
-export interface Area {
+export interface Dependencia {
   id: string | number;
   name: string;
   created_at: string;
@@ -26,8 +26,8 @@ export interface Meta {
   path: string;
 }
 
-export interface PaginatedAreasResponse {
-  data: Area[];
+export interface PaginatedDependenciasResponse {
+  data: Dependencia[];
   links: {
     first: string | null;
     last: string | null;
@@ -66,7 +66,7 @@ export interface FormErrorsProps {
   errors: string[];
 }
 
-export interface AreaModalProps {
+export interface DependenciaModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null;
@@ -78,27 +78,27 @@ export interface AreaModalProps {
   onClearServerError: () => void;
 }
 
-export interface AreasTableProps {
-  Areas: Area[];
+export interface DependenciasTableProps {
+  Dependencias: Dependencia[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
-  onSort: (key: keyof Area) => void;
-  onView: (Area: Area) => void;
-  onEdit: (Area: Area) => void;
-  onBan: (Area: Area) => void;
-  onRestore: (Area: Area) => void;
-  onDelete: (Area: Area) => void;
+  onSort: (key: keyof Dependencia) => void;
+  onView: (Dependencia: Dependencia) => void;
+  onEdit: (Dependencia: Dependencia) => void;
+  onBan: (Dependencia: Dependencia) => void;
+  onRestore: (Dependencia: Dependencia) => void;
+  onDelete: (Dependencia: Dependencia) => void;
 }
 
-export interface ViewAreaModalProps {
+export interface ViewDependenciaModalProps {
   isOpen: boolean;
   onClose: () => void;
-  Area: Area | null;
+  Dependencia: Dependencia | null;
 }
 
-export interface CreateAreaDTO {
+export interface CreateDependenciaDTO {
   name: string;
 }
 
-export type UpdateAreaDTO = Partial<CreateAreaDTO>;
+export type UpdateDependenciaDTO = Partial<CreateDependenciaDTO>;
