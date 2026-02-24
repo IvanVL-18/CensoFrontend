@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, type FormEvent, type ChangeEvent } from "react";
-import { X, Eye, EyeClosed } from "lucide-react";
+import { X, Eye, EyeClosed, UserRoundPen } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { UserSchema } from "../schemas/Users.schema"; 
 import type { Rol } from "../../Roles/Roles.types";
@@ -180,7 +180,7 @@ export function UserModal({
               </div>
 
            
-              <div>
+              <div> 
                 <label htmlFor="role_id" className="block text-sm font-medium text-gray-700 mb-1">Rol:</label>
                 <select id="role_id" name="role_id" value={formData.role_id} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]">
                   <option value="">Seleccionar Rol</option>
@@ -220,6 +220,12 @@ export function UserModal({
             </div>
 
             <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
+              <button
+                type="button"
+                className="bg-white border border-[#691b31] text-[#691b31] font-bold rounded-lg hover:bg-gray-100 disabled:opacity-50 w-10 h-10 flex items-center justify-center transition-colors"
+              >
+                <UserRoundPen size={20} />
+              </button>
               <button
                 type="button"
                 onClick={onClose}

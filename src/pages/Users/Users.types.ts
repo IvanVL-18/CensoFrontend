@@ -64,7 +64,7 @@ export interface BulkErrorModalProps {
 export interface ConfirmModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
-  error: string | null;
+  error: string | null; 
   title: string;
   message: string;
   confirmButtonText?: string;

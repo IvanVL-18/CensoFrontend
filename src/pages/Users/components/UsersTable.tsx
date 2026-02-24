@@ -197,7 +197,7 @@ export function UsersTable({
                       </button>
                     </>
                   )}
-                </td>
+                </td> 
               </tr>
             ))}
         </tbody>

@@ -88,6 +88,6 @@ export function useUsersModals() {
     isBulkErrorOpen,
     bulkErrors,
     openBulkError,
-    closeBulkError,
+    closeBulkError, 
   };
 }

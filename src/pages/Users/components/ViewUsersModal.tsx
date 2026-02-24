@@ -92,7 +92,7 @@ export function ViewUserModal({ isOpen, onClose, User }: ViewUserModalProps) {
                 hover:brightness-95
               "
             >
-              Cerrar
+              Cerrar 
             </button>
           </div>
         </div>

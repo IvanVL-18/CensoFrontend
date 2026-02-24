@@ -101,6 +101,6 @@ export function BulkErrorModal({
           </button>
         </div>
       </div>
-    </div>
+    </div> 
   );
 }
