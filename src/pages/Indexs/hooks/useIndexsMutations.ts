@@ -17,6 +17,23 @@ interface UseIndexsMutationsProps {
   openBulkError: (errors: any[]) => void;
 }
 
+function getApiErrorMessage(err: any): string {
+  const data = err?.response?.data;
+  
+  if (data?.errors && typeof data.errors === "object") {
+    const firstKey = Object.keys(data.errors)[0];
+    const firstVal = firstKey ? data.errors[firstKey] : null;
+
+    if (Array.isArray(firstVal) && firstVal.length) return String(firstVal[0]);
+    if (typeof firstVal === "string") return firstVal;
+  }
+
+  if (typeof data?.message === "string" && data.message.trim()) return data.message;
+  if (typeof err?.message === "string" && err.message.trim()) return err.message;
+
+  return "Error al procesar la solicitud";
+}
+
 export function useIndexsMutations({
   refreshIndexs,
   closeForm,
@@ -27,26 +44,27 @@ export function useIndexsMutations({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
 
+  const clearMutationError = useCallback(() => {
+    setMutationError(null);
+  }, []);
+
   const handleSave = useCallback(
     async (name: string, editingIndex?: Index | null) => {
       setIsSubmitting(true);
       setMutationError(null);
 
       try {
-        let response;
-        const IndexData = { name };
-        if (editingIndex) {
-          response = await updateIndex(editingIndex.id, IndexData);
-        } else {
-          response = await createIndex(IndexData);
-        }
+        const IndexData = { name: name.trim() };
+
+        const response = editingIndex
+          ? await updateIndex(editingIndex.id, IndexData)
+          : await createIndex(IndexData);
 
         addToast(response.message, "success");
         closeForm();
         refreshIndexs();
       } catch (err: any) {
-        const msg =
-          err.response?.data?.message || err.message || "Error al guardar";
+        const msg = getApiErrorMessage(err);
         setMutationError(msg);
         addToast(msg, "danger");
       } finally {
@@ -61,16 +79,14 @@ export function useIndexsMutations({
       if (!Index || !type) return;
 
       setIsSubmitting(true);
+      setMutationError(null);
+
       try {
         let response: { message: string } | undefined;
 
-        if (type === "ban") {
-          response = await banIndex(Index.id);
-        } else if (type === "restore") {
-          response = await restoreIndex(Index.id);
-        } else if (type === "delete") {
-          response = await forceDeleteIndex(Index.id);
-        }
+        if (type === "ban") response = await banIndex(Index.id);
+        else if (type === "restore") response = await restoreIndex(Index.id);
+        else if (type === "delete") response = await forceDeleteIndex(Index.id);
 
         if (response) {
           const toastType = type === "delete" ? "warning" : "success";
@@ -79,7 +95,9 @@ export function useIndexsMutations({
           refreshIndexs();
         }
       } catch (err: any) {
-        addToast(err.message || "Error al procesar la acción", "danger");
+        const msg = getApiErrorMessage(err);
+        setMutationError(msg); 
+        addToast(msg, "danger");
       } finally {
         setIsSubmitting(false);
       }
@@ -90,6 +108,8 @@ export function useIndexsMutations({
   const handleBulkUpload = useCallback(
     async (file: File) => {
       setIsSubmitting(true);
+      setMutationError(null);
+
       const formData = new FormData();
       formData.append("file", file);
 
@@ -99,12 +119,18 @@ export function useIndexsMutations({
         refreshIndexs();
       } catch (err: any) {
         console.error("Error en carga masiva:", err);
-        if (err.status === 422 && err.data?.errors) {
-          openBulkError(err.data.errors);
+
+        const status = err?.response?.status;
+        const data = err?.response?.data;
+
+        if (status === 422 && data?.errors) {
+          openBulkError(data.errors);
           addToast("El archivo contiene errores que debes corregir", "warning");
           refreshIndexs();
         } else {
-          addToast(err.message || "Error al subir el archivo", "danger");
+          const msg = getApiErrorMessage(err);
+          setMutationError(msg);
+          addToast(msg, "danger");
         }
       } finally {
         setIsSubmitting(false);
@@ -116,6 +142,7 @@ export function useIndexsMutations({
   return {
     isSubmitting,
     mutationError,
+    clearMutationError, 
     handleSave,
     handleConfirmAction,
     handleBulkUpload,

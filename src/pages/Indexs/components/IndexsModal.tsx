@@ -14,6 +14,7 @@ export function IndexModal({
   initialName = "",
   onClose,
   onSave,
+  onClearServerError, 
 }: IndexModalProps) {
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
@@ -30,37 +31,40 @@ export function IndexModal({
       setFormErrors([]);
       setServerError(null);
       setCharCount(initialName.length);
+      onClearServerError();
     }
-  }, [isOpen, initialName]);
+  }, [isOpen, initialName, onClearServerError]);
 
   const validateForm = (currentName: string) => {
     const result = Indexschema.safeParse({ name: currentName });
-    
+
     if (!result.success) {
       const errors = result.error.issues.map((err) => err.message);
       setFormErrors(errors);
       return false;
     }
-    
+
     setFormErrors([]);
     return true;
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (validateForm(name)) {
-      onSave(name);
-    }
+    if (validateForm(name)) onSave(name);
   };
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
-    
+
     if (newName.length <= MAX_LENGTH) {
       setName(newName);
       setCharCount(newName.length);
       validateForm(newName);
-      setServerError(null);
+
+      if (serverError || error) {
+        setServerError(null);
+        onClearServerError();
+      }
     }
   };
 
@@ -69,6 +73,7 @@ export function IndexModal({
     setFormErrors([]);
     setServerError(null);
     setCharCount(0);
+    onClearServerError();
     onClose();
   };
 
@@ -77,25 +82,25 @@ export function IndexModal({
   const hasErrors = formErrors.length > 0 || !!serverError;
   const isNearLimit = charCount >= MAX_LENGTH - 10 && charCount <= MAX_LENGTH;
   const isAtLimit = charCount >= MAX_LENGTH;
-  const endsWithZero = name.trim().endsWith('0');
+  const endsWithZero = name.trim().endsWith("0");
 
   const getInputBorderColor = () => {
-    if (hasErrors || endsWithZero) return 'border-red-500 focus:ring-red-400';
-    if (isAtLimit) return 'border-red-300 focus:ring-red-400';
-    if (isNearLimit) return 'border-amber-300 focus:ring-amber-400';
-    return 'border-gray-300 focus:ring-[#DDC9A3]';
+    if (hasErrors || endsWithZero) return "border-red-500 focus:ring-red-400";
+    if (isAtLimit) return "border-red-300 focus:ring-red-400";
+    if (isNearLimit) return "border-amber-300 focus:ring-amber-400";
+    return "border-gray-300 focus:ring-[#DDC9A3]";
   };
 
   const getProgressBarColor = () => {
-    if (isAtLimit) return 'bg-red-600';
-    if (isNearLimit) return 'bg-amber-500';
-    return 'bg-[#DDC9A3]';
+    if (isAtLimit) return "bg-red-600";
+    if (isNearLimit) return "bg-amber-500";
+    return "bg-[#DDC9A3]";
   };
 
   const getCharCountColor = () => {
-    if (isAtLimit) return 'text-red-600';
-    if (isNearLimit) return 'text-amber-600';
-    return 'text-gray-500';
+    if (isAtLimit) return "text-red-600";
+    if (isNearLimit) return "text-amber-600";
+    return "text-gray-500";
   };
 
   return (
@@ -112,6 +117,7 @@ export function IndexModal({
               <X size={24} />
             </button>
           </div>
+
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
               <div className="flex justify-between items-center mb-2">
@@ -122,6 +128,7 @@ export function IndexModal({
                   {charCount}/{MAX_LENGTH} caracteres
                 </span>
               </div>
+
               <input
                 type="text"
                 id="IndexName"
@@ -133,15 +140,18 @@ export function IndexModal({
                 disabled={isSubmitting}
                 autoFocus
               />
+
               <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-300 ${getProgressBarColor()}`}
                   style={{ width: `${(charCount / MAX_LENGTH) * 100}%` }}
                 />
               </div>
+
               <FormErrors errors={formErrors} />
               {serverError && <FormErrors errors={[serverError]} />}
             </div>
+
             <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
               <button
                 type="button"
@@ -151,6 +161,7 @@ export function IndexModal({
               >
                 Cancelar
               </button>
+
               <button
                 type="submit"
                 disabled={isSubmitting || formErrors.length > 0 || endsWithZero}

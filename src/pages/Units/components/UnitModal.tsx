@@ -14,6 +14,7 @@ export function UnitModal({
   initialName = "",
   onClose,
   onSave,
+  onClearServerError, 
 }: UnitModalProps) {
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
@@ -30,37 +31,40 @@ export function UnitModal({
       setFormErrors([]);
       setServerError(null);
       setCharCount(initialName.length);
+      onClearServerError(); 
     }
-  }, [isOpen, initialName]);
+  }, [isOpen, initialName, onClearServerError]);
 
   const validateForm = (currentName: string) => {
     const result = unitSchema.safeParse({ name: currentName });
-    
+
     if (!result.success) {
       const errors = result.error.issues.map((err) => err.message);
       setFormErrors(errors);
       return false;
     }
-    
+
     setFormErrors([]);
     return true;
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (validateForm(name)) {
-      onSave(name);
-    }
+    if (validateForm(name)) onSave(name);
   };
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
-    
+
     if (newName.length <= MAX_LENGTH) {
       setName(newName);
       setCharCount(newName.length);
       validateForm(newName);
-      setServerError(null);
+
+      if (serverError || error) {
+        setServerError(null);
+        onClearServerError();
+      }
     }
   };
 
@@ -69,6 +73,8 @@ export function UnitModal({
     setFormErrors([]);
     setServerError(null);
     setCharCount(0);
+
+    onClearServerError();
     onClose();
   };
 
@@ -79,22 +85,22 @@ export function UnitModal({
   const isAtLimit = charCount >= MAX_LENGTH;
 
   const getInputBorderColor = () => {
-    if (hasErrors) return 'border-red-500 focus:ring-red-400';
-    if (isAtLimit) return 'border-red-300 focus:ring-red-400';
-    if (isNearLimit) return 'border-amber-300 focus:ring-amber-400';
-    return 'border-gray-300 focus:ring-[#DDC9A3]';
+    if (hasErrors) return "border-red-500 focus:ring-red-400";
+    if (isAtLimit) return "border-red-300 focus:ring-red-400";
+    if (isNearLimit) return "border-amber-300 focus:ring-amber-400";
+    return "border-gray-300 focus:ring-[#DDC9A3]";
   };
 
   const getProgressBarColor = () => {
-    if (isAtLimit) return 'bg-red-600';
-    if (isNearLimit) return 'bg-amber-500';
-    return 'bg-[#DDC9A3]';
+    if (isAtLimit) return "bg-red-600";
+    if (isNearLimit) return "bg-amber-500";
+    return "bg-[#DDC9A3]";
   };
 
   const getCharCountColor = () => {
-    if (isAtLimit) return 'text-red-600';
-    if (isNearLimit) return 'text-amber-600';
-    return 'text-gray-500';
+    if (isAtLimit) return "text-red-600";
+    if (isNearLimit) return "text-amber-600";
+    return "text-gray-500";
   };
 
   return (
@@ -103,6 +109,7 @@ export function UnitModal({
         className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-40 transition-opacity"
         onClick={handleClose}
       />
+
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
@@ -111,16 +118,19 @@ export function UnitModal({
               <X size={24} />
             </button>
           </div>
+
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
               <div className="flex justify-between items-center mb-2">
                 <label htmlFor="unitName" className="block text-sm font-medium text-gray-700">
                   Nombre del módulo:
                 </label>
+
                 <span className={`text-xs font-medium ${getCharCountColor()}`}>
                   {charCount}/{MAX_LENGTH} caracteres
                 </span>
               </div>
+
               <input
                 type="text"
                 id="unitName"
@@ -132,15 +142,18 @@ export function UnitModal({
                 disabled={isSubmitting}
                 autoFocus
               />
+
               <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-300 ${getProgressBarColor()}`}
                   style={{ width: `${(charCount / MAX_LENGTH) * 100}%` }}
                 />
               </div>
+
               <FormErrors errors={formErrors} />
               {serverError && <FormErrors errors={[serverError]} />}
             </div>
+
             <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
               <button
                 type="button"
@@ -150,6 +163,7 @@ export function UnitModal({
               >
                 Cancelar
               </button>
+
               <button
                 type="submit"
                 disabled={isSubmitting || formErrors.length > 0}
