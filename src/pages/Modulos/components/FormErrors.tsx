@@ -1,4 +1,4 @@
-import type { FormErrorsProps } from "../units.types";
+import type { FormErrorsProps } from "../Modulos.types";
 
 export function FormErrors({ errors }: FormErrorsProps) {
   if (errors.length === 0) {

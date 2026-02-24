@@ -1,13 +1,13 @@
 import { type ChangeEvent, useRef } from "react";
 import { CirclePlus, FileDown } from "lucide-react";
 
-import type { UnitFilter } from "../units.service";
+import type { ModuloFilter } from "../Modulos.service";
 import { SearchInput } from "../../../components/SearchInput";
 import AddButton from "../../../components/AddButton";
 import StatusFilterSelect from "../../../components/StatusFilterSelect";
 
-interface UnitsToolbarProps {
-  filter: UnitFilter;
+interface ModulosToolbarProps {
+  filter: ModuloFilter;
   searchTerm: string;
   isSubmitting: boolean;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
@@ -16,7 +16,7 @@ interface UnitsToolbarProps {
   onBulkUpload: (file: File) => void;
 }
 
-export function UnitsToolbar({
+export function ModulosToolbar({
   filter,
   searchTerm,
   isSubmitting,
@@ -24,7 +24,7 @@ export function UnitsToolbar({
   onSearchChange,
   onAddClick,
   onBulkUpload,
-}: UnitsToolbarProps) {
+}: ModulosToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {

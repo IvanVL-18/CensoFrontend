@@ -1,13 +1,13 @@
-import { useUnitsData } from "./hooks/useUnitsData";
-import { useUnitsModals } from "./hooks/useUnitsModals";
-import { useUnitsMutations } from "./hooks/useUnitsMutations";
-import { getUnit } from "./units.service";
-import { UnitsToolbar } from "./components/UnitsToolbar";
-import { UnitsTable } from "./components/UnitsTable";
+import { useModulosData } from "./hooks/useModulosData";
+import { useModulosModals } from "./hooks/useModulosModals";
+import { useModulosMutations } from "./hooks/useModulosMutations";
+import { getModulo } from "./Modulos.service";
+import { ModulosToolbar } from "./components/ModulosToolbar";
+import { ModulosTable } from "./components/ModulosTable";
 import Pagination from "../../components/Pagination";
-import { UnitModal } from "./components/UnitModal";
+import { ModuloModal } from "./components/ModulosModal";
 import { ConfirmModal } from "./components/ConfirmModal";
-import { ViewUnitModal } from "./components/ViewUnitModal";
+import { ViewModuloModal } from "./components/ViewModulosModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 
 import { ToastProvider, useToast } from "../../context/ToastContext";
@@ -29,31 +29,31 @@ function ToastContainer() {
   );
 }
 
-function UnitsPageContent() {
+function ModulosPageContent() {
   const {
-    units,
+    Modulos,
     loading,
     error,
     meta,
     links,
     filter,
     searchTerm,
-    refreshUnits,
+    refreshModulos,
     handleFilterChange,
     handleSort,
     handleSearch,
     handlePageChange,
-  } = useUnitsData();
+  } = useModulosData();
 
-  const handleViewClick = async (partialUnit: any) => {
+  const handleViewClick = async (partialModulo: any) => {
     try {
-      const fullUnit = await getUnit(partialUnit.id);
-      modals.openView(fullUnit);
+      const fullModulo = await getModulo(partialModulo.id);
+      modals.openView(fullModulo);
     } catch (error) {
       console.error("Error al cargar detalles del módulo", error);
     }
   };
-  const modals = useUnitsModals();
+  const modals = useModulosModals();
 
   const {
     isSubmitting,
@@ -61,15 +61,15 @@ function UnitsPageContent() {
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
-  } = useUnitsMutations({
-    refreshUnits,
+  } = useModulosMutations({
+    refreshModulos,
     closeForm: modals.closeForm,
     closeConfirm: modals.closeConfirm,
     openBulkError: modals.openBulkError,
   });
 
-  const modalTitle = modals.editingUnit ? "Editar Módulo" : "Agregar Módulo";
-  const modalInitialName = modals.editingUnit?.name || "";
+  const modalTitle = modals.editingModulo ? "Editar Módulo" : "Agregar Módulo";
+  const modalInitialName = modals.editingModulo?.name || "";
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -78,17 +78,17 @@ function UnitsPageContent() {
 
   if (modals.actionType === "ban") {
     confirmTitle = "Desactivar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${modals.actionUnit?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${modals.actionModulo?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (modals.actionType === "restore") {
     confirmTitle = "Restaurar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${modals.actionUnit?.name}"?`;
+    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${modals.actionModulo?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${modals.actionUnit?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${modals.actionModulo?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -98,7 +98,7 @@ function UnitsPageContent() {
       <ToastContainer />
 
       {/* Barra de Herramientas */}
-      <UnitsToolbar
+      <ModulosToolbar
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
@@ -110,10 +110,10 @@ function UnitsPageContent() {
 
       {/* Tabla de Resultados */}
       <div className="p-4">
-        <UnitsTable
+        <ModulosTable
           loading={loading}
           error={error}
-          units={units}
+          Modulos={Modulos}
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
@@ -136,14 +136,14 @@ function UnitsPageContent() {
       {/* --- MODALES --- */}
 
       {/* 1. Crear / Editar */}
-      <UnitModal
+      <ModuloModal
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
         title={modalTitle}
         initialName={modalInitialName}
         onClose={modals.closeForm}
-        onSave={(name) => handleSave(name, modals.editingUnit)}
+        onSave={(name) => handleSave(name, modals.editingModulo)}
       />
 
       {/* 2. Confirmación (Ban/Restore/Delete) */}
@@ -157,14 +157,14 @@ function UnitsPageContent() {
         confirmButtonColor={confirmButtonColor}
         onClose={modals.closeConfirm}
         onConfirm={() =>
-          handleConfirmAction(modals.actionUnit, modals.actionType)
+          handleConfirmAction(modals.actionModulo, modals.actionType)
         }
       />
 
       {/* 3. Ver Detalle */}
-      <ViewUnitModal
+      <ViewModuloModal
         isOpen={modals.isViewOpen}
-        unit={modals.viewingUnit}
+        Modulo={modals.viewingModulo}
         onClose={modals.closeView}
       />
 
@@ -178,10 +178,10 @@ function UnitsPageContent() {
   );
 }
 
-export default function Units() {
+export default function Modulos() {
   return (
     <ToastProvider>
-      <UnitsPageContent />
+      <ModulosPageContent />
     </ToastProvider>
   );
 }

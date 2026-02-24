@@ -1,47 +1,47 @@
 import { useState, useCallback } from "react";
-import type { Unit } from "../units.types";
+import type { Modulo } from "../Modulos.types";
 
-export function useUnitsModals() {
+export function useModulosModals() {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
+  const [editingModulo, setEditingModulo] = useState<Modulo | null>(null);
 
   const openCreate = useCallback(() => {
-    setEditingUnit(null);
+    setEditingModulo(null);
     setIsFormOpen(true);
   }, []);
 
-  const openEdit = useCallback((unit: Unit) => {
-    setEditingUnit(unit);
+  const openEdit = useCallback((Modulo: Modulo) => {
+    setEditingModulo(Modulo);
     setIsFormOpen(true); 
   }, []);
 
   const closeForm = useCallback(() => {
     setIsFormOpen(false);
-    setEditingUnit(null);
+    setEditingModulo(null);
   }, []);
 
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [viewingUnit, setViewingUnit] = useState<Unit | null>(null);
+  const [viewingModulo, setViewingModulo] = useState<Modulo | null>(null);
 
-  const openView = useCallback((unit: Unit) => {
-    setViewingUnit(unit);
+  const openView = useCallback((Modulo: Modulo) => {
+    setViewingModulo(Modulo);
     setIsViewOpen(true);
   }, []);
 
   const closeView = useCallback(() => {
     setIsViewOpen(false);
-    setViewingUnit(null);
+    setViewingModulo(null);
   }, []);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [actionUnit, setActionUnit] = useState<Unit | null>(null);
+  const [actionModulo, setActionModulo] = useState<Modulo | null>(null);
   const [actionType, setActionType] = useState<
     "ban" | "restore" | "delete" | null
   >(null);
 
   const openConfirm = useCallback(
-    (unit: Unit, type: "ban" | "restore" | "delete") => {
-      setActionUnit(unit);
+    (Modulo: Modulo, type: "ban" | "restore" | "delete") => {
+      setActionModulo(Modulo);
       setActionType(type);
       setIsConfirmOpen(true);
     },
@@ -50,7 +50,7 @@ export function useUnitsModals() {
 
   const closeConfirm = useCallback(() => {
     setIsConfirmOpen(false);
-    setActionUnit(null);
+    setActionModulo(null);
     setActionType(null);
   }, []);
 
@@ -69,18 +69,18 @@ export function useUnitsModals() {
 
   return {
     isFormOpen,
-    editingUnit,
+    editingModulo,
     openCreate,
     openEdit,
     closeForm,
 
     isViewOpen,
-    viewingUnit,
+    viewingModulo,
     openView,
     closeView,
 
     isConfirmOpen,
-    actionUnit,
+    actionModulo,
     actionType,
     openConfirm,
     closeConfirm,

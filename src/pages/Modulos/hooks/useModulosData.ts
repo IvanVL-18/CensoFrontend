@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback, type ChangeEvent } from "react";
-import { getUnits, type UnitFilter } from "../units.service";
-import type { Unit, PaginatedUnitsResponse, Meta } from "../units.types";
+import { getModulos, type ModuloFilter } from "../Modulos.service";
+import type { Modulo, PaginatedModulosResponse, Meta } from "../Modulos.types";
 
-export function useUnitsData() {
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [links, setLinks] = useState<PaginatedUnitsResponse["links"] | null>(null);
+export function useModulosData() {
+  const [Modulos, setModulos] = useState<Modulo[]>([]);
+  const [links, setLinks] = useState<PaginatedModulosResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // --- FILTROS Y ESTADOS ---
-  const [filter, setFilter] = useState<UnitFilter>("all");
+  const [filter, setFilter] = useState<ModuloFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   // Estado para guardar el término "confirmado" después de que el usuario deje de escribir
   const [debouncedSearch, setDebouncedSearch] = useState(""); 
@@ -24,7 +24,7 @@ export function useUnitsData() {
   });
 
   const [reloadToken, setReloadToken] = useState(0);
-  const refreshUnits = useCallback(() => setReloadToken((t) => t + 1), []);
+  const refreshModulos = useCallback(() => setReloadToken((t) => t + 1), []);
 
   // 1. EFECTO DEBOUNCE (Optimización de Búsqueda)
   // Espera 500ms después de que dejes de escribir para actualizar la búsqueda real
@@ -43,7 +43,7 @@ export function useUnitsData() {
     setLoading(true);
 
     // Usamos debouncedSearch en lugar de searchTerm directo
-    getUnits(
+    getModulos(
       filter, 
       debouncedSearch, 
       page, 
@@ -52,7 +52,7 @@ export function useUnitsData() {
       controller.signal
     )
       .then((data) => {
-        setUnits(data.data);
+        setModulos(data.data);
         setLinks(data.links);
         setMeta(data.meta);
         setError(null);
@@ -72,7 +72,7 @@ export function useUnitsData() {
   // --- HANDLERS ---
 
   const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setFilter(e.target.value as UnitFilter);
+    setFilter(e.target.value as ModuloFilter);
     setPage(1);
   }, []);
 
@@ -91,7 +91,7 @@ export function useUnitsData() {
   }, []);
 
   // 3. IMPLEMENTACIÓN DEL SORT
-  const handleSort = useCallback((key: keyof Unit) => {
+  const handleSort = useCallback((key: keyof Modulo) => {
     setSortConfig((current) => ({
       key: key as string,
       // Si damos click en la misma columna, invertimos dirección. Si es nueva, empezamos en asc.
@@ -100,14 +100,14 @@ export function useUnitsData() {
   }, []);
 
   return { 
-    units,
+    Modulos,
     loading,
     error,
     meta,
     links,
     filter,
     searchTerm,
-    refreshUnits,
+    refreshModulos,
     handleFilterChange,
     handleSearch,
     handlePageChange,

@@ -1,49 +1,49 @@
 import { useState, useCallback } from "react";
 import { useToast } from "../../../context/ToastContext";
 import {
-  createUnit,
-  updateUnit,
-  banUnit,
-  restoreUnit,
-  forceDeleteUnit,
-  importUnits,
-} from "../units.service";
-import type { Unit } from "../units.types";
+  createModulo,
+  updateModulo,
+  banModulo,
+  restoreModulo,
+  forceDeleteModulo,
+  importModulos,
+} from "../Modulos.service";
+import type { Modulo } from "../Modulos.types";
 
-interface UseUnitsMutationsProps {
-  refreshUnits: () => void;
+interface UseModulosMutationsProps {
+  refreshModulos: () => void;
   closeForm: () => void;
   closeConfirm: () => void;
   openBulkError: (errors: any[]) => void;
 }
 
-export function useUnitsMutations({
-  refreshUnits,
+export function useModulosMutations({
+  refreshModulos,
   closeForm,
   closeConfirm,
   openBulkError,
-}: UseUnitsMutationsProps) {
+}: UseModulosMutationsProps) {
   const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
 
   const handleSave = useCallback(
-    async (name: string, editingUnit?: Unit | null) => {
+    async (name: string, editingModulo?: Modulo | null) => {
       setIsSubmitting(true);
       setMutationError(null);
 
       try {
         let response;
-        const unitData = { name };
-        if (editingUnit) {
-          response = await updateUnit(editingUnit.id, unitData);
+        const ModuloData = { name };
+        if (editingModulo) {
+          response = await updateModulo(editingModulo.id, ModuloData);
         } else {
-          response = await createUnit(unitData);
+          response = await createModulo(ModuloData);
         }
 
         addToast(response.message, "success");
         closeForm();
-        refreshUnits();
+        refreshModulos();
       } catch (err: any) {
         const msg =
           err.response?.data?.message || err.message || "Error al guardar";
@@ -53,30 +53,30 @@ export function useUnitsMutations({
         setIsSubmitting(false);
       }
     },
-    [addToast, closeForm, refreshUnits],
+    [addToast, closeForm, refreshModulos],
   );
 
   const handleConfirmAction = useCallback(
-    async (unit: Unit | null, type: "ban" | "restore" | "delete" | null) => {
-      if (!unit || !type) return;
+    async (Modulo: Modulo | null, type: "ban" | "restore" | "delete" | null) => {
+      if (!Modulo || !type) return;
 
       setIsSubmitting(true);
       try {
         let response: { message: string } | undefined;
 
         if (type === "ban") {
-          response = await banUnit(unit.id);
+          response = await banModulo(Modulo.id);
         } else if (type === "restore") {
-          response = await restoreUnit(unit.id);
+          response = await restoreModulo(Modulo.id);
         } else if (type === "delete") {
-          response = await forceDeleteUnit(unit.id);
+          response = await forceDeleteModulo(Modulo.id);
         }
 
         if (response) {
           const toastType = type === "delete" ? "warning" : "success";
           addToast(response.message, toastType);
           closeConfirm();
-          refreshUnits();
+          refreshModulos();
         }
       } catch (err: any) {
         addToast(err.message || "Error al procesar la acción", "danger");
@@ -84,7 +84,7 @@ export function useUnitsMutations({
         setIsSubmitting(false);
       }
     },
-    [addToast, closeConfirm, refreshUnits],
+    [addToast, closeConfirm, refreshModulos],
   );
 
   const handleBulkUpload = useCallback(
@@ -94,15 +94,15 @@ export function useUnitsMutations({
       formData.append("file", file);
 
       try {
-        const response = await importUnits(formData);
+        const response = await importModulos(formData);
         addToast(response.message || "Importación exitosa", "success");
-        refreshUnits();
+        refreshModulos();
       } catch (err: any) {
         console.error("Error en carga masiva:", err);
         if (err.status === 422 && err.data?.errors) {
           openBulkError(err.data.errors);
           addToast("El archivo contiene errores que debes corregir", "warning");
-          refreshUnits();
+          refreshModulos();
         } else {
           addToast(err.message || "Error al subir el archivo", "danger");
         }
@@ -110,7 +110,7 @@ export function useUnitsMutations({
         setIsSubmitting(false); 
       }
     },
-    [addToast, openBulkError, refreshUnits],
+    [addToast, openBulkError, refreshModulos],
   );
 
   return {

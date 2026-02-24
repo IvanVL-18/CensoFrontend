@@ -11,7 +11,7 @@ import DashboardLayout from "./components/DashboardLayout";
 
 import Users from "./pages/Users/Users";
 
-import Units from "./pages/Units/units";
+import Modulos from "./pages/Modulos/Modulos";
 import Census from "./pages/census/CensosPage";
 import CreateCensusPage from "./pages/census/CreateCensus";
 import CensusUnitsPage from "./pages/census/CensusUnitsPage";
@@ -23,7 +23,6 @@ import Insitutions from "./pages/institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Indexs/Indexs";
 import Roles from "./pages/Roles/Roles";
-import Areas from "./pages/Dependencias/Dependencias";
 import Permissions from "./pages/Permissions/Permissions";
 
 import Categories from "./pages/categories/Categories";
@@ -58,7 +57,7 @@ export default function App() {
         <Route path="/configuracion" element={<ConfigurationsPage />} />
 
         {/* Catálogos */}
-        <Route path="/unidades" element={<Units />} />
+        <Route path="/Modulos" element={<Modulos />} />
         <Route path="/secciones" element={<Sections />} />
         <Route path="/ocupaciones" element={<Occupations />} />
         <Route path="/Roles" element={<Roles />} />

@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import type { ConfirmModalProps } from "../units.types";
+import type { ConfirmModalProps } from "../Modulos.types";
 
 export function ConfirmModal({
   isOpen,
