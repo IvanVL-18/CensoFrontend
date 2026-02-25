@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Home, Settings, Shield, Users, Layers, Building2, Briefcase } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -7,8 +7,11 @@ import PermissionTabs from "./components/PermissionTabs";
 import FormErrors from "./components/FormErrors";
 import GovSwitch from "./components/GovSwitch";
 
-import { getPermissionRole, updatePermissionRole } from "./PermissionRoles.service";
+// ✅ NO consumir por ahora
+// import { getPermissionRole, updatePermissionRole } from "./PermissionRoles.service";
 import type { Permission } from "./PermissionRoles.service";
+
+const DESIGN_ONLY = true; // ✅ ponlo en false cuando ya consumas API
 
 type Scope = "home" | "admin" | "operation";
 type Action = "view" | "create" | "edit" | "delete";
@@ -63,19 +66,53 @@ const normalizeAction = (a: string): Action | null => {
 };
 
 const parsePermission = (name: string) => {
-  // soporta: "users.view" o "admin.users.view"
   const parts = name.split(".");
   const actionRaw = parts.pop() || "";
   const module = parts.pop() || "otros";
   return { module, action: normalizeAction(actionRaw) };
 };
 
+// ✅ MOCK de permisos para diseño (mismo formato: {id, name})
+const MOCK_PERMS: Permission[] = [
+  { id: 1, name: "dashboard.view" } as Permission,
+  { id: 2, name: "notifications.view" } as Permission,
+
+  { id: 10, name: "users.view" } as Permission,
+  { id: 11, name: "users.create" } as Permission,
+  { id: 12, name: "users.edit" } as Permission,
+  { id: 13, name: "users.delete" } as Permission,
+
+  { id: 20, name: "roles.view" } as Permission,
+  { id: 21, name: "roles.create" } as Permission,
+  { id: 22, name: "roles.edit" } as Permission,
+  { id: 23, name: "roles.delete" } as Permission,
+
+  { id: 30, name: "sectors.view" } as Permission,
+  { id: 31, name: "sectors.create" } as Permission,
+  { id: 32, name: "sectors.edit" } as Permission,
+  { id: 33, name: "sectors.delete" } as Permission,
+
+  { id: 40, name: "institutions.view" } as Permission,
+  { id: 41, name: "institutions.create" } as Permission,
+  { id: 42, name: "institutions.edit" } as Permission,
+  { id: 43, name: "institutions.delete" } as Permission,
+
+  { id: 50, name: "areas.view" } as Permission,
+  { id: 51, name: "areas.create" } as Permission,
+  { id: 52, name: "areas.edit" } as Permission,
+  { id: 53, name: "areas.delete" } as Permission,
+
+  { id: 60, name: "occupations.view" } as Permission,
+  { id: 61, name: "occupations.create" } as Permission,
+  { id: 62, name: "occupations.edit" } as Permission,
+  { id: 63, name: "occupations.delete" } as Permission,
+];
+
 export default function PermissionRoles() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // ENCRIPTADO
-  const roleEnc = searchParams.get("role");
+  const roleEnc = searchParams.get("role"); // puede venir null en diseño
 
   const [activeScope, setActiveScope] = useState<Scope>("admin");
   const [errors, setErrors] = useState<string[]>([]);
@@ -83,8 +120,6 @@ export default function PermissionRoles() {
 
   const [roleName, setRoleName] = useState("");
   const [allPerms, setAllPerms] = useState<Permission[]>([]);
-
-  // ✅ importante: Set<number>
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
   const tabs = [
@@ -93,39 +128,44 @@ export default function PermissionRoles() {
     { key: "operation" as const, label: "Operación", icon: Settings },
   ];
 
-  // Cargar permisos del rol + colección completa
   useEffect(() => {
-    if (!roleEnc) return;
+    // ✅ Modo diseño: llenar con mock y ya
+    if (DESIGN_ONLY) {
+      setErrors([]);
+      setLoading(false);
+      setRoleName("Rol seleccionado (Mock)");
+      setAllPerms(MOCK_PERMS);
+      setSelected(new Set([10, 11, 20, 40])); // algunos activados para ver switches
+      return;
+    }
 
-    (async () => {
-      try {
-        setLoading(true);
-        setErrors([]);
-
-        const data = await getPermissionRole(roleEnc);
-
-        setRoleName(data.role?.name ?? "");
-        setAllPerms(data.permissionsCollection ?? []);
-
-        const selectedIds = (data.role?.permissions ?? []).map((p) => p.id);
-        setSelected(new Set(selectedIds));
-      } catch (e) {
-        console.error(e);
-        setErrors(["No se pudo cargar permisos del rol."]);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    // 🔻 Cuando ya consumas API, aquí vuelves a tu lógica real
+    // if (!roleEnc) return;
+    // (async () => {
+    //   try {
+    //     setLoading(true);
+    //     setErrors([]);
+    //     const data = await getPermissionRole(roleEnc);
+    //     setRoleName(data.role?.name ?? "");
+    //     setAllPerms(data.permissionsCollection ?? []);
+    //     const selectedIds = (data.role?.permissions ?? []).map((p) => p.id);
+    //     setSelected(new Set(selectedIds));
+    //   } catch (e) {
+    //     console.error(e);
+    //     setErrors(["No se pudo cargar permisos del rol."]);
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // })();
   }, [roleEnc]);
 
-  // Construir módulos por scope
   const modulesByScope = useMemo(() => {
     type ModuleCard = {
       moduleKey: string;
       label: string;
       icon: any;
       scope: Scope;
-      actions: Partial<Record<Action, number>>; // action -> permissionId
+      actions: Partial<Record<Action, number>>;
     };
 
     const map = new Map<string, ModuleCard>();
@@ -161,40 +201,37 @@ export default function PermissionRoles() {
     });
   };
 
-  const allowAll = () => {
-    setSelected(new Set(allPerms.map((p) => p.id)));
-  };
+  const allowAll = () => setSelected(new Set(allPerms.map((p) => p.id)));
 
   const allowAllScope = () => {
     const ids: number[] = [];
     currentModules.forEach((m) => {
       Object.values(m.actions).forEach((id) => id && ids.push(id));
     });
-
     setSelected((prev) => new Set([...prev, ...ids]));
   };
 
   const save = async () => {
-    if (!roleEnc) {
-      setErrors(["No se recibió el rol en la URL."]);
+    // ✅ Diseño: solo imprime y ya
+    if (DESIGN_ONLY) {
+      console.log("MOCK SAVE:", Array.from(selected));
+      alert("Diseño: Guardado mock ✅ (revisa consola)");
       return;
     }
 
-    try {
-      setLoading(true);
-      setErrors([]);
-
-      // ✅ AQUÍ está la corrección: 2do parámetro es number[]
-      await updatePermissionRole(roleEnc, Array.from(selected));
-
-      alert("Permisos asignados correctamente ✅");
-      navigate(-1);
-    } catch (e) {
-      console.error(e);
-      setErrors(["No se pudo guardar permisos."]);
-    } finally {
-      setLoading(false);
-    }
+    // 🔻 Cuando consumas:
+    // if (!roleEnc) { setErrors(["No se recibió el rol en la URL."]); return; }
+    // try {
+    //   setLoading(true); setErrors([]);
+    //   await updatePermissionRole(roleEnc, Array.from(selected));
+    //   alert("Permisos asignados correctamente ✅");
+    //   navigate(-1);
+    // } catch (e) {
+    //   console.error(e);
+    //   setErrors(["No se pudo guardar permisos."]);
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   return (
@@ -203,14 +240,13 @@ export default function PermissionRoles() {
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <PermissionRolesToolbar onAllowAll={allowAll} />
 
-          {roleEnc && (
-            <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-              <span className="font-semibold text-[#611232]">Asignando permisos a:</span>{" "}
-              <span className="text-slate-700">{roleName || "Rol seleccionado"}</span>
-            </div>
-          )}
+          <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+            <span className="font-semibold text-[#611232]">Asignando permisos a:</span>{" "}
+            <span className="text-slate-700">{roleName || "Rol seleccionado"}</span>
+          </div>
 
-          <FormErrors errors={errors} />
+          {/* ✅ En diseño no mostramos error de API */}
+          {!DESIGN_ONLY && <FormErrors errors={errors} />}
 
           <div className="mt-6 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -228,12 +264,7 @@ export default function PermissionRoles() {
             </button>
           </div>
 
-          <PermissionTabs
-            // si tu componente está tipado con PermissionScope, esto sirve igual
-            tabs={tabs as any}
-            active={activeScope as any}
-            onChange={setActiveScope as any}
-          />
+          <PermissionTabs tabs={tabs as any} active={activeScope as any} onChange={setActiveScope as any} />
 
           {loading && <p className="mt-4 text-sm text-slate-500">Cargando...</p>}
 
@@ -242,9 +273,7 @@ export default function PermissionRoles() {
               const Icon = m.icon;
               const actions = (Object.keys(ACTION_LABEL) as Action[]).filter((a) => !!m.actions[a]);
 
-              const allOn = actions.length
-                ? actions.every((a) => selected.has(m.actions[a]!))
-                : false;
+              const allOn = actions.length ? actions.every((a) => selected.has(m.actions[a]!)) : false;
 
               return (
                 <div key={m.moduleKey} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
@@ -258,9 +287,7 @@ export default function PermissionRoles() {
 
                     <button
                       type="button"
-                      onClick={() => {
-                        actions.forEach((a) => togglePermission(m.actions[a]!, !allOn));
-                      }}
+                      onClick={() => actions.forEach((a) => togglePermission(m.actions[a]!, !allOn))}
                       className="text-xs font-semibold text-[#611232] hover:underline"
                       disabled={!actions.length}
                     >

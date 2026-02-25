@@ -5,13 +5,16 @@ import type {
   PermissionsState,
 } from "../PermissionRoles.types";
 
+// ✅ Solo las acciones que quieres mostrar en el DISEÑO (UI)
 const ALL_ACTIONS: PermissionAction[] = ["view", "create", "edit", "delete"];
 
+// ✅ El estado DEBE tener todas las acciones del tipo PermissionAction (incluye "export")
 const makeEmptyMap = (): Record<PermissionAction, boolean> => ({
   view: false,
   create: false,
   edit: false,
   delete: false,
+  export: false, // <- para que no falle TS
 });
 
 export const usePermissionRolesState = (allModules: PermissionModule[]) => {
@@ -28,7 +31,7 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
   const setOne = (moduleKey: string, action: PermissionAction, value: boolean) => {
     setPerms((prev) => ({
       ...prev,
-      [moduleKey]: { ...prev[moduleKey], [action]: value },
+      [moduleKey]: { ...(prev[moduleKey] ?? makeEmptyMap()), [action]: value },
     }));
   };
 
@@ -36,11 +39,12 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
     setPerms((prev) => ({
       ...prev,
       [moduleKey]: {
-        ...prev[moduleKey],
+        ...(prev[moduleKey] ?? makeEmptyMap()),
         view: value,
         create: value,
         edit: value,
         delete: value,
+        export: value, // <- también aquí
       },
     }));
   };
@@ -50,11 +54,12 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
       const next = { ...prev };
       moduleKeys.forEach((k) => {
         next[k] = {
-          ...next[k],
+          ...(next[k] ?? makeEmptyMap()),
           view: value,
           create: value,
           edit: value,
           delete: value,
+          export: value, // <- también aquí
         };
       });
       return next;
@@ -66,11 +71,12 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
       const next = { ...prev };
       Object.keys(next).forEach((k) => {
         next[k] = {
-          ...next[k],
+          ...(next[k] ?? makeEmptyMap()),
           view: true,
           create: true,
           edit: true,
           delete: true,
+          export: true, // <- también aquí
         };
       });
       return next;
@@ -84,6 +90,8 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
     setModuleAll,
     setManyModulesAll,
     allowAll,
+
+    // ✅ Esto úsalo para renderizar switches (solo 4 acciones, sin export)
     ALL_ACTIONS,
   };
 };
