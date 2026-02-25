@@ -43,6 +43,7 @@ export function InstitutionModal({
 
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -52,6 +53,7 @@ export function InstitutionModal({
       setTypeinst(initialType);
       setFormErrors([]);
       setHasChanges(false);
+      setTouched({});
     }
   }, [isOpen, initialName, initialMunicipality, initialGeocode, initialType]);
 
@@ -59,7 +61,8 @@ export function InstitutionModal({
     currentName: string,
     currentMunicipality: string,
     currentGeocode: string,
-    currentTypeinst: string
+    currentTypeinst: string,
+    validateAll = false
   ) => {
     const result = InstitutionSchema.safeParse({
       name: currentName,
@@ -69,7 +72,13 @@ export function InstitutionModal({
     });
 
     if (!result.success) {
-      const errorMessages = result.error.issues.map((err) => err.message);
+      const errorMessages = result.error.issues
+        .filter((issue) => {
+          if (validateAll) return true;
+          const path = issue.path[0];
+          return touched[path as string];
+        })
+        .map((err) => err.message);
       setFormErrors(errorMessages);
       return false;
     }
@@ -92,7 +101,7 @@ export function InstitutionModal({
     setHasChanges(changed);
 
     
-    if (formErrors.length > 0) {
+    if (changed || formErrors.length > 0) {
       validateForm(name, municipality, geocode, typeinst);
     }
   
@@ -107,13 +116,21 @@ export function InstitutionModal({
     initialType,
     pendingCoords,
     isOpen,
+    touched,
   ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setTouched({
+      name: true,
+      municipality: true,
+      geocode: true,
+      typeinst: true,
+    });
+
    
-    if (!validateForm(name, municipality, geocode, typeinst)) return;
+    if (!validateForm(name, municipality, geocode, typeinst, true)) return;
 
   
     if (isEditMode) {
@@ -147,6 +164,17 @@ export function InstitutionModal({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
+
+    const fieldMap: Record<string, string> = {
+      institutionName: "name",
+      municipality: "municipality",
+      geocode: "geocode",
+      typeinst: "typeinst",
+    };
+    if (fieldMap[id]) {
+      setTouched((prev) => ({ ...prev, [fieldMap[id]]: true }));
+    }
+
     if (id === "institutionName") setName(value);
     if (id === "municipality") setMunicipality(value);
     if (id === "geocode") setGeocode(value);
