@@ -19,7 +19,7 @@ import CensusSectionsPage from "./pages/census/CensusSectionsPage";
 import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; 
 
 import Sections from "./pages/Sections/Sections";
-import Insitutions from "./pages/Institutions/Institutions";
+import Insitutions from "./pages/institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Indexs/Indexs";
 import Roles from "./pages/Roles/Roles";

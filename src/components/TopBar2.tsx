@@ -1,4 +1,4 @@
-import ProfileMenu from "./perfil/ProfileMenu";
+import ProfileMenu from "../pages/Profile/Profile";
 
 export default function TopBar() {
   return (
