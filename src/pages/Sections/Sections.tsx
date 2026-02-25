@@ -45,6 +45,8 @@ function SectionsPageContent() {
     handlePageChange,
   } = useSectionsData();
 
+  const modals = useSectionsModals();
+
   const handleViewClick = async (partialSection: any) => {
     try {
       const fullSection = await getSection(partialSection.id);
@@ -53,7 +55,16 @@ function SectionsPageContent() {
       console.error("Error al cargar detalles de la Sección", error);
     }
   };
-  const modals = useSectionsModals();
+
+  const handleEditClick = async (partialSection: any) => {
+  try {
+    const fullSection = await getSection(partialSection.id);
+    modals.openEdit(fullSection);
+  } catch (error) {
+    console.error("Error al cargar detalles de la Sección", error);
+  }
+};
+  
 
   const {
     isSubmitting,
@@ -116,7 +127,7 @@ function SectionsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={modals.openEdit}
+          onEdit={handleEditClick}
           onBan={(u) => modals.openConfirm(u, "ban")}
           onRestore={(u) => modals.openConfirm(u, "restore")}
           onDelete={(u) => modals.openConfirm(u, "delete")}

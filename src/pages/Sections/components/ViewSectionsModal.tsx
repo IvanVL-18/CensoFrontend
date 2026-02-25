@@ -2,52 +2,52 @@ import { X } from "lucide-react";
 import type { ViewSectionModalProps } from "../Sections.types";
 
 const formatDate = (dateString: string | null) => {
-  if (!dateString) {
-    return "N/A"; 
-  }
+  if (!dateString) return "N/A";
   try {
-    return new Date(dateString).toLocaleString('es-MX', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    return new Date(dateString).toLocaleString("es-MX", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
-  } catch (e) {
+  } catch {
     return "Fecha inválida";
   }
 };
 
-function DetailRow({ label, value }: { label: string, value: string | null }) {
+function DetailRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
+  const safe = value?.trim() ? value : "N/A";
+
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-500">
-        {label}
-      </label>
-      <p className="text-lg text-gray-900 font-semibold">{value || "N/A"}</p>
+      <label className="block text-sm font-medium text-gray-500">{label}</label>
+      <p className="text-lg text-gray-900 font-semibold whitespace-pre-wrap">
+        {safe}
+      </p>
     </div>
   );
 }
 
 export function ViewSectionModal({ isOpen, onClose, Section }: ViewSectionModalProps) {
-  if (!isOpen || !Section) {
-    return null;
-  }
+  if (!isOpen || !Section) return null;
 
   return (
     <>
-      {/* 1. Fondo Difuminado (Blur) */}
-      <div 
+      <div
         className="fixed inset-0 bg-blue bg-opacity-30 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}>
-      </div>
+        onClick={onClose}
+      />
 
-      {/* 2. Contenedor del Modal */}
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-          
-          {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">Detalle de la Sección</h2>
             <button
@@ -59,32 +59,21 @@ export function ViewSectionModal({ isOpen, onClose, Section }: ViewSectionModalP
             </button>
           </div>
 
-          {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
-            <DetailRow 
-              label="Nombre de la Sección:" 
-              value={Section.name} 
-            />
-            <DetailRow 
-              label="Fecha de creación:" 
-              value={formatDate(Section.created_at)} 
-            />
-            <DetailRow 
-              label="Fecha de desactivación:" 
-              value={formatDate(Section.deleted_at)} 
-            />
+            <DetailRow label="Nombre de la Sección:" value={Section.name} />
+
+           
+            <DetailRow label="Instrucciones:" value={Section.instructions} />
+
+            <DetailRow label="Fecha de creación:" value={formatDate(Section.created_at)} />
+            <DetailRow label="Fecha de desactivación:" value={formatDate(Section.deleted_at)} />
           </div>
 
-          {/* Pie de página del Modal (Solo 1 botón) */}
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
             <button
               type="button"
               onClick={onClose}
-              className="
-                bg-[#C3A67C] text-white font-bold 
-                py-2 px-6 rounded-lg 
-                hover:brightness-95
-              "
+              className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95"
             >
               Cerrar
             </button>

@@ -6,13 +6,14 @@ import { Sectionschema } from "../schemas/Sections.schema";
 
 export function SectionModal({
   isOpen,
-  isSubmitting,
+  isSubmitting, 
   error,
   title,
   initialData,
   onClose,
   onSave,
-}: SectionModalProps) {
+  isViewOnly,
+}: SectionModalProps & { isViewOnly?: boolean }) {
   const [name, setName] = useState("");
   const [instructions, setInstructions] = useState("");
   const [formErrors, setFormErrors] = useState<string[]>([]);
@@ -20,6 +21,7 @@ export function SectionModal({
 
   useEffect(() => {
     if (isOpen) {
+      console.log("initialData en modal:", initialData);
       setName(initialData?.name || "");
       setInstructions(initialData?.instructions || "");
       setFormErrors([]);
@@ -50,25 +52,49 @@ export function SectionModal({
     }
   };
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    const isValid = validateForm(name, instructions);
-    if (isValid) {
-      onSave({ name, instructions });
+const handleSubmit = (e: FormEvent) => {
+  e.preventDefault();
+
+  const isValid = validateForm(name, instructions);
+  if (!isValid) return;
+
+  const isEditMode = !!initialData;
+
+  const initialName = (initialData?.name ?? "").trim();
+  const initialInstr = (initialData?.instructions ?? "").trim();
+
+  const currentName = name.trim();
+  const currentInstr = instructions.trim();
+  if (isEditMode) {
+    const patch: any = {};
+
+    if (currentName !== initialName) patch.name = currentName;
+
+    if (currentInstr !== initialInstr) {
+      patch.instructions = currentInstr === "" ? null : currentInstr;
     }
-  };
+
+    onSave(patch);
+    return;
+  }
+
+  onSave({
+    name: currentName,
+    ...(currentInstr ? { instructions: currentInstr } : {}),
+  });
+};
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setName(newName);
-    if (formErrors.length > 0) validateForm(newName, instructions);
+    validateForm(newName, instructions);
     if (serverError) setServerError(null);
   };
 
   const handleInstructionsChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const newInstructions = e.target.value;
     setInstructions(newInstructions);
-    if (formErrors.length > 0) validateForm(name, newInstructions);
+    validateForm(name, newInstructions);
     if (serverError) setServerError(null);
   };
 
@@ -79,8 +105,8 @@ export function SectionModal({
   const hasClientErrors = formErrors.length > 0;
   const hasServerError = !!serverError;
   const hasChanges =
-    name !== (initialData?.name || "") ||
-    instructions !== (initialData?.instructions || "");
+  name.trim() !== (initialData?.name ?? "").trim() ||
+  instructions.trim() !== (initialData?.instructions ?? "").trim();
 
   return (
     <>
@@ -116,8 +142,8 @@ export function SectionModal({
                     : 'border-gray-300 focus:ring-[#DDC9A3]'
                   }
                 `}
-                disabled={isSubmitting}
-                autoFocus
+                disabled={isSubmitting || isViewOnly}
+                autoFocus={!isViewOnly}
               />
 
               <label htmlFor="SectionInstructions" className="block text-sm font-medium text-gray-700 mb-2 mt-4">
@@ -136,7 +162,7 @@ export function SectionModal({
                     : 'border-gray-300 focus:ring-[#DDC9A3]'
                   }
                 `}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isViewOnly}
               />
 
               <div id="form-errors-client">
@@ -157,15 +183,17 @@ export function SectionModal({
                 disabled={isSubmitting}
                 className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95 disabled:opacity-50"
               >
-                Cancelar
+                {isViewOnly ? "Cerrar" : "Cancelar"}
               </button>
-              <button
-                type="submit"
-                disabled={isSubmitting || hasClientErrors || !hasChanges}
-                className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
-              >
-                {isSubmitting ? "Guardando..." : "Guardar"}
-              </button>
+              {!isViewOnly && (
+                <button
+                  type="submit"
+                  disabled={isSubmitting || hasClientErrors || !hasChanges}
+                  className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                >
+                  {isSubmitting ? "Guardando..." : "Guardar"}
+                </button>
+              )}
             </div>
           </form>
         </div>
