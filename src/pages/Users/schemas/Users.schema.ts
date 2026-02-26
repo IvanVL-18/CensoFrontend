@@ -7,7 +7,7 @@ export const UserSchema = z.object({
   mobile: z.string().optional(),
   address: z.string().optional(),
   email: z.string().email("El correo electrónico no es válido."),
-  password: z.string().optional(),
+  password: z.string().optional(), 
   password_confirmation: z.string().optional(),
   role_id: z.union([z.string(), z.number()]).optional(),
   occupation_id: z.union([z.string(), z.number()]).optional(),

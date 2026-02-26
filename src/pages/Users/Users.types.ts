@@ -31,7 +31,7 @@ export interface Meta {
   total: number[];
   per_page: number[];
   current_page: number[];
-  last_page: number[]; 
+  last_page: number[];
   from: number;
   links: MetaLink[];
   path: string;
@@ -77,7 +77,7 @@ export interface FormErrorsProps {
   errors: string[];
 }
 
-export interface UserModalProps { 
+export interface UserModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null;
@@ -88,7 +88,7 @@ export interface UserModalProps {
 }
 
 export interface UsersTableProps {
-  Users: User[]; 
+  Users: User[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
@@ -102,14 +102,14 @@ export interface UsersTableProps {
 export interface ViewUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  User: User | null; 
+  User: User | null;
 }
 export interface CreateUserDTO {
-  name?: string;
-  lastname?: string;
-  phone?: string;
-  mobile?: string;
-  address?: string;
+  name?: string | null;
+  lastname?: string | null;
+  phone?: string | null;
+  mobile?: string | null;
+  address?: string | null;
   email: string;
   password?: string;
   password_confirmation?: string;

@@ -74,7 +74,7 @@ export function ConfirmModal({
               {isSubmitting ? "Procesando..." : confirmButtonText}
             </button>
           </div>
-        </div>
+        </div> 
       </div>
     </>
   );

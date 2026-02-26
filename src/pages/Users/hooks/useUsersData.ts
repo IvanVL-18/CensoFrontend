@@ -155,7 +155,7 @@ export function useUsersData() {
     areas,
     institutions,
     refreshUsers,
-    handleFilterChange,
+    handleFilterChange, 
     handleSearch,
     handlePageChange,
     handleSort, 

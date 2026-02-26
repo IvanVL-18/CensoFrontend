@@ -1,7 +1,14 @@
-import { useState, useEffect, useMemo, type FormEvent, type ChangeEvent } from "react";
-import { X, Eye, EyeClosed } from "lucide-react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  type FormEvent,
+  type ChangeEvent,
+} from "react";
+import { X, Eye, EyeClosed, UserRoundPen } from "lucide-react";
 import { FormErrors } from "./FormErrors";
-import { UserSchema } from "../schemas/Users.schema"; 
+import { UserSchema } from "../schemas/Users.schema";
+
 import type { Rol } from "../../Roles/Roles.types";
 
 interface ExtendedUserModalProps {
@@ -9,19 +16,20 @@ interface ExtendedUserModalProps {
   isSubmitting: boolean;
   error: string | null;
   title: string;
-  initialData?: any; 
+  initialData?: any;
   roles?: Rol[];
   occupations?: any[];
   areas?: any[];
   institutions?: any[];
   onClose: () => void;
   onSave: (data: any) => void;
+  onOpenExtra?: (user: any) => void;
 }
 
 export function UserModal({
   isOpen,
   isSubmitting,
-  error, 
+  error,
   title,
   initialData,
   roles = [],
@@ -30,6 +38,7 @@ export function UserModal({
   institutions = [],
   onClose,
   onSave,
+  onOpenExtra,
 }: ExtendedUserModalProps) {
   const [formData, setFormData] = useState({
     email: "",
@@ -42,13 +51,16 @@ export function UserModal({
   });
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const hasChanges = useMemo(() => {
     if (!initialData) return true;
 
-    const normalize = (val: any) => (val === null || val === undefined) ? "" : String(val).trim();
+    const normalize = (val: any) =>
+      val === null || val === undefined ? "" : String(val).trim();
 
-    const emailChanged = normalize(formData.email) !== normalize(initialData.email);
+    const emailChanged =
+      normalize(formData.email) !== normalize(initialData.email);
     const passwordChanged = formData.password !== "";
 
     const getSelectedName = (list: any[], id: string | number) => {
@@ -56,7 +68,11 @@ export function UserModal({
       return item ? item.name : "";
     };
 
-    const checkRelationChange = (currentId: string | number, initialRel: any, catalog: any[]) => {
+    const checkRelationChange = (
+      currentId: string | number,
+      initialRel: any,
+      catalog: any[],
+    ) => {
       const initialId = initialRel?.id || "";
       const initialName = initialRel?.name || "";
       if (normalize(currentId) === normalize(initialId)) return false;
@@ -64,67 +80,137 @@ export function UserModal({
       return normalize(currentName) !== normalize(initialName);
     };
 
-    const roleChanged = checkRelationChange(formData.role_id, initialData.role, roles);
-    const occupationChanged = checkRelationChange(formData.occupation_id, initialData.occupation, occupations);
-    const areaChanged = checkRelationChange(formData.area_id, initialData.area, areas);
-    const institutionChanged = checkRelationChange(formData.institution_id, initialData.institution, institutions);
+    const roleChanged = checkRelationChange(
+      formData.role_id,
+      initialData.role,
+      roles,
+    );
+    const occupationChanged = checkRelationChange(
+      formData.occupation_id,
+      initialData.occupation,
+      occupations,
+    );
+    const areaChanged = checkRelationChange(
+      formData.area_id,
+      initialData.area,
+      areas,
+    );
+    const institutionChanged = checkRelationChange(
+      formData.institution_id,
+      initialData.institution,
+      institutions,
+    );
 
-    return emailChanged || passwordChanged || roleChanged || occupationChanged || areaChanged || institutionChanged;
+    return (
+      emailChanged ||
+      passwordChanged ||
+      roleChanged ||
+      occupationChanged ||
+      areaChanged ||
+      institutionChanged
+    );
   }, [formData, initialData, roles, occupations, areas, institutions]);
+
+  const validateForm = (data: typeof formData) => {
+    const dataForValidation: any = { ...data };
+    if (initialData && !dataForValidation.password) {
+      delete dataForValidation.password;
+      delete dataForValidation.password_confirmation;
+    }
+
+    const result = UserSchema.safeParse(dataForValidation);
+
+    if (!result.success) {
+      const errorMessages = result.error.issues.map((err) => err.message);
+      setFormErrors(errorMessages);
+
+      const fe: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const key = String(issue.path?.[0] ?? "form");
+        if (!fe[key]) fe[key] = issue.message;
+      });
+      setFieldErrors(fe);
+
+      return false;
+    }
+
+    setFormErrors([]);
+    setFieldErrors({});
+    return true;
+  };
 
   useEffect(() => {
     if (isOpen) {
-
-      const findIdInCatalog = (catalog: any[], relation: any, fallbackId: any) => {
+      const findIdInCatalog = (
+        catalog: any[],
+        relation: any,
+        fallbackId: any,
+      ) => {
         if (relation && relation.name) {
           const match = catalog.find(
-            (item) => String(item.name).trim().toLowerCase() === String(relation.name).trim().toLowerCase()
+            (item) =>
+              String(item.name).trim().toLowerCase() ===
+              String(relation.name).trim().toLowerCase(),
           );
           if (match) return match.id;
         }
         if (fallbackId) {
-             const directMatch = catalog.find(item => String(item.id) === String(fallbackId));
-             if (directMatch) return directMatch.id;
+          const directMatch = catalog.find(
+            (item) => String(item.id) === String(fallbackId),
+          );
+          if (directMatch) return directMatch.id;
         }
 
         return "";
       };
-
       setFormData({
         email: initialData?.email || "",
         password: "",
         password_confirmation: "",
-        role_id: findIdInCatalog(roles, initialData?.role, initialData?.role_id),
-        occupation_id: findIdInCatalog(occupations, initialData?.occupation, initialData?.occupation_id),
-        area_id: findIdInCatalog(areas, initialData?.area, initialData?.area_id),
-        institution_id: findIdInCatalog(institutions, initialData?.institution, initialData?.institution_id),
+        role_id: findIdInCatalog(
+          roles,
+          initialData?.role,
+          initialData?.role_id,
+        ),
+        occupation_id: findIdInCatalog(
+          occupations,
+          initialData?.occupation,
+          initialData?.occupation_id,
+        ),
+        area_id: findIdInCatalog(
+          areas,
+          initialData?.area,
+          initialData?.area_id,
+        ),
+        institution_id: findIdInCatalog(
+          institutions,
+          initialData?.institution,
+          initialData?.institution_id,
+        ),
       });
       setFormErrors([]);
     }
   }, [isOpen, initialData, roles, occupations, areas, institutions]);
 
-  const validateForm = (data: typeof formData) => {
-    const result = UserSchema.safeParse(data);
-    if (!result.success) {
-      const errorMessages = result.error.issues.map((err) => err.message);
-      setFormErrors(errorMessages);
-      return false; 
-    } else {
-      setFormErrors([]);
-      return true; 
-    }
-  };
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-      onSave(formData); 
-  
+    const ok = validateForm(formData);
+    if (!ok) return;
+
+    onSave(formData);
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+      validateForm(next);
+      return next;
+    });
   };
 
   if (!isOpen) {
@@ -132,37 +218,84 @@ export function UserModal({
   }
 
   const hasClientErrors = formErrors.length > 0;
-  const hasServerError = !!error;
+  const handleClose = () => {
+    setFormErrors([]);
+    setFieldErrors({});
+    onClose();
+  };
 
   return (
     <>
       <div
         className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}
+        onClick={handleClose}
       ></div>
 
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-hidden max-h-[90vh] flex flex-col">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button onClick={onClose} className="text-white hover:text-gray-300">
+            <button
+              onClick={handleClose}
+              className="text-white hover:text-gray-300"
+            >
               <X size={24} />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate className="flex-1 overflow-y-auto">
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="flex-1 overflow-y-auto"
+          >
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            
               <div className="md:col-span-2">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico:</label>
-                <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]" />
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Correo Electrónico:
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                />
+                {fieldErrors.email && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
-             
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Contraseña {initialData ? "(Dejar vacía para no cambiar)" : "(Obligatoria)"}:</label>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Contraseña{" "}
+                  {initialData
+                    ? "(Dejar vacía para no cambiar)"
+                    : "(Obligatoria)"}
+                  :
+                </label>
                 <div className="relative">
-                  <input type={showPassword ? "text" : "password"} id="password" name="password" value={formData.password} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
+                  />
+                  {fieldErrors.password && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {fieldErrors.password}
+                    </p>
+                  )}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -173,56 +306,152 @@ export function UserModal({
                 </div>
               </div>
 
-             
               <div>
-                <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña:</label>
-                <input type="password" id="password_confirmation" name="password_confirmation" value={formData.password_confirmation} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]" />
+                <label
+                  htmlFor="password_confirmation"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Confirmar Contraseña:
+                </label>
+                <input
+                  type="password"
+                  id="password_confirmation"
+                  name="password_confirmation"
+                  value={formData.password_confirmation}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                />
+                {fieldErrors.password_confirmation && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.password_confirmation}
+                  </p>
+                )}
               </div>
 
-           
               <div>
-                <label htmlFor="role_id" className="block text-sm font-medium text-gray-700 mb-1">Rol:</label>
-                <select id="role_id" name="role_id" value={formData.role_id} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]">
+                <label
+                  htmlFor="role_id"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Rol:
+                </label>
+                <select
+                  id="role_id"
+                  name="role_id"
+                  value={formData.role_id}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                >
                   <option value="">Seleccionar Rol</option>
-                  {roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}
+                  {roles.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label htmlFor="occupation_id" className="block text-sm font-medium text-gray-700 mb-1">Ocupación:</label>
-                <select id="occupation_id" name="occupation_id" value={formData.occupation_id} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]">
+                <label
+                  htmlFor="occupation_id"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Ocupación:
+                </label>
+                <select
+                  id="occupation_id"
+                  name="occupation_id"
+                  value={formData.occupation_id}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                >
                   <option value="">Seleccionar Ocupación</option>
-                  {occupations.map((occ: any) => <option key={occ.id} value={occ.id}>{occ.name}</option>)}
+                  {occupations.map((occ: any) => (
+                    <option key={occ.id} value={occ.id}>
+                      {occ.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label htmlFor="area_id" className="block text-sm font-medium text-gray-700 mb-1">Área:</label>
-                <select id="area_id" name="area_id" value={formData.area_id} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]">
+                <label
+                  htmlFor="area_id"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Área:
+                </label>
+                <select
+                  id="area_id"
+                  name="area_id"
+                  value={formData.area_id}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                >
                   <option value="">Seleccionar Área</option>
-                  {areas.length === 0 && <option disabled>Cargando áreas...</option>}
-                  {areas.map((area: any) => <option key={area.id} value={area.id}>{area.name}</option>)}
+                  {areas.length === 0 && (
+                    <option disabled>Cargando áreas...</option>
+                  )}
+                  {areas.map((area: any) => (
+                    <option key={area.id} value={area.id}>
+                      {area.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label htmlFor="institution_id" className="block text-sm font-medium text-gray-700 mb-1">Institución:</label>
-                <select id="institution_id" name="institution_id" value={formData.institution_id} onChange={handleChange} className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]">
+                <label
+                  htmlFor="institution_id"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Institución:
+                </label>
+                <select
+                  id="institution_id"
+                  name="institution_id"
+                  value={formData.institution_id}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                >
                   <option value="">Seleccionar Institución</option>
-                  {institutions.map((inst: any) => <option key={inst.id} value={inst.id}>{inst.name}</option>)}
+                  {institutions.map((inst: any) => (
+                    <option key={inst.id} value={inst.id}>
+                      {inst.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div className="md:col-span-2">
-                <div id="form-errors-client"><FormErrors errors={formErrors} /></div>
-                {error && <div id="form-errors-server"><FormErrors errors={[error]} /></div>}
+                <div id="form-errors-client">
+                  <FormErrors errors={formErrors} />
+                </div>
+                {error && (
+                  <div id="form-errors-server">
+                    <FormErrors errors={[error]} />
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
               <button
                 type="button"
-                onClick={onClose}
+                title={
+                  initialData
+                    ? "Completar datos (Nombre, Apellido, Teléfono, Celular, Dirección)"
+                    : "Solo disponible al editar"
+                }
+                onClick={() => initialData && onOpenExtra?.(initialData)}
+                disabled={!initialData}
+                className="bg-white border border-[#691b31] text-[#691b31] font-bold rounded-lg hover:bg-gray-100 disabled:opacity-50 w-10 h-10 flex items-center justify-center transition-colors"
+              >
+                <UserRoundPen size={20} />
+              </button>
+              <button
+                type="button"
+                onClick={handleClose}
                 disabled={isSubmitting}
                 className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95 disabled:opacity-50"
               >
