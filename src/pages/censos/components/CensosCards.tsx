@@ -9,6 +9,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom'; // 👈 Importamos Link
 import type { Censo, Meta } from '../Censos.types';
 
 export interface CensosCardsProps {
@@ -16,7 +17,7 @@ export interface CensosCardsProps {
   meta: Meta | null;
   loading: boolean;
   error: string | null;
-  onView: (censo: Censo) => void;
+  // Eliminamos onView porque ya no se necesita
   onEdit: (censo: Censo) => void;
   onBan: (censo: Censo) => void;
   onRestore: (censo: Censo) => void;
@@ -27,7 +28,6 @@ export function CensosCards({
   censos,
   loading,
   error,
-  onView,
   onEdit,
   onBan,
   onRestore,
@@ -181,14 +181,14 @@ export function CensosCards({
                 </div>
               </div>
 
-              {/* Botón principal con efecto y colores de gobierno */}
-              <button
-                onClick={() => onView(censo)}
+              {/* Botón principal como Link a la página de detalle */}
+              <Link
+                to={`/censos/${censo.id}`}
                 className="mt-auto w-full bg-linear-to-r from-red-700 to-amber-700 hover:from-red-800 hover:to-amber-800 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
                 Ver detalles
                 <Eye size={18} className="ml-2" />
-              </button>
+              </Link>
             </div>
           </div>
         );

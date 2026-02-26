@@ -4,15 +4,17 @@ import { CensoManualForm } from "./CensoManualForm";
 import type { CensoManualFormRef } from "./CensoManualForm";
 import { CensoUploadArea } from "./CensoUploadArea";
 import type { CensoUploadAreaRef } from "./CensoUploadArea";
+import type { Censo } from "../Censos.types";
 
 interface CensoCreateModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null;
   onClose: () => void;
-  onSave: (data: { name: string; description?: string; init_date?: string; deadline?: string }) => void;
+  onSave: (data: any) => void;
   onBulkUpload: (file: File) => void;
   mode: "create" | "upload";
+  editingCenso?: Censo | null;
 }
 
 export function CensoCreateModal({
@@ -23,9 +25,27 @@ export function CensoCreateModal({
   onSave,
   onBulkUpload,
   mode,
+  editingCenso,
 }: CensoCreateModalProps) {
   const manualFormRef = useRef<CensoManualFormRef>(null);
   const uploadAreaRef = useRef<CensoUploadAreaRef>(null);
+
+  // Función para normalizar fechas a YYYY-MM-DD
+ const formatDate = (dateStr?: string) => {
+  if (!dateStr) return undefined;
+  // Si viene con T o espacio, tomar solo la primera parte (YYYY-MM-DD)
+  return dateStr.split('T')[0].split(' ')[0];
+};
+
+  // Mapear el censo a editar al formato que espera el formulario (initialData)
+  const initialData = editingCenso
+    ? {
+        name: editingCenso.name,
+        description: editingCenso.description,
+        init_date: formatDate(editingCenso.start_date),
+        deadline: formatDate(editingCenso.end_date),
+      }
+    : undefined;
 
   const resetState = () => {
     manualFormRef.current?.reset();
@@ -39,7 +59,12 @@ export function CensoCreateModal({
 
   if (!isOpen) return null;
 
-  const title = mode === "create" ? "Crear censo manual" : "Subir censo por plantilla";
+  const title =
+    mode === "create"
+      ? editingCenso
+        ? "Editar censo"
+        : "Crear censo manual"
+      : "Subir censo por plantilla";
 
   return (
     <>
@@ -64,6 +89,7 @@ export function CensoCreateModal({
                 isSubmitting={isSubmitting}
                 onSubmit={onSave}
                 error={error}
+                initialData={initialData}
               />
             ) : (
               <CensoUploadArea
@@ -92,10 +118,12 @@ export function CensoCreateModal({
                 disabled={isSubmitting}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50 flex items-center gap-2"
               >
-                {isSubmitting ? "Procesando..." : (
+                {isSubmitting ? (
+                  "Procesando..."
+                ) : (
                   <>
                     <FileText size={18} />
-                    Crear Censo
+                    {editingCenso ? "Actualizar Censo" : "Crear Censo"}
                   </>
                 )}
               </button>
@@ -106,7 +134,9 @@ export function CensoCreateModal({
                 disabled={isSubmitting}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50 flex items-center gap-2"
               >
-                {isSubmitting ? "Procesando..." : (
+                {isSubmitting ? (
+                  "Procesando..."
+                ) : (
                   <>
                     <Upload size={18} />
                     Subir Archivo

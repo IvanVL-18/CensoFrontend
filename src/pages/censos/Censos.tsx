@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useCensosData } from "./hooks/useCensosData";
 import { useCensosModals } from "./hooks/useCensosModals";
 import { useCensosMutations } from "./hooks/useCensosMutations";
-import { getCenso } from "./Censos.service";
 import { CensosToolbar } from "./components/CensosToolbar";
 import { CensosCards } from "./components/CensosCards";
 import Pagination from "../../components/Pagination";
@@ -52,15 +51,6 @@ function CensosPageContent() {
   const [showSelectionModal, setShowSelectionModal] = useState(false);
   const [createModalMode, setCreateModalMode] = useState<"create" | "upload">("create");
 
-  const handleViewClick = async (partialCenso: any) => {
-    try {
-      const fullCenso = await getCenso(partialCenso.id);
-      modals.openView(fullCenso);
-    } catch (error) {
-      console.error("Error al cargar detalles de la categoría", error);
-    }
-  };
-  
   const modals = useCensosModals();
 
   const {
@@ -130,7 +120,7 @@ function CensosPageContent() {
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
-        onAddClick={handleAddClick}            // abre el modal de selección
+        onAddClick={handleAddClick}
         onBulkUpload={handleBulkUpload}
       />
 
@@ -141,7 +131,7 @@ function CensosPageContent() {
           meta={meta}
           loading={loading}
           error={error}
-          onView={handleViewClick}
+          // onView fue eliminado porque ahora se navega con Link
           onEdit={modals.openEdit}
           onBan={(u) => modals.openConfirm(u, "ban")}
           onRestore={(u) => modals.openConfirm(u, "restore")}
@@ -169,22 +159,21 @@ function CensosPageContent() {
       />
 
       {/* Modal de creación según el modo seleccionado */}
-     // En CensosPageContent, donde se renderiza CensoCreateModal
-      {/* Modal de creación según el modo seleccionado */}
-      <CensoCreateModal
-        isOpen={modals.isFormOpen}
-        isSubmitting={isSubmitting}
-        error={mutationError}
-        onClose={modals.closeForm}
-        onSave={(data) => handleSave(data, modals.editingCenso)}
-        onBulkUpload={handleBulkUpload}
-        mode={createModalMode}
-      />
+     <CensoCreateModal
+  isOpen={modals.isFormOpen}
+  isSubmitting={isSubmitting}
+  error={mutationError}
+  onClose={modals.closeForm}
+  onSave={(data) => handleSave(data, modals.editingCenso)}
+  onBulkUpload={handleBulkUpload}
+  mode={createModalMode}
+  editingCenso={modals.editingCenso}   // 👈 línea agregada
+/>
       {/* Confirmación (Ban/Restore/Delete) */}
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={mutationError} 
+        error={mutationError}
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
@@ -195,7 +184,11 @@ function CensosPageContent() {
         }
       />
 
-      {/* Ver Detalle */}
+      {/* 
+        NOTA: El modal ViewCensoModal ya no se usa porque ahora la vista de detalle 
+        es una página independiente (CensoDetail). Se mantiene por compatibilidad 
+        pero puede eliminarse en el futuro si se confirma que no es necesario.
+      */}
       <ViewCensoModal
         isOpen={modals.isViewOpen}
         Censo={modals.viewingCenso}

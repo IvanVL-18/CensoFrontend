@@ -24,6 +24,7 @@ import Permissions from "./pages/Permissions/Permissions";
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
 import Censos from "./pages/censos/Censos";
+import { CensoDetail } from "./pages/censos/components/CensoDetail";
 
 export default function App() {
   return (
@@ -42,8 +43,7 @@ export default function App() {
 
         {/* Censos */}
         <Route path="/censos" element={<Censos />} />
-           
-
+        <Route path="/censos/:id" element={<CensoDetail />} /> 
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />
         <Route path="/configuracion" element={<ConfigurationsPage />} />

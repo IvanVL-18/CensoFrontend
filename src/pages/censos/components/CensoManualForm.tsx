@@ -1,5 +1,5 @@
-import { useState, type FormEvent, type ChangeEvent, forwardRef, useImperativeHandle } from "react";
-import { Calendar, FileText, Type } from "lucide-react"; // Importamos más iconos
+import { useState, type FormEvent, type ChangeEvent, forwardRef, useImperativeHandle, useEffect } from "react";
+import { Calendar, FileText, Type } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { Censoschema } from "../schemas/Censos.schema";
 
@@ -9,6 +9,12 @@ interface CensoManualFormProps {
   isSubmitting: boolean;
   onSubmit: (data: { name: string; description?: string; init_date?: string; deadline?: string }) => void;
   error?: string | null;
+  initialData?: {
+    name?: string;
+    description?: string;
+    init_date?: string;
+    deadline?: string;
+  };
 }
 
 export interface CensoManualFormRef {
@@ -17,24 +23,46 @@ export interface CensoManualFormRef {
 }
 
 export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormProps>(
-  ({ isSubmitting, onSubmit, error }, ref) => {
-    const [name, setName] = useState("");
+  ({ isSubmitting, onSubmit, error, initialData }, ref) => {
+    // Estados inicializados con initialData (si existe)
+    const [name, setName] = useState(initialData?.name ?? "");
+    const [description, setDescription] = useState(initialData?.description ?? "");
+    const [startDate, setStartDate] = useState(initialData?.init_date ?? "");
+    const [endDate, setEndDate] = useState(initialData?.deadline ?? "");
+    const [charCount, setCharCount] = useState(initialData?.name?.length ?? 0);
+    
     const [formErrors, setFormErrors] = useState<string[]>([]);
-    const [charCount, setCharCount] = useState(0);
-    const [serverError, setServerError] = useState<string | null>(null);
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
-    const [description, setDescription] = useState("");
+    const [serverError, setServerError] = useState<string | null>(error ?? null);
+
+    // Si el error prop cambia externamente, actualizamos serverError
+    useEffect(() => {
+      setServerError(error ?? null);
+    }, [error]);
+
+    // Si initialData cambia (por ejemplo, se edita otro registro sin desmontar),
+    // actualizamos los estados del formulario
+    useEffect(() => {
+  console.log('🔄 initialData recibido en form:', initialData);
+  if (initialData) {
+    setName(initialData.name ?? "");
+    setDescription(initialData.description ?? "");
+    setStartDate(initialData.init_date ?? "");
+    setEndDate(initialData.deadline ?? "");
+    setCharCount(initialData.name?.length ?? 0);
+    console.log('📅 startDate asignado:', initialData.init_date);
+    console.log('📅 endDate asignado:', initialData.deadline);
+  }
+}, [initialData]);
 
     useImperativeHandle(ref, () => ({
       reset: () => {
         setName("");
-        setFormErrors([]);
-        setServerError(null);
-        setCharCount(0);
+        setDescription("");
         setStartDate("");
         setEndDate("");
-        setDescription("");
+        setCharCount(0);
+        setFormErrors([]);
+        setServerError(null);
       },
       submit: () => {
         const result = Censoschema.safeParse({ name });
@@ -104,7 +132,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
 
     return (
       <form onSubmit={handleFormSubmit} noValidate className="space-y-5">
-        {/* Campo: Nombre del censo (con icono y contador) */}
+        {/* Campo: Nombre del censo */}
         <div>
           <div className="flex items-center justify-between mb-2">
             <label htmlFor="censoName" className="flex items-center text-sm font-semibold text-gray-700">
@@ -126,7 +154,6 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
             disabled={isSubmitting}
             autoFocus
           />
-          {/* Barra de progreso de caracteres */}
           <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-300 ease-out ${getProgressBarColor()}`}
