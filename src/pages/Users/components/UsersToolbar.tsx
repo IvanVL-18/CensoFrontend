@@ -1,5 +1,5 @@
 import { type ChangeEvent, useRef } from "react";
-import { CirclePlus, FileDown } from "lucide-react";
+import { CirclePlus,} from "lucide-react";
 
 import type { UserFilter } from "../Users.service";
 import { SearchInput } from "../../../components/SearchInput";
@@ -19,7 +19,6 @@ interface UsersToolbarProps {
 export function UsersToolbar({
   filter,
   searchTerm,
-  isSubmitting,
   onFilterChange,
   onSearchChange,
   onAddClick,
@@ -51,13 +50,6 @@ export function UsersToolbar({
             className="hidden"
           />
 
-          <AddButton
-            label={isSubmitting ? "Cargando..." : "Carga Masiva"}
-            onClick={() => fileInputRef.current?.click()}
-            variant="green"
-            disabled={isSubmitting} 
-            icon={<FileDown size={22} strokeWidth={2.5} />}
-          />
 
           <AddButton
             label="Agregar Usuario"

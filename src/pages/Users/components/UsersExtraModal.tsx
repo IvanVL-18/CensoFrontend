@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { UsersExtraSchema } from "../schemas/UsersExtra.schema";
@@ -8,9 +14,9 @@ interface Props {
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null;
-  User: User | null; 
+  User: User | null;
   onClose: () => void;
-  onSave: (data: UpdateUserDTO) => void; 
+  onSave: (data: UpdateUserDTO) => void;
 }
 
 const norm = (v: any) => (v === null || v === undefined ? "" : String(v));
@@ -36,6 +42,7 @@ export function UsersExtraModal({
   });
 
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!isOpen || !User) return;
@@ -71,34 +78,60 @@ export function UsersExtraModal({
     setFormErrors([]);
     return true;
   };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
+
+    setFormData((p) => {
+      const next = { ...p, [name]: value };
+
+      const result = UsersExtraSchema.safeParse(next);
+      if (!result.success) {
+        setFormErrors(result.error.issues.map((i) => i.message));
+
+        const fe: Record<string, string> = {};
+        result.error.issues.forEach((issue) => {
+          const key = String(issue.path?.[0] ?? "form");
+          if (!fe[key]) fe[key] = issue.message;
+        });
+        setFieldErrors(fe);
+      } else {
+        setFormErrors([]);
+        setFieldErrors({});
+      }
+
+      return next;
+    });
   };
 
-const handleSubmit = (e: FormEvent) => {
-  e.preventDefault();
-  if (!User) return;
-  if (!validateForm()) return;
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!User) return;
+    if (!validateForm()) return;
 
-  const trim = (v: any) => (v ?? "").toString().trim();
+    const trim = (v: any) => (v ?? "").toString().trim();
 
-  const payload: UpdateUserDTO = {};
+    const payload: UpdateUserDTO = {};
 
-  if (trim(formData.name) !== trim(User.name)) payload.name = toNull(formData.name);
-  if (trim(formData.lastname) !== trim(User.lastname)) payload.lastname = toNull(formData.lastname);
-  if (trim(formData.phone) !== trim(User.phone)) payload.phone = toNull(formData.phone);
-  if (trim(formData.mobile) !== trim(User.mobile)) payload.mobile = toNull(formData.mobile);
-  if (trim(formData.address) !== trim(User.address)) payload.address = toNull(formData.address);
+    if (trim(formData.name) !== trim(User.name))
+      payload.name = toNull(formData.name);
+    if (trim(formData.lastname) !== trim(User.lastname))
+      payload.lastname = toNull(formData.lastname);
+    if (trim(formData.phone) !== trim(User.phone))
+      payload.phone = toNull(formData.phone);
+    if (trim(formData.mobile) !== trim(User.mobile))
+      payload.mobile = toNull(formData.mobile);
+    if (trim(formData.address) !== trim(User.address))
+      payload.address = toNull(formData.address);
 
-  if (Object.keys(payload).length === 0) {
-    setFormErrors(["No hay cambios para guardar."]);
-    return;
-  }
+    if (Object.keys(payload).length === 0) {
+      setFormErrors(["No hay cambios para guardar."]);
+      return;
+    }
 
-  onSave(payload);
-};
+    onSave(payload);
+  };
   if (!isOpen || !User) return null;
 
   const hasClientErrors = formErrors.length > 0;
@@ -117,15 +150,24 @@ const handleSubmit = (e: FormEvent) => {
               <h2 className="text-xl font-bold text-white">Datos Personales</h2>
               <p className="text-sm text-white/80">{User.email}</p>
             </div>
-            <button onClick={onClose} className="text-white hover:text-gray-300">
+            <button
+              onClick={onClose}
+              className="text-white hover:text-gray-300"
+            >
               <X size={24} />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate className="flex-1 overflow-y-auto">
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="flex-1 overflow-y-auto"
+          >
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre:</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre:
+                </label>
                 <input
                   name="name"
                   value={formData.name}
@@ -135,7 +177,9 @@ const handleSubmit = (e: FormEvent) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Apellido:</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Apellido:
+                </label>
                 <input
                   name="lastname"
                   value={formData.lastname}
@@ -145,27 +189,43 @@ const handleSubmit = (e: FormEvent) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono:</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Teléfono:
+                </label>
                 <input
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 />
+                {fieldErrors.phone && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.phone}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Celular:</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Celular:
+                </label>
                 <input
                   name="mobile"
                   value={formData.mobile}
                   onChange={handleChange}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 />
+                {fieldErrors.mobile && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.mobile}
+                  </p>
+                )}
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Dirección:</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Dirección:
+                </label>
                 <textarea
                   name="address"
                   value={formData.address}
@@ -176,8 +236,14 @@ const handleSubmit = (e: FormEvent) => {
               </div>
 
               <div className="md:col-span-2">
-                <div id="form-errors-client"><FormErrors errors={formErrors} /></div>
-                {error && <div id="form-errors-server"><FormErrors errors={[error]} /></div>}
+                <div id="form-errors-client">
+                  <FormErrors errors={formErrors} />
+                </div>
+                {error && (
+                  <div id="form-errors-server">
+                    <FormErrors errors={[error]} />
+                  </div>
+                )}
               </div>
             </div>
 

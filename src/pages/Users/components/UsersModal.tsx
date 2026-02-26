@@ -8,6 +8,7 @@ import {
 import { X, Eye, EyeClosed, UserRoundPen } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { UserSchema } from "../schemas/Users.schema";
+
 import type { Rol } from "../../Roles/Roles.types";
 
 interface ExtendedUserModalProps {
@@ -50,6 +51,7 @@ export function UserModal({
   });
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const hasChanges = useMemo(() => {
     if (!initialData) return true;
@@ -109,6 +111,34 @@ export function UserModal({
     );
   }, [formData, initialData, roles, occupations, areas, institutions]);
 
+  const validateForm = (data: typeof formData) => {
+    const dataForValidation: any = { ...data };
+    if (initialData && !dataForValidation.password) {
+      delete dataForValidation.password;
+      delete dataForValidation.password_confirmation;
+    }
+
+    const result = UserSchema.safeParse(dataForValidation);
+
+    if (!result.success) {
+      const errorMessages = result.error.issues.map((err) => err.message);
+      setFormErrors(errorMessages);
+
+      const fe: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const key = String(issue.path?.[0] ?? "form");
+        if (!fe[key]) fe[key] = issue.message;
+      });
+      setFieldErrors(fe);
+
+      return false;
+    }
+
+    setFormErrors([]);
+    setFieldErrors({});
+    return true;
+  };
+
   useEffect(() => {
     if (isOpen) {
       const findIdInCatalog = (
@@ -133,7 +163,6 @@ export function UserModal({
 
         return "";
       };
-
       setFormData({
         email: initialData?.email || "",
         password: "",
@@ -163,20 +192,11 @@ export function UserModal({
     }
   }, [isOpen, initialData, roles, occupations, areas, institutions]);
 
-  const validateForm = (data: typeof formData) => {
-    const result = UserSchema.safeParse(data);
-    if (!result.success) {
-      const errorMessages = result.error.issues.map((err) => err.message);
-      setFormErrors(errorMessages);
-      return false;
-    } else {
-      setFormErrors([]);
-      return true;
-    }
-  };
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    const ok = validateForm(formData);
+    if (!ok) return;
 
     onSave(formData);
   };
@@ -185,7 +205,12 @@ export function UserModal({
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+      validateForm(next);
+      return next;
+    });
   };
 
   if (!isOpen) {
@@ -193,13 +218,17 @@ export function UserModal({
   }
 
   const hasClientErrors = formErrors.length > 0;
-  const hasServerError = !!error;
+  const handleClose = () => {
+    setFormErrors([]);
+    setFieldErrors({});
+    onClose();
+  };
 
   return (
     <>
       <div
         className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}
+        onClick={handleClose}
       ></div>
 
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
@@ -207,7 +236,7 @@ export function UserModal({
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-white hover:text-gray-300"
             >
               <X size={24} />
@@ -235,6 +264,11 @@ export function UserModal({
                   onChange={handleChange}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 />
+                {fieldErrors.email && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -257,6 +291,11 @@ export function UserModal({
                     onChange={handleChange}
                     className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
                   />
+                  {fieldErrors.password && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {fieldErrors.password}
+                    </p>
+                  )}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -282,6 +321,11 @@ export function UserModal({
                   onChange={handleChange}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 />
+                {fieldErrors.password_confirmation && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.password_confirmation}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -407,7 +451,7 @@ export function UserModal({
               </button>
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
                 disabled={isSubmitting}
                 className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95 disabled:opacity-50"
               >
