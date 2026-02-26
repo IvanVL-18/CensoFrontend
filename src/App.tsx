@@ -19,7 +19,7 @@ import CensusSectionsPage from "./pages/census/CensusSectionsPage";
 import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; 
 
 import Sections from "./pages/Sections/Sections";
-import Insitutions from "./pages/Institutions/Institutions";
+import Insitutions from "./pages/institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Indexs/Indexs";
 import Roles from "./pages/Roles/Roles";
@@ -28,7 +28,7 @@ import Permissions from "./pages/Permissions/Permissions";
 
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
-
+import Verification from "./pages/Verification/Verification";
 
 export default function App() {
   return (
@@ -44,6 +44,8 @@ export default function App() {
         <Route path="/usuarios" element={<Users />} />
         <Route path="/instituciones" element={<Insitutions />} />
         <Route path="/indices" element={<Index />} />
+
+        <Route path="/verification" element={<Verification />} />
 
         {/* Censos */}
         <Route path="/censos" element={<Census />} />
