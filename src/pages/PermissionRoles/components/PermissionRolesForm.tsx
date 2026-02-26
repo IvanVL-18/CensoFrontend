@@ -1,12 +1,12 @@
 import React from "react";
 
 export type RoleOption = {
-  id: string;      // (en tu proyecto suele venir encriptado)
+  id: string;     
   name: string;
 };
 
 type Props = {
-  roleId: string; // ✅ en vez de name
+  roleId: string; 
   roles: RoleOption[];
 
   description: string;
@@ -52,7 +52,6 @@ const PermissionRolesForm: React.FC<Props> = ({
         </select>
       </div>
 
-      {/* DESCRIPTION */}
       <div className="sm:col-span-8">
         <label className="block text-sm font-medium text-slate-700">
           Descripción <span className="text-[#9D2449]">*</span>

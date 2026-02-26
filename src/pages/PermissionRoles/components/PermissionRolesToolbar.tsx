@@ -1,31 +1,35 @@
 import React from "react";
-import { CheckCircle2 } from "lucide-react";
+import GovSwitch from "./GovSwitch";
 
 type Props = {
   title?: string;
-  onAllowAll: () => void;
+  allOn: boolean;
+  onToggleAll: (next: boolean) => void;
 };
 
 const PermissionRolesToolbar: React.FC<Props> = ({
   title = "Asignar Permisos",
-  onAllowAll,
+  allOn,
+  onToggleAll,
 }) => {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
           {title}
         </h1>
       </div>
 
-      <button
-        type="button"
-        onClick={onAllowAll}
-        className="inline-flex items-center justify-center gap-2 rounded-md bg-[#611232] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9D2449]"
-      >
-        <CheckCircle2 className="h-4 w-4" />
-        Permitir Todo
-      </button>
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-semibold text-[#611232]">Permitir todo</span>
+        <GovSwitch
+          label="Permitir todo (global)"
+          checked={allOn}
+          onCheckedChange={onToggleAll}
+          size="sm"
+          showStateText={false}
+        />
+      </div>
     </div>
   );
 };

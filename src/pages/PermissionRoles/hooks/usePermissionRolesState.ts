@@ -5,16 +5,14 @@ import type {
   PermissionsState,
 } from "../PermissionRoles.types";
 
-// ✅ Solo las acciones que quieres mostrar en el DISEÑO (UI)
 const ALL_ACTIONS: PermissionAction[] = ["view", "create", "edit", "delete"];
 
-// ✅ El estado DEBE tener todas las acciones del tipo PermissionAction (incluye "export")
 const makeEmptyMap = (): Record<PermissionAction, boolean> => ({
   view: false,
   create: false,
   edit: false,
   delete: false,
-  export: false, // <- para que no falle TS
+  export: false, 
 });
 
 export const usePermissionRolesState = (allModules: PermissionModule[]) => {
@@ -44,7 +42,7 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
         create: value,
         edit: value,
         delete: value,
-        export: value, // <- también aquí
+        export: value, 
       },
     }));
   };
@@ -59,7 +57,7 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
           create: value,
           edit: value,
           delete: value,
-          export: value, // <- también aquí
+          export: value, 
         };
       });
       return next;
@@ -76,7 +74,7 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
           create: true,
           edit: true,
           delete: true,
-          export: true, // <- también aquí
+          export: true, 
         };
       });
       return next;
@@ -91,7 +89,6 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
     setManyModulesAll,
     allowAll,
 
-    // ✅ Esto úsalo para renderizar switches (solo 4 acciones, sin export)
     ALL_ACTIONS,
   };
 };
