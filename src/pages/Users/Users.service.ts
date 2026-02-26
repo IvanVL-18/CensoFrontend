@@ -9,6 +9,7 @@ import type {
 export type UserFilter = "all" | "active" | "inactive";
 
 type UserId = string | number;
+const enc = (v: string | number) => encodeURIComponent(String(v));
 
 export const getUsers = async (
   filter: UserFilter = "all", 
@@ -37,11 +38,8 @@ export const getUsers = async (
 
 
 
-export const getUser = async (
-  id: UserId,
-  signal?: AbortSignal,
-): Promise<User> => {
-  const response = await api.get<{ data: User } | User>(`/users/${id}`, {
+export const getUser = async (id: UserId, signal?: AbortSignal): Promise<User> => {
+  const response = await api.get<{ data: User } | User>(`/users/${enc(id)}`, {
     signal,
   });
   return (response.data as any).data ?? response.data;
@@ -58,7 +56,7 @@ export const updateUser = async (
   id: UserId,
   UserData: UpdateUserDTO,
 ): Promise<{ message: string }> => {
-  const response = await api.put(`/users/${id}`, UserData);
+  const response = await api.patch(`/users/${enc(id)}/updateUser`, UserData);
   return response.data;
 };
 

@@ -5,15 +5,16 @@ import { getUser } from "./Users.service";
 import { UsersToolbar } from "./components/UsersToolbar";
 import { UsersTable } from "./components/UsersTable";
 import Pagination from "../../components/Pagination";
-import { UserModal } from "./components/UsersModal";
 import { ConfirmModal } from "./components/ConfirmModal";
+import { UserModal } from "./components/UsersModal";
+import { UsersExtraModal } from "./components/UsersExtraModal";
 import { ViewUserModal } from "./components/ViewUsersModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
-function ToastContainer() { 
+function ToastContainer() {
   const { toasts, removeToast } = useToast();
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
@@ -76,11 +77,16 @@ function UsersPageContent() {
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
+    isExtraSubmitting,
+    extraError,
+    handleSaveExtra,
   } = useUsersMutations({
     refreshUsers,
     closeForm: modals.closeForm,
     closeConfirm: modals.closeConfirm,
     openBulkError: modals.openBulkError,
+    closeExtra: modals.closeExtra,
+    patchUser: modals.patchUser,
   });
 
   const modalTitle = modals.editingUser ? "Editar Usuario" : "Agregar Usuario";
@@ -111,7 +117,6 @@ function UsersPageContent() {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
 
-  
       <UsersToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -122,7 +127,6 @@ function UsersPageContent() {
         onBulkUpload={handleBulkUpload}
       />
 
-      
       <div className="p-4">
         <UsersTable
           loading={loading}
@@ -158,12 +162,24 @@ function UsersPageContent() {
         institutions={institutions}
         onClose={modals.closeForm}
         onSave={(data) => handleSave(data, modals.editingUser)}
+        onOpenExtra={modals.openExtra}
+      />
+      <UsersExtraModal
+        isOpen={modals.isExtraOpen}
+        isSubmitting={isExtraSubmitting}
+        error={extraError}
+        User={modals.extraUser}
+        onClose={modals.closeExtra}
+        onSave={(data) => {
+          if (!modals.extraUser) return;
+          handleSaveExtra(modals.extraUser, data);
+        }}
       />
 
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={mutationError} 
+        error={mutationError}
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
@@ -190,7 +206,7 @@ function UsersPageContent() {
 }
 
 export default function Users() {
-  return ( 
+  return (
     <ToastProvider>
       <UsersPageContent />
     </ToastProvider>
