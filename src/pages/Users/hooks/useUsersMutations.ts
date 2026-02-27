@@ -30,6 +30,7 @@ export function useUsersMutations({
   const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const resetMutationError = () => setMutationError(null);
   const [isExtraSubmitting, setIsExtraSubmitting] = useState(false);
   const [extraError, setExtraError] = useState<string | null>(null);
 
@@ -165,6 +166,7 @@ export function useUsersMutations({
   return {
     isSubmitting,
     mutationError,
+    resetMutationError,
     handleSave,
     handleConfirmAction,
     handleBulkUpload,

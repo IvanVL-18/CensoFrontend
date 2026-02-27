@@ -74,6 +74,7 @@ function UsersPageContent() {
   const {
     isSubmitting,
     mutationError,
+    resetMutationError,
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
@@ -123,7 +124,10 @@ function UsersPageContent() {
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
-        onAddClick={modals.openCreate}
+        onAddClick={() => {
+          resetMutationError();
+          modals.openCreate();
+        }}
         onBulkUpload={handleBulkUpload}
       />
 
