@@ -19,7 +19,7 @@ interface ExtendedUserModalProps {
   initialData?: any;
   roles?: Rol[];
   occupations?: any[];
-  areas?: any[];
+  dependencies?: any[];
   institutions?: any[];
   onClose: () => void;
   onSave: (data: any) => void;
@@ -34,7 +34,7 @@ export function UserModal({
   initialData,
   roles = [],
   occupations = [],
-  areas = [],
+  dependencies = [],
   institutions = [],
   onClose,
   onSave,
@@ -46,7 +46,7 @@ export function UserModal({
     password_confirmation: "",
     role_id: "",
     occupation_id: "",
-    area_id: "",
+    dependencie_id: "",
     institution_id: "",
   });
   const [formErrors, setFormErrors] = useState<string[]>([]);
@@ -90,10 +90,10 @@ export function UserModal({
       initialData.occupation,
       occupations,
     );
-    const areaChanged = checkRelationChange(
-      formData.area_id,
-      initialData.area,
-      areas,
+    const dependencieChanged = checkRelationChange(
+      formData.dependencie_id,
+      initialData.dependencie,
+      dependencies,
     );
     const institutionChanged = checkRelationChange(
       formData.institution_id,
@@ -106,10 +106,10 @@ export function UserModal({
       passwordChanged ||
       roleChanged ||
       occupationChanged ||
-      areaChanged ||
+      dependencieChanged ||
       institutionChanged
     );
-  }, [formData, initialData, roles, occupations, areas, institutions]);
+  }, [formData, initialData, roles, occupations, dependencies, institutions]);
 
   const validateForm = (data: typeof formData) => {
     const dataForValidation: any = { ...data };
@@ -177,10 +177,10 @@ export function UserModal({
           initialData?.occupation,
           initialData?.occupation_id,
         ),
-        area_id: findIdInCatalog(
-          areas,
-          initialData?.area,
-          initialData?.area_id,
+        dependencie_id: findIdInCatalog(
+          dependencies,
+          initialData?.dependencie,
+          initialData?.dependencie_id,
         ),
         institution_id: findIdInCatalog(
           institutions,
@@ -190,7 +190,7 @@ export function UserModal({
       });
       setFormErrors([]);
     }
-  }, [isOpen, initialData, roles, occupations, areas, institutions]);
+  }, [isOpen, initialData, roles, occupations, dependencies, institutions]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -376,25 +376,25 @@ export function UserModal({
 
               <div>
                 <label
-                  htmlFor="area_id"
+                  htmlFor="dependencie_id"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Área:
                 </label>
                 <select
-                  id="area_id"
-                  name="area_id"
-                  value={formData.area_id}
+                  id="dependencie_id"
+                  name="dependencie_id"
+                  value={formData.dependencie_id}
                   onChange={handleChange}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Área</option>
-                  {areas.length === 0 && (
+                  {dependencies.length === 0 && (
                     <option disabled>Cargando áreas...</option>
                   )}
-                  {areas.map((area: any) => (
-                    <option key={area.id} value={area.id}>
-                      {area.name}
+                  {dependencies.map((dependencie: any) => (
+                    <option key={dependencie.id} value={dependencie.id}>
+                      {dependencie.name}
                     </option>
                   ))}
                 </select>

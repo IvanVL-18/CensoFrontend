@@ -41,7 +41,7 @@ function UsersPageContent() {
     searchTerm,
     roles,
     occupations,
-    areas,
+    dependencies,
     institutions,
     refreshUsers,
     handleFilterChange,
@@ -158,7 +158,7 @@ function UsersPageContent() {
         initialData={modals.editingUser}
         roles={roles}
         occupations={occupations}
-        areas={areas}
+        dependencies={dependencies}
         institutions={institutions}
         onClose={modals.closeForm}
         onSave={(data) => handleSave(data, modals.editingUser)}

@@ -9,14 +9,14 @@ export interface User {
   email_verified_at: string | null;
   role_id: number;
   occupation_id: number | null;
-  area_id: number | null;
+  dependencie_id: number | null;
   institution_id: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
   role?: { id: number; name: string };
   occupation?: { id: number; name: string };
-  area?: { id: number; name: string };
+  dependencie?: { id: number; name: string };
   institution?: { id: number; name: string };
 }
 
@@ -115,7 +115,7 @@ export interface CreateUserDTO {
   password_confirmation?: string;
   role_id?: string | number;
   occupation_id?: string | number | null;
-  area_id?: string | number | null;
+  dependencie_id?: string | number | null;
   institution_id?: string | number | null;
 }
 export type UpdateUserDTO = Partial<CreateUserDTO>;

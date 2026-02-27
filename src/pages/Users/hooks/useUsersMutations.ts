@@ -81,7 +81,7 @@ export function useUsersMutations({
           ...extraData,
           role_id: User.role_id,
           occupation_id: User.occupation_id,
-          area_id: User.area_id,
+          dependencie_id: User.dependencie_id,
           institution_id: User.institution_id,
         };
 
