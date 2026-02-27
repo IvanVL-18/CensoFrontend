@@ -31,6 +31,21 @@ const RULES = [
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
+function hexToRgb(hex: string) {
+  const clean = hex.replace("#", "");
+  const n = parseInt(clean, 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+function mixHex(a: string, b: string, t: number) {
+  const A = hexToRgb(a);
+  const B = hexToRgb(b);
+  const x = Math.max(0, Math.min(1, t));
+  const r = Math.round(A.r + (B.r - A.r) * x);
+  const g = Math.round(A.g + (B.g - A.g) * x);
+  const bl = Math.round(A.b + (B.b - A.b) * x);
+  return `rgb(${r}, ${g}, ${bl})`;
+}
 
 function getStrength(password: string) {
   const passed = RULES.map((r) => r.test(password));
@@ -77,22 +92,23 @@ export default function PasswordStrengthMeter({
         </div>
       </div>
 
-      <div
-        className={`h-full rounded-full transition-all duration-300 ${
-          isEmpty
-            ? "bg-transparent"
-            : score <= 1
-              ? "bg-red-500"
-              : score === 2
-                ? "bg-orange-500"
-                : score === 3
-                  ? "bg-yellow-400"
-                  : score === 4
-                    ? "bg-lime-500"
-                    : "bg-green-500"
-        }`}
-        style={{ width: `${isEmpty ? 0 : percent}%` }}
-      />
+      {(() => {
+        const fillColor = isEmpty
+          ? "transparent"
+          : mixHex("#ef4444", "#22c55e", percent / 100); 
+
+        return (
+          <div className="mt-2 h-[3px] w-full rounded-full bg-slate-200 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{
+                width: `${isEmpty ? 0 : percent}%`,
+                backgroundColor: fillColor,
+              }}
+            />
+          </div>
+        );
+      })()}
 
       {showRules && (
         <div className="mt-2 space-y-1">
