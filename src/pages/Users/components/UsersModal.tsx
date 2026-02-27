@@ -59,6 +59,7 @@ export function UserModal({
   });
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [pwdFocus, setPwdFocus] = useState(false);
 
@@ -354,14 +355,24 @@ export function UserModal({
                 >
                   Confirmar Contraseña:
                 </label>
-                <input
-                  type="password"
-                  id="password_confirmation"
-                  name="password_confirmation"
-                  value={formData.password_confirmation}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    id="password_confirmation"
+                    name="password_confirmation"
+                    value={formData.password_confirmation}
+                    onChange={handleChange}
+                    className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
+                  />
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                  >
+                    {showConfirmPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
                 {showConfirmStatus && (
                   <div
                     className={`mt-2 flex items-center gap-2 text-xs font-medium ${
@@ -381,11 +392,7 @@ export function UserModal({
                     )}
                   </div>
                 )}
-                {fieldErrors.password_confirmation && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {fieldErrors.password_confirmation}
-                  </p>
-                )}
+               
               </div>
 
               <div>

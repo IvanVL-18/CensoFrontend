@@ -74,7 +74,7 @@ export default function PasswordStrengthMeter({
 }) {
   const p = password ?? "";
   const isEmpty = p.length === 0;
-  const { passed, percent, label, score } = getStrength(p);
+  const { passed, percent, label,} = getStrength(p);
 
   return (
     <div className={className}>
