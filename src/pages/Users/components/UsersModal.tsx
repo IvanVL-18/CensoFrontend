@@ -5,11 +5,19 @@ import {
   type FormEvent,
   type ChangeEvent,
 } from "react";
-import { X, Eye, EyeClosed, UserRoundPen } from "lucide-react";
+import {
+  X,
+  Eye,
+  EyeClosed,
+  UserRoundPen,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { UserSchema } from "../schemas/Users.schema";
 
 import type { Rol } from "../../Roles/Roles.types";
+import PasswordStrengthMeter from "./PasswordStrengthMeter";
 
 interface ExtendedUserModalProps {
   isOpen: boolean;
@@ -52,6 +60,7 @@ export function UserModal({
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [pwdFocus, setPwdFocus] = useState(false);
 
   const hasChanges = useMemo(() => {
     if (!initialData) return true;
@@ -121,8 +130,12 @@ export function UserModal({
     const result = UserSchema.safeParse(dataForValidation);
 
     if (!result.success) {
-      const errorMessages = result.error.issues.map((err) => err.message);
-      setFormErrors(errorMessages);
+      const listIssues = result.error.issues.filter((issue) => {
+        const field = String(issue.path?.[0] ?? "");
+        return field !== "password" && field !== "password_confirmation";
+      });
+
+      setFormErrors(listIssues.map((i) => i.message));
 
       const fe: Record<string, string> = {};
       result.error.issues.forEach((issue) => {
@@ -217,12 +230,30 @@ export function UserModal({
     return null;
   }
 
-  const hasClientErrors = formErrors.length > 0;
+  const hasClientErrors =
+    formErrors.length > 0 || Object.keys(fieldErrors).length > 0;
   const handleClose = () => {
     setFormErrors([]);
     setFieldErrors({});
     onClose();
   };
+  const showConfirmStatus =
+    (!initialData || formData.password.length > 0) &&
+    formData.password_confirmation.length > 0;
+
+  const passwordsMatch =
+    formData.password.length > 0 &&
+    formData.password === formData.password_confirmation;
+
+  const needsPasswordMatch = !initialData || formData.password.length > 0;
+
+  const confirmMismatch =
+    needsPasswordMatch &&
+    formData.password_confirmation.length > 0 &&
+    formData.password !== formData.password_confirmation;
+
+  const canSave =
+    !isSubmitting && !hasClientErrors && hasChanges && !confirmMismatch;
 
   return (
     <>
@@ -289,21 +320,31 @@ export function UserModal({
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
+                    onFocus={() => setPwdFocus(true)}
+                    onBlur={() => setPwdFocus(false)}
                     className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
                   />
-                  {fieldErrors.password && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {fieldErrors.password}
-                    </p>
-                  )}
                   <button
                     type="button"
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
                   >
                     {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
+                 {(!initialData || formData.password.length > 0) && (
+                    <PasswordStrengthMeter
+                      password={formData.password}
+                      className="mt-2"
+                      showRules={pwdFocus}
+                    />
+                  )}
+                  {fieldErrors.password && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {fieldErrors.password}
+                    </p>
+                  )}
               </div>
 
               <div>
@@ -321,6 +362,25 @@ export function UserModal({
                   onChange={handleChange}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 />
+                {showConfirmStatus && (
+                  <div
+                    className={`mt-2 flex items-center gap-2 text-xs font-medium ${
+                      passwordsMatch ? "text-emerald-700" : "text-rose-700"
+                    }`}
+                  >
+                    {passwordsMatch ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Las contraseñas coinciden</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4" />
+                        <span>Las contraseñas no coinciden</span>
+                      </>
+                    )}
+                  </div>
+                )}
                 {fieldErrors.password_confirmation && (
                   <p className="mt-1 text-xs text-red-600">
                     {fieldErrors.password_confirmation}
@@ -459,7 +519,7 @@ export function UserModal({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || hasClientErrors || !hasChanges}
+                disabled={!canSave}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
