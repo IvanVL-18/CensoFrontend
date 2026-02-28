@@ -13,7 +13,7 @@ import type { InstitutionTableProps } from "../institutions.types";
 
 
 
-const defaultProps = {
+const defaultProps = { 
   strokeWidth: 1.75,
   size: 22,
 };

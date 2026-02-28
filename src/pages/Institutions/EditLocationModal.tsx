@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-import  { getCoordinatesFromPostalCode } from "../Institutions/Map.service";
+import  { getCoordinatesFromPostalCode, getReverseGeocodingData } from "../Institutions/Map.service";
 import type { Coordinates } from "../Institutions/Map.types";
 import type { Institution } from "../Institutions/institutions.types";
 
@@ -15,7 +15,7 @@ import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
-  shadowUrl: iconShadow,
+  shadowUrl: iconShadow, 
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
@@ -36,7 +36,7 @@ interface Props {
   pendingCoords: { lat: number; lon: number } | null;
 
  
-  onPick: (coords: { lat: number; lon: number }) => void;
+  onPick: (coords: { lat: number; lon: number }, addressData?: { geocode?: string; municipality?: string; state?: string }) => void;
 }
 
 export function EditLocationModal({
@@ -152,9 +152,9 @@ export function EditLocationModal({
               <DraggableMarker
                 coordinates={coordinates}
                 institutionName={institution?.name ?? null}
-                onChange={(newCoords) => {
+                onChange={(newCoords, addressData) => {
                   setCoordinates(newCoords);
-                  onPick(newCoords); 
+                  onPick(newCoords, addressData); 
                 }}
               />
             </MapContainer>
@@ -173,7 +173,7 @@ function DraggableMarker({
 }: {
   coordinates: Coordinates;
   institutionName: string | null;
-  onChange: (coords: Coordinates) => void;
+  onChange: (coords: Coordinates, addressData?: { geocode?: string; municipality?: string; state?: string }) => void;
 }) {
   const markerRef = useRef<L.Marker | null>(null);
 
@@ -185,12 +185,30 @@ function DraggableMarker({
         markerRef.current = ref;
       }}
       eventHandlers={{
-        dragend: () => {
+        dragend: async () => {
           const marker = markerRef.current;
           if (!marker) return;
 
           const pos = marker.getLatLng();
-          onChange({ lat: pos.lat, lon: pos.lng });
+          const newCoords = { lat: pos.lat, lon: pos.lng };
+
+          try {
+            const addressData = await getReverseGeocodingData(pos.lat, pos.lng);
+            
+            
+            if (addressData?.state && !addressData.state.toLowerCase().includes("hidalgo")) {
+              const confirm = window.confirm(`Esta ubicación parece estar en "${addressData.state}", fuera de los límites de Hidalgo. ¿Deseas continuar?`);
+              if (!confirm) {
+              
+                marker.setLatLng([coordinates.lat, coordinates.lon]);
+                return; 
+              }
+            }
+
+            onChange(newCoords, addressData || undefined);
+          } catch (e) {
+            onChange(newCoords);
+          }
         },
       }}
     >

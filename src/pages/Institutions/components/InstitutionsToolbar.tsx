@@ -13,7 +13,7 @@ interface InstitutionsToolbarProps {
   searchTerm: string;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onAddClick: () => void;
+  onAddClick: () => void; 
 }
 
 export function InstitutionsToolbar({

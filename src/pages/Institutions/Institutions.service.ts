@@ -7,7 +7,7 @@ import type {
 } from "../Institutions/institutions.types";
 
 export type InstitutionFilter = "all" | "active" | "inactive";
-//commit ivan v asfasf
+
 type InstitutionId = string | number;
 
 
@@ -16,7 +16,7 @@ export const getInstitutions = async (
   search: string = "",
   page: number = 1,
   sortBy: string = "id",           
-  direction: "asc" | "desc" = "asc", 
+  direction: "asc" | "desc" = "asc",  
   signal?: AbortSignal,
 ): Promise<PaginatedInstitutionsResponse> => {
   const params = new URLSearchParams();

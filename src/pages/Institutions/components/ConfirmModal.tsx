@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 
-interface ConfirmModalProps {
+interface ConfirmModalProps { 
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null;

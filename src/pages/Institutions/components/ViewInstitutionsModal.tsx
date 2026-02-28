@@ -16,7 +16,7 @@ const formatDate = (dateString: string | null) => {
   try {
     
     return new Date(dateString).toLocaleString('es-MX', {
-      year: 'numeric',
+      year: 'numeric', 
       month: 'long',
       day: 'numeric',
       hour: '2-digit',

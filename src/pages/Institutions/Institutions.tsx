@@ -12,7 +12,7 @@ import { Toast } from "../../components/Toast";
 import  { EditLocationModal } from "../Institutions/EditLocationModal";
 
 function ToastContainer() {
-  const { toasts, removeToast } = useToast();
+  const { toasts, removeToast } = useToast(); 
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
@@ -28,7 +28,7 @@ function ToastContainer() {
   );
 }
 
-// --- 2. Componente Interno para el Contenido de la Página ---
+
 function InstitutionsPageContent() {
   const {
     loading,

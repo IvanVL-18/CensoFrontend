@@ -15,8 +15,7 @@ export function validateOccupation(data: { name: string, institution_id?: string
     errors.push("El nombre no puede exceder los 45 caracteres.");
   }
 
-  // Regla extra: 'name.regex' (copiada de la validación de Unit)
-  // Valida que no se incluyan emojis o símbolos no permitidos.
+ 
   const regex = /^[\p{L}\p{M}\p{N}\s'.,-]+$/u;
   if (!regex.test(data.name)) { // Usamos data.name (sin trim) para evaluar el input original
     errors.push("El campo nombre no puede contener emojis ni símbolos especiales.");

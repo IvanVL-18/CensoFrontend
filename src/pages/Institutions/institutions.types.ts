@@ -16,7 +16,7 @@ export interface Institution {
 export interface MetaLink {
   url: string | null;
   label: string;
-  page: number | null;
+  page: number | null; 
   active: boolean;
 }
 
