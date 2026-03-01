@@ -26,31 +26,30 @@ import {
   updatePermissionRole,
   type Permission,
 } from "./PermissionRoles.service";
+import { ToastProvider, useToast } from "../../context/ToastContext";
+import { Toast } from "../../components/Toast";
 
-/**
- * Acciones conocidas (orden preferido)
- * Nota: en BD llegan como: view/create/edit/deactivate/import/delete
- * En UI queremos: view/create/edit/disable/bulk/delete
- */
-const ACTIONS_ORDER = ["view", "create", "edit", "disable", "bulk", "delete"];
+
+const ACTIONS_ORDER = ["view", "create", "edit", "disable", "restore", "bulk", "delete"];
 
 const ACTION_LABEL: Record<string, string> = {
   view: "Ver",
   create: "Crear",
   edit: "Editar",
   disable: "Desactivar",
+  restore: "Restaurar",
   bulk: "Carga Masiva",
   delete: "Eliminar",
 };
 
-// Tus labels e íconos por módulo (UI)
+
 const moduleLabelMap: Record<string, string> = {
   dashboard: "Dashboard",
   notifications: "Notificaciones",
   users: "Usuarios",
   roles: "Roles",
   institutions: "Instituciones",
-  areas: "Áreas",
+  dependencies: "Dependencias",
   occupations: "Ocupaciones",
   censos: "Censos",
   graph: "Graficador",
@@ -69,7 +68,7 @@ const moduleIconMap: Record<string, any> = {
   users: Users,
   roles: Shield,
   institutions: Building2,
-  areas: Layers,
+  dependencies: Layers,
   occupations: Briefcase,
   censos: FileText,
   graph: BarChart3,
@@ -88,7 +87,7 @@ const MODULE_ORDER: string[] = [
   "users",
   "roles",
   "institutions",
-  "areas",
+  "dependencies",
   "occupations",
   "censos",
   "graph",
@@ -101,20 +100,20 @@ const MODULE_ORDER: string[] = [
   "catalogs",
 ];
 
-/** Normaliza módulos que podrían venir distinto desde BD */
+
 const normalizeModule = (m: string) => {
   const x = (m || "").toLowerCase().trim();
 
-  // por si en BD sembraste "graficador.view"
+
   if (x === "graficador") return "graph";
 
-  // por si sembraste "indexs.view" o alguien puso "indices.view"
+ 
   if (x === "indexs" || x === "indices") return "indexes";
 
   return x || "otros";
 };
 
-/** Normaliza la acción que venga en name (ej. censos.import => bulk) */
+
 const normalizeAction = (a: string) => {
   const x = (a || "").toLowerCase().trim();
 
@@ -123,7 +122,7 @@ const normalizeAction = (a: string) => {
   if (["create", "crear", "store", "add", "new"].includes(x)) return "create";
   if (["edit", "editar", "update"].includes(x)) return "edit";
 
-  // backend suele traer "deactivate"
+ 
   if (
     [
       "disable",
@@ -137,7 +136,9 @@ const normalizeAction = (a: string) => {
   )
     return "disable";
 
-  // backend suele traer "import"
+  if (["restore", "restaurar", "recover", "unban"].includes(x)) return "restore";
+
+  
   if (
     [
       "bulk",
@@ -152,7 +153,6 @@ const normalizeAction = (a: string) => {
 
   if (["delete", "eliminar", "destroy", "remove"].includes(x)) return "delete";
 
-  // si algún día llega una acción nueva, la mostramos como viene
   return x || "unknown";
 };
 
@@ -169,7 +169,25 @@ const parsePermission = (name: string) => {
 const titleFromKey = (key: string) =>
   key.replace(/[_\-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-export default function PermissionRoles() {
+function ToastContainer() {
+  const { toasts, removeToast } = useToast();
+
+  return (
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+      {toasts.map((toast) => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => removeToast(toast.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function PermissionRolesContent() {
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const roleEnc = searchParams.get("role") ?? "";
@@ -185,6 +203,7 @@ export default function PermissionRoles() {
 
   const [allPerms, setAllPerms] = useState<Permission[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+
 
   useEffect(() => {
     if (loadingRoles) return;
@@ -245,13 +264,13 @@ export default function PermissionRoles() {
     return r?.name ?? "";
   }, [roles, roleId]);
 
-  // 3) Computar módulos dinámicos según lo que existe en BD
+ 
   const modules = useMemo(() => {
     type ModuleCard = {
       moduleKey: string;
       label: string;
       icon: any;
-      actions: Record<string, number>; // actionKey -> permissionId
+      actions: Record<string, number>; 
     };
 
     const map = new Map<string, ModuleCard>();
@@ -278,7 +297,7 @@ export default function PermissionRoles() {
     );
   }, [allPerms]);
 
-  // 4) Permitir todo / quitar todo (global)
+
   const allOn = useMemo(() => {
     if (!allPerms.length) return false;
     return selected.size === allPerms.length;
@@ -309,16 +328,16 @@ export default function PermissionRoles() {
       const permissionIds = Array.from(selected);
       const res = await updatePermissionRole(roleId, permissionIds);
 
-      alert(res?.message ?? "Permisos guardados.");
+      addToast(res?.message ?? "Permisos guardados correctamente.", "success");
     } catch (err) {
       console.error(err);
-      setErrors(["No se pudieron guardar los permisos. Revisa consola / red."]);
+      addToast("No se pudieron guardar los permisos.", "danger");
     } finally {
       setSaving(false);
     }
   };
 
-  // Helpers para ordenar acciones dentro de cada card:
+
   const actionOrderIndex = (a: string) => {
     const i = ACTIONS_ORDER.indexOf(a);
     return i === -1 ? 999 : i;
@@ -330,6 +349,7 @@ export default function PermissionRoles() {
 
   return (
     <div className="w-full bg-[#F8FAFC]">
+      <ToastContainer />
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <PermissionRolesToolbar
@@ -474,5 +494,13 @@ export default function PermissionRoles() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PermissionRoles() {
+  return (
+    <ToastProvider>
+      <PermissionRolesContent />
+    </ToastProvider>
   );
 }

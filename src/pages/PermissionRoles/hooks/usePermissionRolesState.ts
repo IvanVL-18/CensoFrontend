@@ -5,7 +5,7 @@ import type {
   PermissionsState,
 } from "../PermissionRoles.types";
 
-const ALL_ACTIONS: PermissionAction[] = ["view", "create", "edit", "delete"];
+const ALL_ACTIONS: PermissionAction[] = ["view", "create", "edit", "delete", "export", "restore"];
 
 const makeEmptyMap = (): Record<PermissionAction, boolean> => ({
   view: false,
@@ -13,6 +13,7 @@ const makeEmptyMap = (): Record<PermissionAction, boolean> => ({
   edit: false,
   delete: false,
   export: false, 
+  restore: false,
 }); 
 
 export const usePermissionRolesState = (allModules: PermissionModule[]) => {
@@ -42,6 +43,7 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
         create: value,
         edit: value,
         delete: value,
+        restore: value, 
         export: value, 
       },
     }));
@@ -57,6 +59,7 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
           create: value,
           edit: value,
           delete: value,
+          restore: value, 
           export: value, 
         };
       });
@@ -74,6 +77,7 @@ export const usePermissionRolesState = (allModules: PermissionModule[]) => {
           create: true,
           edit: true,
           delete: true,
+          restore: true, 
           export: true, 
         };
       });

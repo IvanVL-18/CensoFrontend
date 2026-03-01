@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 
 export type PermissionScope = "home" | "admin" | "operation";
 
-export type PermissionAction = "view" | "create" | "edit" | "delete" | "export";
+export type PermissionAction = "view" | "create" | "edit" | "delete" | "export"| "restore";
 
 export const ACTION_LABEL: Record<PermissionAction, string> = {
   view: "Ver",
@@ -10,6 +10,7 @@ export const ACTION_LABEL: Record<PermissionAction, string> = {
   edit: "Editar",
   delete: "Eliminar", 
   export: "Exportar",
+  restore: "Restaurar",
 };
 
 export type PermissionMap = Record<string, boolean>; 
