@@ -21,15 +21,20 @@ import FormErrors from "./components/FormErrors";
 import GovSwitch from "./components/GovSwitch";
 
 import { useRolesSelect } from "./hooks/useRolesSelect";
-import type { Permission } from "./PermissionRoles.service";
+import {
+  getPermissionRole,
+  updatePermissionRole,
+  type Permission,
+} from "./PermissionRoles.service";
 
-const DESIGN_ONLY = true;
+/**
+ * Acciones conocidas (orden preferido)
+ * Nota: en BD llegan como: view/create/edit/deactivate/import/delete
+ * En UI queremos: view/create/edit/disable/bulk/delete
+ */
+const ACTIONS_ORDER = ["view", "create", "edit", "disable", "bulk", "delete"];
 
-type Action = "view" | "create" | "edit" | "disable" | "bulk" | "delete";
-
-const ACTIONS_ORDER: Action[] = ["view", "create", "edit", "disable", "bulk", "delete"];
-
-const ACTION_LABEL: Record<Action, string> = {
+const ACTION_LABEL: Record<string, string> = {
   view: "Ver",
   create: "Crear",
   edit: "Editar",
@@ -38,6 +43,7 @@ const ACTION_LABEL: Record<Action, string> = {
   delete: "Eliminar",
 };
 
+// Tus labels e íconos por módulo (UI)
 const moduleLabelMap: Record<string, string> = {
   dashboard: "Dashboard",
   notifications: "Notificaciones",
@@ -95,102 +101,52 @@ const MODULE_ORDER: string[] = [
   "catalogs",
 ];
 
-const BULK_MODULES = new Set(["modules", "sections", "indexes", "questions", "censos"]);
-const VIEW_ONLY_MODULES = new Set(["graph", "dashboard", "reports"]);
+/** Normaliza módulos que podrían venir distinto desde BD */
+const normalizeModule = (m: string) => {
+  const x = (m || "").toLowerCase().trim();
 
-const normalizeAction = (a: string): Action | null => {
-  const x = a.toLowerCase();
+  // por si en BD sembraste "graficador.view"
+  if (x === "graficador") return "graph";
+
+  // por si sembraste "indexs.view" o alguien puso "indices.view"
+  if (x === "indexs" || x === "indices") return "indexes";
+
+  return x || "otros";
+};
+
+/** Normaliza la acción que venga en name (ej. censos.import => bulk) */
+const normalizeAction = (a: string) => {
+  const x = (a || "").toLowerCase().trim();
+
   if (["view", "ver", "read", "show", "index", "list"].includes(x)) return "view";
   if (["create", "crear", "store", "add", "new"].includes(x)) return "create";
   if (["edit", "editar", "update"].includes(x)) return "edit";
+
+  // backend suele traer "deactivate"
   if (["disable", "desactivar", "deactivate", "ban", "block", "inactive", "suspend"].includes(x))
     return "disable";
+
+  // backend suele traer "import"
   if (["bulk", "import", "carga_masiva", "cargamasiva", "bulk_import", "massload"].includes(x))
     return "bulk";
+
   if (["delete", "eliminar", "destroy", "remove"].includes(x)) return "delete";
-  return null;
+
+  // si algún día llega una acción nueva, la mostramos como viene
+  return x || "unknown";
 };
 
 const parsePermission = (name: string) => {
-  const parts = name.split(".");
+  const parts = (name || "").split(".");
   const actionRaw = parts.pop() || "";
-  const module = parts.pop() || "otros";
-  return { module, action: normalizeAction(actionRaw) };
+  const moduleRaw = parts.join(".") || "otros";
+  return { module: normalizeModule(moduleRaw), action: normalizeAction(actionRaw) };
 };
 
-let _pid = 1;
-const makeModulePerms = (module: string): Permission[] => {
-  const p = (act: Action) => ({ id: _pid++, name: `${module}.${act}` } as Permission);
-
-  if (VIEW_ONLY_MODULES.has(module)) return [p("view")];
-
-  const perms: Permission[] = [p("view"), p("create"), p("edit"), p("disable")];
-  if (BULK_MODULES.has(module)) perms.push(p("bulk"));
-  perms.push(p("delete"));
-  return perms;
-};
-
-const MOCK_PERMS: Permission[] = [
-  ...makeModulePerms("dashboard"),
-  ...makeModulePerms("notifications"),
-  ...makeModulePerms("users"),
-  ...makeModulePerms("roles"),
-  ...makeModulePerms("institutions"),
-  ...makeModulePerms("areas"),
-  ...makeModulePerms("occupations"),
-  ...makeModulePerms("censos"),
-  ...makeModulePerms("graph"),
-  ...makeModulePerms("reports"),
-  ...makeModulePerms("categories"),
-  ...makeModulePerms("modules"),
-  ...makeModulePerms("sections"),
-  ...makeModulePerms("indexes"),
-  ...makeModulePerms("questions"),
-  ...makeModulePerms("catalogs"),
-];
-
-const defaultSelectedByRoleName = (roleName: string, allPerms: Permission[]) => {
-  const n = roleName.toLowerCase();
-  const isAdmin = n.includes("admin");
-  const isOper = n.includes("oper");
-  const ids = allPerms.map((p) => p.id);
-
-  if (isAdmin) return new Set(ids);
-
-  if (isOper) {
-    const allowedModules = new Set([
-      "institutions",
-      "areas",
-      "occupations",
-      "indexes",
-      "questions",
-      "censos",
-      "graph",
-      "reports",
-      "dashboard",
-      "notifications",
-    ]);
-    const allowedActions = new Set<Action>(["view", "create", "edit", "bulk", "disable"]);
-    const selected = new Set<number>();
-
-    allPerms.forEach((p) => {
-      const { module, action } = parsePermission(p.name);
-      if (!action) return;
-      if (!allowedModules.has(module)) return;
-      if (!allowedActions.has(action)) return;
-      selected.add(p.id);
-    });
-
-    return selected;
-  }
-
-  const selected = new Set<number>();
-  allPerms.forEach((p) => {
-    const { action } = parsePermission(p.name);
-    if (action === "view") selected.add(p.id);
-  });
-  return selected;
-};
+const titleFromKey = (key: string) =>
+  key
+    .replace(/[_\-]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function PermissionRoles() {
   const navigate = useNavigate();
@@ -198,21 +154,18 @@ export default function PermissionRoles() {
   const roleEnc = searchParams.get("role") ?? "";
   const savedRoleId = localStorage.getItem("permissionRoles:lastRoleId") ?? "";
 
-  const [errors, setErrors] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-
   const { roles, loading: loadingRoles, error: rolesError } = useRolesSelect();
 
   const [roleId, setRoleId] = useState<string>(roleEnc || savedRoleId || "");
-  const [roleName, setRoleName] = useState("");
+
+  const [errors, setErrors] = useState<string[]>([]);
+  const [fetching, setFetching] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [allPerms, setAllPerms] = useState<Permission[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
-  useEffect(() => {
-    setAllPerms(MOCK_PERMS);
-  }, []);
-
+  // 1) Elegir rol (query param / localstorage / primer rol disponible)
   useEffect(() => {
     if (loadingRoles) return;
 
@@ -223,35 +176,85 @@ export default function PermissionRoles() {
 
     const has = (id: string) => roles.some((r) => r.id === id);
 
-    
     if (roleEnc && has(roleEnc)) {
       if (roleId !== roleEnc) setRoleId(roleEnc);
       return;
     }
 
-   
-    if (roleId && has(roleId)) {
-      return;
-    }
+    if (roleId && has(roleId)) return;
 
-  
-    if (roles.length > 0) {
-      setRoleId(roles[0].id);
-    }
+    if (roles.length > 0) setRoleId(roles[0].id);
   }, [loadingRoles, roles, rolesError, roleEnc, roleId]);
 
+  // 2) Cargar permisos (collection + permisos del rol)
   useEffect(() => {
+    if (!roleId) return;
+
+    const ac = new AbortController();
+    setErrors([]);
+    setFetching(true);
+
+    getPermissionRole(roleId, ac.signal)
+      .then((data) => {
+        // permissionsCollection = todos los permisos existentes (BD)
+        setAllPerms(data.permissionsCollection ?? []);
+
+        // role.permissions = los permisos asignados al rol
+        const ids = (data.role?.permissions ?? []).map((p) => p.id);
+        setSelected(new Set(ids));
+
+        localStorage.setItem("permissionRoles:lastRoleId", roleId);
+      })
+      .catch((err) => {
+        console.error(err);
+        setErrors(["No se pudieron cargar los permisos del rol. Revisa consola / red."]);
+        setAllPerms([]);
+        setSelected(new Set());
+      })
+      .finally(() => setFetching(false));
+
+    return () => ac.abort();
+  }, [roleId]);
+
+  const roleName = useMemo(() => {
     const r = roles.find((x) => x.id === roleId);
-    const name = r?.name ?? "";
-    setRoleName(name);
+    return r?.name ?? "";
+  }, [roles, roleId]);
 
-    if (roleId) localStorage.setItem("permissionRoles:lastRoleId", roleId);
+  // 3) Computar módulos dinámicos según lo que existe en BD
+  const modules = useMemo(() => {
+    type ModuleCard = {
+      moduleKey: string;
+      label: string;
+      icon: any;
+      actions: Record<string, number>; // actionKey -> permissionId
+    };
 
-    if (DESIGN_ONLY && allPerms.length) {
-      setSelected(defaultSelectedByRoleName(name, allPerms));
-    }
-  }, [roleId, roles, allPerms]);
+    const map = new Map<string, ModuleCard>();
 
+    allPerms.forEach((p) => {
+      const { module, action } = parsePermission(p.name);
+
+      const label = moduleLabelMap[module] ?? titleFromKey(module);
+      const icon = moduleIconMap[module] ?? Settings;
+
+      if (!map.has(module)) {
+        map.set(module, { moduleKey: module, label, icon, actions: {} });
+      }
+      map.get(module)!.actions[action] = p.id;
+    });
+
+    const orderIndex = (k: string) => {
+      const i = MODULE_ORDER.indexOf(k);
+      return i === -1 ? 999 : i;
+    };
+
+    return Array.from(map.values()).sort(
+      (a, b) => orderIndex(a.moduleKey) - orderIndex(b.moduleKey)
+    );
+  }, [allPerms]);
+
+  // 4) Permitir todo / quitar todo (global)
   const allOn = useMemo(() => {
     if (!allPerms.length) return false;
     return selected.size === allPerms.length;
@@ -269,45 +272,37 @@ export default function PermissionRoles() {
     });
   };
 
-  const modules = useMemo(() => {
-    type ModuleCard = {
-      moduleKey: string;
-      label: string;
-      icon: any;
-      actions: Partial<Record<Action, number>>;
-    };
-
-    const map = new Map<string, ModuleCard>();
-
-    allPerms.forEach((p) => {
-      const { module, action } = parsePermission(p.name);
-      if (!action) return;
-
-      const label = moduleLabelMap[module] ?? module;
-      const icon = moduleIconMap[module] ?? Settings;
-
-      if (!map.has(module)) map.set(module, { moduleKey: module, label, icon, actions: {} });
-      map.get(module)!.actions[action] = p.id;
-    });
-
-    const orderIndex = (k: string) => {
-      const i = MODULE_ORDER.indexOf(k);
-      return i === -1 ? 999 : i;
-    };
-
-    return Array.from(map.values()).sort((a, b) => orderIndex(a.moduleKey) - orderIndex(b.moduleKey));
-  }, [allPerms]);
-
   const save = async () => {
+    if (!roleId) {
+      setErrors(["Selecciona un rol antes de guardar."]);
+      return;
+    }
+
     try {
-      setLoading(true);
-      if (roleId) localStorage.setItem("permissionRoles:lastRoleId", roleId);
-      console.log("MOCK SAVE:", { roleId, selected: Array.from(selected) });
-      alert("Diseño: Guardado mock (revisa consola)");
+      setErrors([]);
+      setSaving(true);
+
+      const permissionIds = Array.from(selected);
+      const res = await updatePermissionRole(roleId, permissionIds);
+
+      alert(res?.message ?? "Permisos guardados.");
+    } catch (err) {
+      console.error(err);
+      setErrors(["No se pudieron guardar los permisos. Revisa consola / red."]);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  // Helpers para ordenar acciones dentro de cada card:
+  const actionOrderIndex = (a: string) => {
+    const i = ACTIONS_ORDER.indexOf(a);
+    return i === -1 ? 999 : i;
+  };
+
+  const actionLabel = (a: string) => ACTION_LABEL[a] ?? titleFromKey(a);
+
+  const busy = fetching || saving || loadingRoles;
 
   return (
     <div className="w-full bg-[#F8FAFC]">
@@ -333,7 +328,7 @@ export default function PermissionRoles() {
             <select
               value={roleId}
               onChange={(e) => setRoleId(e.target.value)}
-              disabled={loading || loadingRoles}
+              disabled={busy}
               className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9D2449]/40 disabled:bg-slate-100 sm:max-w-md"
             >
               <option value="" disabled>
@@ -348,18 +343,34 @@ export default function PermissionRoles() {
             </select>
           </div>
 
-          {loading && <p className="mt-4 text-sm text-slate-500">Cargando...</p>}
+          {(fetching || saving) && (
+            <p className="mt-4 text-sm text-slate-500">
+              {fetching ? "Cargando permisos..." : "Guardando..."}
+            </p>
+          )}
 
           <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {modules.map((m) => {
               const Icon = m.icon;
-              const actions = ACTIONS_ORDER.filter((a) => !!m.actions[a]);
-              const allCardOn = actions.length
-                ? actions.every((a) => selected.has(m.actions[a]!))
+
+              const actionKeys = Object.keys(m.actions);
+              const actionsSorted = actionKeys
+                .sort((a, b) => {
+                  const ia = actionOrderIndex(a);
+                  const ib = actionOrderIndex(b);
+                  if (ia !== ib) return ia - ib;
+                  return a.localeCompare(b, "es");
+                });
+
+              const allCardOn = actionsSorted.length
+                ? actionsSorted.every((a) => selected.has(m.actions[a]))
                 : false;
 
               return (
-                <div key={m.moduleKey} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+                <div
+                  key={m.moduleKey}
+                  className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
+                >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <div className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[#611232]/10">
@@ -370,23 +381,27 @@ export default function PermissionRoles() {
 
                     <button
                       type="button"
-                      onClick={() => actions.forEach((a) => togglePermission(m.actions[a]!, !allCardOn))}
+                      onClick={() =>
+                        actionsSorted.forEach((a) =>
+                          togglePermission(m.actions[a], !allCardOn)
+                        )
+                      }
                       className="text-xs font-semibold text-[#611232] hover:underline"
-                      disabled={!actions.length}
+                      disabled={!actionsSorted.length || busy}
                     >
                       {allCardOn ? "Quitar todo" : "Permitir todo"}
                     </button>
                   </div>
 
                   <div className="mt-3 space-y-2">
-                    {actions.map((a) => {
-                      const pid = m.actions[a]!;
+                    {actionsSorted.map((a) => {
+                      const pid = m.actions[a];
                       return (
                         <div key={a} className="flex items-center justify-between gap-2">
-                          <span className="text-xs text-slate-700">{ACTION_LABEL[a]}</span>
+                          <span className="text-xs text-slate-700">{actionLabel(a)}</span>
 
                           <GovSwitch
-                            label={`${m.label} - ${ACTION_LABEL[a]}`}
+                            label={`${m.label} - ${actionLabel(a)}`}
                             checked={selected.has(pid)}
                             onCheckedChange={(next: boolean) => togglePermission(pid, next)}
                             size="sm"
@@ -406,13 +421,14 @@ export default function PermissionRoles() {
               type="button"
               className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
               onClick={() => navigate(-1)}
+              disabled={busy}
             >
               Cancelar
             </button>
 
             <button
               type="button"
-              disabled={loading}
+              disabled={busy}
               onClick={save}
               className="rounded-md bg-[#611232] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9D2449] disabled:opacity-60"
             >
