@@ -13,7 +13,7 @@ type Props = {
 
   onChange: (field: "roleId" | "description", value: string) => void;
   disabled?: boolean;
-  disableRoleSelect?: boolean;
+  disableRoleSelect?: boolean; 
   isLoadingRoles?: boolean;
 };
 

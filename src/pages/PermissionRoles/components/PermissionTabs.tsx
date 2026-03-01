@@ -13,7 +13,7 @@ const PermissionTabs: React.FC<Props> = ({ tabs, active, onChange }) => {
       <div className="flex flex-wrap gap-2">
         {tabs.map((t) => {
           const Icon = t.icon;
-          const isActive = active === t.key;
+          const isActive = active === t.key; 
 
           return (
             <button

@@ -25,4 +25,4 @@ const FormErrors: React.FC<Props> = ({ errors }) => {
   );
 };
 
-export default FormErrors;
+export default FormErrors; 

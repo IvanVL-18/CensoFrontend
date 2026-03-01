@@ -12,7 +12,7 @@ type Props = {
 
 const PermissionModuleCard: React.FC<Props> = ({ module, value, onToggle, onToggleAll }) => {
   const Icon = module.icon;
-
+ 
   const allOn = useMemo(() => {
     const actions = module.actions ?? (Object.keys(ACTION_LABEL) as PermissionAction[]);
     return actions.every((a) => value[a]);

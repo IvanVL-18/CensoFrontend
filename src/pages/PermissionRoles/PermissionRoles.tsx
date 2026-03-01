@@ -20,8 +20,8 @@ import PermissionRolesToolbar from "./components/PermissionRolesToolbar";
 import FormErrors from "./components/FormErrors";
 import GovSwitch from "./components/GovSwitch";
 
-import type { Permission, RoleOption } from "./PermissionRoles.service";
-import { getRolesForSelect } from "./PermissionRoles.service";
+import { useRolesSelect } from "./hooks/useRolesSelect";
+import type { Permission } from "./PermissionRoles.service";
 
 const DESIGN_ONLY = true;
 
@@ -192,9 +192,6 @@ const defaultSelectedByRoleName = (roleName: string, allPerms: Permission[]) => 
   return selected;
 };
 
-const isCanceled = (e: any) =>
-  e?.code === "ERR_CANCELED" || e?.name === "CanceledError" || e?.name === "AbortError";
-
 export default function PermissionRoles() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -204,8 +201,7 @@ export default function PermissionRoles() {
   const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [roles, setRoles] = useState<RoleOption[]>([]);
-  const [loadingRoles, setLoadingRoles] = useState(false);
+  const { roles, loading: loadingRoles, error: rolesError } = useRolesSelect();
 
   const [roleId, setRoleId] = useState<string>(roleEnc || savedRoleId || "");
   const [roleName, setRoleName] = useState("");
@@ -218,34 +214,31 @@ export default function PermissionRoles() {
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
+    if (loadingRoles) return;
 
-    (async () => {
-      try {
-        setLoadingRoles(true);
-        setErrors([]);
+    if (rolesError) {
+      setErrors([rolesError]);
+      return;
+    }
 
-        const data = await getRolesForSelect("active", controller.signal);
-        setRoles(data);
+    const has = (id: string) => roles.some((r) => r.id === id);
 
-        const has = (id: string) => data.some((r) => r.id === id);
+    
+    if (roleEnc && has(roleEnc)) {
+      if (roleId !== roleEnc) setRoleId(roleEnc);
+      return;
+    }
 
-        const desired =
-          (roleEnc && has(roleEnc) && roleEnc) ||
-          (savedRoleId && has(savedRoleId) && savedRoleId) ||
-          (data[0]?.id ?? "");
+   
+    if (roleId && has(roleId)) {
+      return;
+    }
 
-        if (desired) setRoleId(desired);
-        setErrors([]);
-      } catch (e) {
-        if (!isCanceled(e)) setErrors(["No se pudieron cargar los roles."]);
-      } finally {
-        setLoadingRoles(false);
-      }
-    })();
-
-    return () => controller.abort();
-  }, [roleEnc, savedRoleId]);
+  
+    if (roles.length > 0) {
+      setRoleId(roles[0].id);
+    }
+  }, [loadingRoles, roles, rolesError, roleEnc, roleId]);
 
   useEffect(() => {
     const r = roles.find((x) => x.id === roleId);

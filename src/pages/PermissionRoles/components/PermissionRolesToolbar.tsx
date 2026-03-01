@@ -14,7 +14,7 @@ const PermissionRolesToolbar: React.FC<Props> = ({
 }) => {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-      <div>
+      <div> 
         <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
           {title}
         </h1>

@@ -9,7 +9,7 @@ export interface Permission {
 export interface PermissionRoleResponse {
   encrypted_role_id: string;
   role: {
-    id: number;
+    id: number; 
     name: string;
     permissions: Permission[];
   };

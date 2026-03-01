@@ -13,7 +13,7 @@ const makeEmptyMap = (): Record<PermissionAction, boolean> => ({
   edit: false,
   delete: false,
   export: false, 
-});
+}); 
 
 export const usePermissionRolesState = (allModules: PermissionModule[]) => {
   const initial = useMemo<PermissionsState>(() => {

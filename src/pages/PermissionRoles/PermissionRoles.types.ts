@@ -8,7 +8,7 @@ export const ACTION_LABEL: Record<PermissionAction, string> = {
   view: "Ver",
   create: "Crear",
   edit: "Editar",
-  delete: "Eliminar",
+  delete: "Eliminar", 
   export: "Exportar",
 };
 

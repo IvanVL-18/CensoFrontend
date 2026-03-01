@@ -10,7 +10,7 @@ type Props = {
   showStateText?: boolean;
 };
 
-const GovSwitch: React.FC<Props> = ({
+const GovSwitch: React.FC<Props> = ({ 
   label,
   logoSrc = "/Estrella_header.svg",
   checked,
