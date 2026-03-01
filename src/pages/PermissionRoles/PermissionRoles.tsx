@@ -118,16 +118,36 @@ const normalizeModule = (m: string) => {
 const normalizeAction = (a: string) => {
   const x = (a || "").toLowerCase().trim();
 
-  if (["view", "ver", "read", "show", "index", "list"].includes(x)) return "view";
+  if (["view", "ver", "read", "show", "index", "list"].includes(x))
+    return "view";
   if (["create", "crear", "store", "add", "new"].includes(x)) return "create";
   if (["edit", "editar", "update"].includes(x)) return "edit";
 
   // backend suele traer "deactivate"
-  if (["disable", "desactivar", "deactivate", "ban", "block", "inactive", "suspend"].includes(x))
+  if (
+    [
+      "disable",
+      "desactivar",
+      "deactivate",
+      "ban",
+      "block",
+      "inactive",
+      "suspend",
+    ].includes(x)
+  )
     return "disable";
 
   // backend suele traer "import"
-  if (["bulk", "import", "carga_masiva", "cargamasiva", "bulk_import", "massload"].includes(x))
+  if (
+    [
+      "bulk",
+      "import",
+      "carga_masiva",
+      "cargamasiva",
+      "bulk_import",
+      "massload",
+    ].includes(x)
+  )
     return "bulk";
 
   if (["delete", "eliminar", "destroy", "remove"].includes(x)) return "delete";
@@ -140,13 +160,14 @@ const parsePermission = (name: string) => {
   const parts = (name || "").split(".");
   const actionRaw = parts.pop() || "";
   const moduleRaw = parts.join(".") || "otros";
-  return { module: normalizeModule(moduleRaw), action: normalizeAction(actionRaw) };
+  return {
+    module: normalizeModule(moduleRaw),
+    action: normalizeAction(actionRaw),
+  };
 };
 
 const titleFromKey = (key: string) =>
-  key
-    .replace(/[_\-]+/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  key.replace(/[_\-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function PermissionRoles() {
   const navigate = useNavigate();
@@ -165,7 +186,6 @@ export default function PermissionRoles() {
   const [allPerms, setAllPerms] = useState<Permission[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
-  // 1) Elegir rol (query param / localstorage / primer rol disponible)
   useEffect(() => {
     if (loadingRoles) return;
 
@@ -186,7 +206,6 @@ export default function PermissionRoles() {
     if (roles.length > 0) setRoleId(roles[0].id);
   }, [loadingRoles, roles, rolesError, roleEnc, roleId]);
 
-  // 2) Cargar permisos (collection + permisos del rol)
   useEffect(() => {
     if (!roleId) return;
 
@@ -196,18 +215,23 @@ export default function PermissionRoles() {
 
     getPermissionRole(roleId, ac.signal)
       .then((data) => {
-        // permissionsCollection = todos los permisos existentes (BD)
         setAllPerms(data.permissionsCollection ?? []);
-
-        // role.permissions = los permisos asignados al rol
         const ids = (data.role?.permissions ?? []).map((p) => p.id);
         setSelected(new Set(ids));
-
         localStorage.setItem("permissionRoles:lastRoleId", roleId);
       })
-      .catch((err) => {
+      .catch((err: any) => {
+        const isCanceled =
+          err?.code === "ERR_CANCELED" ||
+          err?.name === "CanceledError" ||
+          err?.name === "AbortError";
+
+        if (isCanceled) return;
+
         console.error(err);
-        setErrors(["No se pudieron cargar los permisos del rol. Revisa consola / red."]);
+        setErrors([
+          "No se pudieron cargar los permisos del rol. Revisa consola / red.",
+        ]);
         setAllPerms([]);
         setSelected(new Set());
       })
@@ -250,7 +274,7 @@ export default function PermissionRoles() {
     };
 
     return Array.from(map.values()).sort(
-      (a, b) => orderIndex(a.moduleKey) - orderIndex(b.moduleKey)
+      (a, b) => orderIndex(a.moduleKey) - orderIndex(b.moduleKey),
     );
   }, [allPerms]);
 
@@ -314,8 +338,12 @@ export default function PermissionRoles() {
           />
 
           <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-            <span className="font-semibold text-[#611232]">Asignando permisos a:</span>{" "}
-            <span className="text-slate-700">{roleName || "Selecciona un rol"}</span>
+            <span className="font-semibold text-[#611232]">
+              Asignando permisos a:
+            </span>{" "}
+            <span className="text-slate-700">
+              {roleName || "Selecciona un rol"}
+            </span>
           </div>
 
           <FormErrors errors={errors} />
@@ -354,13 +382,12 @@ export default function PermissionRoles() {
               const Icon = m.icon;
 
               const actionKeys = Object.keys(m.actions);
-              const actionsSorted = actionKeys
-                .sort((a, b) => {
-                  const ia = actionOrderIndex(a);
-                  const ib = actionOrderIndex(b);
-                  if (ia !== ib) return ia - ib;
-                  return a.localeCompare(b, "es");
-                });
+              const actionsSorted = actionKeys.sort((a, b) => {
+                const ia = actionOrderIndex(a);
+                const ib = actionOrderIndex(b);
+                if (ia !== ib) return ia - ib;
+                return a.localeCompare(b, "es");
+              });
 
               const allCardOn = actionsSorted.length
                 ? actionsSorted.every((a) => selected.has(m.actions[a]))
@@ -376,14 +403,16 @@ export default function PermissionRoles() {
                       <div className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[#611232]/10">
                         <Icon className="h-4 w-4 text-[#611232]" />
                       </div>
-                      <h3 className="text-sm font-semibold text-slate-800">{m.label}</h3>
+                      <h3 className="text-sm font-semibold text-slate-800">
+                        {m.label}
+                      </h3>
                     </div>
 
                     <button
                       type="button"
                       onClick={() =>
                         actionsSorted.forEach((a) =>
-                          togglePermission(m.actions[a], !allCardOn)
+                          togglePermission(m.actions[a], !allCardOn),
                         )
                       }
                       className="text-xs font-semibold text-[#611232] hover:underline"
@@ -397,13 +426,20 @@ export default function PermissionRoles() {
                     {actionsSorted.map((a) => {
                       const pid = m.actions[a];
                       return (
-                        <div key={a} className="flex items-center justify-between gap-2">
-                          <span className="text-xs text-slate-700">{actionLabel(a)}</span>
+                        <div
+                          key={a}
+                          className="flex items-center justify-between gap-2"
+                        >
+                          <span className="text-xs text-slate-700">
+                            {actionLabel(a)}
+                          </span>
 
                           <GovSwitch
                             label={`${m.label} - ${actionLabel(a)}`}
                             checked={selected.has(pid)}
-                            onCheckedChange={(next: boolean) => togglePermission(pid, next)}
+                            onCheckedChange={(next: boolean) =>
+                              togglePermission(pid, next)
+                            }
                             size="sm"
                             showStateText={false}
                           />
