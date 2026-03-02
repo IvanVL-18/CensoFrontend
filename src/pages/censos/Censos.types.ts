@@ -1,27 +1,24 @@
 export interface Censo {
   id: string;
   name: string;
-  description?: string;        // 👈 nueva
-  start_date?: string;         // 👈 nueva (normalizada desde init_date)
-  end_date?: string;           // 👈 nueva (normalizada desde deadline)
-  year?: number;               // 👈 nueva (opcional)
+  description?: string;
+  start_date?: string;
+  end_date?: string;
+  year?: number;
   created_at: string;
   updated_at: string;
   deleted_at: string;
-  // ... otras propiedades que ya tengas
-
-  // otros campos opcionales
   status?: string;
- 
 }
 
-// DTOs para creación y actualización
 export interface CreateCensoDTO {
   name: string;
   description?: string;
-  init_date?: string;   // formato YYYY-MM-DD
-  deadline?: string;    // formato YYYY-MM-DD
+  init_date?: string;
+  deadline?: string;
 }
+
+export type UpdateCensoDTO = Partial<CreateCensoDTO>;
 
 export interface MetaLink {
   url: string | null;
@@ -51,6 +48,7 @@ export interface PaginatedCensosResponse {
   };
   meta: Meta;
 }
+
 export interface ExcelFailure {
   row: number;
   field: string;
@@ -91,7 +89,7 @@ export interface CensoModalProps {
 }
 
 export interface CensosTableProps {
-  Censos: Censo[]; 
+  Censos: Censo[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
@@ -102,13 +100,9 @@ export interface CensosTableProps {
   onRestore: (Censo: Censo) => void;
   onDelete: (Censo: Censo) => void;
 }
+
 export interface ViewCensoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  Censo: Censo | null; 
+  Censo: Censo | null;
 }
-export interface CreateCensoDTO {
-  name: string;
-}
-export type UpdateCensoDTO = Partial<CreateCensoDTO>;
-

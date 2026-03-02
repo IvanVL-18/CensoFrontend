@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from "./pages/login/page/LoginPage";
@@ -25,6 +24,8 @@ import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
 import Censos from "./pages/censos/Censos";
 import { CensoDetail } from "./pages/censos/components/CensoDetail";
+// Importar la nueva vista de unidades del censo (ajusta la ruta si el nombre es diferente)
+import CensoUnitsView from "./pages/censos/components/CensoUnitsView";
 
 export default function App() {
   return (
@@ -43,7 +44,10 @@ export default function App() {
 
         {/* Censos */}
         <Route path="/censos" element={<Censos />} />
-        <Route path="/censos/:id" element={<CensoDetail />} /> 
+        <Route path="/censos/:id" element={<CensoDetail />} />
+        {/* Ruta para ver las unidades de un censo */}
+        <Route path="/censos/:id/unidades" element={<CensoUnitsView />} />
+
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />
         <Route path="/configuracion" element={<ConfigurationsPage />} />

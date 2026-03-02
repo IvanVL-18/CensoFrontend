@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useToast } from "../../../context/ToastContext";
 import {
   createCenso,
@@ -8,7 +8,7 @@ import {
   forceDeleteCenso,
   importCensos,
 } from "../Censos.service";
-import type { Censo, CreateCensoDTO } from "../Censos.types"; // 👈 importamos el DTO
+import type { Censo, CreateCensoDTO } from "../Censos.types";
 
 interface UseCensosMutationsProps {
   refreshCensos: () => void;
@@ -27,19 +27,15 @@ export function useCensosMutations({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
 
-  // Ahora el primer parámetro es un objeto con todos los datos del censo
   const handleSave = useCallback(
     async (data: CreateCensoDTO, editingCenso?: Censo | null) => {
       setIsSubmitting(true);
       setMutationError(null);
 
       try {
-        let response;
-        if (editingCenso) {
-          response = await updateCenso(editingCenso.id, data);
-        } else {
-          response = await createCenso(data);
-        }
+        const response = editingCenso
+          ? await updateCenso(editingCenso.id, data)
+          : await createCenso(data);
 
         addToast(response.message, "success");
         closeForm();
@@ -53,28 +49,23 @@ export function useCensosMutations({
         setIsSubmitting(false);
       }
     },
-    [addToast, closeForm, refreshCensos],
+    [addToast, closeForm, refreshCensos]
   );
 
   const handleConfirmAction = useCallback(
-    async (Censo: Censo | null, type: "ban" | "restore" | "delete" | null) => {
-      if (!Censo || !type) return;
+    async (censo: Censo | null, type: "ban" | "restore" | "delete" | null) => {
+      if (!censo || !type) return;
 
       setIsSubmitting(true);
       try {
         let response: { message: string } | undefined;
 
-        if (type === "ban") {
-          response = await banCenso(Censo.id);
-        } else if (type === "restore") {
-          response = await restoreCenso(Censo.id);
-        } else if (type === "delete") {
-          response = await forceDeleteCenso(Censo.id);
-        }
+        if (type === "ban") response = await banCenso(censo.id);
+        else if (type === "restore") response = await restoreCenso(censo.id);
+        else if (type === "delete") response = await forceDeleteCenso(censo.id);
 
         if (response) {
-          const toastType = type === "delete" ? "warning" : "success";
-          addToast(response.message, toastType);
+          addToast(response.message, type === "delete" ? "warning" : "success");
           closeConfirm();
           refreshCensos();
         }
@@ -84,7 +75,7 @@ export function useCensosMutations({
         setIsSubmitting(false);
       }
     },
-    [addToast, closeConfirm, refreshCensos],
+    [addToast, closeConfirm, refreshCensos]
   );
 
   const handleBulkUpload = useCallback(
@@ -98,7 +89,6 @@ export function useCensosMutations({
         addToast(response.message || "Importación exitosa", "success");
         refreshCensos();
       } catch (err: any) {
-        console.error("Error en carga masiva:", err);
         if (err.status === 422 && err.data?.errors) {
           openBulkError(err.data.errors);
           addToast("El archivo contiene errores que debes corregir", "warning");
@@ -110,7 +100,7 @@ export function useCensosMutations({
         setIsSubmitting(false);
       }
     },
-    [addToast, openBulkError, refreshCensos],
+    [addToast, openBulkError, refreshCensos]
   );
 
   return {

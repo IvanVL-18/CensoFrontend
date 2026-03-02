@@ -30,14 +30,11 @@ export function CensoCreateModal({
   const manualFormRef = useRef<CensoManualFormRef>(null);
   const uploadAreaRef = useRef<CensoUploadAreaRef>(null);
 
-  // Función para normalizar fechas a YYYY-MM-DD
  const formatDate = (dateStr?: string) => {
   if (!dateStr) return undefined;
-  // Si viene con T o espacio, tomar solo la primera parte (YYYY-MM-DD)
   return dateStr.split('T')[0].split(' ')[0];
 };
 
-  // Mapear el censo a editar al formato que espera el formulario (initialData)
   const initialData = editingCenso
     ? {
         name: editingCenso.name,

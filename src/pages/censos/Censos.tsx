@@ -1,4 +1,3 @@
-// src/pages/censos/Censos.tsx
 import { useState } from "react";
 import { useCensosData } from "./hooks/useCensosData";
 import { useCensosModals } from "./hooks/useCensosModals";
@@ -11,7 +10,6 @@ import { CensoCreateSelectionModal } from "./components/CensoCreateSelectionModa
 import { ConfirmModal } from "./components/ConfirmModal";
 import { ViewCensoModal } from "./components/ViewCensosModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
-
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
@@ -47,7 +45,6 @@ function CensosPageContent() {
     handlePageChange,
   } = useCensosData();
 
-  // Estados para el flujo de selección
   const [showSelectionModal, setShowSelectionModal] = useState(false);
   const [createModalMode, setCreateModalMode] = useState<"create" | "upload">("create");
 
@@ -66,14 +63,11 @@ function CensosPageContent() {
     openBulkError: modals.openBulkError,
   });
 
-  // Handlers para el modal de selección
-  const handleAddClick = () => {
-    setShowSelectionModal(true);
-  };
+  const handleAddClick = () => setShowSelectionModal(true);
 
   const handleSelectManual = () => {
     setCreateModalMode("create");
-    modals.openCreate(); // abre el modal de creación (modo edición = null)
+    modals.openCreate();
     setShowSelectionModal(false);
   };
 
@@ -83,37 +77,35 @@ function CensosPageContent() {
     setShowSelectionModal(false);
   };
 
-  const handleCloseSelection = () => {
-    setShowSelectionModal(false);
+  const handleCloseSelection = () => setShowSelectionModal(false);
+
+  const confirmConfig: Record<string, any> = {
+    ban: {
+      title: "Desactivar categoría",
+      message: `¿Estás seguro de que quieres desactivar la categoría "${modals.actionCenso?.name}"?`,
+      buttonText: "Desactivar",
+      color: "danger",
+    },
+    restore: {
+      title: "Restaurar categoría",
+      message: `¿Estás seguro de que quieres restaurar la categoría "${modals.actionCenso?.name}"?`,
+      buttonText: "Restaurar",
+      color: "primary",
+    },
+    delete: {
+      title: "Eliminar Permanentemente",
+      message: `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la categoría "${modals.actionCenso?.name}"? Esta acción no se puede deshacer.`,
+      buttonText: "Eliminar",
+      color: "danger",
+    },
   };
 
-  let confirmTitle = "";
-  let confirmMessage = "";
-  let confirmButtonText = "";
-  let confirmButtonColor: "danger" | "primary" = "danger";
-
-  if (modals.actionType === "ban") {
-    confirmTitle = "Desactivar categoría";
-    confirmMessage = `¿Estás seguro de que quieres desactivar la categoría "${modals.actionCenso?.name}"?`;
-    confirmButtonText = "Desactivar";
-    confirmButtonColor = "danger";
-  } else if (modals.actionType === "restore") {
-    confirmTitle = "Restaurar categoría";
-    confirmMessage = `¿Estás seguro de que quieres restaurar la categoría "${modals.actionCenso?.name}"?`;
-    confirmButtonText = "Restaurar";
-    confirmButtonColor = "primary";
-  } else if (modals.actionType === "delete") {
-    confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la categoría "${modals.actionCenso?.name}"? Esta acción no se puede deshacer.`;
-    confirmButtonText = "Eliminar";
-    confirmButtonColor = "danger";
-  }
+  const currentConfirm = modals.actionType ? confirmConfig[modals.actionType] : null;
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
 
-      {/* Barra de Herramientas */}
       <CensosToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -124,21 +116,18 @@ function CensosPageContent() {
         onBulkUpload={handleBulkUpload}
       />
 
-      {/* Cards de Resultados */}
       <div className="p-4">
         <CensosCards
           censos={Censos}
           meta={meta}
           loading={loading}
           error={error}
-          // onView fue eliminado porque ahora se navega con Link
           onEdit={modals.openEdit}
           onBan={(u) => modals.openConfirm(u, "ban")}
           onRestore={(u) => modals.openConfirm(u, "restore")}
           onDelete={(u) => modals.openConfirm(u, "delete")}
         />
 
-        {/* Paginación */}
         <div className="border-t border-gray-200 bg-gray-50 mt-6">
           <Pagination
             meta={meta}
@@ -148,9 +137,6 @@ function CensosPageContent() {
         </div>
       </div>
 
-      {/* --- MODALES --- */}
-
-      {/* Modal de selección (Crear / Usar plantilla) */}
       <CensoCreateSelectionModal
         isOpen={showSelectionModal}
         onClose={handleCloseSelection}
@@ -158,44 +144,39 @@ function CensosPageContent() {
         onSelectTemplate={handleSelectTemplate}
       />
 
-      {/* Modal de creación según el modo seleccionado */}
-     <CensoCreateModal
-  isOpen={modals.isFormOpen}
-  isSubmitting={isSubmitting}
-  error={mutationError}
-  onClose={modals.closeForm}
-  onSave={(data) => handleSave(data, modals.editingCenso)}
-  onBulkUpload={handleBulkUpload}
-  mode={createModalMode}
-  editingCenso={modals.editingCenso}   // 👈 línea agregada
-/>
-      {/* Confirmación (Ban/Restore/Delete) */}
-      <ConfirmModal
-        isOpen={modals.isConfirmOpen}
+      <CensoCreateModal
+        isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
-        title={confirmTitle}
-        message={confirmMessage}
-        confirmButtonText={confirmButtonText}
-        confirmButtonColor={confirmButtonColor}
-        onClose={modals.closeConfirm}
-        onConfirm={() =>
-          handleConfirmAction(modals.actionCenso, modals.actionType)
-        }
+        onClose={modals.closeForm}
+        onSave={(data) => handleSave(data, modals.editingCenso)}
+        onBulkUpload={handleBulkUpload}
+        mode={createModalMode}
+        editingCenso={modals.editingCenso}
       />
 
-      {/* 
-        NOTA: El modal ViewCensoModal ya no se usa porque ahora la vista de detalle 
-        es una página independiente (CensoDetail). Se mantiene por compatibilidad 
-        pero puede eliminarse en el futuro si se confirma que no es necesario.
-      */}
+      {currentConfirm && (
+        <ConfirmModal
+          isOpen={modals.isConfirmOpen}
+          isSubmitting={isSubmitting}
+          error={mutationError}
+          title={currentConfirm.title}
+          message={currentConfirm.message}
+          confirmButtonText={currentConfirm.buttonText}
+          confirmButtonColor={currentConfirm.color}
+          onClose={modals.closeConfirm}
+          onConfirm={() =>
+            handleConfirmAction(modals.actionCenso, modals.actionType)
+          }
+        />
+      )}
+
       <ViewCensoModal
         isOpen={modals.isViewOpen}
         Censo={modals.viewingCenso}
         onClose={modals.closeView}
       />
 
-      {/* Errores de Excel */}
       <BulkErrorModal
         isOpen={modals.isBulkErrorOpen}
         errors={modals.bulkErrors}

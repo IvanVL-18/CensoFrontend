@@ -10,8 +10,8 @@ export function useCensosModals() {
     setIsFormOpen(true);
   }, []);
 
-  const openEdit = useCallback((Censo: Censo) => {
-    setEditingCenso(Censo);
+  const openEdit = useCallback((censo: Censo) => {
+    setEditingCenso(censo);
     setIsFormOpen(true);
   }, []);
 
@@ -23,8 +23,8 @@ export function useCensosModals() {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingCenso, setViewingCenso] = useState<Censo | null>(null);
 
-  const openView = useCallback((Censo: Censo) => {
-    setViewingCenso(Censo);
+  const openView = useCallback((censo: Censo) => {
+    setViewingCenso(censo);
     setIsViewOpen(true);
   }, []);
 
@@ -35,18 +35,13 @@ export function useCensosModals() {
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [actionCenso, setActionCenso] = useState<Censo | null>(null);
-  const [actionType, setActionType] = useState<
-    "ban" | "restore" | "delete" | null
-  >(null);
+  const [actionType, setActionType] = useState<"ban" | "restore" | "delete" | null>(null);
 
-  const openConfirm = useCallback(
-    (Censo: Censo, type: "ban" | "restore" | "delete") => {
-      setActionCenso(Censo);
-      setActionType(type);
-      setIsConfirmOpen(true);
-    },
-    [],
-  );
+  const openConfirm = useCallback((censo: Censo, type: "ban" | "restore" | "delete") => {
+    setActionCenso(censo);
+    setActionType(type);
+    setIsConfirmOpen(true);
+  }, []);
 
   const closeConfirm = useCallback(() => {
     setIsConfirmOpen(false);
@@ -73,18 +68,15 @@ export function useCensosModals() {
     openCreate,
     openEdit,
     closeForm,
-
     isViewOpen,
     viewingCenso,
     openView,
     closeView,
-
     isConfirmOpen,
     actionCenso,
     actionType,
     openConfirm,
     closeConfirm,
-
     isBulkErrorOpen,
     bulkErrors,
     openBulkError,

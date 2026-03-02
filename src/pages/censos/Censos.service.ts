@@ -1,5 +1,5 @@
 import api from "../../lib/Axios";
-import type { 
+import type {
   Censo,
   PaginatedCensosResponse,
   CreateCensoDTO,
@@ -7,74 +7,57 @@ import type {
 } from "./Censos.types";
 
 export type CensoFilter = "all" | "active" | "inactive";
-
 type CensoId = string | number;
-
-
 
 export const getCensos = async (
   filter: CensoFilter = "all",
   search: string = "",
   page: number = 1,
-  sortBy: string = "id",           
-  direction: "asc" | "desc" = "asc", 
+  sortBy: string = "id",
+  direction: "asc" | "desc" = "asc",
   signal?: AbortSignal,
 ): Promise<PaginatedCensosResponse> => {
   const params = new URLSearchParams();
-  
   if (search) params.append("search", search);
   params.append("page", page.toString());
-    params.append("sort_by", sortBy);
+  params.append("sort_by", sortBy);
   params.append("direction", direction);
 
   const response = await api.get<PaginatedCensosResponse>(
     `/censos/${filter}/content`,
-    {
-      params: params,
-      signal,
-    },
+    { params, signal }
   );
   return response.data;
 };
-
-
-
-// Censos.service.ts
 
 export const getCenso = async (
   id: CensoId,
   signal?: AbortSignal,
 ): Promise<Censo> => {
-  const response = await api.get<{ data: Censo } | Censo>(`/censos/${id}`, {
-    signal,
-  });
-  
-  // La respuesta puede venir como { data: Censo } o directamente Censo
+  const response = await api.get<{ data: Censo } | Censo>(`/censos/${id}`, { signal });
   const rawData = (response.data as any).data ?? response.data;
 
-  // Aplica la misma normalización que en useCensosData
   return {
     ...rawData,
     description: rawData.description,
     start_date: rawData.init_date || rawData.start_date,
     end_date: rawData.deadline || rawData.end_date,
     created_at: rawData.created_at,
-    // Si necesitas otros campos, agrégalos aquí
   };
 };
 
 export const createCenso = async (
-  CensoData: CreateCensoDTO,
+  censoData: CreateCensoDTO,
 ): Promise<{ message: string; data?: Censo }> => {
-  const response = await api.post("/censos", CensoData);
+  const response = await api.post("/censos", censoData);
   return response.data;
 };
 
 export const updateCenso = async (
   id: CensoId,
-  CensoData: UpdateCensoDTO,
+  censoData: UpdateCensoDTO,
 ): Promise<{ message: string }> => {
-  const response = await api.put(`/censos/${id}`, CensoData);
+  const response = await api.put(`/censos/${id}`, censoData);
   return response.data;
 };
 
@@ -103,5 +86,3 @@ export const importCensos = async (
   });
   return response.data;
 };
-
-
