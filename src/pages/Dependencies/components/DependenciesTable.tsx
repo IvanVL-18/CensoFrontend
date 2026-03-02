@@ -7,7 +7,7 @@ import {
   Ban,
   type LucideProps,
 } from "lucide-react";
-import type { AreasTableProps } from "../Areas.types";
+import type { DependenciesTableProps } from "../Dependencies.types";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -27,8 +27,8 @@ const IconCircleArrowUp = (props: LucideProps) => (
 );
 const IconBan = (props: LucideProps) => <Ban {...defaultProps} {...props} />;
 
-export function AreasTable({
-  Areas,
+export function DependenciesTable({
+  Dependencies,
   meta,
   loading,
   error,
@@ -38,18 +38,16 @@ export function AreasTable({
   onBan,
   onRestore,
   onDelete,
-}: AreasTableProps) {
+}: DependenciesTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            {/* 1. Columna "No." */}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                 <span>No°</span>
             </th>
 
-            {/* 2. Columna "Nombre" */}
             <th className="px-6 py-3 text-left w-full">
               <button
                 onClick={() => onSort("name")} 
@@ -64,14 +62,12 @@ export function AreasTable({
               </button>
             </th>
 
-            {/* 3. Columna "Opciones" */}
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
               Opciones
             </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {/* --- Estados de Carga y Error --- */}
           {loading && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
@@ -91,38 +87,33 @@ export function AreasTable({
             </tr>
           )}
 
-          {/* --- Estado Vacío --- */}
-          {!loading && !error && Areas.length === 0 && (
+          {!loading && !error && Dependencies.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                No se encontraron Areas.
+                No se encontraron Dependencies.
               </td>
             </tr>
           )}
 
-          {/* --- Mapeo de datos --- */}
           {!loading &&
             !error &&
-            Areas.map((Area, index) => (
-              <tr key={Area.id} className="hover:bg-gray-50">
-                {/* Celda "No." */}
+            Dependencies.map((Dependency, index) => (
+              <tr key={Dependency.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {meta ? meta.from + index : Area.id}
+                  {meta ? meta.from + index : Dependency.id}
                 </td>
 
-                {/* Celda "Nombre" */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {Area.name}
+                  {Dependency.name}
                 </td>
 
-                {/* Celda "Opciones" con lógica condicional */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
-                  {!Area.deleted_at ? (
+                  {!Dependency.deleted_at ? (
                     <>
-                      {/* --- Botón VER (Activo) --- */}
+
                       <button
-                        title="Ver Area"
-                        onClick={() => onView(Area)} 
+                        title="Ver Dependencia"
+                        onClick={() => onView(Dependency)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -133,10 +124,9 @@ export function AreasTable({
                         <IconView />
                       </button>
 
-                      {/* --- Botón EDITAR (Activo) --- */}
                       <button
-                        title="Editar Area"
-                        onClick={() => onEdit(Area)} 
+                        title="Editar Dependencia"
+                        onClick={() => onEdit(Dependency)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#1b2469] hover:text-white 
@@ -147,10 +137,9 @@ export function AreasTable({
                         <IconEdit />
                       </button>
 
-                      {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
-                        title="Desactivar Area"
-                        onClick={() => onBan(Area)} 
+                        title="Desactivar Dependencia"
+                        onClick={() => onBan(Dependency)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 
@@ -163,10 +152,10 @@ export function AreasTable({
                     </>
                   ) : (
                     <>
-                      {/* --- Botón VER (Inactivo) --- */}
+
                       <button
-                        title="Ver Area"
-                        onClick={() => onView(Area)} 
+                        title="Ver Dependencia"
+                        onClick={() => onView(Dependency)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -177,10 +166,9 @@ export function AreasTable({
                         <IconView />
                       </button>
 
-                      {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
-                        title="Restaurar Area"
-                        onClick={() => onRestore(Area)} 
+                        title="Restaurar Dependencia"
+                        onClick={() => onRestore(Dependency)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#1b6939] hover:text-white 
@@ -191,10 +179,9 @@ export function AreasTable({
                         <IconCircleArrowUp />
                       </button>
 
-                      {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
                       <button
                         title="Eliminar Permanentemente"
-                        onClick={() => onDelete(Area)} 
+                        onClick={() => onDelete(Dependency)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 

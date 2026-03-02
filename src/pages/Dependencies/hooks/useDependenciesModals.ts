@@ -1,47 +1,47 @@
 import { useState, useCallback } from "react";
-import type { Area } from "../Areas.types";
+import type { Dependency } from "../Dependencies.types";
 
-export function useAreasModals() {
+export function useDependenciesModals() {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingArea, setEditingArea] = useState<Area | null>(null);
+  const [editingDependency, setEditingDependency] = useState<Dependency | null>(null);
 
   const openCreate = useCallback(() => {
-    setEditingArea(null);
+    setEditingDependency(null);
     setIsFormOpen(true);
   }, []);
 
-  const openEdit = useCallback((Area: Area) => {
-    setEditingArea(Area);
+  const openEdit = useCallback((Dependency: Dependency) => {
+    setEditingDependency(Dependency);
     setIsFormOpen(true);
   }, []);
 
   const closeForm = useCallback(() => {
     setIsFormOpen(false);
-    setEditingArea(null);
+    setEditingDependency(null);
   }, []);
 
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [viewingArea, setViewingArea] = useState<Area | null>(null);
+  const [viewingDependency, setViewingDependency] = useState<Dependency | null>(null);
 
-  const openView = useCallback((Area: Area) => {
-    setViewingArea(Area);
+  const openView = useCallback((Dependency: Dependency) => {
+    setViewingDependency(Dependency);
     setIsViewOpen(true);
   }, []);
 
   const closeView = useCallback(() => {
     setIsViewOpen(false);
-    setViewingArea(null);
+    setViewingDependency(null);
   }, []);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [actionArea, setActionArea] = useState<Area | null>(null);
+  const [actionDependency, setActionDependency] = useState<Dependency | null>(null);
   const [actionType, setActionType] = useState<
     "ban" | "restore" | "delete" | null
   >(null);
 
   const openConfirm = useCallback(
-    (Area: Area, type: "ban" | "restore" | "delete") => {
-      setActionArea(Area);
+    (Dependency: Dependency, type: "ban" | "restore" | "delete") => {
+      setActionDependency(Dependency);
       setActionType(type);
       setIsConfirmOpen(true);
     },
@@ -50,7 +50,7 @@ export function useAreasModals() {
 
   const closeConfirm = useCallback(() => {
     setIsConfirmOpen(false);
-    setActionArea(null);
+    setActionDependency(null);
     setActionType(null);
   }, []);
 
@@ -69,18 +69,18 @@ export function useAreasModals() {
 
   return {
     isFormOpen,
-    editingArea,
+    editingDependency,
     openCreate,
     openEdit,
     closeForm,
 
     isViewOpen,
-    viewingArea,
+    viewingDependency,
     openView,
     closeView,
 
     isConfirmOpen,
-    actionArea,
+    actionDependency,
     actionType,
     openConfirm,
     closeConfirm,

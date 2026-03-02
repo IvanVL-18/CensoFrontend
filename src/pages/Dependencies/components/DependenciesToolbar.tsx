@@ -1,13 +1,13 @@
 import { type ChangeEvent } from "react";
 import { CirclePlus } from "lucide-react";
 
-import type { AreaFilter } from "../Areas.service";
+import type { DependencyFilter } from "../Dependencies.service";
 import { SearchInput } from "../../../components/SearchInput";
 import AddButton from "../../../components/AddButton";
 import StatusFilterSelect from "../../../components/StatusFilterSelect";
 
-interface AreasToolbarProps {
-  filter: AreaFilter;
+interface DependenciesToolbarProps {
+  filter: DependencyFilter;
   searchTerm: string;
   isSubmitting: boolean;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
@@ -16,17 +16,17 @@ interface AreasToolbarProps {
   onBulkUpload: (file: File) => void;
 }
 
-export function AreasToolbar({
+export function DependenciesToolbar({
   filter,
   searchTerm,
   onFilterChange,
   onSearchChange,
   onAddClick,
-}: AreasToolbarProps) {
+}: DependenciesToolbarProps) {
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-red-900">
-        <h1 className="text-xl md:text-2xl font-bold text-white">Areas</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-white">Dependencias</h1>
 
         <div className="flex items-center gap-2">
           <AddButton

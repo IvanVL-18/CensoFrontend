@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const Areaschema = z.object({
+export const DependenciesSchema = z.object({
   name: z.string()
     .trim()
     .min(1, "El nombre es obligatorio.") 
@@ -9,4 +9,4 @@ export const Areaschema = z.object({
     .regex(/^[\p{L}\p{M}\p{N}\s'.,-]+$/u, "El campo nombre no puede contener emojis ni símbolos especiales.")
 });
 
-export type AreaFormData = z.infer<typeof Areaschema>;
+export type DependencyFormData = z.infer<typeof DependenciesSchema>;

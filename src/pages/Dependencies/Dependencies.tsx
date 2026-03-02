@@ -1,13 +1,13 @@
-import { useAreasData } from "./hooks/useAreasData";
-import { useAreasModals } from "./hooks/useAreasModals";
-import { useAreasMutations } from "./hooks/useAreasMutations";
-import { getArea } from "./Areas.service";
-import { AreasToolbar } from "./components/AreasToolbar";
-import { AreasTable } from "./components/AreasTable";
+import { useDependenciesData } from "./hooks/useDependenciesData";
+import { useDependenciesModals } from "./hooks/useDependenciesModals";
+import { useDependenciesMutations } from "./hooks/useDependenciesMutations";
+import { getDependency } from "./Dependencies.service";
+import { DependenciesToolbar } from "./components/DependenciesToolbar";
+import { DependenciesTable } from "./components/DependenciesTable";
 import Pagination from "../../components/Pagination";
-import { AreaModal } from "./components/AreasModal";
+import { DependencyModal } from "./components/DependenciesModal";
 import { ConfirmModal } from "./components/ConfirmModal";
-import { ViewAreaModal } from "./components/ViewAreasModal";
+import { ViewDependencyModal } from "./components/ViewDependenciesModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 
 import { ToastProvider, useToast } from "../../context/ToastContext";
@@ -29,23 +29,23 @@ function ToastContainer() {
   );
 }
 
-function AreasPageContent() {
+function DependenciesPageContent() {
   const {
-    Areas,
+    Dependencies,
     loading,
     error,
     meta,
     links,
     filter,
     searchTerm,
-    refreshAreas,
+    refreshDependencies,
     handleFilterChange,
     handleSort,
     handleSearch,
     handlePageChange,
-  } = useAreasData();
+  } = useDependenciesData();
 
-  const modals = useAreasModals();
+  const modals = useDependenciesModals();
 
   const {
     isSubmitting,
@@ -54,24 +54,24 @@ function AreasPageContent() {
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
-  } = useAreasMutations({
-    refreshAreas,
+  } = useDependenciesMutations({
+    refreshDependencies,
     closeForm: modals.closeForm,
     closeConfirm: modals.closeConfirm,
     openBulkError: modals.openBulkError,
   });
 
-  const handleViewClick = async (partialArea: any) => {
+  const handleViewClick = async (partialDependency: any) => {
     try {
-      const fullArea = await getArea(partialArea.id);
-      modals.openView(fullArea);
+      const fullDependency = await getDependency(partialDependency.id);
+      modals.openView(fullDependency);
     } catch (error) {
-      console.error("Error al cargar detalles del Área", error);
+      console.error("Error al cargar detalles del Dependencia", error);
     }
   };
 
-  const modalTitle = modals.editingArea ? "Editar Área" : "Agregar Área";
-  const modalInitialName = modals.editingArea?.name || "";
+  const modalTitle = modals.editingDependency ? "Editar Dependencia" : "Agregar Dependencia";
+  const modalInitialName = modals.editingDependency?.name || "";
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -79,18 +79,18 @@ function AreasPageContent() {
   let confirmButtonColor: "danger" | "primary" = "danger";
 
   if (modals.actionType === "ban") {
-    confirmTitle = "Desactivar Área";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el Área "${modals.actionArea?.name}"?`;
+    confirmTitle = "Desactivar Dependencia";
+    confirmMessage = `¿Estás seguro de que quieres desactivar el Área "${modals.actionDependency?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (modals.actionType === "restore") {
-    confirmTitle = "Restaurar Área";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el Área "${modals.actionArea?.name}"?`;
+    confirmTitle = "Restaurar Dependencia";
+    confirmMessage = `¿Estás seguro de que quieres restaurar el Área "${modals.actionDependency?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el Área "${modals.actionArea?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el Área "${modals.actionDependency?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -99,24 +99,24 @@ function AreasPageContent() {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
 
-      <AreasToolbar
+      <DependenciesToolbar
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
         onAddClick={() => {
-          clearMutationError(); // ✅
+          clearMutationError();
           modals.openCreate();
         }}
         onBulkUpload={handleBulkUpload}
       />
 
       <div className="p-4">
-        <AreasTable
+        <DependenciesTable
           loading={loading}
           error={error}
-          Areas={Areas}
+          Dependencies={Dependencies}
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
@@ -143,7 +143,7 @@ function AreasPageContent() {
         </div>
       </div>
 
-      <AreaModal
+      <DependencyModal
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
@@ -153,7 +153,7 @@ function AreasPageContent() {
           clearMutationError(); 
           modals.closeForm();
         }}
-        onSave={(name) => handleSave(name, modals.editingArea)}
+        onSave={(name) => handleSave(name, modals.editingDependency)}
         onClearServerError={clearMutationError} 
       />
 
@@ -169,12 +169,12 @@ function AreasPageContent() {
           clearMutationError(); 
           modals.closeConfirm();
         }}
-        onConfirm={() => handleConfirmAction(modals.actionArea, modals.actionType)}
+        onConfirm={() => handleConfirmAction(modals.actionDependency, modals.actionType)}
       />
 
-      <ViewAreaModal
+      <ViewDependencyModal
         isOpen={modals.isViewOpen}
-        Area={modals.viewingArea}
+        Dependency={modals.viewingDependency}
         onClose={modals.closeView}
       />
 
@@ -187,10 +187,10 @@ function AreasPageContent() {
   );
 }
 
-export default function Areas() {
+export default function Dependencies() {
   return (
     <ToastProvider>
-      <AreasPageContent />
+      <DependenciesPageContent />
     </ToastProvider>
   );
 }
