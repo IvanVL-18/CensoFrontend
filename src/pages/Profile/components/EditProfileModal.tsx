@@ -1,45 +1,7 @@
 import { X, UserRound, Phone, Smartphone, MapPin, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ProfileData, EditProfileModalProps as Props } from "../Profile.types";
-
-function InputRow({
-  label,
-  icon: Icon,
-  value,
-  onChange,
-  placeholder,
-  maxLength,
-  className,
-}: {
-  label: string;
-  icon: React.ElementType;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  maxLength?: number;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <label className="block text-xs font-medium text-slate-700 mb-1">
-        {label}
-      </label>
-      <div className="relative">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-          <Icon className="h-4 w-4" />
-        </span>
-        <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          maxLength={maxLength}
-          className="w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 py-2 text-sm text-slate-900 shadow-sm
-                     focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/25 focus:border-[var(--pantone-7421)]"
-        />
-      </div>
-    </div>
-  );
-}
+import ProfileField from "./ProfileField";
 
 export default function EditProfileModal({ open, onClose, user }: Props) {
   const [draft, setDraft] = useState<ProfileData>(user.profile);
@@ -76,35 +38,35 @@ export default function EditProfileModal({ open, onClose, user }: Props) {
 
           <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InputRow
+              <ProfileField
                 label="Nombre(s)"
                 icon={UserRound}
                 value={draft.name}
                 onChange={(v) => setDraft((s) => ({ ...s, name: v }))}
                 maxLength={50}
               />
-              <InputRow
+              <ProfileField
                 label="Apellidos"
                 icon={UserRound}
                 value={draft.lastname}
                 onChange={(v) => setDraft((s) => ({ ...s, lastname: v }))}
                 maxLength={50}
               />
-              <InputRow
+              <ProfileField
                 label="Teléfono fijo"
                 icon={Phone}
                 value={draft.phone}
                 onChange={(v) => setDraft((s) => ({ ...s, phone: v }))}
                 maxLength={20}
               />
-              <InputRow
+              <ProfileField
                 label="Teléfono móvil"
                 icon={Smartphone}
                 value={draft.mobile}
                 onChange={(v) => setDraft((s) => ({ ...s, mobile: v }))}
                 maxLength={20}
               />
-              <InputRow
+              <ProfileField
                 className="md:col-span-2"
                 label="Dirección"
                 icon={MapPin}

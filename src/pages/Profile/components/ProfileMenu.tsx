@@ -20,8 +20,6 @@ export default function ProfileMenu() {
 
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-
-  // ✅ Solo UI (mock). Al consumir, esto será un state/context.
   const user: AuthUser = useMemo(
     () => ({
       email: "usuario@hidalgo.gob.mx",
