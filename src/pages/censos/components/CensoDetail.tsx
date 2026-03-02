@@ -1,3 +1,4 @@
+// src/pages/censos/components/CensoDetail.tsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Calendar, FileText, Layers, PieChart, Clock } from "lucide-react";
@@ -28,15 +29,6 @@ export function CensoDetail() {
     fetchCenso();
   }, [id]);
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "—";
-    return new Date(dateString).toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -59,13 +51,27 @@ export function CensoDetail() {
     );
   }
 
+  // Extraer año de creación
   const createdYear = censo.created_at ? new Date(censo.created_at).getFullYear() : "—";
-  const totalPreguntas = 0;
-  const porcentaje = 100;
+  
+  // Formatear fechas
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "—";
+    return new Date(dateString).toLocaleDateString("es-ES", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Datos de ejemplo (pueden venir del censo real)
+  const totalPreguntas = 0; // Esto debería venir del backend
+  const porcentaje = 100; // Placeholder
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header con navegación */}
         <div className="mb-6 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
@@ -75,24 +81,30 @@ export function CensoDetail() {
             <span className="font-medium">Regresar</span>
           </button>
           <div className="flex gap-3">
+           
             <button className="px-4 py-2 text-sm bg-[#691b31] text-white rounded-lg hover:bg-opacity-90 transition-colors">
               Compartir
             </button>
           </div>
         </div>
 
+        {/* Tarjeta principal */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-[#691b31] to-[#8a2a45] px-8 py-6">
+          {/* Cabecera con color de fondo: solo el nombre */}
+          <div className="flex justify-between items-center p-4 bg-red-900 px-8 py-6">
             <h1 className="text-3xl font-bold text-white">{censo.name}</h1>
           </div>
 
+          {/* Cuerpo */}
           <div className="p-8">
+            {/* Metadata: creado */}
             <div className="flex items-center gap-2 text-gray-600 mb-4">
               <Clock size={18} className="text-[#C3A67C]" />
               <span className="text-sm font-medium">Creado:</span>
               <span className="text-sm">{createdYear}</span>
             </div>
 
+            {/* Descripción (si existe) */}
             {censo.description && (
               <div className="mb-6">
                 <h3 className="text-sm font-semibold text-gray-700 mb-1">Descripción</h3>
@@ -102,6 +114,7 @@ export function CensoDetail() {
               </div>
             )}
 
+            {/* Fechas del censo */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
                 <div className="flex items-center gap-2 text-gray-700 mb-3">
@@ -119,6 +132,7 @@ export function CensoDetail() {
               </div>
             </div>
 
+            {/* Secciones de navegación a Unidades y Secciones */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <Link
                 to={`/censos/${censo.id}/unidades`}
@@ -146,12 +160,14 @@ export function CensoDetail() {
               </Link>
             </div>
 
+            {/* Estadísticas y progreso (opcional) */}
             <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <PieChart size={20} className="text-[#691b31]" />
                 Progreso del censo
               </h3>
               <div className="flex flex-col md:flex-row items-center gap-8">
+                {/* Barra de progreso circular (simulada con SVG) */}
                 <div className="relative w-32 h-32">
                   <svg className="w-full h-full" viewBox="0 0 100 100">
                     <circle
