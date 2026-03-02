@@ -13,7 +13,7 @@ import Units from "./pages/Units/units";
 
 
 import Sections from "./pages/Sections/Sections";
-import Insitutions from "./pages/Institutions/Institutions";
+import Insitutions from "./pages/institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Indexs/Indexs";
 import Roles from "./pages/Roles/Roles";
@@ -23,7 +23,7 @@ import PermissionRoles from "./pages/PermissionRoles/PermissionRoles";
 
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
-
+import Verification from "./pages/Verification/Verification";
 
 export default function App() {
   return (
@@ -38,6 +38,8 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/instituciones" element={<Insitutions />} />
         <Route path="/indices" element={<Index />} />
+
+        <Route path="/verification" element={<Verification />} />
 
         {/* Censos */}
    
