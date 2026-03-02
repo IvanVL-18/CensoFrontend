@@ -39,7 +39,7 @@ export const getCoordinatesFromPostalCode = async (
     "https://api.geoapify.com/v1/geocode/search?" +
     new URLSearchParams({
       text,
-      limit: "1",
+      limit: "1", 
       lang: "es",
       filter: "countrycode:mx",
       apiKey,
@@ -95,7 +95,7 @@ export const getReverseGeocodingData = async (
 
     if (data?.features?.length > 0) {
       const props = data.features[0].properties;
-      // Geoapify a veces devuelve la ciudad en 'city' o el municipio en 'county'
+     
       return {
         geocode: props.postcode,
         municipality: props.city || props.county,
