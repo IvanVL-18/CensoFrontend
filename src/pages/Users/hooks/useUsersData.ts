@@ -64,7 +64,7 @@ export function useUsersData() {
           await Promise.all([
             getRelatedData("roles", signal),
             getRelatedData("occupations", signal),
-            getRelatedData("dependencie", signal),
+            getRelatedData("dependency", signal),
             getRelatedData("institutions", signal),
           ]);
         setRoles(rolesData);

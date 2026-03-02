@@ -11,7 +11,7 @@ export const UserSchema = z.object({
   password_confirmation: z.string().optional(),
   role_id: z.union([z.string(), z.number()]).optional(),
   occupation_id: z.union([z.string(), z.number()]).optional(),
-  dependencie_id: z.union([z.string(), z.number()]).optional(),
+  dependency_id: z.union([z.string(), z.number()]).optional(),
   institution_id: z.union([z.string(), z.number()]).optional(),
 }).refine((data) => data.password === data.password_confirmation, {
   message: "Las contraseñas no coinciden",

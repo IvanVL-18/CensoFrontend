@@ -54,7 +54,7 @@ export function UserModal({
     password_confirmation: "",
     role_id: "",
     occupation_id: "",
-    dependencie_id: "",
+    dependency_id: "",
     institution_id: "",
   });
   const [formErrors, setFormErrors] = useState<string[]>([]);
@@ -100,9 +100,9 @@ export function UserModal({
       initialData.occupation,
       occupations,
     );
-    const dependencieChanged = checkRelationChange(
-      formData.dependencie_id,
-      initialData.dependencie,
+    const dependencyChanged = checkRelationChange(
+      formData.dependency_id,
+      initialData.dependency,
       dependencies,
     );
     const institutionChanged = checkRelationChange(
@@ -116,7 +116,7 @@ export function UserModal({
       passwordChanged ||
       roleChanged ||
       occupationChanged ||
-      dependencieChanged ||
+      dependencyChanged ||
       institutionChanged
     );
   }, [formData, initialData, roles, occupations, dependencies, institutions]);
@@ -191,10 +191,10 @@ export function UserModal({
           initialData?.occupation,
           initialData?.occupation_id,
         ),
-        dependencie_id: findIdInCatalog(
+        dependency_id: findIdInCatalog(
           dependencies,
-          initialData?.dependencie,
-          initialData?.dependencie_id,
+          initialData?.dependency,
+          initialData?.dependency_id,
         ),
         institution_id: findIdInCatalog(
           institutions,
@@ -443,25 +443,25 @@ export function UserModal({
 
               <div>
                 <label
-                  htmlFor="dependencie_id"
+                  htmlFor="dependency_id"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Área:
+                  Dependencia:
                 </label>
                 <select
-                  id="dependencie_id"
-                  name="dependencie_id"
-                  value={formData.dependencie_id}
+                  id="dependency_id"
+                  name="dependency_id"
+                  value={formData.dependency_id}
                   onChange={handleChange}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
-                  <option value="">Seleccionar Área</option>
+                  <option value="">Seleccionar Dependencia</option>
                   {dependencies.length === 0 && (
-                    <option disabled>Cargando áreas...</option>
+                    <option disabled>Cargando dependencia...</option>
                   )}
-                  {dependencies.map((dependencie: any) => (
-                    <option key={dependencie.id} value={dependencie.id}>
-                      {dependencie.name}
+                  {dependencies.map((dependency: any) => (
+                    <option key={dependency.id} value={dependency.id}>
+                      {dependency.name}
                     </option>
                   ))}
                 </select>
