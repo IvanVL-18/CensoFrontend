@@ -1,13 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
+import type { OtpInputProps } from "../Verification.types";
 
-type Props = {
-  value: string;
-  onChange: (value: string) => void;
-  length?: number;
-  disabled?: boolean;
-};
-
-export default function OtpInput({ value, onChange, length = 6, disabled }: Props) {
+export default function OtpInput({ value, onChange, length = 6, disabled }: OtpInputProps) {
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
   const digits = useMemo(() => {

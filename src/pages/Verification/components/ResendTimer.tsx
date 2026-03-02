@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { RefreshCw, Clock } from "lucide-react";
+import type { ResendTimerProps } from "../Verification.types";
 
-type Props = {
-  seconds?: number;
-  onResend: () => void;
-};
-
-export default function ResendTimer({ seconds = 60, onResend }: Props) {
+export default function ResendTimer({ seconds = 60, onResend }: ResendTimerProps) {
   const [left, setLeft] = useState(seconds);
 
   useEffect(() => {

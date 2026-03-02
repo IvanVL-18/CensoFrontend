@@ -4,13 +4,7 @@ import { useNavigate } from "react-router-dom";
 import VerificationLayout from "./VerificationLayout";
 import OtpInput from "./OtpInput";
 import ResendTimer from "./ResendTimer";
-
-type Props = {
-  title?: string;
-  subtitle?: string;
-  destination?: string;
-  onVerified?: (code: string) => void;
-};
+import type { VerificationCardProps } from "../Verification.types";
 
 function maskDestination(dest?: string) {
   if (!dest) return "";
@@ -30,7 +24,7 @@ export default function VerificationCard({
   subtitle = "Ingresa el código de 6 dígitos que te enviamos",
   destination,
   onVerified,
-}: Props) {
+}: VerificationCardProps) {
   const navigate = useNavigate();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -82,7 +76,6 @@ export default function VerificationCard({
           <div className="h-2 bg-[#7A1F3D]" />
 
           <div className="p-6 sm:p-8">
-            {/* Encabezado centrado */}
             <div className="flex flex-col items-center gap-3 text-center">
               <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#7A1F3D]/10">
                 <ShieldCheck className="h-6 w-6 text-[#7A1F3D]" />
@@ -103,7 +96,6 @@ export default function VerificationCard({
               </div>
             </div>
 
-            {/* OTP */}
             <div className="mt-7 text-center">
               <label className="mb-2 block text-sm font-semibold text-slate-800">
                 Código de verificación
@@ -114,7 +106,6 @@ export default function VerificationCard({
               </div>
             </div>
 
-            {/* Feedback */}
             {errorMsg ? (
               <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                 <span className="font-extrabold">Error:</span> {errorMsg}
@@ -128,7 +119,6 @@ export default function VerificationCard({
               </div>
             ) : null}
 
-            {/* Acciones: Reenviar (izq) + Confirmar (der) mismo tamaño */}
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <div className="w-full sm:flex-1">
                 <ResendTimer seconds={60} onResend={handleResend} />
