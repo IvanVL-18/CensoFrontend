@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ChangeEvent, forwardRef, useImperativeHandle, useEffect } from "react";
+import { useState, type FormEvent, type ChangeEvent, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
 import { Calendar, FileText, Type } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { Censoschema } from "../schemas/Censos.schema";
@@ -33,18 +33,18 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
     const [charCount, setCharCount] = useState(initialData?.name?.length ?? 0);
     const [formErrors, setFormErrors] = useState<string[]>([]);
     const [serverError, setServerError] = useState<string | null>(error ?? null);
+    const [isDirty, setIsDirty] = useState(false); // Nuevo estado
 
-    // Actualiza errores del servidor
+    const isFirstRender = useRef(true);
+
     useEffect(() => {
       setServerError(error ?? null);
     }, [error]);
 
-    // Notifica al padre sobre cambios en errores
     useEffect(() => {
       onErrorChange?.(formErrors);
     }, [formErrors, onErrorChange]);
 
-    // Función de validación completa
     const validateForm = (data: {
       name: string;
       description: string;
@@ -61,12 +61,17 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       }
     };
 
-    // Valida cada vez que cambia cualquier campo
     useEffect(() => {
-      validateForm({ name, description, init_date: startDate, deadline: endDate });
-    }, [name, description, startDate, endDate]);
+      if (isFirstRender.current) {
+        isFirstRender.current = false;
+        return;
+      }
+      
+      if (isDirty) {
+        validateForm({ name, description, init_date: startDate, deadline: endDate });
+      }
+    }, [name, description, startDate, endDate, isDirty]);
 
-    // Sincroniza con datos iniciales
     useEffect(() => {
       if (initialData) {
         const newName = initialData.name ?? "";
@@ -75,6 +80,18 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setStartDate(initialData.init_date ?? "");
         setEndDate(initialData.deadline ?? "");
         setCharCount(newName.length);
+    
+        setIsDirty(true);
+        validateForm({ 
+          name: newName, 
+          description: initialData.description ?? "", 
+          init_date: initialData.init_date ?? "", 
+          deadline: initialData.deadline ?? "" 
+        });
+      } else {
+       
+        setIsDirty(false);
+        setFormErrors([]);
       }
     }, [initialData]);
 
@@ -87,14 +104,19 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setCharCount(0);
         setFormErrors([]);
         setServerError(null);
+        setIsDirty(false); // Importante: al resetear, ya no está dirty
+        isFirstRender.current = true; // Para evitar validación al montar de nuevo si se resetea y luego se abre otra vez
       },
       submit: () => {
         const isValid = validateForm({ name, description, init_date: startDate, deadline: endDate });
-        if (!isValid) return false;
+        if (!isValid) {
+          setIsDirty(true);
+          return false;
+        }
         setServerError(null);
         onSubmit({
           name,
-          description, // puede ser vacío, el esquema ya lo maneja
+          description,
           init_date: startDate,
           deadline: endDate,
         });
@@ -109,7 +131,26 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setName(newName);
         setCharCount(newName.length);
         setServerError(null);
+        setIsDirty(true); // Marcar como dirty al primer cambio
       }
+    };
+
+    const handleStartDateChange = (e: ChangeEvent<HTMLInputElement>) => {
+      setStartDate(e.target.value);
+      setServerError(null);
+      setIsDirty(true);
+    };
+
+    const handleEndDateChange = (e: ChangeEvent<HTMLInputElement>) => {
+      setEndDate(e.target.value);
+      setServerError(null);
+      setIsDirty(true);
+    };
+
+    const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+      setDescription(e.target.value);
+      setServerError(null);
+      setIsDirty(true);
     };
 
     const handleFormSubmit = (e: FormEvent) => {
@@ -173,10 +214,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
                 type="date"
                 id="startDate"
                 value={startDate}
-                onChange={(e) => {
-                  setStartDate(e.target.value);
-                  setServerError(null);
-                }}
+                onChange={handleStartDateChange}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 appearance-none"
               />
               <Calendar size={18} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -192,10 +230,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
                 type="date"
                 id="endDate"
                 value={endDate}
-                onChange={(e) => {
-                  setEndDate(e.target.value);
-                  setServerError(null);
-                }}
+                onChange={handleEndDateChange}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 appearance-none"
               />
               <Calendar size={18} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -211,10 +246,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
           <textarea
             id="description"
             value={description}
-            onChange={(e) => {
-              setDescription(e.target.value);
-              setServerError(null);
-            }}
+            onChange={handleDescriptionChange}
             rows={3}
             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 resize-none"
             placeholder="Describe el propósito o alcance del censo..."
