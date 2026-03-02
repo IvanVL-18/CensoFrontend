@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from "./pages/login/page/LoginPage";
@@ -12,11 +11,6 @@ import DashboardLayout from "./components/DashboardLayout";
 import Users from "./pages/Users/Users";
 
 import Units from "./pages/Units/units";
-import Census from "./pages/census/CensosPage";
-import CreateCensusPage from "./pages/census/CreateCensus";
-import CensusUnitsPage from "./pages/census/CensusUnitsPage";
-import CensusSectionsPage from "./pages/census/CensusSectionsPage";   
-import CensusQuestionsPage from "./pages/census/CensusQuestionsPage"; 
 
 import Sections from "./pages/Sections/Sections";
 import Insitutions from "./pages/Institutions/Institutions";
@@ -28,7 +22,10 @@ import Permissions from "./pages/Permissions/Permissions";
 
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
-
+import Censos from "./pages/censos/Censos";
+import { CensoDetail } from "./pages/censos/components/CensoDetail";
+// Importar la nueva vista de unidades del censo (ajusta la ruta si el nombre es diferente)
+import CensoUnitsView from "./pages/censos/components/CensoUnitsView";
 
 export default function App() {
   return (
@@ -46,11 +43,10 @@ export default function App() {
         <Route path="/indices" element={<Index />} />
 
         {/* Censos */}
-        <Route path="/censos" element={<Census />} />
-        <Route path="/censos/crear" element={<CreateCensusPage />} />
-        <Route path="/censos/unidades" element={<CensusUnitsPage />} />
-        <Route path="/censos/secciones" element={<CensusSectionsPage />} />     
-        <Route path="/censos/preguntas" element={<CensusQuestionsPage />} />    
+        <Route path="/censos" element={<Censos />} />
+        <Route path="/censos/:id" element={<CensoDetail />} />
+        {/* Ruta para ver las unidades de un censo */}
+        <Route path="/censos/:id/unidades" element={<CensoUnitsView />} />
 
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />

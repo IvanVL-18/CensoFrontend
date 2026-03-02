@@ -17,6 +17,7 @@ export const getUnits = async (
   sortBy: string = "id",           
   direction: "asc" | "desc" = "asc", 
   signal?: AbortSignal,
+   perPage: number = 10
 ): Promise<PaginatedUnitsResponse> => {
   const params = new URLSearchParams();
   
