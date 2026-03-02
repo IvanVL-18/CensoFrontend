@@ -2,18 +2,18 @@ import { useState, useRef, forwardRef, useImperativeHandle } from "react";
 import { Upload, FileText } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 
-interface CensoUploadAreaProps {
+interface CensoUploadDependencyProps {
   isSubmitting: boolean;
   onFileSubmit: (file: File) => void;
   error?: string | null;
 }
 
-export interface CensoUploadAreaRef {
+export interface CensoUploadDependencyRef {
   reset: () => void;
   submit: () => boolean; // Devuelve true si el envío fue exitoso (archivo seleccionado)
 }
 
-export const CensoUploadArea = forwardRef<CensoUploadAreaRef, CensoUploadAreaProps>(
+export const CensoUploadDependency = forwardRef<CensoUploadDependencyRef, CensoUploadDependencyProps>(
   ({ isSubmitting, onFileSubmit, error }, ref) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploadErrors, setUploadErrors] = useState<string[]>([]);
@@ -155,4 +155,4 @@ export const CensoUploadArea = forwardRef<CensoUploadAreaRef, CensoUploadAreaPro
   }
 );
 
-CensoUploadArea.displayName = "CensoUploadArea";
+CensoUploadDependency.displayName = "CensoUploadDependency";

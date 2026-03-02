@@ -37,9 +37,9 @@ export default function ConfigurationPage() {
         icon: <Hash className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {
-        title: "Áreas",
-        description: "Administra las áreas institucionales relacionadas con la estructura del censo.",
-        to: "/Area",
+        title: "Dependencias",
+        description: "Administra las Dependencias institucionales relacionadas con la estructura del censo.",
+        to: "/Dependency",
         icon: <Layers className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {

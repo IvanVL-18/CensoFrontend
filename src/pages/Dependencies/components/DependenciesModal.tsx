@@ -1,10 +1,10 @@
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
-import type { AreaModalProps } from "../Areas.types";
-import { Areaschema } from "../schemas/Areas.schema";
+import type { DependencyModalProps } from "../Dependencies.types";
+import { Dependencieschema } from "../schemas/Dependencies.schema";
 
-export function AreaModal({
+export function DependencyModal({
   isOpen,
   isSubmitting,
   error,
@@ -13,7 +13,7 @@ export function AreaModal({
   onClose,
   onSave,
   onClearServerError, 
-}: AreaModalProps) {
+}: DependencyModalProps) {
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
 
@@ -26,7 +26,7 @@ export function AreaModal({
   }, [isOpen, initialName, onClearServerError]);
 
   const validateForm = (currentName: string) => {
-    const result = Areaschema.safeParse({ name: currentName });
+    const result = Dependencieschema.safeParse({ name: currentName });
     const errors: string[] = [];
 
     if (!result.success) {
@@ -84,15 +84,15 @@ export function AreaModal({
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
               <label
-                htmlFor="AreaName"
+                htmlFor="DependencyName"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Nombre del Área:
+                Nombre del Dependencia:
               </label>
 
               <input
                 type="text"
-                id="AreaName"
+                id="DependencyName"
                 value={name}
                 onChange={handleNameChange}
                 placeholder="Ingresar nombre..."

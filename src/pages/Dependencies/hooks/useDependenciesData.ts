@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback, type ChangeEvent } from "react";
-import { getAreas, type AreaFilter } from "../Areas.service";
-import type { Area, PaginatedAreasResponse, Meta } from "../Areas.types";
+import { getDependencies, type DependencyFilter } from "../Dependencies.service";
+import type { Dependency, PaginatedDependenciesResponse, Meta } from "../Dependencies.types";
 
-export function useAreasData() {
-  const [Areas, setAreas] = useState<Area[]>([]);
+export function useDependenciesData() {
+  const [Dependencies, setDependencies] = useState<Dependency[]>([]);
   const [links, setLinks] =
-    useState<PaginatedAreasResponse["links"] | null>(null);
+    useState<PaginatedDependenciesResponse["links"] | null>(null);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [filter, setFilter] = useState<AreaFilter>("all");
+  const [filter, setFilter] = useState<DependencyFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -25,7 +25,7 @@ export function useAreasData() {
   });
 
   const [reloadToken, setReloadToken] = useState(0);
-  const refreshAreas = useCallback(() => setReloadToken((t) => t + 1), []);
+  const refreshDependencies = useCallback(() => setReloadToken((t) => t + 1), []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -40,7 +40,7 @@ export function useAreasData() {
     const controller = new AbortController();
     setLoading(true);
 
-    getAreas(
+    getDependencies(
       filter,
       debouncedSearch,
       page,
@@ -52,7 +52,7 @@ export function useAreasData() {
         const items = [...data.data];
         if (sortConfig.direction === "desc") items.reverse();
 
-        setAreas(items);
+        setDependencies(items);
         setLinks(data.links);
         setMeta(data.meta);
         setError(null);
@@ -70,7 +70,7 @@ export function useAreasData() {
   }, [filter, debouncedSearch, page, sortConfig, reloadToken]);
 
   const handleFilterChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setFilter(e.target.value as AreaFilter);
+    setFilter(e.target.value as DependencyFilter);
     setPage(1);
   }, []);
 
@@ -89,7 +89,7 @@ export function useAreasData() {
     }
   }, []);
 
-  const handleSort = useCallback((key: keyof Area) => {
+  const handleSort = useCallback((key: keyof Dependency) => {
     setPage(1);
 
     setSortConfig((current) => {
@@ -108,14 +108,14 @@ export function useAreasData() {
   }, []);
 
   return {
-    Areas,
+    Dependencies,
     loading,
     error,
     meta,
     links,
     filter,
     searchTerm,
-    refreshAreas,
+    refreshDependencies,
     handleFilterChange,
     handleSearch,
     handlePageChange,

@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import type { ViewAreaModalProps } from "../Areas.types";
+import type { ViewDependencyModalProps } from "../Dependencies.types";
 
 const formatDate = (dateString: string | null) => {
   if (!dateString) {
@@ -30,8 +30,8 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewAreaModal({ isOpen, onClose, Area }: ViewAreaModalProps) {
-  if (!isOpen || !Area) {
+export function ViewDependencyModal({ isOpen, onClose, Dependency }: ViewDependencyModalProps) {
+  if (!isOpen || !Dependency) {
     return null;
   }
 
@@ -49,7 +49,7 @@ export function ViewAreaModal({ isOpen, onClose, Area }: ViewAreaModalProps) {
           
           {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">Detalle del Area</h2>
+            <h2 className="text-xl font-bold text-white">Detalle del Dependency</h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300"
@@ -62,16 +62,16 @@ export function ViewAreaModal({ isOpen, onClose, Area }: ViewAreaModalProps) {
           {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
             <DetailRow 
-              label="Nombre del Area:" 
-              value={Area.name} 
+              label="Nombre del Dependency:" 
+              value={Dependency.name} 
             />
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(Area.created_at)} 
+              value={formatDate(Dependency.created_at)} 
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(Area.deleted_at)} 
+              value={formatDate(Dependency.deleted_at)} 
             />
           </div>
 

@@ -1,4 +1,4 @@
-import type { FormErrorsProps } from "../Areas.types";
+import type { FormErrorsProps } from "../Dependencies.types";
 
 export function FormErrors({ errors }: FormErrorsProps) {
   if (errors.length === 0) {

@@ -91,7 +91,7 @@ const handleSubmit = (e: FormEvent) => {
     if (serverError) setServerError(null);
   };
 
-  const handleInstructionsChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInstructionsChange = (e: ChangeEvent<HTMLTextDependencyElement>) => {
     const newInstructions = e.target.value;
     setInstructions(newInstructions);
     validateForm(name, newInstructions);
@@ -149,7 +149,7 @@ const handleSubmit = (e: FormEvent) => {
               <label htmlFor="SectionInstructions" className="block text-sm font-medium text-gray-700 mb-2 mt-4">
                 Instrucciones (Opcional):
               </label>
-              <textarea
+              <textDependency
                 id="SectionInstructions"
                 value={instructions}
                 onChange={handleInstructionsChange}
