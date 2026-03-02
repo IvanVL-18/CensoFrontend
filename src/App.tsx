@@ -13,7 +13,7 @@ import Units from "./pages/Units/units";
 
 
 import Sections from "./pages/Sections/Sections";
-import Insitutions from "./pages/institutions/Institutions";
+import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Indexs/Indexs";
 import Roles from "./pages/Roles/Roles";
