@@ -8,7 +8,7 @@ export default function ProfileField({
   placeholder,
   maxLength,
   className,
-}: Props & { icon?: React.ElementType }) {
+}: Props & { icon?: any }) {
   return (
     <div className={className}>
       <label className="block text-xs font-medium text-slate-700 mb-1">
