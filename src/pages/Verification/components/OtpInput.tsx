@@ -9,7 +9,7 @@ export default function OtpInput({ value, onChange, length = 6, disabled }: OtpI
     const arr = clean.split("");
     while (arr.length < length) arr.push("");
     return arr;
-  }, [value, length]);
+ }, [value, length]);
 
   useEffect(() => {
     if (!value && inputsRef.current[0]) inputsRef.current[0].focus();
