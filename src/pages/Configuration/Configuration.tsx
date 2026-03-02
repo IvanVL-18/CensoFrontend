@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Package, Paperclip, Briefcase, Hash, Layers, HelpCircle, Shield, FileText} from "lucide-react";
+import { Package, Paperclip, Briefcase, Hash, Layers, HelpCircle, Shield, FileText, UserCog } from "lucide-react";
 
 import ConfigurationLayout from "./components/ConfigurationLayout";
 import ConfigurationNavCard from "./components/ConfigurationNavCard";
@@ -52,13 +52,19 @@ export default function ConfigurationPage() {
         title: "Roles",
         description: "Administra los roles y permisos del sistema para controlar el acceso a los distintos módulos del censo.",
         to: "/Roles",
-        icon: <Shield className="w-5 h-5 text-[var(--pantone-7421)]" />,
+        icon: <UserCog className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {
         title: "Catalogos",
         description: "Administra los catalogos y permisos del sistema para controlar el acceso a los distintos módulos del censo.",
         to: "/Catalogos",
         icon: <FileText className="w-5 h-5 text-[var(--pantone-7421)]" />,
+      },
+      {
+        title: "Permisos",
+        description: "Administra los permisos del sistema para controlar el acceso a los distintos módulos del censo.",
+        to: "/Permisos",
+        icon: <Shield className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
          
 
@@ -69,15 +75,8 @@ export default function ConfigurationPage() {
   return (
     <ConfigurationLayout title="Configuración">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-        {items.map((item) => (
-          <ConfigurationNavCard
-            key={item.title}
-            title={item.title}
-            description={item.description}
-            icon={item.icon}
-            className={item.className}
-            onClick={() => navigate(item.to)}
-          />
+        {items.map((item, index) => (
+          <ConfigurationNavCard key={index} {...item} onClick={() => navigate(item.to)} />
         ))}
       </div>
     </ConfigurationLayout>
