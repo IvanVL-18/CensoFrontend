@@ -56,6 +56,7 @@ export function UsersExtraModal({
     });
 
     setFormErrors([]);
+    setFieldErrors({});
   }, [isOpen, User]);
 
   const hasChanges = useMemo(() => {
@@ -132,6 +133,13 @@ export function UsersExtraModal({
 
     onSave(payload);
   };
+
+  const handleClose = () => {
+    setFormErrors([]);
+    setFieldErrors({});
+    onClose();
+  };
+
   if (!isOpen || !User) return null;
 
   const hasClientErrors = formErrors.length > 0;
@@ -140,7 +148,7 @@ export function UsersExtraModal({
     <>
       <div
         className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-40 transition-opacity"
-        onClick={onClose}
+        onClick={handleClose}
       ></div>
 
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
@@ -151,7 +159,7 @@ export function UsersExtraModal({
               <p className="text-sm text-white/80">{User.email}</p>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-white hover:text-gray-300"
             >
               <X size={24} />
@@ -250,7 +258,7 @@ export function UsersExtraModal({
             <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
                 disabled={isSubmitting}
                 className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95 disabled:opacity-50"
               >

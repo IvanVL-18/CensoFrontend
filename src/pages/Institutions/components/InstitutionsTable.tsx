@@ -9,7 +9,7 @@ import {
   type LucideProps,
 } from "lucide-react";
 import type { InstitutionTableProps } from "../institutions.types"; 
-
+import Loading from "../../../components/Loading";
 
 
 
@@ -92,7 +92,7 @@ export function InstitutionsTable({
           {loading && (
             <tr>
               <td colSpan={5} className="text-center p-6 text-gray-500">
-                Cargando...
+                <Loading />
               </td>
             </tr>
           )}

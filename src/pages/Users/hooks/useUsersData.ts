@@ -31,7 +31,7 @@ export function useUsersData() {
   const [debouncedSearch, setDebouncedSearch] = useState(""); 
   const [roles, setRoles] = useState<Rol[]>([]);
   const [occupations, setOccupations] = useState([]);
-  const [areas, setAreas] = useState([]);
+  const [dependencies, setDependencias] = useState([]);
   const [institutions, setInstitutions] = useState([]);
 
   const [page, setPage] = useState(1); 
@@ -60,16 +60,16 @@ export function useUsersData() {
 
     const fetchAllRelatedData = async () => {
       try {
-        const [rolesData, occupationsData, areasData, institutionsData] =
+        const [rolesData, occupationsData, dependenciesData, institutionsData] =
           await Promise.all([
             getRelatedData("roles", signal),
             getRelatedData("occupations", signal),
-            getRelatedData("area", signal),
+            getRelatedData("dependency", signal),
             getRelatedData("institutions", signal),
           ]);
         setRoles(rolesData);
         setOccupations(occupationsData);
-        setAreas(areasData);
+        setDependencias(dependenciesData);
         setInstitutions(institutionsData);
       } catch (err: any) {
         if (err.name !== "CanceledError") {
@@ -152,7 +152,7 @@ export function useUsersData() {
     searchTerm,
     roles,
     occupations,
-    areas,
+    dependencies,
     institutions,
     refreshUsers,
     handleFilterChange, 

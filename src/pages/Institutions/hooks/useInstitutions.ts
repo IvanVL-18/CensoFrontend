@@ -353,15 +353,15 @@ export function useInstitutions() {
   ]);
 
   const onView = useCallback(
-    async (unit: Institution) => {
+    async (Module: Institution) => {
       setIsViewLoading(true);
 
       try {
-        const unitData = await getInstitution(unit.id);
-        setViewingInstitution(unitData);
+        const ModuleData = await getInstitution(Module.id);
+        setViewingInstitution(ModuleData);
         setIsViewModalOpen(true);
       } catch (err) {
-        console.error("Error al obtener detalle de la unidad:", err);
+        console.error("Error al obtener detalle de la Modulo:", err);
         const errorMessage =
           (err as Error).message || "No se pudo cargar el detalle.";
         addToast(errorMessage, "danger");

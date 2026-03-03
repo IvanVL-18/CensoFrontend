@@ -47,9 +47,9 @@ export const getInstitution = async (
 };
 
 export const createInstitution = async (
-  unitData: CreateInstitutionDTO,
+  ModuleData: CreateInstitutionDTO,
 ): Promise<{ message: string; data?: Institution }> => {
-  const response = await api.post("/institutions", unitData);
+  const response = await api.post("/institutions", ModuleData);
   return response.data;
 };
 
@@ -81,7 +81,7 @@ export const forceDeleteInstitution = async (
 export const importInstitutions = async (
   formData: FormData,
 ): Promise<{ message: string }> => {
-  const response = await api.post("/units/import", formData, {
+  const response = await api.post("/modules/import", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;

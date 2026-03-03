@@ -1,7 +1,7 @@
-interface UnitFormData { // Para Units
+interface ModuleFormData { // Para Modules
   name: string;
 }
-export function validateRol(data: UnitFormData): string[] {
+export function validateRol(data: ModuleFormData): string[] {
   const errors: string[] = [];
   const name = data.name.trim(); // Usamos trim para las validaciones
 

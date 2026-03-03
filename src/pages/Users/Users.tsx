@@ -41,7 +41,7 @@ function UsersPageContent() {
     searchTerm,
     roles,
     occupations,
-    areas,
+    dependencies,
     institutions,
     refreshUsers,
     handleFilterChange,
@@ -74,6 +74,7 @@ function UsersPageContent() {
   const {
     isSubmitting,
     mutationError,
+    resetMutationError,
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
@@ -123,7 +124,10 @@ function UsersPageContent() {
         isSubmitting={isSubmitting}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
-        onAddClick={modals.openCreate}
+        onAddClick={() => {
+          resetMutationError();
+          modals.openCreate();
+        }}
         onBulkUpload={handleBulkUpload}
       />
 
@@ -158,7 +162,7 @@ function UsersPageContent() {
         initialData={modals.editingUser}
         roles={roles}
         occupations={occupations}
-        areas={areas}
+        dependencies={dependencies}
         institutions={institutions}
         onClose={modals.closeForm}
         onSave={(data) => handleSave(data, modals.editingUser)}

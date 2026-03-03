@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useCatalogsData } from "./hooks/useCatalogsData";
 import { useCatalogsModals } from "./hooks/useCatalogsModals";
 import { useCatalogsMutations } from "./hooks/useCatalogsMutations";
-import { getCatalog, getUnits } from "./Catalogs.service";
+import { getCatalog, getModules } from "./Catalogs.service";
 import { CatalogsToolbar } from "./components/CatalogsToolbar";
 import { CatalogsTable } from "./components/CatalogsTable";
 import Pagination from "../../components/Pagination";
@@ -12,7 +12,7 @@ import { ViewCatalogModal } from "./components/ViewCatalogsModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
-import type { Unit } from "./Catalogs.types";
+import type { Module } from "./Catalogs.types";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
@@ -53,9 +53,9 @@ const confirmConfig = {
 };
 
 function CatalogsPageContent() {
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [originalActiveUnits, setOriginalActiveUnits] = useState<Unit[]>([]); // Guarda solo activas
-  const [loadingUnits, setLoadingUnits] = useState(false);
+  const [Modules, setModules] = useState<Module[]>([]);
+  const [originalActiveModules, setOriginalActiveModules] = useState<Module[]>([]); // Guarda solo activas
+  const [loadingModules, setLoadingModules] = useState(false);
 
   const {
     Catalogs,
@@ -75,23 +75,23 @@ function CatalogsPageContent() {
   const modals = useCatalogsModals();
 
   useEffect(() => {
-    const fetchActiveUnits = async () => {
-      setLoadingUnits(true);
+    const fetchActiveModules = async () => {
+      setLoadingModules(true);
       try {
-        let activeUnits: Unit[] = [];
+        let activeModules: Module[] = [];
         let currentPage = 1;
         let lastPage = 1;
 
         do {
-          const response = await getUnits('active', '', currentPage);
+          const response = await getModules('active', '', currentPage);
           const responseData = response.data || response;
-          const pageUnits = Array.isArray(responseData)
+          const pageModules = Array.isArray(responseData)
             ? responseData
             : responseData?.data && Array.isArray(responseData.data)
             ? responseData.data
             : [];
 
-          activeUnits = [...activeUnits, ...pageUnits];
+          activeModules = [...activeModules, ...pageModules];
 
           const newLastPage =
             response.meta?.last_page ??
@@ -107,40 +107,40 @@ function CatalogsPageContent() {
           currentPage++;
         } while (currentPage <= lastPage);
 
-        setUnits(activeUnits);
-        setOriginalActiveUnits(activeUnits); 
+        setModules(activeModules);
+        setOriginalActiveModules(activeModules); 
       } catch (error) {
-        console.error("Error al cargar unidades:", error);
-        setUnits([]);
-        setOriginalActiveUnits([]);
+        console.error("Error al cargar Modulos:", error);
+        setModules([]);
+        setOriginalActiveModules([]);
       } finally {
-        setLoadingUnits(false);
+        setLoadingModules(false);
       }
     };
 
-    fetchActiveUnits();
+    fetchActiveModules();
   }, []);
 
   useEffect(() => {
     const editingCat = modals.editingCatalog;
-    if (editingCat?.unit_id) {
-      const currentUnitId = String(editingCat.unit_id).trim();
-      const exists = originalActiveUnits.some(u => String(u.id).trim() === currentUnitId);
+    if (editingCat?.Module_id) {
+      const currentModuleId = String(editingCat.Module_id).trim();
+      const exists = originalActiveModules.some(u => String(u.id).trim() === currentModuleId);
       if (!exists) {
-        setUnits([
-          ...originalActiveUnits,
+        setModules([
+          ...originalActiveModules,
           {
-            id: currentUnitId,
-            name: editingCat.unit_name || 'Unidad desconocida',
+            id: currentModuleId,
+            name: editingCat.Module_name || 'Modulo desconocida',
           }
         ]);
       } else {
-        setUnits(originalActiveUnits);
+        setModules(originalActiveModules);
       }
     } else {
-      setUnits(originalActiveUnits);
+      setModules(originalActiveModules);
     }
-  }, [modals.editingCatalog, originalActiveUnits]);
+  }, [modals.editingCatalog, originalActiveModules]);
 
   const {
     isSubmitting,
@@ -168,8 +168,8 @@ function CatalogsPageContent() {
     title: modals.editingCatalog ? "Editar catálogo" : "Agregar catálogo",
     initialName: modals.editingCatalog?.name || "",
     initialSlug: modals.editingCatalog?.slug || "",
-    initialUnitId: modals.editingCatalog?.unit_id || "",
-    initialUnitName: modals.editingCatalog?.unit_name || modals.editingCatalog?.unit?.name || "",
+    initialModuleId: modals.editingCatalog?.Module_id || "",
+    initialModuleName: modals.editingCatalog?.Module_name || modals.editingCatalog?.Module?.name || "",
   };
 
   const confirmModal = modals.actionType && modals.actionCatalog
@@ -215,17 +215,17 @@ function CatalogsPageContent() {
 
       <CatalogModal
         isOpen={modals.isFormOpen}
-        isSubmitting={isSubmitting || loadingUnits}
+        isSubmitting={isSubmitting || loadingModules}
         error={mutationError}
         title={modalConfig.title}
         initialName={modalConfig.initialName}
         initialSlug={modalConfig.initialSlug}
-        initialUnitId={modalConfig.initialUnitId}
-        initialUnitName={modalConfig.initialUnitName}
-        units={units}
+        initialModuleId={modalConfig.initialModuleId}
+        initialModuleName={modalConfig.initialModuleName}
+        Modules={Modules}
         onClose={modals.closeForm}
-        onSave={(name, slug, unitId) =>
-          handleSave(name, slug, unitId, modals.editingCatalog)
+        onSave={(name, slug, ModuleId) =>
+          handleSave(name, slug, ModuleId, modals.editingCatalog)
         }
       />
 
