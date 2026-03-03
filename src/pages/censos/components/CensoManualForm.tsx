@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ChangeEvent, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
+import { useState, type FormEvent, type ChangeEvent, forwardRef, useImperativeHandle, useEffect } from "react";
 import { Calendar, FileText, Type } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { Censoschema } from "../schemas/Censos.schema";
@@ -16,6 +16,7 @@ interface CensoManualFormProps {
     deadline?: string;
   };
   onErrorChange?: (errors: string[]) => void;
+  onFullValidityChange?: (isValid: boolean) => void;
 }
 
 export interface CensoManualFormRef {
@@ -25,7 +26,7 @@ export interface CensoManualFormRef {
 }
 
 export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormProps>(
-  ({ isSubmitting, onSubmit, error, initialData, onErrorChange }, ref) => {
+  ({ isSubmitting, onSubmit, error, initialData, onErrorChange, onFullValidityChange }, ref) => {
     const [name, setName] = useState(initialData?.name ?? "");
     const [description, setDescription] = useState(initialData?.description ?? "");
     const [startDate, setStartDate] = useState(initialData?.init_date ?? "");
@@ -33,9 +34,12 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
     const [charCount, setCharCount] = useState(initialData?.name?.length ?? 0);
     const [formErrors, setFormErrors] = useState<string[]>([]);
     const [serverError, setServerError] = useState<string | null>(error ?? null);
-    const [isDirty, setIsDirty] = useState(false); // Nuevo estado
-
-    const isFirstRender = useRef(true);
+    const [touchedFields, setTouchedFields] = useState({
+      name: false,
+      description: false,
+      init_date: false,
+      deadline: false,
+    });
 
     useEffect(() => {
       setServerError(error ?? null);
@@ -45,33 +49,45 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       onErrorChange?.(formErrors);
     }, [formErrors, onErrorChange]);
 
-    const validateForm = (data: {
-      name: string;
-      description: string;
-      init_date: string;
-      deadline: string;
-    }) => {
-      const result = Censoschema.safeParse(data);
-      if (result.success) {
-        setFormErrors([]);
-        return true;
-      } else {
-        setFormErrors(result.error.issues.map((err) => err.message));
-        return false;
-      }
+    const getVisibleErrors = () => {
+      const result = Censoschema.safeParse({ name, description, init_date: startDate, deadline: endDate });
+      if (result.success) return [];
+
+      const fieldErrorsMap: Record<string, string[]> = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        if (!fieldErrorsMap[field]) fieldErrorsMap[field] = [];
+        fieldErrorsMap[field].push(issue.message);
+      });
+
+      const visible: string[] = [];
+      Object.entries(touchedFields).forEach(([field, touched]) => {
+        if (touched && fieldErrorsMap[field]) {
+          visible.push(...fieldErrorsMap[field]);
+        }
+      });
+      return visible;
     };
 
     useEffect(() => {
-      if (isFirstRender.current) {
-        isFirstRender.current = false;
-        return;
-      }
-      
-      if (isDirty) {
-        validateForm({ name, description, init_date: startDate, deadline: endDate });
-      }
-    }, [name, description, startDate, endDate, isDirty]);
+      const visibleErrors = getVisibleErrors();
+      setFormErrors((prev) => {
+        if (JSON.stringify(prev) !== JSON.stringify(visibleErrors)) {
+          return visibleErrors;
+        }
+        return prev;
+      });
+    }, [name, description, startDate, endDate, touchedFields]);
 
+    // Notifica al padre sobre la validez completa (útil para habilitar el botón)
+    useEffect(() => {
+      const result = Censoschema.safeParse({ name, description, init_date: startDate, deadline: endDate });
+      // Puedes activar este log para depurar
+      // console.log('Validación completa:', result.success, result.error?.issues);
+      onFullValidityChange?.(result.success);
+    }, [name, description, startDate, endDate, onFullValidityChange]);
+
+    // Maneja cambios en initialData (se ejecuta al abrir el modal en edición)
     useEffect(() => {
       if (initialData) {
         const newName = initialData.name ?? "";
@@ -80,17 +96,25 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setStartDate(initialData.init_date ?? "");
         setEndDate(initialData.deadline ?? "");
         setCharCount(newName.length);
-    
-        setIsDirty(true);
-        validateForm({ 
-          name: newName, 
-          description: initialData.description ?? "", 
-          init_date: initialData.init_date ?? "", 
-          deadline: initialData.deadline ?? "" 
+        setTouchedFields({
+          name: true,
+          description: true,
+          init_date: true,
+          deadline: true,
         });
       } else {
-       
-        setIsDirty(false);
+        // Reset para creación
+        setName("");
+        setDescription("");
+        setStartDate("");
+        setEndDate("");
+        setCharCount(0);
+        setTouchedFields({
+          name: false,
+          description: false,
+          init_date: false,
+          deadline: false,
+        });
         setFormErrors([]);
       }
     }, [initialData]);
@@ -104,13 +128,25 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setCharCount(0);
         setFormErrors([]);
         setServerError(null);
-        setIsDirty(false); // Importante: al resetear, ya no está dirty
-        isFirstRender.current = true; // Para evitar validación al montar de nuevo si se resetea y luego se abre otra vez
+        setTouchedFields({
+          name: false,
+          description: false,
+          init_date: false,
+          deadline: false,
+        });
       },
       submit: () => {
-        const isValid = validateForm({ name, description, init_date: startDate, deadline: endDate });
-        if (!isValid) {
-          setIsDirty(true);
+        const result = Censoschema.safeParse({ name, description, init_date: startDate, deadline: endDate });
+        if (!result.success) {
+          setTouchedFields({
+            name: true,
+            description: true,
+            init_date: true,
+            deadline: true,
+          });
+          const allErrors = result.error.issues.map((err) => err.message);
+          setFormErrors(allErrors);
+          setServerError(null);
           return false;
         }
         setServerError(null);
@@ -131,26 +167,26 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setName(newName);
         setCharCount(newName.length);
         setServerError(null);
-        setIsDirty(true); // Marcar como dirty al primer cambio
+        setTouchedFields((prev) => ({ ...prev, name: true }));
       }
     };
 
     const handleStartDateChange = (e: ChangeEvent<HTMLInputElement>) => {
       setStartDate(e.target.value);
       setServerError(null);
-      setIsDirty(true);
+      setTouchedFields((prev) => ({ ...prev, init_date: true }));
     };
 
     const handleEndDateChange = (e: ChangeEvent<HTMLInputElement>) => {
       setEndDate(e.target.value);
       setServerError(null);
-      setIsDirty(true);
+      setTouchedFields((prev) => ({ ...prev, deadline: true }));
     };
 
     const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
       setDescription(e.target.value);
       setServerError(null);
-      setIsDirty(true);
+      setTouchedFields((prev) => ({ ...prev, description: true }));
     };
 
     const handleFormSubmit = (e: FormEvent) => {

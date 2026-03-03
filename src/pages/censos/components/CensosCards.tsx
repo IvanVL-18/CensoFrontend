@@ -202,8 +202,13 @@ export function CensosCards({
               {/* Botón principal como Link a la página de detalle */}
               <Link
                 to={`/censos/${censo.id}`}
-                className="mt-auto w-full bg-linear-to-r from-amber-600 to-yellow-700 hover:from-amber-700 hover:to-yellow-800 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-              >
+className="mt-auto w-full 
+bg-[var(--pantone-465)] 
+hover:bg-[#a8844f] 
+text-white font-medium py-2.5 px-4 rounded-lg 
+transition-all duration-300 flex items-center justify-center 
+shadow-md hover:shadow-lg focus:outline-none 
+focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"              >
                 Ver detalles
                 <Eye size={18} className="ml-2" />
               </Link>

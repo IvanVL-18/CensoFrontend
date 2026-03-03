@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useCensosData } from "./hooks/useCensosData";
 import { useCensosModals } from "./hooks/useCensosModals";
 import { useCensosMutations } from "./hooks/useCensosMutations";
@@ -12,6 +12,7 @@ import { ViewCensoModal } from "./components/ViewCensosModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
+import type { CensoManualFormRef } from "./components/CensoManualForm";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
@@ -40,7 +41,6 @@ function CensosPageContent() {
     searchTerm,
     refreshCensos,
     handleFilterChange,
-    handleSort,
     handleSearch,
     handlePageChange,
   } = useCensosData();
@@ -63,7 +63,19 @@ function CensosPageContent() {
     openBulkError: modals.openBulkError,
   });
 
-  const handleAddClick = () => setShowSelectionModal(true);
+  const censoFormRef = useRef<CensoManualFormRef>(null);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Limpiar formulario al abrir el modal en modo creación (como en CategoryModal)
+  useEffect(() => {
+    if (modals.isFormOpen && !modals.editingCenso) {
+      censoFormRef.current?.reset();
+    }
+  }, [modals.isFormOpen, modals.editingCenso]);
+
+  const handleAddClick = () => {
+    setShowSelectionModal(true);
+  };
 
   const handleSelectManual = () => {
     setCreateModalMode("create");
@@ -77,30 +89,31 @@ function CensosPageContent() {
     setShowSelectionModal(false);
   };
 
-  const handleCloseSelection = () => setShowSelectionModal(false);
-
-  const confirmConfig: Record<string, any> = {
-    ban: {
-      title: "Desactivar categoría",
-      message: `¿Estás seguro de que quieres desactivar la categoría "${modals.actionCenso?.name}"?`,
-      buttonText: "Desactivar",
-      color: "danger",
-    },
-    restore: {
-      title: "Restaurar categoría",
-      message: `¿Estás seguro de que quieres restaurar la categoría "${modals.actionCenso?.name}"?`,
-      buttonText: "Restaurar",
-      color: "primary",
-    },
-    delete: {
-      title: "Eliminar Permanentemente",
-      message: `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la categoría "${modals.actionCenso?.name}"? Esta acción no se puede deshacer.`,
-      buttonText: "Eliminar",
-      color: "danger",
-    },
+  const handleCloseSelection = () => {
+    setShowSelectionModal(false);
   };
 
-  const currentConfirm = modals.actionType ? confirmConfig[modals.actionType] : null;
+  let confirmTitle = "";
+  let confirmMessage = "";
+  let confirmButtonText = "";
+  let confirmButtonColor: "danger" | "primary" = "danger";
+
+  if (modals.actionType === "ban") {
+    confirmTitle = "Desactivar categoría";
+    confirmMessage = `¿Estás seguro de que quieres desactivar la categoría "${modals.actionCenso?.name}"?`;
+    confirmButtonText = "Desactivar";
+    confirmButtonColor = "danger";
+  } else if (modals.actionType === "restore") {
+    confirmTitle = "Restaurar categoría";
+    confirmMessage = `¿Estás seguro de que quieres restaurar la categoría "${modals.actionCenso?.name}"?`;
+    confirmButtonText = "Restaurar";
+    confirmButtonColor = "primary";
+  } else if (modals.actionType === "delete") {
+    confirmTitle = "Eliminar Permanentemente";
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la categoría "${modals.actionCenso?.name}"? Esta acción no se puede deshacer.`;
+    confirmButtonText = "Eliminar";
+    confirmButtonColor = "danger";
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
@@ -137,6 +150,7 @@ function CensosPageContent() {
         </div>
       </div>
 
+      {/* Modales */}
       <CensoCreateSelectionModal
         isOpen={showSelectionModal}
         onClose={handleCloseSelection}
@@ -153,23 +167,24 @@ function CensosPageContent() {
         onBulkUpload={handleBulkUpload}
         mode={createModalMode}
         editingCenso={modals.editingCenso}
+        formRef={censoFormRef}
+        onFormValidityChange={setIsFormValid}
+        isFormValid={isFormValid}
       />
 
-      {currentConfirm && (
-        <ConfirmModal
-          isOpen={modals.isConfirmOpen}
-          isSubmitting={isSubmitting}
-          error={mutationError}
-          title={currentConfirm.title}
-          message={currentConfirm.message}
-          confirmButtonText={currentConfirm.buttonText}
-          confirmButtonColor={currentConfirm.color}
-          onClose={modals.closeConfirm}
-          onConfirm={() =>
-            handleConfirmAction(modals.actionCenso, modals.actionType)
-          }
-        />
-      )}
+      <ConfirmModal
+        isOpen={modals.isConfirmOpen}
+        isSubmitting={isSubmitting}
+        error={mutationError}
+        title={confirmTitle}
+        message={confirmMessage}
+        confirmButtonText={confirmButtonText}
+        confirmButtonColor={confirmButtonColor}
+        onClose={modals.closeConfirm}
+        onConfirm={() =>
+          handleConfirmAction(modals.actionCenso, modals.actionType)
+        }
+      />
 
       <ViewCensoModal
         isOpen={modals.isViewOpen}
