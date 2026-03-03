@@ -13,7 +13,7 @@ import Loading from "../../../components/Loading";
 
 
 
-const defaultProps = {
+const defaultProps = { 
   strokeWidth: 1.75,
   size: 22,
 };

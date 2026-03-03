@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; 
 import { X, MapPinned } from "lucide-react";
 
 import type { CreateInstitutionDTO, UpdateInstitutionDTO } from "../institutions.types";

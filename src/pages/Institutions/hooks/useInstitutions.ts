@@ -19,7 +19,7 @@ import {
 
 import { useToast } from "../../../context/ToastContext";
 
-import type {
+import type { 
   Institution,
   PaginatedInstitutionsResponse,
   Meta,
@@ -63,6 +63,7 @@ export function useInstitutions() {
 
   const [isEditMapOpen, setIsEditMapOpen] = useState(false);
   const [pendingCoords, setPendingCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [pendingAddressData, setPendingAddressData] = useState<{ geocode?: string; municipality?: string } | null>(null);
 
   const handleViewModalClose = useCallback(() => {
     setIsViewModalOpen(false);
@@ -112,9 +113,21 @@ export function useInstitutions() {
   }, []);
 
  
-  const onPickLocation = useCallback((coords: { lat: number; lon: number }) => {
+  const onPickLocation = useCallback((coords: { lat: number; lon: number }, addressData?: { geocode?: string; municipality?: string; state?: string }) => {
     setPendingCoords(coords);
-  }, []);
+    setPendingAddressData(addressData ?? null); 
+    
+  
+    if (editingInstitution) {
+      setEditingInstitution((prev) => prev ? ({
+        ...prev,
+        lat: coords.lat,
+        lon: coords.lon,
+        geocode: addressData?.geocode || prev.geocode,
+        municipality: addressData?.municipality || prev.municipality
+      }) : null);
+    }
+  }, [editingInstitution]);
 
   const handleMapModalClose = () => {
     setIsMapModalOpen(false);
@@ -218,6 +231,8 @@ export function useInstitutions() {
 
   const handleAddClick = useCallback(() => {
     setEditingInstitution(null);
+    setPendingCoords(null); 
+    setPendingAddressData(null);
     setModalError(null);
     setIsModalOpen(true);
   }, []);
@@ -226,6 +241,8 @@ export function useInstitutions() {
     setIsModalOpen(false);
     setModalError(null);
     setEditingInstitution(null);
+    setPendingCoords(null); 
+    setPendingAddressData(null); 
   }, []);
 
   const handleModalSave = useCallback(
@@ -235,15 +252,29 @@ export function useInstitutions() {
 
       try {
         let response: any;
+        
+        
+        const dataToSave = { ...institutionData };
+        if (pendingCoords) {
+          dataToSave.lat = pendingCoords.lat;
+          dataToSave.lon = pendingCoords.lon;
+        }
 
+      
+        if (pendingAddressData) {
+          if (pendingAddressData.geocode) dataToSave.geocode = pendingAddressData.geocode;
+          if (pendingAddressData.municipality) dataToSave.municipality = pendingAddressData.municipality;
+        }
+        
+        console.log("Datos enviados al backend:", dataToSave); 
         if (editingInstitution) {
           response = await updateInstitution(
             editingInstitution.id,
-            institutionData,
+            dataToSave,
           );
         } else {
           response = await createInstitution(
-            institutionData as CreateInstitutionDTO,
+            dataToSave as CreateInstitutionDTO,
           );
         }
 
@@ -251,6 +282,8 @@ export function useInstitutions() {
 
         setIsModalOpen(false);
         setEditingInstitution(null);
+        setPendingCoords(null); 
+        setPendingAddressData(null);
         reloadInstitutions();
       } catch (err: any) {
         console.error("Error al guardar la institución:", err);
@@ -262,7 +295,7 @@ export function useInstitutions() {
         setIsSubmitting(false);
       }
     },
-    [reloadInstitutions, editingInstitution, addToast],
+    [reloadInstitutions, editingInstitution, addToast, pendingCoords, pendingAddressData], 
   );
 
   const handleConfirmModalClose = useCallback(() => {
@@ -342,6 +375,7 @@ export function useInstitutions() {
   const onEdit = useCallback((institution: Institution) => {
     setEditingInstitution(institution);
     setPendingCoords(null);
+    setPendingAddressData(null); 
     setModalError(null);
     setIsModalOpen(true);
   }, []);

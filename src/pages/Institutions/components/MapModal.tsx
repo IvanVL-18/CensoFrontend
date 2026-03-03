@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState} from "react";
-import { X, LoaderCircle } from "lucide-react";
-import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
+import { X, LoaderCircle, Crosshair } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -12,7 +12,7 @@ import { getInstitutionMapData, getCoordinatesFromPostalCode } from "../Map.serv
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
-const DefaultIcon = L.icon({
+const DefaultIcon = L.icon({ 
   iconUrl: icon,
   shadowUrl: iconShadow,
   iconSize: [25, 41],
@@ -31,6 +31,28 @@ type Props = {
   pendingCoords?: { lat: number; lon: number } | null;
   onPickLocation?: (coords: { lat: number; lon: number }) => void;
 };
+
+function RecenterButton({ lat, lon }: { lat: number; lon: number }) {
+  const map = useMap();
+
+  useEffect(() => {
+    map.setView([lat, lon], 16);
+  }, [lat, lon, map]);
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        map.setView([lat, lon], 16);
+      }}
+      className="absolute top-4 right-4 z-[1000] bg-white p-2 rounded-md shadow-md hover:bg-gray-100 text-[#691b31] border border-gray-300 flex items-center justify-center"
+      title="Centrar en ubicación"
+    >
+      <Crosshair size={20} />
+    </button>
+  );
+}
 
 export function MapModal({
   isOpen,
@@ -155,6 +177,8 @@ export function MapModal({
               scrollWheelZoom
               style={{ height: "100%", width: "100%" }}
             >
+              <RecenterButton lat={coordinates.lat} lon={coordinates.lon} />
+
               <TileLayer
                 attribution="&copy; OpenStreetMap"
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
