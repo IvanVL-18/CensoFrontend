@@ -1,6 +1,4 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
-
 import LoginPage from "./pages/login/page/LoginPage";
 import HomePage from "./pages/home/page/HomePage";
 import DashboardPage from "./pages/deshboard/Dashboard";
@@ -8,7 +6,9 @@ import ChartsPage from "./pages/grapher/page/ChartsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
 import ConfigurationsPage from "./pages/Configuration/Configuration";
 import DashboardLayout from "./components/DashboardLayout";
-
+import Modules from "./pages/Modules/Modules";
+import Users from "./pages/Users/Users";
+import Dependencies from "./pages/Dependencies/Dependencies";
 import Sections from "./pages/Sections/Sections";
 import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
@@ -17,18 +17,19 @@ import Roles from "./pages/Roles/Roles";
 import Areas from "./pages/Dependencies/Dependencies";
 import Permissions from "./pages/Permissions/Permissions";
 import PermissionRoles from "./pages/PermissionRoles/PermissionRoles";
-
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
 import Verification from "./pages/Verification/Verification";
-import Modules from "./pages/Modules/Modules";
+
+import Censos from "./pages/censos/Censos";
+import { CensoDetail } from "./pages/censos/components/CensoDetail";
+import CensoUnitsView from "./pages/censos/components/CensoUnitsView";
 
 export default function App() {
   return (
     <Routes>
       {/* Ruta pública */}
       <Route path="/login" element={<LoginPage />} />
-
       {/* Área autenticada */}
       <Route element={<DashboardLayout />}>
         <Route path="/" element={<Navigate to="/inicio" replace />} />
@@ -36,16 +37,11 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/instituciones" element={<Insitutions />} />
         <Route path="/indices" element={<Index />} />
-
         <Route path="/verification" element={<Verification />} />
-
         {/* Censos */}
-   
-
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />
         <Route path="/configuracion" element={<ConfigurationsPage />} />
-
         {/* Catálogos */}
         <Route path="/Modulos" element={<Modules />} />
         <Route path="/secciones" element={<Sections />} />
@@ -56,8 +52,12 @@ export default function App() {
         <Route path="/permisos" element={<Permissions />} />
         <Route path="/categorias" element={<Categories />} />
         <Route path="/catalogos" element={<Catalogs />} />
+        <Route path="/usuarios" element={<Users />} />
+        <Route path="/Dependency" element={<Dependencies />} />
+        <Route path="/censos" element={<Censos />} />
+        <Route path="/censos/:id" element={<CensoDetail />} />
+        <Route path="/censos/:id/unidades" element={<CensoUnitsView />} />
       </Route>
-
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>
