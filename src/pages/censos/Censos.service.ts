@@ -4,6 +4,12 @@ import type {
   PaginatedCensosResponse,
   CreateCensoDTO,
   UpdateCensoDTO,
+  Index,
+} from "./Censos.types";
+
+import type {
+  ModuleForCensoShowResponse,
+  ModuleForCensoRequest,
 } from "./Censos.types";
 
 export type CensoFilter = "all" | "active" | "inactive";
@@ -84,5 +90,50 @@ export const importCensos = async (
   const response = await api.post("/censos/import", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  return response.data;
+};
+
+export const getIndices = async (signal?: AbortSignal): Promise<Index[]> => {
+  const response = await api.get<{ data: Index[] } | Index[]>('/index', { signal });
+  const rawData = (response.data as any).data ?? response.data;
+  return rawData;
+};
+
+
+// ... funciones existentes (getCensos, getCenso, etc.)
+
+/**
+ * Obtiene los índices y asignaciones de módulos para un censo específico.
+ * @param id ID encriptado del censo
+ */
+export const getCensoModules = async (
+  id: string,
+  signal?: AbortSignal
+): Promise<ModuleForCensoShowResponse> => {
+  const response = await api.get<ModuleForCensoShowResponse>(
+    `/module-for-censo/${id}`,
+    { signal }
+  );
+  return response.data;
+};
+
+/**
+ * Actualiza las asignaciones de módulos (unidades) con índices para un censo.
+ * @param id ID encriptado del censo
+ * @param data Objeto con el array de items
+ */
+export const updateCensoModules = async (
+  id: string,
+  data: ModuleForCensoRequest
+): Promise<{ message: string }> => {
+  const response = await api.put(`/module-for-censo/${id}`, data);
+  return response.data;
+};
+
+// Si también necesitas el store (para crear desde cero), puedes agregarlo:
+export const createCensoModules = async (
+  data: ModuleForCensoRequest & { censo_id: number }
+): Promise<{ message: string }> => {
+  const response = await api.post("/module-for-censo", data);
   return response.data;
 };
