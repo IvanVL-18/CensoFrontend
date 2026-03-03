@@ -4,7 +4,7 @@ import type {
   PaginatedCatalogsResponse,
   CreateCatalogDTO,
   UpdateCatalogDTO,
-  Unit,
+  Module,
 } from "./Catalogs.types";
 
 export type CatalogFilter = "all" | "active" | "inactive";
@@ -47,7 +47,7 @@ export const getCatalog = async (
 };
 
 
-export const getUnits = async (
+export const getModules = async (
   filter: string = "all",
   search: string = "",
   page: number = 1,

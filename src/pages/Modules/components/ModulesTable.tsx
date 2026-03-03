@@ -7,7 +7,7 @@ import {
   Ban,
   type LucideProps,
 } from "lucide-react";
-import type { UnitsTableProps } from "../units.types";
+import type { ModulesTableProps } from "../Modules.types";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -27,8 +27,8 @@ const IconCircleArrowUp = (props: LucideProps) => (
 );
 const IconBan = (props: LucideProps) => <Ban {...defaultProps} {...props} />;
 
-export function UnitsTable({
-  units,
+export function ModulesTable({
+  Modules,
   meta,
   loading,
   error,
@@ -38,7 +38,7 @@ export function UnitsTable({
   onBan,
   onRestore,
   onDelete,
-}: UnitsTableProps) {
+}: ModulesTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -102,7 +102,7 @@ export function UnitsTable({
           )}
 
           {/* --- Estado Vacío --- */}
-          {!loading && !error && units.length === 0 && (
+          {!loading && !error && Modules.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
                 No se encontraron Modulos.
@@ -113,26 +113,26 @@ export function UnitsTable({
           {/* --- Mapeo de datos --- */}
           {!loading &&
             !error &&
-            units.map((unit, index) => (
-              <tr key={unit.id} className="hover:bg-gray-50">
+            Modules.map((Module, index) => (
+              <tr key={Module.id} className="hover:bg-gray-50">
                 {/* Celda "No." */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {meta ? meta.from + index : unit.id}
+                  {meta ? meta.from + index : Module.id}
                 </td>
 
                 {/* Celda "Nombre" */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {unit.name}
+                  {Module.name}
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
-                  {!unit.deleted_at ? (
+                  {!Module.deleted_at ? (
                     <>
                       {/* --- Botón VER (Activo) --- */}
                       <button
                         title="Ver Modulo"
-                        onClick={() => onView(unit)} 
+                        onClick={() => onView(Module)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -146,7 +146,7 @@ export function UnitsTable({
                       {/* --- Botón EDITAR (Activo) --- */}
                       <button
                         title="Editar Modulo"
-                        onClick={() => onEdit(unit)} 
+                        onClick={() => onEdit(Module)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#1b2469] hover:text-white 
@@ -160,7 +160,7 @@ export function UnitsTable({
                       {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
                         title="Desactivar Modulo"
-                        onClick={() => onBan(unit)} 
+                        onClick={() => onBan(Module)} 
                         className="
                           bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 
@@ -176,7 +176,7 @@ export function UnitsTable({
                       {/* --- Botón VER (Inactivo) --- */}
                       <button
                         title="Ver Modulo"
-                        onClick={() => onView(unit)} 
+                        onClick={() => onView(Module)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#9d7e43] hover:text-white 
@@ -190,7 +190,7 @@ export function UnitsTable({
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
                         title="Restaurar Modulo"
-                        onClick={() => onRestore(unit)} 
+                        onClick={() => onRestore(Module)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#1b6939] hover:text-white 
@@ -204,7 +204,7 @@ export function UnitsTable({
                       {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
                       <button
                         title="Eliminar Permanentemente"
-                        onClick={() => onDelete(unit)} 
+                        onClick={() => onDelete(Module)} 
                         className="
                            bg-white text-[#691b31] 
                           hover:bg-[#691b31] hover:text-white 

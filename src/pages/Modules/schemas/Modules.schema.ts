@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const unitSchema = z.object({
+export const ModuleSchema = z.object({
   name: z.string()
     .trim()
     .min(1, "El nombre es obligatorio.") 
@@ -12,4 +12,4 @@ export const unitSchema = z.object({
 )
 });
 
-export type UnitFormData = z.infer<typeof unitSchema>;
+export type ModuleFormData = z.infer<typeof ModuleSchema>;

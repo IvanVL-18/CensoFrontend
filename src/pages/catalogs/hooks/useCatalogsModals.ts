@@ -35,17 +35,17 @@ export function useCatalogsModals() {
   const openEdit = useCallback(async (catalog: Catalog) => {
     try {
       const fullCatalog = await getCatalog(catalog.id);
-      const unitId = fullCatalog.unit_id
-        ? String(fullCatalog.unit_id)
-        : (fullCatalog.unit?.id ? String(fullCatalog.unit.id) : "");
-      const unitName = fullCatalog.unit_name?.trim() || fullCatalog.unit?.name?.trim() || "";
+      const ModuleId = fullCatalog.Module_id
+        ? String(fullCatalog.Module_id)
+        : (fullCatalog.Module?.id ? String(fullCatalog.Module.id) : "");
+      const ModuleName = fullCatalog.Module_name?.trim() || fullCatalog.Module?.name?.trim() || "";
 
       setFormState({
         isOpen: true,
         catalog: {
           ...fullCatalog,
-          unit_id: unitId,
-          unit_name: unitName,
+          Module_id: ModuleId,
+          Module_name: ModuleName,
         },
       });
     } catch (error) {

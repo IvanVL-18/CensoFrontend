@@ -11,7 +11,7 @@ const names: Record<string, string> = {
   "configuracion": "Configuración",
   // Agrega aquí otras rutas que quieras mostrar (opcional)
   "secciones": "Secciones",
-  "unidades": "Unidades",
+  "Modulos": "Modulos",
 };
 
 export default function Breadcrumbs({ pathname }: { pathname: string }) {

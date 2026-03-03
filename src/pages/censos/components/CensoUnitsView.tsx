@@ -1,14 +1,14 @@
-// src/pages/censos/components/CensoUnitsView.tsx
+// src/pages/censos/components/CensoModulesView.tsx
 import React from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Plus } from "lucide-react";
-import { useAllUnits } from "../../Units/hooks/useAllUnits";    // <-- ruta corregida
-import type { Unit } from "../../Units/units.types";           // <-- ruta corregida
+import { useAllModules } from "../../Modules/hooks/useAllModules";    // <-- ruta corregida
+import type { Module } from "../../Modules/Modules.types";           // <-- ruta corregida
 
-const CensoUnitsView: React.FC = () => {
+const CensoModulesView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { units, loading } = useAllUnits();
+  const { Modules, loading } = useAllModules();
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -22,14 +22,14 @@ const CensoUnitsView: React.FC = () => {
             <ArrowLeft size={20} className="mr-2" />
             <span className="font-medium">Volver al censo</span>
           </button>
-          <h1 className="text-2xl font-bold text-gray-800">Unidades del censo</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Modulos del censo</h1>
           <div className="w-20"></div>
         </div>
 
         {/* Tarjeta principal */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-[#691b31] to-[#8a2a45] px-6 py-4">
-            <h2 className="text-xl font-bold text-white">Lista de unidades disponibles</h2>
+            <h2 className="text-xl font-bold text-white">Lista de Modulos disponibles</h2>
           </div>
 
           <div className="p-6">
@@ -47,7 +47,7 @@ const CensoUnitsView: React.FC = () => {
                           ID
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Nombre de la unidad
+                          Nombre de la Modulo
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Acción
@@ -55,13 +55,13 @@ const CensoUnitsView: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {units.map((unit: Unit) => (
-                        <tr key={unit.id} className="hover:bg-gray-50 transition-colors">
+                      {Modules.map((Module: Module) => (
+                        <tr key={Module.id} className="hover:bg-gray-50 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {unit.id}
+                            {Module.id}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {unit.name}
+                            {Module.name}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             <button
@@ -78,9 +78,9 @@ const CensoUnitsView: React.FC = () => {
                   </table>
                 </div>
 
-                {units.length === 0 && (
+                {Modules.length === 0 && (
                   <p className="text-center text-gray-500 py-8">
-                    No hay unidades disponibles.
+                    No hay Modulos disponibles.
                   </p>
                 )}
               </>
@@ -101,4 +101,4 @@ const CensoUnitsView: React.FC = () => {
   );
 };
 
-export default CensoUnitsView;
+export default CensoModulesView;

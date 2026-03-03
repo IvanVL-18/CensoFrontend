@@ -47,9 +47,9 @@ export const getInstitution = async (
 };
 
 export const createInstitution = async (
-  unitData: CreateInstitutionDTO,
+  ModuleData: CreateInstitutionDTO,
 ): Promise<{ message: string; data?: Institution }> => {
-  const response = await api.post("/institutions", unitData);
+  const response = await api.post("/institutions", ModuleData);
   return response.data;
 };
 

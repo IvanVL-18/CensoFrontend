@@ -1,4 +1,4 @@
-export interface Unit {
+export interface Module {
   id: string | number;
   name: string;
   created_at: string;
@@ -24,8 +24,8 @@ export interface Meta {
   to: number;
 }
 
-export interface PaginatedUnitsResponse {
-  data: Unit[];
+export interface PaginatedModulesResponse {
+  data: Module[];
   links: {
     first: string | null;
     last: string | null;
@@ -64,7 +64,7 @@ export interface FormErrorsProps {
   errors: string[];
 }
 
-export interface UnitModalProps {
+export interface ModuleModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null;
@@ -75,27 +75,27 @@ export interface UnitModalProps {
   onClearServerError: () => void;
 }
 
-export interface UnitsTableProps {
-  units: Unit[];
+export interface ModulesTableProps {
+  Modules: Module[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
-  onSort: (key: keyof Unit) => void;
-  onView: (unit: Unit) => void;
-  onEdit: (unit: Unit) => void;
-  onBan: (unit: Unit) => void;
-  onRestore: (unit: Unit) => void;
-  onDelete: (unit: Unit) => void;
+  onSort: (key: keyof Module) => void;
+  onView: (Module: Module) => void;
+  onEdit: (Module: Module) => void;
+  onBan: (Module: Module) => void;
+  onRestore: (Module: Module) => void;
+  onDelete: (Module: Module) => void;
 }
 
-export interface ViewUnitModalProps {
+export interface ViewModuleModalProps {
   isOpen: boolean;
   onClose: () => void;
-  unit: Unit | null;
+  Module: Module | null;
 }
 
-export interface CreateUnitDTO {
+export interface CreateModuleDTO {
   name: string;
 }
 
-export type UpdateUnitDTO = Partial<CreateUnitDTO>;
+export type UpdateModuleDTO = Partial<CreateModuleDTO>;
