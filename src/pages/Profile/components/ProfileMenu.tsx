@@ -44,7 +44,11 @@ export default function ProfileMenu() {
     (user.profile.name?.[0] || "") + (user.profile.lastname?.[0] || "");
 
   useEffect(() => {
-    if (isProfileIncomplete(user)) setPromptOpen(true);
+    const hasSeenModal = sessionStorage.getItem("hasSeenCompleteProfileModal");
+    if (isProfileIncomplete(user) && !hasSeenModal) {
+      setPromptOpen(true);
+      sessionStorage.setItem("hasSeenCompleteProfileModal", "true");
+    }
   }, [user]);
 
   useEffect(() => {
@@ -74,6 +78,7 @@ export default function ProfileMenu() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    sessionStorage.removeItem("hasSeenCompleteProfileModal");
     navigate("/login");
   };
 

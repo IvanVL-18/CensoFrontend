@@ -42,28 +42,28 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
                 <ProfileField
                   label="Nombre(s)"
                   icon={UserRound}
-                  value={draft.name}
+                  value={draft.name ?? ""}
                   onChange={(v) => setDraft((s) => ({ ...s, name: v }))}
                   maxLength={50}
                 />
                 <ProfileField
                   label="Apellidos"
                   icon={UserRound}
-                  value={draft.lastname}
+                  value={draft.lastname ?? ""}
                   onChange={(v) => setDraft((s) => ({ ...s, lastname: v }))}
                   maxLength={50}
                 />
                 <ProfileField
                   label="Teléfono fijo"
                   icon={Phone}
-                  value={draft.phone}
+                  value={draft.phone ?? ""}
                   onChange={(v) => setDraft((s) => ({ ...s, phone: v }))}
                   maxLength={20}
                 />
                 <ProfileField
                   label="Teléfono móvil"
                   icon={Smartphone}
-                  value={draft.mobile}
+                  value={draft.mobile ?? ""}
                   onChange={(v) => setDraft((s) => ({ ...s, mobile: v }))}
                   maxLength={20}
                 />
@@ -71,7 +71,7 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
                   className="md:col-span-2"
                   label="Dirección"
                   icon={MapPin}
-                  value={draft.address}
+                  value={draft.address ?? ""}
                   onChange={(v) => setDraft((s) => ({ ...s, address: v }))}
                   maxLength={200}
                 />

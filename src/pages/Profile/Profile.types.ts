@@ -1,9 +1,9 @@
 export type ProfileData = {
-  name: string;
-  lastname: string;
-  phone: string;
-  mobile: string;
-  address: string;
+  name: string | null;
+  lastname: string | null;
+  phone: string | null;
+  mobile: string | null;
+  address: string | null;
 };
 
 export type AuthUser = {
