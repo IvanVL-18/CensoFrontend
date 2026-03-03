@@ -12,7 +12,7 @@ type LoadingProps = {
 };
 
 export default function Loading({
-  size = 56,
+  size = 35,
   fullScreen = false,
   center = true,
   className = "",
@@ -70,7 +70,7 @@ export default function Loading({
           />
         </span>
       </span>
-      
+
       <style>{`
         @keyframes loadingSpin { to { transform: rotate(360deg); } }
         @keyframes loadingBuild {

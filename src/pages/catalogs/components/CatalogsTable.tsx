@@ -8,6 +8,8 @@ import {
   type LucideProps,
 } from "lucide-react";
 import type { CatalogsTableProps } from "../Catalogs.types";
+import Loading from "../../../components/Loading";
+
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -85,7 +87,7 @@ export function CatalogsTable({
           {loading && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                Cargando...
+                <Loading />
               </td>
             </tr>
           )}
