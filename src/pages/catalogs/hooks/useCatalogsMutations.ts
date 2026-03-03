@@ -28,12 +28,12 @@ export function useCatalogsMutations({
   const [mutationError, setMutationError] = useState<string | null>(null);
 
   const handleSave = useCallback(
-    async (name: string, slug: string, unitId: string, editingCatalog?: Catalog | null) => {
+    async (name: string, slug: string, ModuleId: string, editingCatalog?: Catalog | null) => {
       setIsSubmitting(true);
       setMutationError(null);
 
       try {
-        const catalogData = { name, slug, unit_id: unitId };
+        const catalogData = { name, slug, Module_id: ModuleId };
         const response = editingCatalog
           ? await updateCatalog(editingCatalog.id, catalogData )
           : await createCatalog(catalogData);

@@ -3,10 +3,10 @@ export interface Catalog {
   id: string;
   name: string;
   slug: string;
-  unit_id: string;
-  unit_name?: string; 
-   unit_is_active?: boolean; 
-  unit?: {
+  Module_id: string;
+  Module_name?: string; 
+   Module_is_active?: boolean; 
+  Module?: {
     id: string;
     name: string;
      deleted_at?: string | null;
@@ -15,7 +15,7 @@ export interface Catalog {
   updated_at: string;
   deleted_at: string;
 }
-export interface Unit {
+export interface Module {
   id: string;
   name: string;
   deleted_at?: string | null;
@@ -24,7 +24,7 @@ export interface Unit {
 export interface CreateCatalogDTO {
   name: string;
   slug: string;
-  unit_id: string;
+  Module_id: string;
 }
 
 export type UpdateCatalogDTO = Partial<CreateCatalogDTO>;
@@ -94,11 +94,11 @@ export interface CatalogModalProps {
   title: string;
   initialName?: string;
   initialSlug?: string;
-  initialUnitId?: string;
-  initialUnitName?: string; 
-  units: Unit[];
+  initialModuleId?: string;
+  initialModuleName?: string; 
+  Modules: Module[];
   onClose: () => void;
-  onSave: (name: string, slug: string, unitId: string) => void;
+  onSave: (name: string, slug: string, ModuleId: string) => void;
 }
 
 export interface CatalogsTableProps {

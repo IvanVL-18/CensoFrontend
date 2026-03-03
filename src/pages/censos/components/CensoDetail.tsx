@@ -121,15 +121,15 @@ export function CensoDetail() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <Link
-                to={`/censos/${censo.id}/unidades`}
+                to={`/censos/${censo.id}/Modulos`}
                 className="group flex items-center gap-4 p-5 border-2 border-gray-200 rounded-xl hover:border-[#691b31] hover:bg-gray-50 transition-all"
               >
                 <div className="p-3 bg-[#691b31] rounded-full group-hover:scale-105 transition-transform">
                   <Layers size={24} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 text-lg">Unidades</h3>
-                  <p className="text-sm text-gray-500">Administrar unidades del censo</p>
+                  <h3 className="font-semibold text-gray-800 text-lg">Modulos</h3>
+                  <p className="text-sm text-gray-500">Administrar Modulos del censo</p>
                 </div>
               </Link>
               <Link

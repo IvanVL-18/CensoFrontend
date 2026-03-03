@@ -13,7 +13,7 @@ export default function ConfigurationPage() {
       {
         title: "Módulos",
         description:
-          "Gestiona los módulos/unidades del sistema para organizar la estructura de los censos.",
+          "Gestiona los módulos/Modulos del sistema para organizar la estructura de los censos.",
         to: "/Modulos",
         icon: <Package className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },

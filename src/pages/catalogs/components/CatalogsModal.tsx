@@ -14,16 +14,16 @@ export function CatalogModal({
   title,
   initialName = "",
   initialSlug = "",
-  initialUnitId = "",
-  initialUnitName = "",
-  units,
+  initialModuleId = "",
+  initialModuleName = "",
+  Modules,
   onClose,
   onSave,
 }: CatalogModalProps) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [unitId, setUnitId] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string; slug?: string; unit?: string }>({});
+  const [ModuleId, setModuleId] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; slug?: string; Module?: string }>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [nameCharCount, setNameCharCount] = useState(0);
   const [slugCharCount, setSlugCharCount] = useState(0);
@@ -37,30 +37,30 @@ export function CatalogModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    const normalizedUnitId = initialUnitId ? String(initialUnitId).trim() : "";
-    const normalizedUnitName = initialUnitName?.trim().toLowerCase() || "";
-    let finalUnitId = normalizedUnitId;
+    const normalizedModuleId = initialModuleId ? String(initialModuleId).trim() : "";
+    const normalizedModuleName = initialModuleName?.trim().toLowerCase() || "";
+    let finalModuleId = normalizedModuleId;
 
-    const unitById = units.find(u => String(u.id).trim() === normalizedUnitId);
-    if (unitById) {
-      finalUnitId = unitById.id;
-    } else if (normalizedUnitName && units.length) {
-      const unitByName = units.find(u => u.name.trim().toLowerCase() === normalizedUnitName);
-      if (unitByName) finalUnitId = unitByName.id;
+    const ModuleById = Modules.find(u => String(u.id).trim() === normalizedModuleId);
+    if (ModuleById) {
+      finalModuleId = ModuleById.id;
+    } else if (normalizedModuleName && Modules.length) {
+      const ModuleByName = Modules.find(u => u.name.trim().toLowerCase() === normalizedModuleName);
+      if (ModuleByName) finalModuleId = ModuleByName.id;
     }
 
     setName(initialName);
     setSlug(initialSlug);
-    setUnitId(finalUnitId);
+    setModuleId(finalModuleId);
     setNameCharCount(initialName.length);
     setSlugCharCount(initialSlug.length);
     setFieldErrors({});
     setServerError(null);
-  }, [isOpen, initialName, initialSlug, initialUnitId, initialUnitName, units]);
+  }, [isOpen, initialName, initialSlug, initialModuleId, initialModuleName, Modules]);
 
-  const validateForm = (currentName: string, currentSlug: string, currentUnitId: string) => {
+  const validateForm = (currentName: string, currentSlug: string, currentModuleId: string) => {
     const result = Catalogschema.safeParse({ name: currentName, slug: currentSlug });
-    const errors: { name?: string; slug?: string; unit?: string } = {};
+    const errors: { name?: string; slug?: string; Module?: string } = {};
 
     if (!result.success) {
       result.error.issues.forEach((issue) => {
@@ -69,8 +69,8 @@ export function CatalogModal({
       });
     }
 
-    if (!currentUnitId) {
-      errors.unit = "Debe seleccionar una unidad";
+    if (!currentModuleId) {
+      errors.Module = "Debe seleccionar una Modulo";
     }
 
     setFieldErrors(errors);
@@ -79,8 +79,8 @@ export function CatalogModal({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (validateForm(name, slug, unitId)) {
-      onSave(name, slug, unitId);
+    if (validateForm(name, slug, ModuleId)) {
+      onSave(name, slug, ModuleId);
     }
   };
 
@@ -88,7 +88,7 @@ export function CatalogModal({
     const newName = e.target.value.slice(0, NAME_MAX_LENGTH);
     setName(newName);
     setNameCharCount(newName.length);
-    validateForm(newName, slug, unitId);
+    validateForm(newName, slug, ModuleId);
     setServerError(null);
   };
 
@@ -96,21 +96,21 @@ export function CatalogModal({
     const newSlug = e.target.value.slice(0, SLUG_MAX_LENGTH);
     setSlug(newSlug);
     setSlugCharCount(newSlug.length);
-    validateForm(name, newSlug, unitId);
+    validateForm(name, newSlug, ModuleId);
     setServerError(null);
   };
 
-  const handleUnitChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const newUnitId = e.target.value;
-    setUnitId(newUnitId);
-    validateForm(name, slug, newUnitId);
+  const handleModuleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const newModuleId = e.target.value;
+    setModuleId(newModuleId);
+    validateForm(name, slug, newModuleId);
     setServerError(null);
   };
 
   const handleClose = () => {
     setName("");
     setSlug("");
-    setUnitId("");
+    setModuleId("");
     setFieldErrors({});
     setServerError(null);
     setNameCharCount(0);
@@ -152,11 +152,11 @@ export function CatalogModal({
 
   const hasNameError = !!fieldErrors.name;
   const hasSlugError = !!fieldErrors.slug;
-  const hasUnitError = !!fieldErrors.unit;
+  const hasModuleError = !!fieldErrors.Module;
 
   const nameStyles = getFieldStyles(name, NAME_MAX_LENGTH, nameCharCount, hasNameError);
   const slugStyles = getFieldStyles(slug, SLUG_MAX_LENGTH, slugCharCount, hasSlugError);
-  const unitBorderColor = hasUnitError
+  const ModuleBorderColor = hasModuleError
     ? 'border-red-500 focus:ring-red-400'
     : 'border-gray-300 focus:ring-[#DDC9A3]';
 
@@ -228,20 +228,20 @@ export function CatalogModal({
               </div>
 
               <div>
-                <label htmlFor="unitId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Unidad:
+                <label htmlFor="ModuleId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Modulo:
                 </label>
                 <select
-                  id="unitId"
-                  value={unitId}
-                  onChange={handleUnitChange}
-                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${unitBorderColor}`}
+                  id="ModuleId"
+                  value={ModuleId}
+                  onChange={handleModuleChange}
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${ModuleBorderColor}`}
                   disabled={isSubmitting}
                 >
-                  <option value="">Seleccionar una unidad</option>
-                  {units.map((unit) => (
-                    <option key={unit.id} value={unit.id}>
-                      {unit.name}
+                  <option value="">Seleccionar una Modulo</option>
+                  {Modules.map((Module) => (
+                    <option key={Module.id} value={Module.id}>
+                      {Module.name}
                     </option>
                   ))}
                 </select>

@@ -17,7 +17,7 @@ export function useAllModules() {
       })
       .catch((err: unknown) => {
         if (err instanceof Error && err.name === "CanceledError") return;
-        setError("Error al cargar unidades");
+        setError("Error al cargar Modulos");
         console.error(err);
       })
       .finally(() => setLoading(false));
