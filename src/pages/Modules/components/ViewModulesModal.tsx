@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import type { ViewUnitModalProps } from "../units.types";
+import type { ViewModuleModalProps } from "../Modules.types";
 
 const formatDate = (dateString: string | null) => {
   if (!dateString) {
@@ -30,8 +30,8 @@ function DetailRow({ label, value }: { label: string, value: string | null }) {
   );
 }
 
-export function ViewUnitModal({ isOpen, onClose, unit }: ViewUnitModalProps) {
-  if (!isOpen || !unit) {
+export function ViewModuleModal({ isOpen, onClose, Module }: ViewModuleModalProps) {
+  if (!isOpen || !Module) {
     return null;
   }
 
@@ -63,15 +63,15 @@ export function ViewUnitModal({ isOpen, onClose, unit }: ViewUnitModalProps) {
           <div className="p-6 space-y-4">
             <DetailRow 
               label="Nombre del módulo:" 
-              value={unit.name} 
+              value={Module.name} 
             />
             <DetailRow 
               label="Fecha de creación:" 
-              value={formatDate(unit.created_at)} 
+              value={formatDate(Module.created_at)} 
             />
             <DetailRow 
               label="Fecha de desactivación:" 
-              value={formatDate(unit.deleted_at)} 
+              value={formatDate(Module.deleted_at)} 
             />
           </div>
 

@@ -1,12 +1,12 @@
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
-import type { UnitModalProps } from "../units.types";
-import { unitSchema } from "../schemas/units.schema";
+import type { ModuleModalProps } from "../Modules.types";
+import { ModuleSchema } from "../schemas/Modules.schema";
 
 const MAX_LENGTH = 65;
 
-export function UnitModal({
+export function ModuleModal({
   isOpen,
   isSubmitting,
   error,
@@ -15,7 +15,7 @@ export function UnitModal({
   onClose,
   onSave,
   onClearServerError, 
-}: UnitModalProps) {
+}: ModuleModalProps) {
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [charCount, setCharCount] = useState(initialName.length);
@@ -36,7 +36,7 @@ export function UnitModal({
   }, [isOpen, initialName, onClearServerError]);
 
   const validateForm = (currentName: string) => {
-    const result = unitSchema.safeParse({ name: currentName });
+    const result = ModuleSchema.safeParse({ name: currentName });
 
     if (!result.success) {
       const errors = result.error.issues.map((err) => err.message);
@@ -122,7 +122,7 @@ export function UnitModal({
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
               <div className="flex justify-between items-center mb-2">
-                <label htmlFor="unitName" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="ModuleName" className="block text-sm font-medium text-gray-700">
                   Nombre del módulo:
                 </label>
 
@@ -133,7 +133,7 @@ export function UnitModal({
 
               <input
                 type="text"
-                id="unitName"
+                id="ModuleName"
                 value={name}
                 onChange={handleNameChange}
                 placeholder="Ingresar nombre..."

@@ -2,8 +2,8 @@
 import React from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Plus } from "lucide-react";
-import { useAllUnits } from "../../Units/hooks/useAllUnits";    // <-- ruta corregida
-import type { Unit } from "../../Units/units.types";           // <-- ruta corregida
+import { useAllUnits } from "../../Modules/hooks/useAllUnits";    // <-- ruta corregida
+import type { Unit } from "../../Modules/units.types";           // <-- ruta corregida
 
 const CensoUnitsView: React.FC = () => {
   const { id } = useParams<{ id: string }>();

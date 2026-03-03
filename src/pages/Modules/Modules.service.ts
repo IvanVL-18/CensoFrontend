@@ -1,24 +1,24 @@
 import api from "../../lib/Axios";
 import type {
-  Unit,
-  PaginatedUnitsResponse,
-  CreateUnitDTO,
-  UpdateUnitDTO,
-} from "./units.types";
+  Module,
+  PaginatedModulesResponse,
+  CreateModuleDTO,
+  UpdateModuleDTO,
+} from "./Modules.types";
 
-export type UnitFilter = "all" | "active" | "inactive";
+export type ModuleFilter = "all" | "active" | "inactive";
 
-type UnitId = string | number;
+type ModuleId = string | number;
 
-export const getUnits = async (
-  filter: UnitFilter = "all",
+export const getModules = async (
+  filter: ModuleFilter = "all",
   search: string = "",
   page: number = 1,
   sortBy: string = "id",           
   direction: "asc" | "desc" = "asc", 
   signal?: AbortSignal,
-   perPage: number = 10
-): Promise<PaginatedUnitsResponse> => {
+  perPage: number = 10
+): Promise<PaginatedModulesResponse> => {
   const params = new URLSearchParams();
   
   if (search) params.append("search", search);
@@ -26,7 +26,7 @@ export const getUnits = async (
     params.append("sort_by", sortBy);
   params.append("direction", direction);
 
-  const response = await api.get<PaginatedUnitsResponse>(
+  const response = await api.get<PaginatedModulesResponse>(
     `/modules/${filter}/content`,
     {
       params: params,
@@ -36,51 +36,49 @@ export const getUnits = async (
   return response.data;
 };
 
-
-
-export const getUnit = async (
-  id: UnitId,
+export const getModule = async (
+  id: ModuleId,
   signal?: AbortSignal,
-): Promise<Unit> => {
-  const response = await api.get<{ data: Unit } | Unit>(`/modules/${id}`, {
+): Promise<Module> => {
+  const response = await api.get<{ data: Module } | Module>(`/modules/${id}`, {
     signal,
   });
   return (response.data as any).data ?? response.data;
 };
 
-export const createUnit = async (
-  unitData: CreateUnitDTO,
-): Promise<{ message: string; data?: Unit }> => {
-  const response = await api.post("/modules", unitData);
+export const createModule = async (
+  ModuleData: CreateModuleDTO,
+): Promise<{ message: string; data?: Module }> => {
+  const response = await api.post("/modules", ModuleData);
   return response.data;
 };
 
-export const updateUnit = async (
-  id: UnitId,
-  unitData: UpdateUnitDTO,
+export const updateModule = async (
+  id: ModuleId,
+  ModuleData: UpdateModuleDTO,
 ): Promise<{ message: string }> => {
-  const response = await api.put(`/modules/${id}`, unitData);
+  const response = await api.put(`/modules/${id}`, ModuleData);
   return response.data;
 };
 
-export const banUnit = async (id: UnitId): Promise<{ message: string }> => {
+export const banModule = async (id: ModuleId): Promise<{ message: string }> => {
   const response = await api.delete(`/modules/${id}`);
   return response.data;
 };
 
-export const restoreUnit = async (id: UnitId): Promise<{ message: string }> => {
+export const restoreModule = async (id: ModuleId): Promise<{ message: string }> => {
   const response = await api.post(`/modules/${id}/restore`);
   return response.data;
 };
 
-export const forceDeleteUnit = async (
-  id: UnitId,
+export const forceDeleteModule = async (
+  id: ModuleId,
 ): Promise<{ message: string }> => {
   const response = await api.delete(`/modules/${id}/force-delete`);
   return response.data;
 };
 
-export const importUnits = async (
+export const importModules = async (
   formData: FormData,
 ): Promise<{ message: string }> => {
   const response = await api.post("/modules/import", formData, {

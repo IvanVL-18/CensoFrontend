@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
-import { getUnits } from "../units.service"; // Cambiar a .service
-import type { Unit, PaginatedUnitsResponse } from "../units.types"; // Importar tipos necesarios
+import { getModules } from "../Modules.service"; // Cambiar a .service
+import type { Module, PaginatedModulesResponse } from "../Modules.types"; // Importar tipos necesarios
 
-export function useAllUnits() {
-  const [units, setUnits] = useState<Unit[]>([]);
+export function useAllModules() {
+  const [Modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
-    getUnits("all", "", 1, "id", "asc", controller.signal, 1000)
-      .then((data: PaginatedUnitsResponse) => {
-        setUnits(data.data);
+    getModules("all", "", 1, "id", "asc", controller.signal, 1000)
+      .then((data: PaginatedModulesResponse) => {
+        setModules(data.data);
         setError(null);
       })
       .catch((err: unknown) => {
@@ -24,5 +24,5 @@ export function useAllUnits() {
     return () => controller.abort();
   }, []);
 
-  return { units, loading, error };
+  return { Modules, loading, error };
 }

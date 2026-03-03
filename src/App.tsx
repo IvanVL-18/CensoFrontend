@@ -9,9 +9,6 @@ import ReportsPage from "./pages/reports/ReportsPage";
 import ConfigurationsPage from "./pages/Configuration/Configuration";
 import DashboardLayout from "./components/DashboardLayout";
 
-import Units from "./pages/Units/units";
-
-
 import Sections from "./pages/Sections/Sections";
 import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
@@ -24,6 +21,7 @@ import PermissionRoles from "./pages/PermissionRoles/PermissionRoles";
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
 import Verification from "./pages/Verification/Verification";
+import Modules from "./pages/Modules/Modules";
 
 export default function App() {
   return (
@@ -49,7 +47,7 @@ export default function App() {
         <Route path="/configuracion" element={<ConfigurationsPage />} />
 
         {/* Catálogos */}
-        <Route path="/unidades" element={<Units />} />
+        <Route path="/Modulos" element={<Modules />} />
         <Route path="/secciones" element={<Sections />} />
         <Route path="/ocupaciones" element={<Occupations />} />
         <Route path="/Roles" element={<Roles />} />
