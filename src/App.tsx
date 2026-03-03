@@ -14,7 +14,6 @@ import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Indexs/Indexs";
 import Roles from "./pages/Roles/Roles";
-import Areas from "./pages/Dependencies/Dependencies";
 import Permissions from "./pages/Permissions/Permissions";
 import PermissionRoles from "./pages/PermissionRoles/PermissionRoles";
 import Categories from "./pages/categories/Categories";
@@ -48,7 +47,6 @@ export default function App() {
         <Route path="/ocupaciones" element={<Occupations />} />
         <Route path="/Roles" element={<Roles />} />
         <Route path="/permission-roles" element={<PermissionRoles />} />
-        <Route path="/Area" element={<Areas />} />
         <Route path="/permisos" element={<Permissions />} />
         <Route path="/categorias" element={<Categories />} />
         <Route path="/catalogos" element={<Catalogs />} />
