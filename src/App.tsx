@@ -54,7 +54,7 @@ export default function App() {
         <Route path="/Dependency" element={<Dependencies />} />
         <Route path="/censos" element={<Censos />} />
         <Route path="/censos/:id" element={<CensoDetail />} />
-        <Route path="/censos/:id/unidades" element={<CensoUnitsView />} />
+        <Route path="/censos/:id/modulos" element={<CensoUnitsView />} />
       </Route>
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
