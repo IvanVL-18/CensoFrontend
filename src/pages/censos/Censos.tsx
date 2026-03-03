@@ -167,7 +167,6 @@ function CensosPageContent() {
         onBulkUpload={handleBulkUpload}
         mode={createModalMode}
         editingCenso={modals.editingCenso}
-        formRef={censoFormRef}
         onFormValidityChange={setIsFormValid}
         isFormValid={isFormValid}
       />
