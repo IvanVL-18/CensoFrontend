@@ -26,11 +26,19 @@ import {
   updatePermissionRole,
   type Permission,
 } from "./PermissionRoles.service";
+
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
-
-const ACTIONS_ORDER = ["view", "create", "edit", "disable", "restore", "bulk", "delete"];
+const ACTIONS_ORDER = [
+  "view",
+  "create",
+  "edit",
+  "disable",
+  "restore",
+  "bulk",
+  "delete",
+];
 
 const ACTION_LABEL: Record<string, string> = {
   view: "Ver",
@@ -41,7 +49,6 @@ const ACTION_LABEL: Record<string, string> = {
   bulk: "Carga Masiva",
   delete: "Eliminar",
 };
-
 
 const moduleLabelMap: Record<string, string> = {
   dashboard: "Dashboard",
@@ -100,19 +107,12 @@ const MODULE_ORDER: string[] = [
   "catalogs",
 ];
 
-
 const normalizeModule = (m: string) => {
   const x = (m || "").toLowerCase().trim();
-
-
   if (x === "graficador") return "graph";
-
- 
   if (x === "indexs" || x === "indices") return "indexes";
-
   return x || "otros";
 };
-
 
 const normalizeAction = (a: string) => {
   const x = (a || "").toLowerCase().trim();
@@ -122,7 +122,6 @@ const normalizeAction = (a: string) => {
   if (["create", "crear", "store", "add", "new"].includes(x)) return "create";
   if (["edit", "editar", "update"].includes(x)) return "edit";
 
- 
   if (
     [
       "disable",
@@ -136,9 +135,9 @@ const normalizeAction = (a: string) => {
   )
     return "disable";
 
-  if (["restore", "restaurar", "recover", "unban"].includes(x)) return "restore";
+  if (["restore", "restaurar", "recover", "unban"].includes(x))
+    return "restore";
 
-  
   if (
     [
       "bulk",
@@ -189,22 +188,25 @@ function ToastContainer() {
 function PermissionRolesContent() {
   const { addToast } = useToast();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+
+  
+  const [searchParams, setSearchParams] = useSearchParams();
   const roleEnc = searchParams.get("role") ?? "";
   const savedRoleId = localStorage.getItem("permissionRoles:lastRoleId") ?? "";
 
   const { roles, loading: loadingRoles, error: rolesError } = useRolesSelect();
 
   const [roleId, setRoleId] = useState<string>(roleEnc || savedRoleId || "");
-
+  const [roleParamApplied, setRoleParamApplied] = useState(false); 
   const [errors, setErrors] = useState<string[]>([]);
   const [fetching, setFetching] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [allPerms, setAllPerms] = useState<Permission[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [apiRoleName, setApiRoleName] = useState("");
 
-
+  
   useEffect(() => {
     if (loadingRoles) return;
 
@@ -213,18 +215,21 @@ function PermissionRolesContent() {
       return;
     }
 
-    const has = (id: string) => roles.some((r) => r.id === id);
-
-    if (roleEnc && has(roleEnc)) {
+    
+    if (!roleParamApplied && roleEnc) {
       if (roleId !== roleEnc) setRoleId(roleEnc);
+      setRoleParamApplied(true);
       return;
     }
 
-    if (roleId && has(roleId)) return;
+    
+    if (roleId) return;
 
+    
     if (roles.length > 0) setRoleId(roles[0].id);
-  }, [loadingRoles, roles, rolesError, roleEnc, roleId]);
+  }, [loadingRoles, rolesError, roles, roleEnc, roleId, roleParamApplied]);
 
+  
   useEffect(() => {
     if (!roleId) return;
 
@@ -238,6 +243,7 @@ function PermissionRolesContent() {
         const ids = (data.role?.permissions ?? []).map((p) => p.id);
         setSelected(new Set(ids));
         localStorage.setItem("permissionRoles:lastRoleId", roleId);
+        setApiRoleName(data.role?.name ?? "");
       })
       .catch((err: any) => {
         const isCanceled =
@@ -259,18 +265,28 @@ function PermissionRolesContent() {
     return () => ac.abort();
   }, [roleId]);
 
-  const roleName = useMemo(() => {
-    const r = roles.find((x) => x.id === roleId);
-    return r?.name ?? "";
-  }, [roles, roleId]);
+  const displayRoleName = useMemo(() => {
+    return apiRoleName || roles.find((x) => x.id === roleId)?.name || "";
+  }, [apiRoleName, roles, roleId]);
 
- 
+  const rolesForSelect = useMemo(() => {
+    if (!roleId) return roles;
+
+    const exists = roles.some((r) => r.id === roleId);
+    if (exists) return roles;
+
+    return [
+      { id: roleId, name: displayRoleName || "Rol seleccionado" },
+      ...roles,
+    ];
+  }, [roles, roleId, displayRoleName]);
+
   const modules = useMemo(() => {
     type ModuleCard = {
       moduleKey: string;
       label: string;
       icon: any;
-      actions: Record<string, number>; 
+      actions: Record<string, number>;
     };
 
     const map = new Map<string, ModuleCard>();
@@ -296,7 +312,6 @@ function PermissionRolesContent() {
       (a, b) => orderIndex(a.moduleKey) - orderIndex(b.moduleKey),
     );
   }, [allPerms]);
-
 
   const allOn = useMemo(() => {
     if (!allPerms.length) return false;
@@ -337,7 +352,6 @@ function PermissionRolesContent() {
     }
   };
 
-
   const actionOrderIndex = (a: string) => {
     const i = ACTIONS_ORDER.indexOf(a);
     return i === -1 ? 999 : i;
@@ -350,6 +364,7 @@ function PermissionRolesContent() {
   return (
     <div className="w-full bg-[#F8FAFC]">
       <ToastContainer />
+
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <PermissionRolesToolbar
@@ -362,7 +377,7 @@ function PermissionRolesContent() {
               Asignando permisos a:
             </span>{" "}
             <span className="text-slate-700">
-              {roleName || "Selecciona un rol"}
+              {displayRoleName || "Selecciona un rol"}
             </span>
           </div>
 
@@ -375,7 +390,16 @@ function PermissionRolesContent() {
 
             <select
               value={roleId}
-              onChange={(e) => setRoleId(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                setRoleId(next);
+
+             
+                setSearchParams({ role: next }, { replace: true });
+
+     
+                setRoleParamApplied(true);
+              }}
               disabled={busy}
               className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9D2449]/40 disabled:bg-slate-100 sm:max-w-md"
             >
@@ -383,7 +407,7 @@ function PermissionRolesContent() {
                 {loadingRoles ? "Cargando roles..." : "Selecciona un rol..."}
               </option>
 
-              {roles.map((r) => (
+              {rolesForSelect.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.name}
                 </option>
@@ -401,8 +425,7 @@ function PermissionRolesContent() {
             {modules.map((m) => {
               const Icon = m.icon;
 
-              const actionKeys = Object.keys(m.actions);
-              const actionsSorted = actionKeys.sort((a, b) => {
+              const actionsSorted = Object.keys(m.actions).sort((a, b) => {
                 const ia = actionOrderIndex(a);
                 const ib = actionOrderIndex(b);
                 if (ia !== ib) return ia - ib;
