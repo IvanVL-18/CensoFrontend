@@ -28,7 +28,7 @@ export function CensoCreateSelectionModal({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
           {/* Header */}
-          <div className="flex justify-between items-center p-4 bg-[#691b31]">
+          <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">Nuevo censo</h2>
             <button onClick={onClose} className="text-white hover:text-gray-300">
               <X size={24} />
