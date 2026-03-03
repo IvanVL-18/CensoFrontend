@@ -80,7 +80,7 @@ export function UsersExtraModal({
     return true;
   };
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextDependencyElement>,
+    e: ChangeEvent<HTMLInputElement | HTMLtextAreaElement>,
   ) => {
     const { name, value } = e.target;
 
@@ -234,7 +234,7 @@ export function UsersExtraModal({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Dirección:
                 </label>
-                <textDependency
+                <textArea
                   name="address"
                   value={formData.address}
                   onChange={handleChange}

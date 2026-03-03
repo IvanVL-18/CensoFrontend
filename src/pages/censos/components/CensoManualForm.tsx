@@ -279,7 +279,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
             <FileText size={16} className="mr-2 text-gray-400" />
             Descripción breve
           </label>
-          <textDependency
+          <textArea
             id="description"
             value={description}
             onChange={handleDescriptionChange}
