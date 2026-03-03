@@ -81,7 +81,7 @@ export const forceDeleteInstitution = async (
 export const importInstitutions = async (
   formData: FormData,
 ): Promise<{ message: string }> => {
-  const response = await api.post("/units/import", formData, {
+  const response = await api.post("/modules/import", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;

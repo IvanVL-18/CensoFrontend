@@ -2,8 +2,8 @@ import { useRef } from "react";
 import { X, FileText, Upload } from "lucide-react";
 import { CensoManualForm } from "./CensoManualForm";
 import type { CensoManualFormRef } from "./CensoManualForm";
-import { CensoUploadArea } from "./CensoUploadArea";
-import type { CensoUploadAreaRef } from "./CensoUploadArea";
+import { CensoUploadDependency } from "./CensoUploadDependencies";
+import type { CensoUploadDependencyRef } from "./CensoUploadDependencies";
 import type { Censo } from "../Censos.types";
 
 interface CensoCreateModalProps {
@@ -55,7 +55,7 @@ export function CensoCreateModal({
 
   const resetState = () => {
     manualFormRef.current?.reset();
-    uploadAreaRef.current?.reset();
+    uploadDependencyRef.current?.reset();
   };
 
   const handleClose = () => {
@@ -104,8 +104,8 @@ export function CensoCreateModal({
                 onFullValidityChange={onFormValidityChange}
               />
             ) : (
-              <CensoUploadArea
-                ref={uploadAreaRef}
+              <CensoUploadDependency
+                ref={uploadDependencyRef}
                 isSubmitting={isSubmitting}
                 onFileSubmit={onBulkUpload}
                 error={error}
@@ -141,7 +141,7 @@ export function CensoCreateModal({
             ) : (
               <button
                 type="button"
-                onClick={() => uploadAreaRef.current?.submit()}
+                onClick={() => uploadDependencyRef.current?.submit()}
                 disabled={isSubmitting}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50 flex items-center gap-2"
               >

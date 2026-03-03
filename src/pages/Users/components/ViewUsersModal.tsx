@@ -69,7 +69,7 @@ export function ViewUserModal({ isOpen, onClose, User }: ViewUserModalProps) {
             <hr className="border-gray-200" />
             <DetailRow label="Rol:" value={User.role?.name || "N/A"} />
             <DetailRow label="Ocupación:" value={User.occupation?.name || "N/A"} />
-            <DetailRow label="Área:" value={User.area?.name || "N/A"} />
+            <DetailRow label="Dependencia:" value={User.dependency?.name || "N/A"} />
             <DetailRow label="Institución:" value={User.institution?.name || "N/A"} />
             <hr className="border-gray-200" />
             <DetailRow 
@@ -92,7 +92,7 @@ export function ViewUserModal({ isOpen, onClose, User }: ViewUserModalProps) {
                 hover:brightness-95
               "
             >
-              Cerrar
+              Cerrar 
             </button>
           </div>
         </div>

@@ -13,7 +13,7 @@ export function useUsersModals() {
   const openEdit = useCallback((User: User) => {
     setEditingUser(User);
     setIsFormOpen(true);
-  }, []); 
+  }, []);
 
   const closeForm = useCallback(() => {
     setIsFormOpen(false);
@@ -67,6 +67,35 @@ export function useUsersModals() {
     setBulkErrors([]);
   }, []);
 
+  const [isExtraOpen, setIsExtraOpen] = useState(false);
+  const [extraUser, setExtraUser] = useState<User | null>(null);
+
+  const openExtra = useCallback((User: User) => {
+    setExtraUser(User);
+    setIsExtraOpen(true);
+  }, []);
+
+  const closeExtra = useCallback(() => {
+    setIsExtraOpen(false);
+    setExtraUser(null);
+  }, []);
+
+  const patchUser = useCallback((id: string | number, patch: Partial<User>) => {
+  const sid = String(id);
+
+  setEditingUser((prev) =>
+    prev && String(prev.id) === sid ? { ...prev, ...patch } : prev
+  );
+
+  setViewingUser((prev) =>
+    prev && String(prev.id) === sid ? { ...prev, ...patch } : prev
+  );
+
+  setExtraUser((prev) =>
+    prev && String(prev.id) === sid ? { ...prev, ...patch } : prev
+  );
+}, []);
+
   return {
     isFormOpen,
     editingUser,
@@ -89,5 +118,11 @@ export function useUsersModals() {
     bulkErrors,
     openBulkError,
     closeBulkError,
+
+    isExtraOpen,
+    extraUser,
+    openExtra,
+    closeExtra,
+    patchUser,
   };
 }

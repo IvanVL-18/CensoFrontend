@@ -30,6 +30,6 @@ export function FormErrors({ errors }: FormErrorsProps) {
           ))}
         </ul>
       </div>
-    </div>
+    </div> 
   );
 }

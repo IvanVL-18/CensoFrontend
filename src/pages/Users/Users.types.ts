@@ -9,14 +9,14 @@ export interface User {
   email_verified_at: string | null;
   role_id: number;
   occupation_id: number | null;
-  area_id: number | null;
+  dependency_id: number | null;
   institution_id: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
   role?: { id: number; name: string };
   occupation?: { id: number; name: string };
-  area?: { id: number; name: string };
+  dependency?: { id: number; name: string };
   institution?: { id: number; name: string };
 }
 
@@ -31,7 +31,7 @@ export interface Meta {
   total: number[];
   per_page: number[];
   current_page: number[];
-  last_page: number[]; 
+  last_page: number[];
   from: number;
   links: MetaLink[];
   path: string;
@@ -77,7 +77,7 @@ export interface FormErrorsProps {
   errors: string[];
 }
 
-export interface UserModalProps { 
+export interface UserModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null;
@@ -88,7 +88,7 @@ export interface UserModalProps {
 }
 
 export interface UsersTableProps {
-  Users: User[]; 
+  Users: User[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
@@ -102,20 +102,20 @@ export interface UsersTableProps {
 export interface ViewUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  User: User | null; 
+  User: User | null;
 }
 export interface CreateUserDTO {
-  name?: string;
-  lastname?: string;
-  phone?: string;
-  mobile?: string;
-  address?: string;
+  name?: string | null;
+  lastname?: string | null;
+  phone?: string | null;
+  mobile?: string | null;
+  address?: string | null;
   email: string;
   password?: string;
   password_confirmation?: string;
   role_id?: string | number;
   occupation_id?: string | number | null;
-  area_id?: string | number | null;
+  dependency_id?: string | number | null;
   institution_id?: string | number | null;
 }
 export type UpdateUserDTO = Partial<CreateUserDTO>;

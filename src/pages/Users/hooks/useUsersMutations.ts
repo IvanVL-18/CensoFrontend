@@ -15,17 +15,24 @@ interface UseUsersMutationsProps {
   closeForm: () => void;
   closeConfirm: () => void;
   openBulkError: (errors: any[]) => void;
+  closeExtra: () => void;
+  patchUser?: (id: string | number, patch: Partial<User>) => void;
 }
- 
+
 export function useUsersMutations({
   refreshUsers,
   closeForm,
   closeConfirm,
   openBulkError,
+  closeExtra,
+  patchUser, 
 }: UseUsersMutationsProps) {
   const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const resetMutationError = () => setMutationError(null);
+  const [isExtraSubmitting, setIsExtraSubmitting] = useState(false);
+  const [extraError, setExtraError] = useState<string | null>(null);
 
   const handleSave = useCallback(
     async (userData: CreateUserDTO, editingUser?: User | null) => {
@@ -62,6 +69,41 @@ export function useUsersMutations({
       }
     },
     [addToast, closeForm, refreshUsers],
+  );
+
+  
+  const handleSaveExtra = useCallback(
+    async (User: User, extraData: UpdateUserDTO) => {
+      setIsExtraSubmitting(true);
+      setExtraError(null);
+
+      try {
+        const payload: UpdateUserDTO = {
+          ...extraData,
+          role_id: User.role_id,
+          occupation_id: User.occupation_id,
+          dependency_id: User.dependency_id,
+          institution_id: User.institution_id,
+        };
+
+        const response = await updateUser(User.id, payload);
+        patchUser?.(User.id, extraData as any);
+
+        addToast(response.message, "success");
+        closeExtra();
+        refreshUsers();
+      } catch (err: any) {
+        const msg =
+          err.response?.data?.message ||
+          err.message ||
+          "Error al guardar datos";
+        setExtraError(msg);
+        addToast(msg, "danger");
+      } finally {
+        setIsExtraSubmitting(false);
+      }
+    },
+    [addToast, closeExtra, refreshUsers],
   );
 
   const handleConfirmAction = useCallback(
@@ -124,8 +166,12 @@ export function useUsersMutations({
   return {
     isSubmitting,
     mutationError,
+    resetMutationError,
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
+    isExtraSubmitting,
+    extraError,
+    handleSaveExtra,
   };
 }

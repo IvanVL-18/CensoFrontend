@@ -63,7 +63,7 @@ export const getUnits = async (
   params.append("direction", direction);
 
   const response = await api.get<any>(
-    `/units/${filter}/content`,
+    `/modules/${filter}/content`,
     {
       params: params,
       signal,
