@@ -11,7 +11,7 @@ export const Censoschema = z.object({
   name: z.string()
     .trim()
     .min(5, "El nombre debe tener al menos 5 caracteres.")
-    .max(65, "El nombre no puede exceder los 65 caracteres.")
+    .max(65, "El nombre no puede exceder los 125 caracteres.")
     .regex(
       nameDescriptionRegex,
       "El nombre no puede contener emojis ni símbolos especiales."
