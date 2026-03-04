@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, ShieldCheck, Mail, Smartphone, BadgeCheck } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ShieldCheck, Mail, Smartphone, BadgeCheck } from "lucide-react";
 import VerificationLayout from "./VerificationLayout";
 import OtpInput from "./OtpInput";
 import ResendTimer from "./ResendTimer";
@@ -25,7 +24,6 @@ export default function VerificationCard({
   destination,
   onVerified,
 }: VerificationCardProps) {
-  const navigate = useNavigate();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -63,13 +61,6 @@ export default function VerificationCard({
     <VerificationLayout>
       <div className="w-full max-w-[520px]">
         <div className="mb-5 flex items-center justify-between">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm backdrop-blur hover:bg-white"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Regresar
-          </button>
         </div>
 
         <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_20px_60px_-25px_rgba(2,6,23,.35)]">
