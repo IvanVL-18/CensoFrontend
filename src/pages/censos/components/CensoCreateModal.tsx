@@ -28,6 +28,8 @@ export function CensoCreateModal({
   onBulkUpload,
   mode,
   editingCenso,
+  onFormValidityChange,
+  isFormValid,
 }: CensoCreateModalProps) {
   const manualFormRef = useRef<CensoManualFormRef>(null);
   const uploadDependencyRef = useRef<CensoUploadDependencyRef>(null);
@@ -54,6 +56,10 @@ export function CensoCreateModal({
   const handleClose = () => {
     resetState();
     onClose();
+  };
+
+  const handleFormValidityChange = (isValid: boolean) => {
+    onFormValidityChange(isValid);
   };
 
   if (!isOpen) return null;
@@ -93,6 +99,7 @@ export function CensoCreateModal({
                 onSubmit={onSave}
                 error={error}
                 initialData={initialData}
+                onFullValidityChange={handleFormValidityChange}
               />
             ) : (
               <CensoUploadDependency
@@ -104,7 +111,6 @@ export function CensoCreateModal({
             )}
           </div>
 
-          {/* Footer con botones */}
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
             <button
               type="button"
@@ -118,7 +124,7 @@ export function CensoCreateModal({
               <button
                 type="button"
                 onClick={() => manualFormRef.current?.submit()}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isFormValid}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50 flex items-center gap-2"
               >
                 {isSubmitting ? (

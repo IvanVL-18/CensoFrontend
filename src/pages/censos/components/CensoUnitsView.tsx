@@ -126,19 +126,41 @@ const CensoUnitsView: React.FC = () => {
 
   const allSelected = modules.length > 0 && modules.every(mod => selectedUnits[String(mod.id)]);
 
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#691b31]"></div>
+      </div>
+    );
+  }
+
+  if (error || !modules) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <p className="text-red-600 mb-3">{error || "No se pudo cargar la información"}</p>
+        <button
+          onClick={() => navigate(-1)}
+          className="bg-[#691b31] text-white px-5 py-1.5 rounded-lg hover:bg-opacity-90 text-sm"
+        >
+          Regresar
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-6 flex items-center justify-between">
+    <div className="min-h-screen py-8">
+      <div className="max-w-7xl mx-auto px-6">
+     
+        <div className="flex items-center mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center text-gray-600 hover:text-[#691b31] transition-colors"
+            className="flex items-center text-gray-600 hover:text-[#691b31] transition-colors text-sm"
           >
-            <ArrowLeft size={20} className="mr-2" />
+            <ArrowLeft size={18} className="mr-1" />
             <span className="font-medium">Volver al censo</span>
           </button>
-          <h1 className="text-2xl font-bold text-gray-800">Unidades del censo</h1>
-          <div className="w-20"></div>
         </div>
 
         {error && (
@@ -164,118 +186,114 @@ const CensoUnitsView: React.FC = () => {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+       
+        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+         
           <div className="bg-gradient-to-r from-[#691b31] to-[#8a2a45] px-6 py-4">
             <h2 className="text-xl font-bold text-white">Lista de unidades disponibles</h2>
           </div>
 
+     
           <div className="p-6">
-            {loading ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#691b31]"></div>
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <div className="overflow-x-auto border border-gray-200 rounded-lg">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        className="rounded border-gray-300 text-[#691b31] focus:ring-[#691b31]"
+                      />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Nombre de la unidad
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Índice a asignar
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Asignación actual
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {modules.map((module) => {
+                    const unitId = String(module.id);
+                    const currentValue = selectedIndices[unitId] ?? "";
+                    const isChecked = selectedUnits[unitId] ?? false;
+                    const existingIndexId = existingAssignments[unitId];
+                    const existingIndexName = existingIndexId ? indexMap[existingIndexId] : null;
+
+                    return (
+                      <tr key={unitId} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="checkbox"
-                            checked={allSelected}
-                            onChange={(e) => handleSelectAll(e.target.checked)}
+                            checked={isChecked}
+                            onChange={(e) => handleCheckboxChange(unitId, e.target.checked)}
                             className="rounded border-gray-300 text-[#691b31] focus:ring-[#691b31]"
                           />
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Nombre de la unidad
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Índice a asignar
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Asignación actual
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Acciones
-                        </th>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {module.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <select
+                            value={currentValue}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              handleIndexChange(unitId, val === "" ? null : val);
+                            }}
+                            className="border rounded px-2 py-1 text-sm w-full max-w-xs"
+                            disabled={saving}
+                          >
+                            <option value="">Sin índice</option>
+                            {indices.map((idx) => (
+                              <option key={idx.id} value={String(idx.id)}>
+                                {idx.name}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          {existingIndexName ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              {existingIndexName}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                              Sin asignar
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <button
+                            onClick={() => handleAddSections(unitId)}
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                            title="Agregar secciones a esta unidad"
+                          >
+                            <PlusCircle size={16} />
+                            <span className="hidden sm:inline">Secciones</span>
+                          </button>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {modules.map((module) => {
-                        const unitId = String(module.id);
-                        const currentValue = selectedIndices[unitId] ?? "";
-                        const isChecked = selectedUnits[unitId] ?? false;
-                        const existingIndexId = existingAssignments[unitId];
-                        const existingIndexName = existingIndexId ? indexMap[existingIndexId] : null;
-
-                        return (
-                          <tr key={unitId} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={(e) => handleCheckboxChange(unitId, e.target.checked)}
-                                className="rounded border-gray-300 text-[#691b31] focus:ring-[#691b31]"
-                              />
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {module.name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              <select
-                                value={currentValue}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  handleIndexChange(unitId, val === "" ? null : val);
-                                }}
-                                className="border rounded px-2 py-1 text-sm w-full max-w-xs"
-                                disabled={saving}
-                              >
-                                <option value="">Sin índice</option>
-                                {indices.map((idx) => (
-                                  <option key={idx.id} value={String(idx.id)}>
-                                    {idx.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              {existingIndexName ? (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                  {existingIndexName}
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                  Sin asignar
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              <button
-                                onClick={() => handleAddSections(unitId)}
-                                className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-                                title="Agregar secciones a esta unidad"
-                              >
-                                <PlusCircle size={16} />
-                                <span className="hidden sm:inline">Secciones</span>
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                {modules.length === 0 && (
-                  <p className="text-center text-gray-500 py-8">
-                    No hay unidades disponibles.
-                  </p>
-                )}
-              </>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {modules.length === 0 && (
+              <p className="text-center text-gray-500 py-8">
+                No hay unidades disponibles.
+              </p>
             )}
 
+           
             <div className="mt-6 flex justify-end gap-3">
               <Link
                 to={`/censos/${id}`}

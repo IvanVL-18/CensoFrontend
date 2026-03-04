@@ -40,6 +40,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       init_date: false,
       deadline: false,
     });
+    const [submitted, setSubmitted] = useState(false); // Nuevo estado
 
     useEffect(() => {
       setServerError(error ?? null);
@@ -61,11 +62,26 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       });
 
       const visible: string[] = [];
+
       Object.entries(touchedFields).forEach(([field, touched]) => {
-        if (touched && fieldErrorsMap[field]) {
+        if (!touched) return;
+
+        const fieldValue = 
+          field === 'name' ? name :
+          field === 'description' ? description :
+          field === 'init_date' ? startDate :
+          endDate;
+
+        // Si el campo está vacío y NO se ha intentado enviar, no mostramos errores
+        if (!submitted && (!fieldValue || fieldValue.trim() === '')) {
+          return;
+        }
+
+        if (fieldErrorsMap[field]) {
           visible.push(...fieldErrorsMap[field]);
         }
       });
+
       return visible;
     };
 
@@ -77,11 +93,10 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         }
         return prev;
       });
-    }, [name, description, startDate, endDate, touchedFields]);
+    }, [name, description, startDate, endDate, touchedFields, submitted]);
 
     useEffect(() => {
       const result = Censoschema.safeParse({ name, description, init_date: startDate, deadline: endDate });
-     
       onFullValidityChange?.(result.success);
     }, [name, description, startDate, endDate, onFullValidityChange]);
 
@@ -99,6 +114,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
           init_date: true,
           deadline: true,
         });
+        setSubmitted(false);
       } else {
         setName("");
         setDescription("");
@@ -112,6 +128,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
           deadline: false,
         });
         setFormErrors([]);
+        setSubmitted(false);
       }
     }, [initialData]);
 
@@ -130,8 +147,12 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
           init_date: false,
           deadline: false,
         });
+        setSubmitted(false);
       },
       submit: () => {
+        // Marcamos que se intentó enviar
+        setSubmitted(true);
+
         const result = Censoschema.safeParse({ name, description, init_date: startDate, deadline: endDate });
         if (!result.success) {
           setTouchedFields({
@@ -164,6 +185,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setCharCount(newName.length);
         setServerError(null);
         setTouchedFields((prev) => ({ ...prev, name: true }));
+        setSubmitted(false); // Resetear submitted al cambiar
       }
     };
 
@@ -171,18 +193,21 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       setStartDate(e.target.value);
       setServerError(null);
       setTouchedFields((prev) => ({ ...prev, init_date: true }));
+      setSubmitted(false);
     };
 
     const handleEndDateChange = (e: ChangeEvent<HTMLInputElement>) => {
       setEndDate(e.target.value);
       setServerError(null);
       setTouchedFields((prev) => ({ ...prev, deadline: true }));
+      setSubmitted(false);
     };
 
     const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
       setDescription(e.target.value);
       setServerError(null);
       setTouchedFields((prev) => ({ ...prev, description: true }));
+      setSubmitted(false);
     };
 
     const handleFormSubmit = (e: FormEvent) => {
@@ -209,7 +234,6 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         <div>
           <div className="flex items-center justify-between mb-2">
             <label htmlFor="censoName" className="flex items-center text-sm font-semibold text-gray-700">
-            
               Nombre del censo
             </label>
             <span className={`text-xs font-medium ${charCountColor}`}>

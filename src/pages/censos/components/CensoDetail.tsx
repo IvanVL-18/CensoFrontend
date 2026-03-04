@@ -30,7 +30,7 @@ export function CensoDetail() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#691b31]"></div>
       </div>
     );
@@ -38,7 +38,7 @@ export function CensoDetail() {
 
   if (error || !censo) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="">
         <p className="text-red-600 mb-3">{error || "Censo no encontrado"}</p>
         <button
           onClick={() => navigate(-1)}
@@ -65,9 +65,10 @@ export function CensoDetail() {
   const porcentaje = 100; 
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mb-4 flex items-center justify-between">
+    <div className=" min-h-screen py-8">
+      <div className="max-w-7xl mx-auto px-6">
+    
+        <div className="flex items-center justify-between mb-8"> 
           <button
             onClick={() => navigate(-1)}
             className="flex items-center text-gray-600 hover:text-[#691b31] transition-colors text-sm"
@@ -76,43 +77,47 @@ export function CensoDetail() {
             <span className="font-medium">Regresar</span>
           </button>
           <div className="flex gap-2">
-            <button className="px-3 py-1.5 text-xs bg-[#691b31] text-white rounded-lg hover:bg-opacity-90 transition-colors">
-              Compartir
-            </button>
+           
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="flex justify-between items-center bg-red-900 px-6 py-4">
+        
+        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+          {/* Cabecera roja */}
+          <div className="bg-[#691b31] px-6 py-4">
             <h1 className="text-2xl font-bold text-white">{censo.name}</h1>
           </div>
 
-          <div className="p-6">
-            <div className="flex items-center gap-2 text-gray-600 mb-3">
-              <Clock size={16} className="text-[#C3A67C]" />
-              <span className="text-xs font-medium">Creado:</span>
-              <span className="text-xs">{createdYear}</span>
+     
+          <div className="divide-y divide-gray-200">
+           
+            <div className="px-6 py-4 flex items-center gap-2 text-gray-600">
+              <Clock size={18} className="text-[#C3A67C]" />
+              <span className="text-sm font-medium">Creado:</span>
+              <span className="text-sm">{createdYear}</span>
             </div>
 
+            
             {censo.description && (
-              <div className="mb-4">
-                <h3 className="text-xs font-semibold text-gray-700 mb-1">Descripción</h3>
-                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div className="px-6 py-4">
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Descripción</h3>
+                <p className="text-base text-gray-600">
                   {censo.description}
                 </p>
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-1 text-gray-700 mb-2">
+           
+            <div className="px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-gray-700 mb-1">
                   <Calendar size={16} className="text-[#691b31]" />
                   <h3 className="text-sm font-semibold">Fecha de inicio</h3>
                 </div>
                 <p className="text-base font-medium">{formatDate(censo.start_date)}</p>
               </div>
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-1 text-gray-700 mb-2">
+              <div>
+                <div className="flex items-center gap-2 text-gray-700 mb-1">
                   <Calendar size={16} className="text-[#691b31]" />
                   <h3 className="text-sm font-semibold">Fecha de fin</h3>
                 </div>
@@ -120,35 +125,37 @@ export function CensoDetail() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+            
+            <div className="px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <Link
                 to={`/censos/${censo.id}/Modulos`}
-                className="group flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-[#691b31] hover:bg-gray-50 transition-all"
+                className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-[#691b31] hover:bg-gray-50 transition-all"
               >
-                <div className="p-2 bg-[#691b31] rounded-full group-hover:scale-105 transition-transform">
+                <div className="p-2 bg-[#691b31] rounded-full">
                   <Layers size={20} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 text-base">Módulos</h3>
+                  <h3 className="font-semibold text-gray-800">Módulos</h3>
                   <p className="text-xs text-gray-500">Administrar módulos del censo</p>
                 </div>
               </Link>
               <Link
                 to={`/censos/${censo.id}/secciones`}
-                className="group flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-[#691b31] hover:bg-gray-50 transition-all"
+                className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-[#691b31] hover:bg-gray-50 transition-all"
               >
-                <div className="p-2 bg-[#691b31] rounded-full group-hover:scale-105 transition-transform">
+                <div className="p-2 bg-[#691b31] rounded-full">
                   <FileText size={20} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 text-base">Secciones</h3>
+                  <h3 className="font-semibold text-gray-800">Secciones</h3>
                   <p className="text-xs text-gray-500">Gestionar secciones y preguntas</p>
                 </div>
               </Link>
             </div>
 
-            <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-              <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
+        
+            <div className="px-6 py-4">
+              <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
                 <PieChart size={18} className="text-[#691b31]" />
                 Progreso del censo
               </h3>
