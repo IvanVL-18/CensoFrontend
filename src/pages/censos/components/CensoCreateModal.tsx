@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, type Dispatch, type SetStateAction } from "react";
 import { X, FileText, Upload } from "lucide-react";
 import { CensoManualForm } from "./CensoManualForm";
 import type { CensoManualFormRef } from "./CensoManualForm";
@@ -15,6 +15,8 @@ interface CensoCreateModalProps {
   onBulkUpload: (file: File) => void;
   mode: "create" | "upload";
   editingCenso?: Censo | null;
+  onFormValidityChange: Dispatch<SetStateAction<boolean>>;
+  isFormValid: boolean;
 }
 
 export function CensoCreateModal({
@@ -30,10 +32,10 @@ export function CensoCreateModal({
   const manualFormRef = useRef<CensoManualFormRef>(null);
   const uploadDependencyRef = useRef<CensoUploadDependencyRef>(null);
 
- const formatDate = (dateStr?: string) => {
-  if (!dateStr) return undefined;
-  return dateStr.split('T')[0].split(' ')[0];
-};
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return undefined;
+    return dateStr.split('T')[0].split(' ')[0];
+  };
 
   const initialData = editingCenso
     ? {
@@ -65,20 +67,24 @@ export function CensoCreateModal({
 
   return (
     <>
+    
       <div
-        className="fixed inset-0 bg-[#000000ab] z-40 transition-opacity"
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] transition-opacity"
         onClick={handleClose}
       />
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+
+      
+      <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
-          {/* Header */}
-          <div className="flex justify-between items-center p-4 bg-[#691b31]">
+        
+          <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
             <button onClick={handleClose} className="text-white hover:text-gray-300">
               <X size={24} />
             </button>
           </div>
 
+     
           <div className="p-6">
             {mode === "create" ? (
               <CensoManualForm

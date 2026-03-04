@@ -79,15 +79,12 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       });
     }, [name, description, startDate, endDate, touchedFields]);
 
-    // Notifica al padre sobre la validez completa (útil para habilitar el botón)
     useEffect(() => {
       const result = Censoschema.safeParse({ name, description, init_date: startDate, deadline: endDate });
-      // Puedes activar este log para depurar
-      // console.log('Validación completa:', result.success, result.error?.issues);
+     
       onFullValidityChange?.(result.success);
     }, [name, description, startDate, endDate, onFullValidityChange]);
 
-    // Maneja cambios en initialData (se ejecuta al abrir el modal en edición)
     useEffect(() => {
       if (initialData) {
         const newName = initialData.name ?? "";
@@ -103,7 +100,6 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
           deadline: true,
         });
       } else {
-        // Reset para creación
         setName("");
         setDescription("");
         setStartDate("");

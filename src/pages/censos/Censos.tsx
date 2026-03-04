@@ -66,7 +66,6 @@ function CensosPageContent() {
   const censoFormRef = useRef<CensoManualFormRef>(null);
   const [isFormValid, setIsFormValid] = useState(false);
 
-  // Limpiar formulario al abrir el modal en modo creación (como en CategoryModal)
   useEffect(() => {
     if (modals.isFormOpen && !modals.editingCenso) {
       censoFormRef.current?.reset();
@@ -99,18 +98,18 @@ function CensosPageContent() {
   let confirmButtonColor: "danger" | "primary" = "danger";
 
   if (modals.actionType === "ban") {
-    confirmTitle = "Desactivar categoría";
-    confirmMessage = `¿Estás seguro de que quieres desactivar la categoría "${modals.actionCenso?.name}"?`;
+    confirmTitle = "Desactivar censo";
+    confirmMessage = `¿Estás seguro de que quieres desactivar el censo "${modals.actionCenso?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (modals.actionType === "restore") {
-    confirmTitle = "Restaurar categoría";
-    confirmMessage = `¿Estás seguro de que quieres restaurar la categoría "${modals.actionCenso?.name}"?`;
+    confirmTitle = "Restaurar censo";
+    confirmMessage = `¿Estás seguro de que quieres restaurar el censo  "${modals.actionCenso?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la categoría "${modals.actionCenso?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el censo "${modals.actionCenso?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }

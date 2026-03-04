@@ -100,10 +100,9 @@ export const getIndices = async (signal?: AbortSignal): Promise<Index[]> => {
 };
 
 
-// ... funciones existentes (getCensos, getCenso, etc.)
 
 /**
- * Obtiene los índices y asignaciones de módulos para un censo específico.
+
  * @param id ID encriptado del censo
  */
 export const getCensoModules = async (
@@ -118,9 +117,9 @@ export const getCensoModules = async (
 };
 
 /**
- * Actualiza las asignaciones de módulos (unidades) con índices para un censo.
- * @param id ID encriptado del censo
- * @param data Objeto con el array de items
+ 
+ * @param id
+ * @param data 
  */
 export const updateCensoModules = async (
   id: string,
@@ -130,7 +129,6 @@ export const updateCensoModules = async (
   return response.data;
 };
 
-// Si también necesitas el store (para crear desde cero), puedes agregarlo:
 export const createCensoModules = async (
   data: ModuleForCensoRequest & { censo_id: number }
 ): Promise<{ message: string }> => {

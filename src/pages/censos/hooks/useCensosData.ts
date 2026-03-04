@@ -89,7 +89,7 @@ export function useCensosData() {
       const pageParam = urlObj.searchParams.get("page");
       if (pageParam) setPage(Number(pageParam));
     } catch {
-      // ignore invalid URL
+    
     }
   }, []);
 

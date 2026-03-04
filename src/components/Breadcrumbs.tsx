@@ -9,7 +9,6 @@ const names: Record<string, string> = {
   "graficador": "Graficador",
   "reportes": "Reportes",
   "configuracion": "Configuración",
-  // Agrega aquí otras rutas que quieras mostrar (opcional)
   "secciones": "Secciones",
   "Modulos": "Modulos",
 };
@@ -17,13 +16,12 @@ const names: Record<string, string> = {
 export default function Breadcrumbs({ pathname }: { pathname: string }) {
   const parts = pathname.split("/").filter(Boolean);
 
-  // Filtrar solo segmentos conocidos (ignora IDs)
+  
   const visibleParts = parts.filter(part => names[part]);
 
-  // Si no hay segmentos conocidos, no mostrar nada
+ 
   if (visibleParts.length === 0) return null;
 
-  // Construir ruta acumulada para enlaces
   const buildPath = (index: number) => {
     const originalIndex = parts.findIndex(p => p === visibleParts[index]);
     return "/" + parts.slice(0, originalIndex + 1).join("/");

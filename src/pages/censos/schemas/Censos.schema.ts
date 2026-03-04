@@ -23,7 +23,7 @@ export const Censoschema = z.object({
       message: "La descripción debe tener al menos 10 caracteres si se proporciona."
     })
     .max(255, "La descripción no puede exceder los 255 caracteres.")
-    .optional(), // Permite undefined, pero en el formulario siempre será string
+    .optional(), 
 
   init_date: z.string()
     .min(1, "La fecha de inicio es obligatoria.")
