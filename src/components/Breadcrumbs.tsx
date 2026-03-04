@@ -1,7 +1,5 @@
-// src/components/Breadcrumbs.tsx
 import { Link } from "react-router-dom";
 
-// Mapa de traducción de rutas → nombres bonitos
 const names: Record<string, string> = {
   "inicio": "Inicio",
   "dashboard": "Dashboard",
@@ -11,41 +9,40 @@ const names: Record<string, string> = {
   "graficador": "Graficador",
   "reportes": "Reportes",
   "configuracion": "Configuración",
+  // Agrega aquí otras rutas que quieras mostrar (opcional)
+  "secciones": "Secciones",
+  "Modulos": "Modulos",
 };
 
 export default function Breadcrumbs({ pathname }: { pathname: string }) {
   const parts = pathname.split("/").filter(Boolean);
 
-  if (parts.length === 0) return null;
+  // Filtrar solo segmentos conocidos (ignora IDs)
+  const visibleParts = parts.filter(part => names[part]);
 
-  // Generar las rutas acumuladas para poder hacer cada parte clickeable
-  const buildPath = (index: number) =>
-    "/" + parts.slice(0, index + 1).join("/");
+  // Si no hay segmentos conocidos, no mostrar nada
+  if (visibleParts.length === 0) return null;
+
+  // Construir ruta acumulada para enlaces
+  const buildPath = (index: number) => {
+    const originalIndex = parts.findIndex(p => p === visibleParts[index]);
+    return "/" + parts.slice(0, originalIndex + 1).join("/");
+  };
 
   return (
     <nav aria-label="Breadcrumb">
       <ol className="flex items-center gap-2 text-sm text-neutral-500">
-        {parts.map((part, index) => {
-          const isLast = index === parts.length - 1;
-          const label = names[part] ?? decodeURIComponent(part);
+        {visibleParts.map((part, index) => {
+          const isLast = index === visibleParts.length - 1;
+          const label = names[part];
 
           return (
             <li key={index} className="flex items-center gap-2">
-              {/* Separador "/" excepto en el primero */}
-              {index > 0 && (
-                <span className="text-neutral-400 select-none">/</span>
-              )}
-
-              {/* Último elemento → vino + negritas */}
+              {index > 0 && <span className="text-neutral-400 select-none">/</span>}
               {isLast ? (
-                <span className="text-[#7C1227] font-semibold">
-                  {label}
-                </span>
+                <span className="text-[#7C1227] font-semibold">{label}</span>
               ) : (
-                <Link
-                  to={buildPath(index)}
-                  className="hover:text-neutral-700 transition-colors"
-                >
+                <Link to={buildPath(index)} className="hover:text-neutral-700 transition-colors">
                   {label}
                 </Link>
               )}

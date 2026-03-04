@@ -1,16 +1,18 @@
-import { useInstitutions } from "./useInstitutions";
-import { InstitutionsToolbar } from "./InstitutionsToolbar";
-import { InstitutionsTable } from "./InstitutionsTable";
+import { useInstitutions } from "../Institutions/hooks/useInstitutions";
+import { InstitutionsToolbar } from "../Institutions/components/InstitutionsToolbar"
+;
+import { InstitutionsTable } from "../Institutions/components/InstitutionsTable";
 import Pagination from "../../components/Pagination";
-import { InstitutionModal } from "./InstitutionsModal";
-import { ConfirmModal } from "./ConfirmModal";
-import { ViewInstitutionModal } from "./ViewInstitutionsModal";
-import { MapModal } from "./MapModal";
+import { InstitutionModal } from "../Institutions/components/InstitutionsModal";
+import { ConfirmModal } from "../Institutions/components/ConfirmModal";
+import { ViewInstitutionModal } from "../Institutions/components/ViewInstitutionsModal";
+import { MapModal } from "../Institutions/components/MapModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
+import  { EditLocationModal } from "../Institutions/EditLocationModal";
 
 function ToastContainer() {
-  const { toasts, removeToast } = useToast();
+  const { toasts, removeToast } = useToast(); 
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
@@ -26,7 +28,7 @@ function ToastContainer() {
   );
 }
 
-// --- 2. Componente Interno para el Contenido de la Página ---
+
 function InstitutionsPageContent() {
   const {
     loading,
@@ -64,18 +66,21 @@ function InstitutionsPageContent() {
     handleConfirmModalClose,
     handleMapModalClose,
     handleConfirmAction,
+    pendingCoords,
+    isEditMapOpen,
+    onEditLocation,
+    onCloseEditMap,
+    onPickLocation,
   } = useInstitutions();
 
-  // Si 'editingInstitution' tiene datos, el título es "Editar". Si no, "Agregar".
+ 
   const modalTitle = editingInstitution
     ? "Editar Institución"
     : "Agregar Institución";
-  const initialName = editingInstitution ? editingInstitution.name : "";
-  const initialMunicipality = editingInstitution
-    ? editingInstitution.municipality
-    : "";
-  const initialGeocode = editingInstitution ? editingInstitution.geocode : "";
-  const initialType = editingInstitution ? editingInstitution.typeinst : "";
+  const initialName = editingInstitution?.name || "";
+  const initialMunicipality = editingInstitution?.municipality || "";
+  const initialGeocode = editingInstitution?.geocode || "";
+  const initialType = editingInstitution?.typeinst || "";
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -101,10 +106,10 @@ function InstitutionsPageContent() {
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
-      {/* Contenedor de Toasts */}
+
       <ToastContainer />
 
-      {/* Cabecera y Filtros */}
+     
       <InstitutionsToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -113,23 +118,22 @@ function InstitutionsPageContent() {
         onAddClick={handleAddClick}
       />
 
-      {/* Contenido Principal (Tabla y Paginación) */}
+   
       <div className="p-4">
-        {/* Tabla de datos */}
         <InstitutionsTable
           loading={loading}
           error={error}
           institutions={sortedInstitutions}
           meta={paginationMeta}
           onSort={handleSort}
-          onShowMap={onShowMap} // <-- Pasamos la nueva función
+          onShowMap={onShowMap}
           onView={onView}
           onEdit={onEdit}
           onBan={onBan}
           onRestore={onRestore}
           onDelete={onDelete}
         />
-        {/* --- Paginación --- */}
+  
         <div className="mt-4 flex justify-center">
           <Pagination
             meta={paginationMeta}
@@ -141,7 +145,7 @@ function InstitutionsPageContent() {
         </div>
       </div>
 
-      {/* Modales */}
+      
       <InstitutionModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
@@ -151,7 +155,10 @@ function InstitutionsPageContent() {
         initialMunicipality={initialMunicipality}
         initialGeocode={initialGeocode}
         initialType={initialType}
-        onClose={handleModalClose} // La función del hook
+        isEditMode={!!editingInstitution}
+        onEditLocation={onEditLocation}
+        pendingCoords={pendingCoords} 
+        onClose={handleModalClose}
         onSave={handleModalSave}
       />
 
@@ -173,17 +180,36 @@ function InstitutionsPageContent() {
         onClose={handleViewModalClose}
       />
 
-     <MapModal
+<MapModal
   isOpen={isMapModalOpen}
   onClose={handleMapModalClose}
-  institutionId={mapInstitution?.id || null}
-  institutionName={mapInstitution?.name || null}
+  institution={mapInstitution}
+  editable
+  pendingCoords={pendingCoords}
+  onPickLocation={onPickLocation}
 />
+
+
+      <EditLocationModal
+        isOpen={isEditMapOpen}
+        onClose={onCloseEditMap}
+        institution={editingInstitution}
+        currentCoords={
+          editingInstitution?.lat != null && editingInstitution?.lon != null
+            ? {
+                lat: Number(editingInstitution.lat),
+                lon: Number(editingInstitution.lon),
+              }
+            : null
+        }
+        pendingCoords={pendingCoords}
+        onPick={onPickLocation}
+      />
     </div>
   );
 }
 
-// Componente Principal (Exportado)
+
 export default function Institutions() {
   return (
     <ToastProvider>

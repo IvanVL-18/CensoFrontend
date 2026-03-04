@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import type { Section } from "../Sections.types";
 
 export function useSectionsModals() {
-  // Crear / Editar
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<Section | null>(null);
 
@@ -11,8 +10,8 @@ export function useSectionsModals() {
     setIsFormOpen(true);
   }, []);
 
-  const openEdit = useCallback((section: Section) => {
-    setEditingSection(section);
+  const openEdit = useCallback((Section: Section) => {
+    setEditingSection(Section);
     setIsFormOpen(true);
   }, []);
 
@@ -21,12 +20,11 @@ export function useSectionsModals() {
     setEditingSection(null);
   }, []);
 
-  // Ver Detalle
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewingSection, setViewingSection] = useState<Section | null>(null);
 
-  const openView = useCallback((section: Section) => {
-    setViewingSection(section);
+  const openView = useCallback((Section: Section) => {
+    setViewingSection(Section);
     setIsViewOpen(true);
   }, []);
 
@@ -35,16 +33,20 @@ export function useSectionsModals() {
     setViewingSection(null);
   }, []);
 
-  // Confirmación
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [actionSection, setActionSection] = useState<Section | null>(null);
-  const [actionType, setActionType] = useState<"ban" | "restore" | "delete" | null>(null);
+  const [actionType, setActionType] = useState<
+    "ban" | "restore" | "delete" | null
+  >(null);
 
-  const openConfirm = useCallback((section: Section, type: "ban" | "restore" | "delete") => {
-    setActionSection(section);
-    setActionType(type);
-    setIsConfirmOpen(true);
-  }, []);
+  const openConfirm = useCallback(
+    (Section: Section, type: "ban" | "restore" | "delete") => {
+      setActionSection(Section);
+      setActionType(type);
+      setIsConfirmOpen(true);
+    },
+    [],
+  );
 
   const closeConfirm = useCallback(() => {
     setIsConfirmOpen(false);
@@ -52,7 +54,6 @@ export function useSectionsModals() {
     setActionType(null);
   }, []);
 
-  // Errores Masivos
   const [isBulkErrorOpen, setIsBulkErrorOpen] = useState(false);
   const [bulkErrors, setBulkErrors] = useState<any[]>([]);
 
@@ -67,9 +68,26 @@ export function useSectionsModals() {
   }, []);
 
   return {
-    isFormOpen, editingSection, openCreate, openEdit, closeForm,
-    isViewOpen, viewingSection, openView, closeView,
-    isConfirmOpen, actionSection, actionType, openConfirm, closeConfirm,
-    isBulkErrorOpen, bulkErrors, openBulkError, closeBulkError,
+    isFormOpen,
+    editingSection,
+    openCreate,
+    openEdit,
+    closeForm,
+
+    isViewOpen,
+    viewingSection,
+    openView,
+    closeView,
+
+    isConfirmOpen,
+    actionSection,
+    actionType,
+    openConfirm,
+    closeConfirm,
+
+    isBulkErrorOpen,
+    bulkErrors,
+    openBulkError,
+    closeBulkError,
   };
 }

@@ -8,6 +8,7 @@ import {
   type LucideProps,
 } from "lucide-react";
 import type { SectionsTableProps } from "../Sections.types";
+import Loading from "../../../components/Loading";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -85,7 +86,7 @@ export function SectionsTable({
           {loading && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                Cargando...
+                <Loading />
               </td>
             </tr>
           )}
@@ -105,7 +106,7 @@ export function SectionsTable({
           {!loading && !error && Sections.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                No se encontraron Secciones.
+                No se encontraron Sections.
               </td>
             </tr>
           )}
@@ -131,7 +132,7 @@ export function SectionsTable({
                     <>
                       {/* --- Botón VER (Activo) --- */}
                       <button
-                        title="Ver Seccion"
+                        title="Ver Sección"
                         onClick={() => onView(Section)} 
                         className="
                           bg-white text-[#691b31] 
@@ -145,7 +146,7 @@ export function SectionsTable({
 
                       {/* --- Botón EDITAR (Activo) --- */}
                       <button
-                        title="Editar Seccion"
+                        title="Editar Sección"
                         onClick={() => onEdit(Section)} 
                         className="
                           bg-white text-[#691b31] 
@@ -159,7 +160,7 @@ export function SectionsTable({
 
                       {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
-                        title="Desactivar Seccion"
+                        title="Desactivar Sección"
                         onClick={() => onBan(Section)} 
                         className="
                           bg-white text-[#691b31] 
@@ -175,7 +176,7 @@ export function SectionsTable({
                     <>
                       {/* --- Botón VER (Inactivo) --- */}
                       <button
-                        title="Ver Seccion"
+                        title="Ver Sección"
                         onClick={() => onView(Section)} 
                         className="
                            bg-white text-[#691b31] 
@@ -189,7 +190,7 @@ export function SectionsTable({
 
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
-                        title="Restaurar Seccion"
+                        title="Restaurar Sección"
                         onClick={() => onRestore(Section)} 
                         className="
                            bg-white text-[#691b31] 

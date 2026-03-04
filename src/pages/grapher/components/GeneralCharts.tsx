@@ -1,4 +1,4 @@
-import type { GeneralSummary, InstitutionStat } from "../../grapher/components/charts";
+import type { GeneralSummary, InstitutionStat } from "./charts";
 
 type Props = {
   summary: GeneralSummary;
