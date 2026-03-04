@@ -3,8 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getQuestionComponent } from "../Questions.service";
 import { Form } from "@formio/react";
 
-import "bootstrap/dist/css/bootstrap.min.css";
-import "formiojs/dist/formio.full.css";
+
 
 const FormAny = Form as any;
 
