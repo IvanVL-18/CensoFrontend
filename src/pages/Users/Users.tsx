@@ -164,7 +164,10 @@ function UsersPageContent() {
         occupations={occupations}
         dependencies={dependencies}
         institutions={institutions}
-        onClose={modals.closeForm}
+        onClose={() => {
+          modals.closeForm();
+          resetMutationError();
+        }}
         onSave={(data) => handleSave(data, modals.editingUser)}
         onOpenExtra={modals.openExtra}
       />
@@ -188,7 +191,10 @@ function UsersPageContent() {
         message={confirmMessage}
         confirmButtonText={confirmButtonText}
         confirmButtonColor={confirmButtonColor}
-        onClose={modals.closeConfirm}
+        onClose={() => {
+          modals.closeConfirm();
+          resetMutationError();
+        }}
         onConfirm={() =>
           handleConfirmAction(modals.actionUser, modals.actionType)
         }
