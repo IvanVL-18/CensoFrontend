@@ -209,7 +209,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         <div>
           <div className="flex items-center justify-between mb-2">
             <label htmlFor="censoName" className="flex items-center text-sm font-semibold text-gray-700">
-              <Type size={18} className="mr-2 text-gray-400" />
+            
               Nombre del censo
             </label>
             <span className={`text-xs font-medium ${charCountColor}`}>
