@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ChangeEvent, forwardRef, useImperativeHandle, useEffect } from "react";
-import { Calendar, FileText, Type } from "lucide-react";
+import { Calendar, FileText } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { Censoschema } from "../schemas/Censos.schema";
 
@@ -40,11 +40,15 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       init_date: false,
       deadline: false,
     });
-    const [submitted, setSubmitted] = useState(false); // Nuevo estado
+    const [submitted, setSubmitted] = useState(false);
+    const [ignoreServerError, setIgnoreServerError] = useState(false);
 
+   
     useEffect(() => {
-      setServerError(error ?? null);
-    }, [error]);
+      if (!ignoreServerError) {
+        setServerError(error ?? null);
+      }
+    }, [error, ignoreServerError]);
 
     useEffect(() => {
       onErrorChange?.(formErrors);
@@ -72,7 +76,6 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
           field === 'init_date' ? startDate :
           endDate;
 
-        // Si el campo está vacío y NO se ha intentado enviar, no mostramos errores
         if (!submitted && (!fieldValue || fieldValue.trim() === '')) {
           return;
         }
@@ -115,6 +118,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
           deadline: true,
         });
         setSubmitted(false);
+        setIgnoreServerError(false);
       } else {
         setName("");
         setDescription("");
@@ -128,7 +132,9 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
           deadline: false,
         });
         setFormErrors([]);
+        setServerError(null);
         setSubmitted(false);
+        setIgnoreServerError(true);
       }
     }, [initialData]);
 
@@ -148,10 +154,11 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
           deadline: false,
         });
         setSubmitted(false);
+        setIgnoreServerError(true);
       },
       submit: () => {
-        // Marcamos que se intentó enviar
         setSubmitted(true);
+        setIgnoreServerError(false);
 
         const result = Censoschema.safeParse({ name, description, init_date: startDate, deadline: endDate });
         if (!result.success) {
@@ -185,7 +192,8 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setCharCount(newName.length);
         setServerError(null);
         setTouchedFields((prev) => ({ ...prev, name: true }));
-        setSubmitted(false); // Resetear submitted al cambiar
+        setSubmitted(false);
+        setIgnoreServerError(false);
       }
     };
 
@@ -194,6 +202,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       setServerError(null);
       setTouchedFields((prev) => ({ ...prev, init_date: true }));
       setSubmitted(false);
+      setIgnoreServerError(false);
     };
 
     const handleEndDateChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -201,6 +210,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       setServerError(null);
       setTouchedFields((prev) => ({ ...prev, deadline: true }));
       setSubmitted(false);
+      setIgnoreServerError(false);
     };
 
     const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -208,6 +218,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       setServerError(null);
       setTouchedFields((prev) => ({ ...prev, description: true }));
       setSubmitted(false);
+      setIgnoreServerError(false);
     };
 
     const handleFormSubmit = (e: FormEvent) => {
