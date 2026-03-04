@@ -47,6 +47,7 @@ function CensosPageContent() {
 
   const [showSelectionModal, setShowSelectionModal] = useState(false);
   const [createModalMode, setCreateModalMode] = useState<"create" | "upload">("create");
+  const [formKey, setFormKey] = useState(0);
 
   const modals = useCensosModals();
 
@@ -56,6 +57,7 @@ function CensosPageContent() {
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
+    clearMutationError,
   } = useCensosMutations({
     refreshCensos,
     closeForm: modals.closeForm,
@@ -65,6 +67,7 @@ function CensosPageContent() {
 
   const censoFormRef = useRef<CensoManualFormRef>(null);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     if (modals.isFormOpen && !modals.editingCenso) {
@@ -79,17 +82,34 @@ function CensosPageContent() {
   const handleSelectManual = () => {
     setCreateModalMode("create");
     modals.openCreate();
+    setFormKey(prev => prev + 1);
     setShowSelectionModal(false);
   };
 
   const handleSelectTemplate = () => {
     setCreateModalMode("upload");
     modals.openCreate();
+    setFormKey(prev => prev + 1);
     setShowSelectionModal(false);
   };
 
   const handleCloseSelection = () => {
     setShowSelectionModal(false);
+  };
+
+  const handleCloseForm = () => {
+    modals.closeForm();
+    setIsFormValid(false);
+    setIsDirty(false);
+    clearMutationError();
+  };
+
+  const handleOpenEdit = (censo: any) => {
+    modals.openEdit(censo);
+    setFormKey(prev => prev + 1);
+    setIsFormValid(false);
+    setIsDirty(false);
+    clearMutationError();
   };
 
   let confirmTitle = "";
@@ -134,7 +154,7 @@ function CensosPageContent() {
           meta={meta}
           loading={loading}
           error={error}
-          onEdit={modals.openEdit}
+          onEdit={handleOpenEdit}
           onBan={(u) => modals.openConfirm(u, "ban")}
           onRestore={(u) => modals.openConfirm(u, "restore")}
           onDelete={(u) => modals.openConfirm(u, "delete")}
@@ -149,7 +169,6 @@ function CensosPageContent() {
         </div>
       </div>
 
-      {/* Modales */}
       <CensoCreateSelectionModal
         isOpen={showSelectionModal}
         onClose={handleCloseSelection}
@@ -158,16 +177,19 @@ function CensosPageContent() {
       />
 
       <CensoCreateModal
+        key={formKey}
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
-        onClose={modals.closeForm}
+        onClose={handleCloseForm}
         onSave={(data) => handleSave(data, modals.editingCenso)}
         onBulkUpload={handleBulkUpload}
         mode={createModalMode}
         editingCenso={modals.editingCenso}
         onFormValidityChange={setIsFormValid}
         isFormValid={isFormValid}
+        onDirtyChange={setIsDirty}
+        isDirty={isDirty}
       />
 
       <ConfirmModal

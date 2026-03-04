@@ -27,6 +27,10 @@ export function useCensosMutations({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
 
+  const clearMutationError = useCallback(() => {
+    setMutationError(null);
+  }, []);
+
   const handleSave = useCallback(
     async (data: CreateCensoDTO, editingCenso?: Censo | null) => {
       setIsSubmitting(true);
@@ -109,5 +113,6 @@ export function useCensosMutations({
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
+    clearMutationError,
   };
 }

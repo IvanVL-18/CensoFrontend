@@ -1,4 +1,4 @@
-import { useRef, type Dispatch, type SetStateAction } from "react";
+import { useRef, useMemo, type Dispatch, type SetStateAction } from "react";
 import { X, FileText, Upload } from "lucide-react";
 import { CensoManualForm } from "./CensoManualForm";
 import type { CensoManualFormRef } from "./CensoManualForm";
@@ -17,6 +17,8 @@ interface CensoCreateModalProps {
   editingCenso?: Censo | null;
   onFormValidityChange: Dispatch<SetStateAction<boolean>>;
   isFormValid: boolean;
+  onDirtyChange?: (isDirty: boolean) => void;
+  isDirty?: boolean;
 }
 
 export function CensoCreateModal({
@@ -30,6 +32,8 @@ export function CensoCreateModal({
   editingCenso,
   onFormValidityChange,
   isFormValid,
+  onDirtyChange,
+  isDirty,
 }: CensoCreateModalProps) {
   const manualFormRef = useRef<CensoManualFormRef>(null);
   const uploadDependencyRef = useRef<CensoUploadDependencyRef>(null);
@@ -39,14 +43,15 @@ export function CensoCreateModal({
     return dateStr.split('T')[0].split(' ')[0];
   };
 
-  const initialData = editingCenso
-    ? {
-        name: editingCenso.name,
-        description: editingCenso.description,
-        init_date: formatDate(editingCenso.start_date),
-        deadline: formatDate(editingCenso.end_date),
-      }
-    : undefined;
+  const initialData = useMemo(() => {
+    if (!editingCenso) return undefined;
+    return {
+      name: editingCenso.name,
+      description: editingCenso.description,
+      init_date: formatDate(editingCenso.start_date),
+      deadline: formatDate(editingCenso.end_date),
+    };
+  }, [editingCenso]);
 
   const resetState = () => {
     manualFormRef.current?.reset();
@@ -73,16 +78,13 @@ export function CensoCreateModal({
 
   return (
     <>
-    
       <div
         className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] transition-opacity"
         onClick={handleClose}
       />
 
-      
       <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
-        
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
             <button onClick={handleClose} className="text-white hover:text-gray-300">
@@ -90,7 +92,6 @@ export function CensoCreateModal({
             </button>
           </div>
 
-     
           <div className="p-6">
             {mode === "create" ? (
               <CensoManualForm
@@ -100,6 +101,7 @@ export function CensoCreateModal({
                 error={error}
                 initialData={initialData}
                 onFullValidityChange={handleFormValidityChange}
+                onDirtyChange={onDirtyChange}
               />
             ) : (
               <CensoUploadDependency
@@ -124,7 +126,7 @@ export function CensoCreateModal({
               <button
                 type="button"
                 onClick={() => manualFormRef.current?.submit()}
-                disabled={isSubmitting || !isFormValid}
+                disabled={isSubmitting || !isFormValid || (!!editingCenso && !isDirty)}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50 flex items-center gap-2"
               >
                 {isSubmitting ? (
