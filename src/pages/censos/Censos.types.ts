@@ -109,42 +109,40 @@ export interface ViewCensoModalProps {
 
 export interface Index {
   id: string | number;
-  name: string;  // El nombre del índice (ej. "1.1.2")
+  name: string; 
 }
 
-// Tipos existentes (Censo, Index, etc.) se mantienen
+
 
 export interface Module {
   id: number;
   name: string;
-  // otros campos que tenga el modelo Module
+  
 }
 
 export interface IndexForCenso {
   id: number;
   index_id: number;
-  reference_id: number;  // ID del módulo (unit)
+  reference_id: number; 
   reference_type: string;
-  // opcionalmente puedes incluir relaciones
+  
   index?: Index;
   reference?: Module;
 }
 
-// Respuesta del endpoint show
 export interface ModuleForCensoShowResponse {
   censo: {
     id: string;
     name: string;
   };
-  indexs: Index[];        // lista de índices numéricos
-  modules: Module[];       // todos los módulos (si se necesitan)
-  indexForCensos?: IndexForCenso[];  // asignaciones existentes
+  indexs: Index[];        
+  modules: Module[];       
+  indexForCensos?: IndexForCenso[]; 
 }
 
-// Cuerpo de la petición para store/update
 export interface ModuleForCensoRequest {
   items: Array<{
-    module_id: number;
-    index_id: number;
+    module_id: string;   
+    index_id: string;
   }>;
 }

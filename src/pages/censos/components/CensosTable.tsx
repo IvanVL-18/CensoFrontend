@@ -131,7 +131,7 @@ export function CensosTable({
                     <>
                       {/* --- Botón VER (Activo) --- */}
                       <button
-                        title="Ver censoría"
+                        title="Ver censo"
                         onClick={() => onView(Censo)} 
                         className="
                           bg-white text-[#691b31] 

@@ -47,6 +47,7 @@ function CensosPageContent() {
 
   const [showSelectionModal, setShowSelectionModal] = useState(false);
   const [createModalMode, setCreateModalMode] = useState<"create" | "upload">("create");
+  const [formKey, setFormKey] = useState(0);
 
   const modals = useCensosModals();
 
@@ -56,6 +57,7 @@ function CensosPageContent() {
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
+    clearMutationError,
   } = useCensosMutations({
     refreshCensos,
     closeForm: modals.closeForm,
@@ -65,8 +67,8 @@ function CensosPageContent() {
 
   const censoFormRef = useRef<CensoManualFormRef>(null);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
-  // Limpiar formulario al abrir el modal en modo creación (como en CategoryModal)
   useEffect(() => {
     if (modals.isFormOpen && !modals.editingCenso) {
       censoFormRef.current?.reset();
@@ -80,17 +82,34 @@ function CensosPageContent() {
   const handleSelectManual = () => {
     setCreateModalMode("create");
     modals.openCreate();
+    setFormKey(prev => prev + 1);
     setShowSelectionModal(false);
   };
 
   const handleSelectTemplate = () => {
     setCreateModalMode("upload");
     modals.openCreate();
+    setFormKey(prev => prev + 1);
     setShowSelectionModal(false);
   };
 
   const handleCloseSelection = () => {
     setShowSelectionModal(false);
+  };
+
+  const handleCloseForm = () => {
+    modals.closeForm();
+    setIsFormValid(false);
+    setIsDirty(false);
+    clearMutationError();
+  };
+
+  const handleOpenEdit = (censo: any) => {
+    modals.openEdit(censo);
+    setFormKey(prev => prev + 1);
+    setIsFormValid(false);
+    setIsDirty(false);
+    clearMutationError();
   };
 
   let confirmTitle = "";
@@ -99,18 +118,18 @@ function CensosPageContent() {
   let confirmButtonColor: "danger" | "primary" = "danger";
 
   if (modals.actionType === "ban") {
-    confirmTitle = "Desactivar categoría";
-    confirmMessage = `¿Estás seguro de que quieres desactivar la categoría "${modals.actionCenso?.name}"?`;
+    confirmTitle = "Desactivar censo";
+    confirmMessage = `¿Estás seguro de que quieres desactivar el censo "${modals.actionCenso?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (modals.actionType === "restore") {
-    confirmTitle = "Restaurar categoría";
-    confirmMessage = `¿Estás seguro de que quieres restaurar la categoría "${modals.actionCenso?.name}"?`;
+    confirmTitle = "Restaurar censo";
+    confirmMessage = `¿Estás seguro de que quieres restaurar el censo  "${modals.actionCenso?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la categoría "${modals.actionCenso?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el censo "${modals.actionCenso?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -135,7 +154,7 @@ function CensosPageContent() {
           meta={meta}
           loading={loading}
           error={error}
-          onEdit={modals.openEdit}
+          onEdit={handleOpenEdit}
           onBan={(u) => modals.openConfirm(u, "ban")}
           onRestore={(u) => modals.openConfirm(u, "restore")}
           onDelete={(u) => modals.openConfirm(u, "delete")}
@@ -150,7 +169,6 @@ function CensosPageContent() {
         </div>
       </div>
 
-      {/* Modales */}
       <CensoCreateSelectionModal
         isOpen={showSelectionModal}
         onClose={handleCloseSelection}
@@ -159,16 +177,19 @@ function CensosPageContent() {
       />
 
       <CensoCreateModal
+        key={formKey}
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
-        onClose={modals.closeForm}
+        onClose={handleCloseForm}
         onSave={(data) => handleSave(data, modals.editingCenso)}
         onBulkUpload={handleBulkUpload}
         mode={createModalMode}
         editingCenso={modals.editingCenso}
         onFormValidityChange={setIsFormValid}
         isFormValid={isFormValid}
+        onDirtyChange={setIsDirty}
+        isDirty={isDirty}
       />
 
       <ConfirmModal

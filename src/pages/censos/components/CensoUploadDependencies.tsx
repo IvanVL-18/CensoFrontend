@@ -10,7 +10,7 @@ interface CensoUploadDependencyProps {
 
 export interface CensoUploadDependencyRef {
   reset: () => void;
-  submit: () => boolean; // Devuelve true si el envío fue exitoso (archivo seleccionado)
+  submit: () => boolean; 
 }
 
 export const CensoUploadDependency = forwardRef<CensoUploadDependencyRef, CensoUploadDependencyProps>(
@@ -40,9 +40,9 @@ export const CensoUploadDependency = forwardRef<CensoUploadDependencyRef, CensoU
       const file = e.target.files?.[0];
       if (file) {
         const validTypes = [
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-          'application/vnd.ms-excel', // .xls
-          'text/csv' // .csv
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.ms-excel',
+          'text/csv' 
         ];
         
         if (!validTypes.includes(file.type)) {

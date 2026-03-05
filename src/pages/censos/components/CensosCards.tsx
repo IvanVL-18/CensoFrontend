@@ -1,4 +1,3 @@
-// components/censos/CensosCards.tsx
 import {
   Eye,
   Edit,
@@ -9,7 +8,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom"; // 👈 Importamos Link
+import { Link } from "react-router-dom";
 import type { Censo, Meta } from "../Censos.types";
 
 export interface CensosCardsProps {
@@ -17,7 +16,7 @@ export interface CensosCardsProps {
   meta: Meta | null;
   loading: boolean;
   error: string | null;
-  // Eliminamos onView porque ya no se necesita
+  
   onEdit: (censo: Censo) => void;
   onBan: (censo: Censo) => void;
   onRestore: (censo: Censo) => void;
@@ -65,7 +64,6 @@ export function CensosCards({
         const isActive = !censo.deleted_at;
         const statusText = isActive ? "Activo" : "Inactivo";
 
-        // Calcular año de forma segura
         let yearDisplay: number | string = censo.year || "";
         if (!yearDisplay && censo.created_at) {
           const date = new Date(censo.created_at);
@@ -74,7 +72,7 @@ export function CensosCards({
           yearDisplay = "—";
         }
 
-        // Fechas con formato legible
+        
         const formatDate = (dateStr?: string | null) => {
           if (!dateStr) return "—";
           try {
@@ -163,7 +161,7 @@ export function CensosCards({
 
             {/* Contenido del card */}
             <div className="p-5 flex flex-col flex-1">
-              {/* Estado + año con badge más elegante */}
+       
               <div className="mb-4">
                 <span
                   className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${
@@ -181,7 +179,7 @@ export function CensosCards({
                 </span>
               </div>
 
-              {/* Fechas con iconos y mejor espaciado */}
+              
               <div className="space-y-2 text-sm text-gray-600 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
                 <div className="flex items-center">
                   <Calendar size={16} className="mr-2 text-red-600" />
@@ -199,7 +197,7 @@ export function CensosCards({
                 </div>
               </div>
 
-              {/* Botón principal como Link a la página de detalle */}
+           
               <Link
                 to={`/censos/${censo.id}`}
 className="mt-auto w-full 

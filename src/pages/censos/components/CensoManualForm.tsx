@@ -1,7 +1,7 @@
-import { useState, type FormEvent, type ChangeEvent, forwardRef, useImperativeHandle, useEffect } from "react";
-import { Calendar, FileText, Type } from "lucide-react";
+import { useState, type FormEvent, type ChangeEvent, forwardRef, useImperativeHandle, useEffect, useMemo } from "react";
+import { Calendar, FileText } from "lucide-react";
 import { FormErrors } from "./FormErrors";
-import { Censoschema } from "../schemas/Censos.schema";
+import { createCensoSchema } from "../schemas/Censos.schema";
 
 const MAX_LENGTH = 125;
 
@@ -17,6 +17,7 @@ interface CensoManualFormProps {
   };
   onErrorChange?: (errors: string[]) => void;
   onFullValidityChange?: (isValid: boolean) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 export interface CensoManualFormRef {
@@ -26,7 +27,15 @@ export interface CensoManualFormRef {
 }
 
 export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormProps>(
-  ({ isSubmitting, onSubmit, error, initialData, onErrorChange, onFullValidityChange }, ref) => {
+  ({
+    isSubmitting,
+    onSubmit,
+    error,
+    initialData,
+    onErrorChange,
+    onFullValidityChange,
+    onDirtyChange,
+  }, ref) => {
     const [name, setName] = useState(initialData?.name ?? "");
     const [description, setDescription] = useState(initialData?.description ?? "");
     const [startDate, setStartDate] = useState(initialData?.init_date ?? "");
@@ -40,17 +49,21 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       init_date: false,
       deadline: false,
     });
+    const [submitted, setSubmitted] = useState(false);
+    const [ignoreServerError, setIgnoreServerError] = useState(false);
+
+    const censoSchema = useMemo(() => createCensoSchema(!!initialData), [initialData]);
 
     useEffect(() => {
-      setServerError(error ?? null);
-    }, [error]);
+      if (!ignoreServerError) setServerError(error ?? null);
+    }, [error, ignoreServerError]);
 
     useEffect(() => {
       onErrorChange?.(formErrors);
     }, [formErrors, onErrorChange]);
 
     const getVisibleErrors = () => {
-      const result = Censoschema.safeParse({ name, description, init_date: startDate, deadline: endDate });
+      const result = censoSchema.safeParse({ name, description, init_date: startDate, deadline: endDate });
       if (result.success) return [];
 
       const fieldErrorsMap: Record<string, string[]> = {};
@@ -61,33 +74,46 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
       });
 
       const visible: string[] = [];
-      Object.entries(touchedFields).forEach(([field, touched]) => {
-        if (touched && fieldErrorsMap[field]) {
-          visible.push(...fieldErrorsMap[field]);
-        }
+      Object.entries(fieldErrorsMap).forEach(([field, errors]) => {
+        const fieldValue =
+          field === 'name' ? name :
+          field === 'description' ? description :
+          field === 'init_date' ? startDate :
+          endDate;
+
+        if (!submitted && (!fieldValue || fieldValue.trim() === '')) return;
+        visible.push(...errors);
       });
+
       return visible;
     };
 
     useEffect(() => {
       const visibleErrors = getVisibleErrors();
-      setFormErrors((prev) => {
-        if (JSON.stringify(prev) !== JSON.stringify(visibleErrors)) {
-          return visibleErrors;
-        }
-        return prev;
-      });
-    }, [name, description, startDate, endDate, touchedFields]);
+      setFormErrors((prev) =>
+        JSON.stringify(prev) !== JSON.stringify(visibleErrors) ? visibleErrors : prev
+      );
+    }, [name, description, startDate, endDate, submitted, censoSchema]);
 
-    // Notifica al padre sobre la validez completa (útil para habilitar el botón)
     useEffect(() => {
-      const result = Censoschema.safeParse({ name, description, init_date: startDate, deadline: endDate });
-      // Puedes activar este log para depurar
-      // console.log('Validación completa:', result.success, result.error?.issues);
+      const result = censoSchema.safeParse({ name, description, init_date: startDate, deadline: endDate });
       onFullValidityChange?.(result.success);
-    }, [name, description, startDate, endDate, onFullValidityChange]);
+    }, [name, description, startDate, endDate, onFullValidityChange, censoSchema]);
 
-    // Maneja cambios en initialData (se ejecuta al abrir el modal en edición)
+    useEffect(() => {
+      if (!onDirtyChange) return;
+      const baseName = initialData?.name ?? '';
+      const baseDescription = initialData?.description ?? '';
+      const baseInitDate = initialData?.init_date ?? '';
+      const baseDeadline = initialData?.deadline ?? '';
+      const hasChanges =
+        name !== baseName ||
+        description !== baseDescription ||
+        startDate !== baseInitDate ||
+        endDate !== baseDeadline;
+      onDirtyChange(hasChanges);
+    }, [name, description, startDate, endDate, initialData, onDirtyChange]);
+
     useEffect(() => {
       if (initialData) {
         const newName = initialData.name ?? "";
@@ -96,26 +122,20 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setStartDate(initialData.init_date ?? "");
         setEndDate(initialData.deadline ?? "");
         setCharCount(newName.length);
-        setTouchedFields({
-          name: true,
-          description: true,
-          init_date: true,
-          deadline: true,
-        });
+        setTouchedFields({ name: true, description: true, init_date: true, deadline: true });
+        setSubmitted(false);
+        setIgnoreServerError(false);
       } else {
-        // Reset para creación
         setName("");
         setDescription("");
         setStartDate("");
         setEndDate("");
         setCharCount(0);
-        setTouchedFields({
-          name: false,
-          description: false,
-          init_date: false,
-          deadline: false,
-        });
+        setTouchedFields({ name: false, description: false, init_date: false, deadline: false });
         setFormErrors([]);
+        setServerError(null);
+        setSubmitted(false);
+        setIgnoreServerError(true);
       }
     }, [initialData]);
 
@@ -128,38 +148,26 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setCharCount(0);
         setFormErrors([]);
         setServerError(null);
-        setTouchedFields({
-          name: false,
-          description: false,
-          init_date: false,
-          deadline: false,
-        });
+        setTouchedFields({ name: false, description: false, init_date: false, deadline: false });
+        setSubmitted(false);
+        setIgnoreServerError(true);
       },
       submit: () => {
-        const result = Censoschema.safeParse({ name, description, init_date: startDate, deadline: endDate });
+        setSubmitted(true);
+        setIgnoreServerError(false);
+        const result = censoSchema.safeParse({ name, description, init_date: startDate, deadline: endDate });
         if (!result.success) {
-          setTouchedFields({
-            name: true,
-            description: true,
-            init_date: true,
-            deadline: true,
-          });
-          const allErrors = result.error.issues.map((err) => err.message);
-          setFormErrors(allErrors);
+          setTouchedFields({ name: true, description: true, init_date: true, deadline: true });
+          setFormErrors(result.error.issues.map(err => err.message));
           setServerError(null);
           return false;
         }
         setServerError(null);
-        onSubmit({
-          name,
-          description,
-          init_date: startDate,
-          deadline: endDate,
-        });
+        onSubmit({ name, description, init_date: startDate, deadline: endDate });
         return true;
       },
       getErrors: () => formErrors,
-    }));
+    }), [censoSchema, formErrors, name, description, startDate, endDate, onSubmit]);
 
     const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
       const newName = e.target.value;
@@ -167,31 +175,37 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setName(newName);
         setCharCount(newName.length);
         setServerError(null);
-        setTouchedFields((prev) => ({ ...prev, name: true }));
+        setTouchedFields(prev => ({ ...prev, name: true }));
+        setSubmitted(false);
+        setIgnoreServerError(false);
       }
     };
 
     const handleStartDateChange = (e: ChangeEvent<HTMLInputElement>) => {
       setStartDate(e.target.value);
       setServerError(null);
-      setTouchedFields((prev) => ({ ...prev, init_date: true }));
+      setTouchedFields(prev => ({ ...prev, init_date: true }));
+      setSubmitted(false);
+      setIgnoreServerError(false);
     };
 
     const handleEndDateChange = (e: ChangeEvent<HTMLInputElement>) => {
       setEndDate(e.target.value);
       setServerError(null);
-      setTouchedFields((prev) => ({ ...prev, deadline: true }));
+      setTouchedFields(prev => ({ ...prev, deadline: true }));
+      setSubmitted(false);
+      setIgnoreServerError(false);
     };
 
     const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
       setDescription(e.target.value);
       setServerError(null);
-      setTouchedFields((prev) => ({ ...prev, description: true }));
+      setTouchedFields(prev => ({ ...prev, description: true }));
+      setSubmitted(false);
+      setIgnoreServerError(false);
     };
 
-    const handleFormSubmit = (e: FormEvent) => {
-      e.preventDefault();
-    };
+    const handleFormSubmit = (e: FormEvent) => e.preventDefault();
 
     const hasErrors = formErrors.length > 0 || !!serverError;
     const isNearLimit = charCount >= MAX_LENGTH - 10 && charCount <= MAX_LENGTH;
@@ -213,7 +227,6 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         <div>
           <div className="flex items-center justify-between mb-2">
             <label htmlFor="censoName" className="flex items-center text-sm font-semibold text-gray-700">
-              <Type size={18} className="mr-2 text-gray-400" />
               Nombre del censo
             </label>
             <span className={`text-xs font-medium ${charCountColor}`}>
@@ -253,7 +266,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
                 onChange={handleStartDateChange}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 appearance-none"
               />
-              <Calendar size={18} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <Calendar size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
           </div>
           <div>
@@ -269,7 +282,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
                 onChange={handleEndDateChange}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 appearance-none"
               />
-              <Calendar size={18} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <Calendar size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
           </div>
         </div>
