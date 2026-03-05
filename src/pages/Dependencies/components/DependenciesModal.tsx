@@ -130,11 +130,12 @@ export function DependencyModal({
 
               <button
                 type="submit"
-                disabled={isSubmitting || hasClientErrors}
+                disabled={isSubmitting || hasClientErrors || name.trim() === initialName.trim()}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
               </button>
+
             </div>
           </form>
         </div>
