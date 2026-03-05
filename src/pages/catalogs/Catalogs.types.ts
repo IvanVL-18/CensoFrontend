@@ -3,7 +3,7 @@ export interface Catalog {
   id: string;
   name: string;
   slug: string;
-  Module_id: string;
+  module_id: string;
   Module_name?: string; 
    Module_is_active?: boolean; 
   Module?: {
@@ -24,7 +24,7 @@ export interface Module {
 export interface CreateCatalogDTO {
   name: string;
   slug: string;
-  Module_id: string;
+  module_id: string;
 }
 
 export type UpdateCatalogDTO = Partial<CreateCatalogDTO>;

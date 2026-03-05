@@ -123,8 +123,8 @@ function CatalogsPageContent() {
 
   useEffect(() => {
     const editingCat = modals.editingCatalog;
-    if (editingCat?.Module_id) {
-      const currentModuleId = String(editingCat.Module_id).trim();
+    if (editingCat?.module_id) {
+      const currentModuleId = String(editingCat.module_id).trim();
       const exists = originalActiveModules.some(u => String(u.id).trim() === currentModuleId);
       if (!exists) {
         setModules([
@@ -168,7 +168,7 @@ function CatalogsPageContent() {
     title: modals.editingCatalog ? "Editar catálogo" : "Agregar catálogo",
     initialName: modals.editingCatalog?.name || "",
     initialSlug: modals.editingCatalog?.slug || "",
-    initialModuleId: modals.editingCatalog?.Module_id || "",
+    initialModuleId: modals.editingCatalog?.module_id || "",
     initialModuleName: modals.editingCatalog?.Module_name || modals.editingCatalog?.Module?.name || "",
   };
 

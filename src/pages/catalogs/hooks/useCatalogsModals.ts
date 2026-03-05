@@ -35,8 +35,8 @@ export function useCatalogsModals() {
   const openEdit = useCallback(async (catalog: Catalog) => {
     try {
       const fullCatalog = await getCatalog(catalog.id);
-      const ModuleId = fullCatalog.Module_id
-        ? String(fullCatalog.Module_id)
+      const ModuleId = fullCatalog.module_id
+        ? String(fullCatalog.module_id)
         : (fullCatalog.Module?.id ? String(fullCatalog.Module.id) : "");
       const ModuleName = fullCatalog.Module_name?.trim() || fullCatalog.Module?.name?.trim() || "";
 
@@ -44,7 +44,7 @@ export function useCatalogsModals() {
         isOpen: true,
         catalog: {
           ...fullCatalog,
-          Module_id: ModuleId,
+          module_id: ModuleId,
           Module_name: ModuleName,
         },
       });
