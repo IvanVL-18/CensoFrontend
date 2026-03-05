@@ -1,4 +1,3 @@
-// src/components/Sidebar.tsx
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home,
@@ -10,7 +9,7 @@ import {
   BarChart3,
   CalendarRange,
   Settings,
-  FolderOpen
+
 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
@@ -25,7 +24,6 @@ const items = [
   { to: "/instituciones", icon: Landmark, label: "Instituciones" },
   { to: "/censos", icon: ClipboardList, label: "Censos" },
   { to: "/graficador", icon: BarChart3, label: "Graficador" },
-  { to: "/categorias", icon: FolderOpen, label: "Categoria" },
 
   
   {
@@ -85,7 +83,6 @@ export default function Sidebar({ open, onToggle }: Props) {
           <Menu size={20} />
         </button>
 
-        {/* Logo con transición más limpia */}
         <div className="flex-1 overflow-hidden">
           <img
             src="/Hidalgo_log.svg"
@@ -100,7 +97,6 @@ export default function Sidebar({ open, onToggle }: Props) {
         </div>
       </div>
 
-      {/* Navegación */}
       <nav className="py-2">
         {items.map(({ to, icon: Icon, label }) => {
           if (label !== "Graficador") {
@@ -131,7 +127,6 @@ export default function Sidebar({ open, onToggle }: Props) {
             );
           }
 
-          // Item especial: Graficador, con popover
           const isActive = location.pathname.startsWith("/graficador");
 
           return (

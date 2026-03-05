@@ -106,7 +106,7 @@ export function SectionsTable({
           {!loading && !error && Sections.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                No se encontraron Sections.
+                No se encontraron Secciones.
               </td>
             </tr>
           )}
