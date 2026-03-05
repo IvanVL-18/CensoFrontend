@@ -106,7 +106,7 @@ export function OccupationsTable({
           {!loading && !error && Occupations.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
-                No se encontraron Occupations.
+                No se encontraron Ocupaciones.
               </td>
             </tr>
           )}

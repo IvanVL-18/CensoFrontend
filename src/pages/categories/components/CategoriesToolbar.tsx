@@ -1,5 +1,5 @@
-import { type ChangeEvent, useRef } from "react";
-import { CirclePlus, FileDown } from "lucide-react";
+import { type ChangeEvent } from "react";
+import { CirclePlus } from "lucide-react";
 
 import type { CategoryFilter } from "../Categories.service";
 import { SearchInput } from "../../../components/SearchInput";
@@ -19,31 +19,16 @@ interface CategoriesToolbarProps {
 export function CategoriesToolbar({
   filter,
   searchTerm,
-  isSubmitting,
   onFilterChange,
   onSearchChange,
   onAddClick,
-  onBulkUpload,
 }: CategoriesToolbarProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onBulkUpload(file);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-red-900">
         <h1 className="text-xl md:text-2xl font-bold text-white">Categorías</h1>
 
         <div className="flex items-center gap-2">
-          {/* Input de archivo oculto que solo acepta Excel/CSV */}
           
           <AddButton
             label="Agregar categoría"
