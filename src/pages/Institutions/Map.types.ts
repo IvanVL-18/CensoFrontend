@@ -9,5 +9,23 @@ export interface MapDataResponse {
   lat: number | null;
   lon: number | null;
   street?: string;
-  suburb?: string;
+  suburb?: string; 
+}
+
+
+
+export interface GeoapifyProperties {
+  lat: number;
+  lon: number;
+  formatted: string;
+  address_line1?: string;
+  address_line2?: string;
+  postcode?: string;
+  city?: string;
+  county?: string;
+  state?: string;
+}
+
+export interface GeoapifyResponse {
+  features: { properties: GeoapifyProperties }[];
 }

@@ -1,4 +1,4 @@
-interface FormErrorsProps {
+interface FormErrorsProps { 
   errors: string[];
 }
 
