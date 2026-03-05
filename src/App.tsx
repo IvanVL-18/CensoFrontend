@@ -22,7 +22,7 @@ import Verification from "./pages/Verification/Verification";
 
 import Censos from "./pages/censos/Censos";
 import { CensoDetail } from "./pages/censos/components/CensoDetail";
-import CensoUnitsView from "./pages/censos/components/CensoUnitsView";
+import CensoModulesView from "./pages/censos/components/CensoModulesView";
 
 export default function App() {
   return (
@@ -54,7 +54,7 @@ export default function App() {
         <Route path="/Dependency" element={<Dependencies />} />
         <Route path="/censos" element={<Censos />} />
         <Route path="/censos/:id" element={<CensoDetail />} />
-        <Route path="/censos/:id/modulos" element={<CensoUnitsView />} />
+        <Route path="/censos/:id/modulos" element={<CensoModulesView />} />
       </Route>
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />

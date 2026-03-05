@@ -79,7 +79,7 @@ export function CensoCreateModal({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] transition-opacity"
+        className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[9999] transition-opacity"
         onClick={handleClose}
       />
 

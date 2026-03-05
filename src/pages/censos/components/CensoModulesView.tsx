@@ -4,25 +4,33 @@ import { ArrowLeft, Save, PlusCircle } from "lucide-react";
 import { getCensoModules, updateCensoModules } from "../Censos.service";
 import type { Module, Index, IndexForCenso } from "../Censos.types";
 
-const CensoUnitsView: React.FC = () => {
+const CensoModulesView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const [modules, setModules] = useState<Module[]>([]);
   const [indices, setIndices] = useState<Index[]>([]);
-  const [existingAssignments, setExistingAssignments] = useState<Record<string, string | null>>({});
-  const [selectedIndices, setSelectedIndices] = useState<Record<string, string | null>>({});
-  const [selectedUnits, setSelectedUnits] = useState<Record<string, boolean>>({});
+  const [existingAssignments, setExistingAssignments] = useState<
+    Record<string, string | null>
+  >({});
+  const [selectedIndices, setSelectedIndices] = useState<
+    Record<string, string | null>
+  >({});
+  const [selectedModules, setSelectedModules] = useState<
+    Record<string, boolean>
+  >({});
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string[]>
+  >({});
 
   const indexMap = useMemo(() => {
     const map: Record<string, string> = {};
-    indices.forEach(idx => map[String(idx.id)] = idx.name);
+    indices.forEach((idx) => (map[String(idx.id)] = idx.name));
     return map;
   }, [indices]);
 
@@ -34,24 +42,33 @@ const CensoUnitsView: React.FC = () => {
       setError(null);
       try {
         const data = await getCensoModules(id);
-        const numericIndices = data.indexs.filter(idx => /^\d+$/.test(idx.name));
+        const numericIndices = data.indexs.filter((idx) =>
+          /^\d+$/.test(idx.name),
+        );
         setIndices(numericIndices);
         setModules(data.modules || []);
 
         const assignments: Record<string, string | null> = {};
         if (data.indexForCensos) {
           data.indexForCensos.forEach((item: IndexForCenso) => {
-            assignments[String(item.reference_id)] = item.index_id ? String(item.index_id) : null;
+            assignments[String(item.reference_id)] = item.index_id
+              ? String(item.index_id)
+              : null;
           });
         }
         setExistingAssignments(assignments);
         setSelectedIndices(assignments);
 
         const initialSelected: Record<string, boolean> = {};
-        data.modules?.forEach((mod: Module) => initialSelected[String(mod.id)] = true);
-        setSelectedUnits(initialSelected);
+        data.modules?.forEach(
+          (mod: Module) => (initialSelected[String(mod.id)] = true),
+        );
+        setSelectedModules(initialSelected);
       } catch (err: any) {
-        setError(err.response?.data?.message || "No se pudieron cargar los índices asignados.");
+        setError(
+          err.response?.data?.message ||
+            "No se pudieron cargar los índices asignados.",
+        );
       } finally {
         setLoading(false);
       }
@@ -60,33 +77,40 @@ const CensoUnitsView: React.FC = () => {
     fetchData();
   }, [id]);
 
-  const handleIndexChange = (unitId: string, indexId: string | null) => {
-    setSelectedIndices(prev => ({ ...prev, [unitId]: indexId }));
+  const handleIndexChange = (moduleId: string, indexId: string | null) => {
+    setSelectedIndices((prev) => ({ ...prev, [moduleId]: indexId }));
     setSuccessMessage(null);
     setError(null);
     setValidationErrors({});
   };
 
-  const handleCheckboxChange = (unitId: string, checked: boolean) => {
-    setSelectedUnits(prev => ({ ...prev, [unitId]: checked }));
+  const handleCheckboxChange = (moduleId: string, checked: boolean) => {
+    setSelectedModules((prev) => ({ ...prev, [moduleId]: checked }));
   };
 
   const handleSelectAll = (checked: boolean) => {
     const newSelected: Record<string, boolean> = {};
-    modules.forEach(mod => newSelected[String(mod.id)] = checked);
-    setSelectedUnits(newSelected);
+    modules.forEach((mod) => (newSelected[String(mod.id)] = checked));
+    setSelectedModules(newSelected);
   };
 
-  const handleAddSections = (unitId: string) => {
-    alert(`Funcionalidad para agregar secciones a la unidad ${unitId} (próximamente)`);
+  const handleAddSections = (moduleId: string) => {
+    alert(
+      `Funcionalidad para agregar secciones al modulo ${moduleId} (próximamente)`,
+    );
   };
 
   const hasChanges = () => {
-    for (const unitId in selectedIndices) {
-      if (selectedIndices[unitId] !== existingAssignments[unitId]) return true;
+    for (const moduleId in selectedIndices) {
+      if (selectedIndices[moduleId] !== existingAssignments[moduleId])
+        return true;
     }
-    for (const unitId in existingAssignments) {
-      if (!(unitId in selectedIndices) || selectedIndices[unitId] !== existingAssignments[unitId]) return true;
+    for (const moduleId in existingAssignments) {
+      if (
+        !(moduleId in selectedIndices) ||
+        selectedIndices[moduleId] !== existingAssignments[moduleId]
+      )
+        return true;
     }
     return false;
   };
@@ -95,15 +119,20 @@ const CensoUnitsView: React.FC = () => {
     if (saving || !id) return;
 
     const items = Object.entries(selectedIndices)
-      .filter(([unitId, indexId]) => selectedUnits[unitId] && indexId !== null && indexId !== "")
-      .map(([unitId, indexId]) => ({
-        module_id: unitId,
+      .filter(
+        ([moduleId, indexId]) =>
+          selectedModules[moduleId] && indexId !== null && indexId !== "",
+      )
+      .map(([moduleId, indexId]) => ({
+        module_id: moduleId,
         index_id: indexId as string,
       }));
 
-    const moduleIds = items.map(item => item.module_id);
+    const moduleIds = items.map((item) => item.module_id);
     if (moduleIds.some((id, idx) => moduleIds.indexOf(id) !== idx)) {
-      setError("Error interno: No se puede enviar la misma unidad múltiples veces.");
+      setError(
+        "Error interno: No se puede enviar al mismo modulo múltiples veces.",
+      );
       return;
     }
 
@@ -117,15 +146,17 @@ const CensoUnitsView: React.FC = () => {
       setSuccessMessage("Cambios guardados correctamente.");
       setExistingAssignments(selectedIndices);
     } catch (err: any) {
-      if (err.response?.data?.errors) setValidationErrors(err.response.data.errors);
+      if (err.response?.data?.errors)
+        setValidationErrors(err.response.data.errors);
       setError(err.response?.data?.message || "Error al guardar los cambios.");
     } finally {
       setSaving(false);
     }
   };
 
-  const allSelected = modules.length > 0 && modules.every(mod => selectedUnits[String(mod.id)]);
-
+  const allSelected =
+    modules.length > 0 &&
+    modules.every((mod) => selectedModules[String(mod.id)]);
 
   if (loading) {
     return (
@@ -138,7 +169,9 @@ const CensoUnitsView: React.FC = () => {
   if (error || !modules) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
-        <p className="text-red-600 mb-3">{error || "No se pudo cargar la información"}</p>
+        <p className="text-red-600 mb-3">
+          {error || "No se pudo cargar la información"}
+        </p>
         <button
           onClick={() => navigate(-1)}
           className="bg-[#691b31] text-white px-5 py-1.5 rounded-lg hover:bg-opacity-90 text-sm"
@@ -152,7 +185,6 @@ const CensoUnitsView: React.FC = () => {
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-6">
-     
         <div className="flex items-center mb-8">
           <button
             onClick={() => navigate(-1)}
@@ -179,21 +211,20 @@ const CensoUnitsView: React.FC = () => {
             <ul className="list-disc pl-5">
               {Object.entries(validationErrors).map(([field, messages]) => (
                 <li key={field}>
-                  <strong>{field}:</strong> {messages.join(', ')}
+                  <strong>{field}:</strong> {messages.join(", ")}
                 </li>
               ))}
             </ul>
           </div>
         )}
 
-       
         <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-         
           <div className="bg-gradient-to-r from-[#691b31] to-[#8a2a45] px-6 py-4">
-            <h2 className="text-xl font-bold text-white">Lista de unidades disponibles</h2>
+            <h2 className="text-xl font-bold text-white">
+              Lista de modulos disponibles
+            </h2>
           </div>
 
-     
           <div className="p-6">
             <div className="overflow-x-auto border border-gray-200 rounded-lg">
               <table className="min-w-full divide-y divide-gray-200">
@@ -208,7 +239,7 @@ const CensoUnitsView: React.FC = () => {
                       />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nombre de la unidad
+                      Nombre del modulo
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Índice a asignar
@@ -223,19 +254,26 @@ const CensoUnitsView: React.FC = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {modules.map((module) => {
-                    const unitId = String(module.id);
-                    const currentValue = selectedIndices[unitId] ?? "";
-                    const isChecked = selectedUnits[unitId] ?? false;
-                    const existingIndexId = existingAssignments[unitId];
-                    const existingIndexName = existingIndexId ? indexMap[existingIndexId] : null;
+                    const moduleId = String(module.id);
+                    const currentValue = selectedIndices[moduleId] ?? "";
+                    const isChecked = selectedModules[moduleId] ?? false;
+                    const existingIndexId = existingAssignments[moduleId];
+                    const existingIndexName = existingIndexId
+                      ? indexMap[existingIndexId]
+                      : null;
 
                     return (
-                      <tr key={unitId} className="hover:bg-gray-50 transition-colors">
+                      <tr
+                        key={moduleId}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="checkbox"
                             checked={isChecked}
-                            onChange={(e) => handleCheckboxChange(unitId, e.target.checked)}
+                            onChange={(e) =>
+                              handleCheckboxChange(moduleId, e.target.checked)
+                            }
                             className="rounded border-gray-300 text-[#691b31] focus:ring-[#691b31]"
                           />
                         </td>
@@ -247,7 +285,10 @@ const CensoUnitsView: React.FC = () => {
                             value={currentValue}
                             onChange={(e) => {
                               const val = e.target.value;
-                              handleIndexChange(unitId, val === "" ? null : val);
+                              handleIndexChange(
+                                moduleId,
+                                val === "" ? null : val,
+                              );
                             }}
                             className="border rounded px-2 py-1 text-sm w-full max-w-xs"
                             disabled={saving}
@@ -273,9 +314,9 @@ const CensoUnitsView: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           <button
-                            onClick={() => handleAddSections(unitId)}
+                            onClick={() => handleAddSections(moduleId)}
                             className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-                            title="Agregar secciones a esta unidad"
+                            title="Agregar secciones a este modulo"
                           >
                             <PlusCircle size={16} />
                             <span className="hidden sm:inline">Secciones</span>
@@ -289,11 +330,10 @@ const CensoUnitsView: React.FC = () => {
             </div>
             {modules.length === 0 && (
               <p className="text-center text-gray-500 py-8">
-                No hay unidades disponibles.
+                No hay modulos disponibles.
               </p>
             )}
 
-           
             <div className="mt-6 flex justify-end gap-3">
               <Link
                 to={`/censos/${id}`}
@@ -330,4 +370,4 @@ const CensoUnitsView: React.FC = () => {
   );
 };
 
-export default CensoUnitsView;
+export default CensoModulesView;
