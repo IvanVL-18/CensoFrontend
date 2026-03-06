@@ -19,9 +19,9 @@ export function CensoCreateSelectionModal({
     <>
      
       <div
-        className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[9999] transition-opacity"
-        onClick={onClose}
-      />
+  className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] transition-opacity"
+  onClick={onClose}
+/>
       
       
       <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">

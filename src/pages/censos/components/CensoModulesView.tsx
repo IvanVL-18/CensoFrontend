@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Save, PlusCircle } from "lucide-react";
 import { getCensoModules, updateCensoModules } from "../Censos.service";
-import type { Module, Index, IndexForCenso } from "../Censos.types";
+import type { Module, Index, IndexForCenso, ModuleForCensoShowResponse } from "../Censos.types";
 
 const CensoModulesView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -10,71 +10,82 @@ const CensoModulesView: React.FC = () => {
 
   const [modules, setModules] = useState<Module[]>([]);
   const [indices, setIndices] = useState<Index[]>([]);
-  const [existingAssignments, setExistingAssignments] = useState<
-    Record<string, string | null>
-  >({});
-  const [selectedIndices, setSelectedIndices] = useState<
-    Record<string, string | null>
-  >({});
-  const [selectedModules, setSelectedModules] = useState<
-    Record<string, boolean>
-  >({});
-
+  const [assignments, setAssignments] = useState<IndexForCenso[]>([]);
+  const [selectedIndices, setSelectedIndices] = useState<Record<string, string | null>>({});
+  const [selectedModules, setSelectedModules] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string[]>
-  >({});
+  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
 
-  const indexMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    indices.forEach((idx) => (map[String(idx.id)] = idx.name));
-    return map;
+  // Mapas para conversión entre IDs originales y encriptados
+  const encryptedToOriginal = useMemo(() => {
+    return modules.reduce((map, mod) => {
+      map[mod.id] = mod.original_id;
+      return map;
+    }, {} as Record<string, number>);
+  }, [modules]);
+
+  const originalIndexToEncrypted = useMemo(() => {
+    return indices.reduce((map, idx) => {
+      map[idx.original_id] = idx.id;
+      return map;
+    }, {} as Record<number, string>);
   }, [indices]);
 
-  useEffect(() => {
+  const originalModuleToEncrypted = useMemo(() => {
+    return modules.reduce((map, mod) => {
+      map[mod.original_id] = mod.id;
+      return map;
+    }, {} as Record<number, string>);
+  }, [modules]);
+
+  // IDs originales de módulos que ya tienen asignación
+  const assignedModuleIds = useMemo(() => {
+    return new Set(assignments.map((a) => a.reference_id));
+  }, [assignments]);
+
+  const loadData = async () => {
     if (!id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const data: ModuleForCensoShowResponse = await getCensoModules(id);
+      const numericIndices = data.indexes.filter((idx) => /^\d+$/.test(idx.name));
+      setIndices(numericIndices);
+      setModules(data.modules || []);
+      setAssignments(data.indexForCensos || []);
 
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await getCensoModules(id);
-        const numericIndices = data.indexs.filter((idx) =>
-          /^\d+$/.test(idx.name),
-        );
-        setIndices(numericIndices);
-        setModules(data.modules || []);
-
-        const assignments: Record<string, string | null> = {};
-        if (data.indexForCensos) {
-          data.indexForCensos.forEach((item: IndexForCenso) => {
-            assignments[String(item.reference_id)] = item.index_id
-              ? String(item.index_id)
-              : null;
-          });
+      // Inicializar selectedIndices: el índice asignado (encriptado) o null
+      const initialSelected = data.modules.reduce((acc, mod) => {
+        const assignment = data.indexForCensos?.find((a) => a.reference_id === mod.original_id);
+        if (assignment) {
+          const encryptedIndexId = numericIndices.find((idx) => idx.original_id === assignment.index_id)?.id;
+          acc[mod.id] = encryptedIndexId || null;
+        } else {
+          acc[mod.id] = null;
         }
-        setExistingAssignments(assignments);
-        setSelectedIndices(assignments);
+        return acc;
+      }, {} as Record<string, string | null>);
+      setSelectedIndices(initialSelected);
 
-        const initialSelected: Record<string, boolean> = {};
-        data.modules?.forEach(
-          (mod: Module) => (initialSelected[String(mod.id)] = true),
-        );
-        setSelectedModules(initialSelected);
-      } catch (err: any) {
-        setError(
-          err.response?.data?.message ||
-            "No se pudieron cargar los índices asignados.",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+      // Inicializar selectedModules: true para asignados (marcados y deshabilitados), false para no asignados
+      const initialSelectedModules = data.modules.reduce((acc, mod) => {
+        const isAssigned = data.indexForCensos?.some((a) => a.reference_id === mod.original_id);
+        acc[mod.id] = !!isAssigned;
+        return acc;
+      }, {} as Record<string, boolean>);
+      setSelectedModules(initialSelectedModules);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "No se pudieron cargar los índices asignados.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
+  useEffect(() => {
+    loadData();
   }, [id]);
 
   const handleIndexChange = (moduleId: string, indexId: string | null) => {
@@ -89,28 +100,26 @@ const CensoModulesView: React.FC = () => {
   };
 
   const handleSelectAll = (checked: boolean) => {
-    const newSelected: Record<string, boolean> = {};
-    modules.forEach((mod) => (newSelected[String(mod.id)] = checked));
-    setSelectedModules(newSelected);
+    setSelectedModules((prev) => {
+      const newSelected = { ...prev };
+      modules.forEach((mod) => {
+        if (!assignedModuleIds.has(mod.original_id)) {
+          newSelected[mod.id] = checked;
+        }
+      });
+      return newSelected;
+    });
   };
 
   const handleAddSections = (moduleId: string) => {
-    alert(
-      `Funcionalidad para agregar secciones al modulo ${moduleId} (próximamente)`,
-    );
+    // Funcionalidad futura
   };
 
   const hasChanges = () => {
     for (const moduleId in selectedIndices) {
-      if (selectedIndices[moduleId] !== existingAssignments[moduleId])
-        return true;
-    }
-    for (const moduleId in existingAssignments) {
-      if (
-        !(moduleId in selectedIndices) ||
-        selectedIndices[moduleId] !== existingAssignments[moduleId]
-      )
-        return true;
+      const assignment = assignments.find((a) => a.reference_id === encryptedToOriginal[moduleId]);
+      const currentIndexId = assignment ? originalIndexToEncrypted[assignment.index_id] : null;
+      if (selectedIndices[moduleId] !== currentIndexId) return true;
     }
     return false;
   };
@@ -118,21 +127,33 @@ const CensoModulesView: React.FC = () => {
   const handleSave = async () => {
     if (saving || !id) return;
 
-    const items = Object.entries(selectedIndices)
-      .filter(
-        ([moduleId, indexId]) =>
-          selectedModules[moduleId] && indexId !== null && indexId !== "",
-      )
+    // Ítems existentes (módulos ya asignados)
+    const existingItems = assignments
+      .map((assignment) => ({
+        module_id: originalModuleToEncrypted[assignment.reference_id],
+        index_id: originalIndexToEncrypted[assignment.index_id],
+      }))
+      .filter((item) => item.module_id && item.index_id);
+
+    // Nuevos ítems (módulos marcados y con índice seleccionado, no asignados previamente)
+    const newItems = Object.entries(selectedIndices)
+      .filter(([moduleId, indexId]) => {
+        if (!indexId) return false;
+        if (!selectedModules[moduleId]) return false;
+        const originalId = encryptedToOriginal[moduleId];
+        return !assignedModuleIds.has(originalId);
+      })
       .map(([moduleId, indexId]) => ({
         module_id: moduleId,
-        index_id: indexId as string,
+        index_id: indexId,
       }));
 
+    const items = [...existingItems, ...newItems];
+
+    // Validar duplicados (por seguridad)
     const moduleIds = items.map((item) => item.module_id);
     if (moduleIds.some((id, idx) => moduleIds.indexOf(id) !== idx)) {
-      setError(
-        "Error interno: No se puede enviar al mismo modulo múltiples veces.",
-      );
+      setError("Error interno: No se puede enviar al mismo módulo múltiples veces.");
       return;
     }
 
@@ -144,24 +165,23 @@ const CensoModulesView: React.FC = () => {
     try {
       await updateCensoModules(id, { items });
       setSuccessMessage("Cambios guardados correctamente.");
-      setExistingAssignments(selectedIndices);
+      await loadData();
     } catch (err: any) {
-      if (err.response?.data?.errors)
-        setValidationErrors(err.response.data.errors);
+      if (err.response?.data?.errors) setValidationErrors(err.response.data.errors);
       setError(err.response?.data?.message || "Error al guardar los cambios.");
     } finally {
       setSaving(false);
     }
   };
 
-  const allSelected =
-    modules.length > 0 &&
-    modules.every((mod) => selectedModules[String(mod.id)]);
+  const unassignedModules = modules.filter((mod) => !assignedModuleIds.has(mod.original_id));
+  const allUnassignedSelected =
+    unassignedModules.length > 0 && unassignedModules.every((mod) => selectedModules[mod.id]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#691b31]"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#691b31]" />
       </div>
     );
   }
@@ -169,9 +189,7 @@ const CensoModulesView: React.FC = () => {
   if (error || !modules) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
-        <p className="text-red-600 mb-3">
-          {error || "No se pudo cargar la información"}
-        </p>
+        <p className="text-red-600 mb-3">{error || "No se pudo cargar la información"}</p>
         <button
           onClick={() => navigate(-1)}
           className="bg-[#691b31] text-white px-5 py-1.5 rounded-lg hover:bg-opacity-90 text-sm"
@@ -220,9 +238,7 @@ const CensoModulesView: React.FC = () => {
 
         <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
           <div className="bg-gradient-to-r from-[#691b31] to-[#8a2a45] px-6 py-4">
-            <h2 className="text-xl font-bold text-white">
-              Lista de modulos disponibles
-            </h2>
+            <h2 className="text-xl font-bold text-white">Lista de módulos disponibles</h2>
           </div>
 
           <div className="p-6">
@@ -233,13 +249,13 @@ const CensoModulesView: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <input
                         type="checkbox"
-                        checked={allSelected}
+                        checked={allUnassignedSelected}
                         onChange={(e) => handleSelectAll(e.target.checked)}
                         className="rounded border-gray-300 text-[#691b31] focus:ring-[#691b31]"
                       />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nombre del modulo
+                      Nombre del módulo
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Índice a asignar
@@ -254,26 +270,21 @@ const CensoModulesView: React.FC = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {modules.map((module) => {
-                    const moduleId = String(module.id);
+                    const moduleId = module.id;
                     const currentValue = selectedIndices[moduleId] ?? "";
                     const isChecked = selectedModules[moduleId] ?? false;
-                    const existingIndexId = existingAssignments[moduleId];
-                    const existingIndexName = existingIndexId
-                      ? indexMap[existingIndexId]
-                      : null;
+                    const isAssigned = assignedModuleIds.has(module.original_id);
+                    const assignment = assignments.find((a) => a.reference_id === module.original_id);
+                    const existingIndexName = assignment?.index?.name;
 
                     return (
-                      <tr
-                        key={moduleId}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
+                      <tr key={moduleId} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="checkbox"
                             checked={isChecked}
-                            onChange={(e) =>
-                              handleCheckboxChange(moduleId, e.target.checked)
-                            }
+                            onChange={(e) => handleCheckboxChange(moduleId, e.target.checked)}
+                            disabled={isAssigned}
                             className="rounded border-gray-300 text-[#691b31] focus:ring-[#691b31]"
                           />
                         </td>
@@ -285,17 +296,14 @@ const CensoModulesView: React.FC = () => {
                             value={currentValue}
                             onChange={(e) => {
                               const val = e.target.value;
-                              handleIndexChange(
-                                moduleId,
-                                val === "" ? null : val,
-                              );
+                              handleIndexChange(moduleId, val === "" ? null : val);
                             }}
                             className="border rounded px-2 py-1 text-sm w-full max-w-xs"
-                            disabled={saving}
+                            disabled={saving || isAssigned}
                           >
                             <option value="">Sin índice</option>
                             {indices.map((idx) => (
-                              <option key={idx.id} value={String(idx.id)}>
+                              <option key={idx.id} value={idx.id}>
                                 {idx.name}
                               </option>
                             ))}
@@ -316,7 +324,7 @@ const CensoModulesView: React.FC = () => {
                           <button
                             onClick={() => handleAddSections(moduleId)}
                             className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-                            title="Agregar secciones a este modulo"
+                            title="Agregar secciones a este módulo"
                           >
                             <PlusCircle size={16} />
                             <span className="hidden sm:inline">Secciones</span>
@@ -329,9 +337,7 @@ const CensoModulesView: React.FC = () => {
               </table>
             </div>
             {modules.length === 0 && (
-              <p className="text-center text-gray-500 py-8">
-                No hay modulos disponibles.
-              </p>
+              <p className="text-center text-gray-500 py-8">No hay módulos disponibles.</p>
             )}
 
             <div className="mt-6 flex justify-end gap-3">
@@ -352,7 +358,7 @@ const CensoModulesView: React.FC = () => {
               >
                 {saving ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                     <span>Guardando...</span>
                   </>
                 ) : (

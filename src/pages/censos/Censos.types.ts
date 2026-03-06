@@ -106,26 +106,23 @@ export interface ViewCensoModalProps {
   onClose: () => void;
   Censo: Censo | null;
 }
-
 export interface Index {
-  id: string | number;
-  name: string; 
+  id: string;          
+  original_id: number; 
+  name: string;
 }
 
-
-
 export interface Module {
-  id: number;
+  id: string; // encriptado
+  original_id: number;
   name: string;
-  
 }
 
 export interface IndexForCenso {
   id: number;
   index_id: number;
-  reference_id: number; 
+  reference_id: number;
   reference_type: string;
-  
   index?: Index;
   reference?: Module;
 }
@@ -135,14 +132,15 @@ export interface ModuleForCensoShowResponse {
     id: string;
     name: string;
   };
-  indexs: Index[];        
-  modules: Module[];       
-  indexForCensos?: IndexForCenso[]; 
+  indexes: Index[];      
+  modules: Module[];
+  indexForCensos: IndexForCenso[];
 }
 
 export interface ModuleForCensoRequest {
   items: Array<{
-    module_id: string;   
+    module_id: string;
     index_id: string;
   }>;
 }
+

@@ -72,16 +72,16 @@ export function CensoCreateModal({
   const title =
     mode === "create"
       ? editingCenso
-        ? "Editar censo"
+        ? "Editar enso"
         : "Crear censo manual"
       : "Subir censo por plantilla";
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[9999] transition-opacity"
-        onClick={handleClose}
-      />
+       <div
+  className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] transition-opacity"
+  onClick={onClose}
+/>
 
       <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
