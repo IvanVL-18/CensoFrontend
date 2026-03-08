@@ -138,28 +138,21 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
 
   const validItems = useMemo(() => {
     return rows
-      .filter((row) => {
-        if (row.checked && row.selected_index_id) return true;
-
-        if (!row.checked && row.stored_index_id) return true;
-
-        if (row.checked && !row.selected_index_id && row.stored_index_id)
-          return true;
-
-        return false;
-      })
+      .filter((row) => row.checked && row.selected_index_id)
       .map((row) => ({
         module_id: row.module_id,
-        index_id:
-          row.checked && row.selected_index_id
-            ? row.selected_index_id
-            : String(row.stored_index_id),
+        index_id: row.selected_index_id,
       }));
   }, [rows]);
 
   const saveChanges = useCallback(async () => {
     try {
       if (!censoId) return false;
+
+      if (validItems.length === 0) {
+        setError("Selecciona un módulo y asígnale un índice.");
+        return false;
+      }
 
       setSaving(true);
       setError(null);
@@ -186,7 +179,6 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
       setSaving(false);
     }
   }, [censoId, hasAssignments, validItems, loadData]);
-
   const reload = useCallback(async () => {
     await loadData();
   }, [loadData]);
