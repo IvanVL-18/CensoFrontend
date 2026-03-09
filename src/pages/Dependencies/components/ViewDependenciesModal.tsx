@@ -49,7 +49,7 @@ export function ViewDependencyModal({ isOpen, onClose, Dependency }: ViewDepende
           
           {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">Detalle del Dependency</h2>
+            <h2 className="text-xl font-bold text-white">Detalle de la dependencia</h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300"
@@ -62,7 +62,7 @@ export function ViewDependencyModal({ isOpen, onClose, Dependency }: ViewDepende
           {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
             <DetailRow 
-              label="Nombre del Dependency:" 
+              label="Nombre de la dependencia:" 
               value={Dependency.name} 
             />
             <DetailRow 

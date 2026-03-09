@@ -123,7 +123,7 @@ export function DependenciesTable({
                     <>
                       {/* --- Botón VER (Activo) --- */}
                       <button
-                        title="Ver Dependency"
+                        title="Ver dependencia"
                         onClick={() => onView(Dependency)} 
                         className="
                           bg-white text-[#691b31] 
@@ -137,7 +137,7 @@ export function DependenciesTable({
 
                       {/* --- Botón EDITAR (Activo) --- */}
                       <button
-                        title="Editar Dependency"
+                        title="Editar la dependencia"
                         onClick={() => onEdit(Dependency)} 
                         className="
                           bg-white text-[#691b31] 
@@ -151,7 +151,7 @@ export function DependenciesTable({
 
                       {/* --- Botón DESACTIVAR (Ban) --- */}
                       <button
-                        title="Desactivar Dependency"
+                        title="Desactivar la dependencia"
                         onClick={() => onBan(Dependency)} 
                         className="
                           bg-white text-[#691b31] 
@@ -167,7 +167,7 @@ export function DependenciesTable({
                     <>
                       {/* --- Botón VER (Inactivo) --- */}
                       <button
-                        title="Ver Dependency"
+                        title="Ver la dependencia"
                         onClick={() => onView(Dependency)} 
                         className="
                            bg-white text-[#691b31] 
@@ -181,7 +181,7 @@ export function DependenciesTable({
 
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
                       <button
-                        title="Restaurar Dependency"
+                        title="Restaurar la dependencia"
                         onClick={() => onRestore(Dependency)} 
                         className="
                            bg-white text-[#691b31] 
