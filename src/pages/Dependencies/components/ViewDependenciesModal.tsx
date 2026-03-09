@@ -62,7 +62,7 @@ export function ViewDependencyModal({ isOpen, onClose, Dependency }: ViewDepende
           {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
             <DetailRow 
-              label="Nombre del Dependency:" 
+              label="Nombre de la dependencia:" 
               value={Dependency.name} 
             />
             <DetailRow 
