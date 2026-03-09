@@ -20,6 +20,7 @@ import PermissionRoles from "./pages/PermissionRoles/PermissionRoles";
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
 import Verification from "./pages/Verification/Verification";
+import ResetPassword from "./pages/ResetPassword/ResetPassword"
 
 import Censos from "./pages/censos/Censos";
 import { CensoDetail } from "./pages/censos/components/CensoDetail";
@@ -39,6 +40,9 @@ export default function App() {
         <Route path="/instituciones" element={<Insitutions />} />
         <Route path="/indices" element={<Index />} />
         <Route path="/verification" element={<Verification />} />
+
+        <Route path="/ResetPassword" element={<ResetPassword/>} />
+
         {/* Censos */}
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />
@@ -47,11 +51,11 @@ export default function App() {
         <Route path="/Modulos" element={<Modules />} />
         <Route path="/secciones" element={<Sections />} />
         <Route path="/ocupaciones" element={<Occupations />} />
-        <Route path="/Roles" element={<Roles />} />
+        <Route path="/roles" element={<Roles />} />
         
         <Route path="/Form" element={<FormTestPage />} />
         <Route path="/preguntas" element={<Questions />} />
-        <Route path="/permission-roles" element={<PermissionRoles />} />
+        <Route path="/roles/permission-roles" element={<PermissionRoles />} />
         <Route path="/permisos" element={<Permissions />} />
         <Route path="/categorias" element={<Categories />} />
         <Route path="/catalogos" element={<Catalogs />} />
