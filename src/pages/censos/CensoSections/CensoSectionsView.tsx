@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Eye, ArrowRight } from "lucide-react";
 import { useCensoSections } from "./useCensoSections";
+import Pagination from "../../../components/Pagination";
 
 const CensoSectionsView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,10 +16,14 @@ const CensoSectionsView: React.FC = () => {
     saving,
     error,
     allChecked,
+    currentPage,
+    lastPage,
+    paginationLinks,
     toggleSectionRow,
     toggleAllSectionRows,
     changeIndex,
     saveChanges,
+    goToPage,
   } = useCensoSections(id ?? "");
 
   const handleBack = () => {
@@ -71,9 +76,9 @@ const CensoSectionsView: React.FC = () => {
         )}
 
         <div className="p-6">
+          {/* TABLA */}
           <div className="overflow-x-auto rounded-xl border border-gray-200">
             <table className="min-w-full border-collapse">
-              {/* HEADER TABLA */}
               <thead className="bg-gray-50">
                 <tr className="text-left text-sm font-semibold text-gray-700">
                   <th className="px-4 py-3">
@@ -95,7 +100,6 @@ const CensoSectionsView: React.FC = () => {
                 </tr>
               </thead>
 
-              {/* BODY */}
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
@@ -107,97 +111,118 @@ const CensoSectionsView: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  rows.map((row) => (
-                    <tr
-                      key={row.section_id}
-                      className="border-t border-gray-200 text-sm text-gray-700"
-                    >
-                      {/* CHECK */}
-                      <td className="px-4 py-3">
-                        <input
-                          type="checkbox"
-                          checked={row.checked}
-                          onChange={(e) =>
-                            toggleSectionRow(row.section_id, e.target.checked)
-                          }
-                          className="h-4 w-4 rounded border-gray-300"
-                        />
-                      </td>
+                  rows.map((row) => {
+                    const selectedIndexName = indexs.find(
+                      (index) =>
+                        String(index.id) === String(row.selected_index_id),
+                    )?.name;
 
-                      <td className="px-4 py-3 font-medium">
-                        {row.section_name}
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <select
-                          value={row.selected_index_id}
-                          onChange={(e) =>
-                            changeIndex(row.section_id, e.target.value)
-                          }
-                          disabled={!row.checked}
-                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
-                        >
-                          <option value="">Selecciona un índice</option>
-                          {indexs.map((index) => (
-                            <option key={index.id} value={index.id}>
-                              {index.name}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        {row.checked ? (
-                          <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                            {row.selected_index_id
-                              ? (indexs.find(
-                                  (index) =>
-                                    String(index.id) ===
-                                    String(row.selected_index_id),
-                                )?.name ?? "Sin asignar")
-                              : (row.stored_index_name ?? "Sin asignar")}
-                          </span>
-                        ) : (
-                          <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-                            Sin asignar
-                          </span>
-                        )}
-                      </td>
-
-                      
-
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            disabled={!row.checked}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-green-600 text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-                            title={
-                              row.checked
-                                ? "Ver sección"
-                                : "Selecciona la sección primero"
+                    return (
+                      <tr
+                        key={row.section_id}
+                        className={`border-t border-gray-200 text-sm text-gray-700 ${
+                          row.checked ? "bg-green-50" : "bg-white"
+                        }`}
+                      >
+                        {/* CHECK */}
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={row.checked}
+                            onChange={(e) =>
+                              toggleSectionRow(row.section_id, e.target.checked)
                             }
-                          >
-                            <Eye size={18} />
-                          </button>
+                            className="h-4 w-4 rounded border-gray-300"
+                          />
+                        </td>
 
-                          <button
-                            disabled={!row.checked}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-600 text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-                            title={
-                              row.checked
-                                ? "Ir"
-                                : "Selecciona la sección primero"
+                        {/* NOMBRE SECCIÓN */}
+                        <td className="px-4 py-3 font-medium">
+                          {row.section_name}
+                        </td>
+
+                        {/* SELECT ÍNDICES */}
+                        <td className="px-4 py-3">
+                          <select
+                            value={row.selected_index_id}
+                            onChange={(e) =>
+                              changeIndex(row.section_id, e.target.value)
                             }
+                            disabled={!row.checked}
+                            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
                           >
-                            <ArrowRight size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            <option value="">Selecciona un índice</option>
+                            {indexs.map((index) => (
+                              <option key={index.id} value={index.id}>
+                                {index.name}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+
+                        {/* ASIGNACIÓN ACTUAL */}
+                        <td className="px-4 py-3">
+                          {row.checked ? (
+                            <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                              {selectedIndexName ??
+                                row.stored_index_name ??
+                                "Sin asignar"}
+                            </span>
+                          ) : (
+                            <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                              {row.stored_index_name ?? "Sin asignar"}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* ACCIONES */}
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              type="button"
+                              disabled={!row.checked}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-green-600 text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                              title={
+                                row.checked
+                                  ? "Ver sección"
+                                  : "Selecciona la sección primero"
+                              }
+                            >
+                              <Eye size={18} />
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={!row.checked}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-600 text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                              title={
+                                row.checked
+                                  ? "Ir"
+                                  : "Selecciona la sección primero"
+                              }
+                            >
+                              <ArrowRight size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* PAGINACIÓN */}
+          <div className="mt-4">
+            <Pagination
+              meta={{
+                current_page: currentPage,
+                last_page: lastPage,
+              }}
+              links={paginationLinks}
+              onPageNumber={goToPage}
+            />
           </div>
 
           {/* BOTONES */}

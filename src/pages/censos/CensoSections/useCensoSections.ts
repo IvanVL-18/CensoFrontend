@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCensoSections,
   storeCensoSections,
@@ -10,7 +10,16 @@ import type {
   SectionInfo,
   SelectedSectionItem,
   CensoSectionRow,
+  PaginationLinksObj,
 } from "./CensoSections.types";
+
+type SelectedSectionState = {
+  section_id: string;
+  index_id: string;
+  stored_index_name: string | null;
+};
+
+type SelectedSectionsMap = Record<string, SelectedSectionState>;
 
 type UseCensoSectionsReturn = {
   moduleInfo: ModuleSectionInfo | null;
@@ -22,11 +31,15 @@ type UseCensoSectionsReturn = {
   error: string | null;
   hasAssignments: boolean;
   allChecked: boolean;
+  currentPage: number;
+  lastPage: number;
+  paginationLinks: PaginationLinksObj | null;
   toggleSectionRow: (sectionId: string, checked: boolean) => void;
   toggleAllSectionRows: (checked: boolean) => void;
   changeIndex: (sectionId: string, indexId: string) => void;
   saveChanges: () => Promise<boolean>;
   reload: () => Promise<void>;
+  goToPage: (page: number) => Promise<void>;
 };
 
 export const useCensoSections = (
@@ -41,33 +54,61 @@ export const useCensoSections = (
   const [error, setError] = useState<string | null>(null);
   const [hasAssignments, setHasAssignments] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [paginationLinks, setPaginationLinks] =
+    useState<PaginationLinksObj | null>(null);
+
+  const [selectedMap, setSelectedMap] = useState<SelectedSectionsMap>({});
+  const selectedMapRef = useRef<SelectedSectionsMap>({});
+  const [initializedSelection, setInitializedSelection] = useState(false);
+
+  useEffect(() => {
+    selectedMapRef.current = selectedMap;
+  }, [selectedMap]);
+
+  const buildInitialSelectedMap = useCallback(
+    (
+      selectedSections: SelectedSectionItem[] = [],
+      availableIndexes: SectionIndexOption[] = [],
+    ): SelectedSectionsMap => {
+      const map: SelectedSectionsMap = {};
+
+      selectedSections.forEach((item) => {
+        const sectionId = String(item.reference?.id ?? "");
+        if (!sectionId) return;
+
+        const matchedIndex = availableIndexes.find(
+          (index) => String(index.id) === String(item.index?.id),
+        );
+
+        map[sectionId] = {
+          section_id: sectionId,
+          index_id: matchedIndex ? String(matchedIndex.id) : "",
+          stored_index_name: item.index?.name ?? null,
+        };
+      });
+
+      return map;
+    },
+    [],
+  );
+
   const buildRows = useCallback(
     (
       allSections: SectionInfo[],
-      availableIndexes: SectionIndexOption[],
-      selectedSections?: SelectedSectionItem[],
+      currentSelectedMap: SelectedSectionsMap,
     ): CensoSectionRow[] => {
       return allSections.map((section) => {
-        const assigned = selectedSections?.find(
-          (item) =>
-            String(item.reference?.name).trim().toLowerCase() ===
-            String(section.name).trim().toLowerCase(),
-        );
-
-        const matchedIndex = assigned
-          ? availableIndexes.find(
-              (index) =>
-                String(index.name).trim().toLowerCase() ===
-                String(assigned.index?.name).trim().toLowerCase(),
-            )
-          : null;
+        const sectionId = String(section.id);
+        const fromMap = currentSelectedMap[sectionId];
 
         return {
-          section_id: String(section.id),
+          section_id: sectionId,
           section_name: section.name,
-          checked: false,
-          selected_index_id: matchedIndex ? String(matchedIndex.id) : "",
-          stored_index_name: assigned ? (assigned.index?.name ?? null) : null,
+          checked: Boolean(fromMap),
+          selected_index_id: fromMap?.index_id ?? "",
+          stored_index_name: fromMap?.stored_index_name ?? null,
         };
       });
     },
@@ -75,32 +116,44 @@ export const useCensoSections = (
   );
 
   const loadData = useCallback(
-    async (signal?: AbortSignal) => {
+    async (page: number = 1, signal?: AbortSignal) => {
       try {
         setLoading(true);
         setError(null);
 
-        const data = await getCensoSections(moduleForCensoId, signal);
-
-        setModuleInfo(data.module);
-        setIndexs(data.indexs ?? []);
-        setSections(data.sections?.data ?? []);
-        setHasAssignments(Boolean(data.sectionsSelected?.length));
+        const data = await getCensoSections(moduleForCensoId, page, signal);
         const fetchedIndexs = data.indexs ?? [];
+        const paginatedSections = data.sections;
+        const fetchedSections = paginatedSections?.data ?? [];
+        const fetchedSelected = data.sectionsSelected ?? [];
 
         setModuleInfo(data.module);
         setIndexs(fetchedIndexs);
-        setSections(data.sections?.data ?? []);
-        setHasAssignments(Boolean(data.sectionsSelected?.length));
-        setRows(
-          buildRows(
-            data.sections?.data ?? [],
-            fetchedIndexs,
-            data.sectionsSelected,
-          ),
-        );
+        setSections(fetchedSections);
+        setHasAssignments(Boolean(fetchedSelected.length));
+
+        setCurrentPage(paginatedSections?.current_page ?? 1);
+        setLastPage(paginatedSections?.last_page ?? 1);
+        setPaginationLinks({
+          first: paginatedSections?.first_page_url ?? null,
+          last: paginatedSections?.last_page_url ?? null,
+          prev: paginatedSections?.prev_page_url ?? null,
+          next: paginatedSections?.next_page_url ?? null,
+        });
+
+        let effectiveMap = selectedMapRef.current;
+
+        if (!initializedSelection) {
+          effectiveMap = buildInitialSelectedMap(fetchedSelected, fetchedIndexs);
+          selectedMapRef.current = effectiveMap;
+          setSelectedMap(effectiveMap);
+          setInitializedSelection(true);
+        }
+
+        setRows(buildRows(fetchedSections, effectiveMap));
       } catch (err: any) {
         if (err?.name === "CanceledError" || err?.name === "AbortError") return;
+
         setError(
           err?.response?.data?.message ?? "No se pudo cargar la información.",
         );
@@ -108,41 +161,88 @@ export const useCensoSections = (
         setLoading(false);
       }
     },
-    [buildRows, moduleForCensoId],
+    [
+      moduleForCensoId,
+      initializedSelection,
+      buildInitialSelectedMap,
+      buildRows,
+    ],
   );
 
   useEffect(() => {
     const controller = new AbortController();
-    void loadData(controller.signal);
+    void loadData(1, controller.signal);
 
     return () => controller.abort();
   }, [loadData]);
 
   const toggleSectionRow = useCallback(
     (sectionId: string, checked: boolean) => {
-      setRows((prev) =>
-        prev.map((row) => {
-          if (row.section_id !== sectionId) return row;
+      setRows((prev) => {
+        const nextRows = prev.map((row) =>
+          row.section_id === sectionId
+            ? {
+                ...row,
+                checked,
+                selected_index_id: checked ? row.selected_index_id || "" : "",
+              }
+            : row,
+        );
 
-          return {
-            ...row,
-            checked,
-            selected_index_id: checked ? row.selected_index_id || "" : "",
-          };
-        }),
-      );
+        const changedRow = nextRows.find((row) => row.section_id === sectionId);
+
+        setSelectedMap((prevMap) => {
+          const nextMap = { ...prevMap };
+
+          if (checked && changedRow) {
+            nextMap[sectionId] = {
+              section_id: sectionId,
+              index_id: changedRow.selected_index_id ?? "",
+              stored_index_name: changedRow.stored_index_name ?? null,
+            };
+          } else {
+            delete nextMap[sectionId];
+          }
+
+          selectedMapRef.current = nextMap;
+          return nextMap;
+        });
+
+        return nextRows;
+      });
     },
     [],
   );
 
   const toggleAllSectionRows = useCallback((checked: boolean) => {
-    setRows((prev) =>
-      prev.map((row) => ({
+    setRows((prev) => {
+      const nextRows = prev.map((row) => ({
         ...row,
         checked,
         selected_index_id: checked ? row.selected_index_id || "" : "",
-      })),
-    );
+      }));
+
+      setSelectedMap((prevMap) => {
+        const nextMap = { ...prevMap };
+
+        nextRows.forEach((row) => {
+          if (checked) {
+            nextMap[row.section_id] = {
+              section_id: row.section_id,
+              index_id: row.selected_index_id ?? "",
+              stored_index_name: row.stored_index_name ?? null,
+            };
+          } else {
+            delete nextMap[row.section_id];
+          }
+        });
+
+        selectedMapRef.current = nextMap;
+        return nextMap;
+      });
+
+      return nextRows;
+    });
   }, []);
 
   const changeIndex = useCallback((sectionId: string, indexId: string) => {
@@ -156,6 +256,21 @@ export const useCensoSections = (
           : row,
       ),
     );
+
+    setSelectedMap((prev) => {
+      if (!prev[sectionId]) return prev;
+
+      const nextMap = {
+        ...prev,
+        [sectionId]: {
+          ...prev[sectionId],
+          index_id: indexId,
+        },
+      };
+
+      selectedMapRef.current = nextMap;
+      return nextMap;
+    });
   }, []);
 
   const allChecked = useMemo(() => {
@@ -163,13 +278,13 @@ export const useCensoSections = (
   }, [rows]);
 
   const validItems = useMemo(() => {
-    return rows
-      .filter((row) => row.checked && row.selected_index_id)
-      .map((row) => ({
-        section_id: row.section_id,
-        index_id: row.selected_index_id,
+    return Object.values(selectedMap)
+      .filter((item) => item.index_id)
+      .map((item) => ({
+        section_id: item.section_id,
+        index_id: item.index_id,
       }));
-  }, [rows]);
+  }, [selectedMap]);
 
   const saveChanges = useCallback(async () => {
     try {
@@ -194,7 +309,7 @@ export const useCensoSections = (
         });
       }
 
-      await loadData();
+      await loadData(currentPage);
       return true;
     } catch (err: any) {
       const apiError = err?.response?.data;
@@ -211,11 +326,19 @@ export const useCensoSections = (
     } finally {
       setSaving(false);
     }
-  }, [moduleForCensoId, hasAssignments, validItems, loadData]);
+  }, [moduleForCensoId, hasAssignments, validItems, loadData, currentPage]);
 
   const reload = useCallback(async () => {
-    await loadData();
-  }, [loadData]);
+    await loadData(currentPage);
+  }, [loadData, currentPage]);
+
+  const goToPage = useCallback(
+    async (page: number) => {
+      if (page < 1 || page > lastPage) return;
+      await loadData(page);
+    },
+    [lastPage, loadData],
+  );
 
   return {
     moduleInfo,
@@ -227,10 +350,14 @@ export const useCensoSections = (
     error,
     hasAssignments,
     allChecked,
+    currentPage,
+    lastPage,
+    paginationLinks,
     toggleSectionRow,
     toggleAllSectionRows,
     changeIndex,
     saveChanges,
     reload,
+    goToPage,
   };
 };

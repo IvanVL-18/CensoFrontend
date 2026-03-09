@@ -20,6 +20,13 @@ export interface PaginationLink {
   active: boolean;
 }
 
+export interface PaginationLinksObj {
+  first: string | null;
+  last: string | null;
+  prev: string | null;
+  next: string | null;
+}
+
 export interface PaginatedSectionsResponse {
   current_page: number;
   data: SectionInfo[];

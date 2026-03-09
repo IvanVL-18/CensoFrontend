@@ -10,11 +10,15 @@ type EncryptedModuleForCensoId = string;
 
 export const getCensoSections = async (
   moduleForCensoId: EncryptedModuleForCensoId,
+  page: number = 1,
   signal?: AbortSignal,
 ): Promise<GetCensoSectionsResponse> => {
   const response = await api.get<GetCensoSectionsResponse>(
     `/section-for-censo/${moduleForCensoId}`,
-    { signal },
+    {
+      signal,
+      params: { page },
+    },
   );
 
   return response.data;
