@@ -20,6 +20,7 @@ import PermissionRoles from "./pages/PermissionRoles/PermissionRoles";
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
 import Verification from "./pages/Verification/Verification";
+import ResetPassword from "./pages/ResetPassword/ResetPassword"
 
 import Censos from "./pages/censos/Censos";
 import { CensoDetail } from "./pages/censos/components/CensoDetail";
@@ -39,6 +40,9 @@ export default function App() {
         <Route path="/instituciones" element={<Insitutions />} />
         <Route path="/indices" element={<Index />} />
         <Route path="/verification" element={<Verification />} />
+
+        <Route path="/ResetPassword" element={<ResetPassword/>} />
+
         {/* Censos */}
         <Route path="/graficador" element={<ChartsPage />} />
         <Route path="/reportes" element={<ReportsPage />} />
