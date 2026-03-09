@@ -3,14 +3,14 @@ import {
   getCensoModules,
   storeCensoModules,
   updateCensoModules,
-} from "../CensoModules.service";
+} from "./CensoModules.service";
 import type {
   CensoInfo,
   IndexInfo,
   ModuleInfo,
   AssignedModule,
   CensoModuleRow,
-} from "../CensoModules.types";
+} from "./CensoModules.types";
 
 type UseCensoModulesReturn = {
   censo: CensoInfo | null;

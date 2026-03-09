@@ -1,4 +1,4 @@
-import api from "../../lib/Axios";
+import api from "../../../lib/Axios";
 import type {
   GetCensoModulesResponse,
   StoreCensoModulesPayload,

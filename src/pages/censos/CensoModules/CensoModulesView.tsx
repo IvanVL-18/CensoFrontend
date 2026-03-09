@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, PlusCircle } from "lucide-react";
-import { useCensoModules } from "../hooks/useCensoModules";
+import { useCensoModules } from "../CensoModules/useCensoModules";
 
 const CensoModulesView: React.FC = () => {
   const { id } = useParams<{ id: string }>();

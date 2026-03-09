@@ -23,7 +23,7 @@ import Verification from "./pages/Verification/Verification";
 
 import Censos from "./pages/censos/Censos";
 import { CensoDetail } from "./pages/censos/components/CensoDetail";
-import CensoModulesView from "./pages/censos/components/CensoModulesView";
+import CensoModulesView from "./pages/censos/CensoModules/CensoModulesView";
 import CensoSectionsView from "./pages/censos/CensoSections/CensoSectionsView";
 
 import Questions from "./pages/Questions/Questions";
