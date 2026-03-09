@@ -29,8 +29,8 @@ function DetailRow({ label, value }: { label: string; value: string | null }) {
 export function ViewCatalogModal({ isOpen, onClose, Catalog }: ViewCatalogModalProps) {
   if (!isOpen || !Catalog) return null;
 
-  const ModuleDisplay = Catalog.Module_name || null;
-  const isModuleInactive = Catalog.Module_is_active === false;
+  const moduleName = Catalog.module_name || null;
+  const isModuleInactive = Catalog.module_is_active === false;
 
   return (
     <>
@@ -52,13 +52,12 @@ export function ViewCatalogModal({ isOpen, onClose, Catalog }: ViewCatalogModalP
           </div>
 
           <div className="p-6 space-y-4">
-            {/* Alerta si la Modulo está inactiva */}
             {isModuleInactive && (
               <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
                 <div className="flex items-center">
                   <AlertTriangle className="h-5 w-5 text-yellow-400 mr-2" />
                   <p className="text-sm text-yellow-700">
-                    <span className="font-bold">Modulo inactiva:</span> Esta Modulo ha sido desactivada. El catálogo aún existe pero su Modulo ya no está disponible.
+                    <span className="font-bold">Módulo inactivo:</span> Este módulo ha sido desactivado. El catálogo aún existe pero su módulo ya no está disponible.
                   </p>
                 </div>
               </div>
@@ -68,14 +67,14 @@ export function ViewCatalogModal({ isOpen, onClose, Catalog }: ViewCatalogModalP
             <DetailRow label="Slug:" value={Catalog.slug} />
             
             <div>
-              <label className="block text-sm font-medium text-gray-500">Modulo:</label>
+              <label className="block text-sm font-medium text-gray-500">Módulo:</label>
               <div className="flex items-center gap-2">
                 <p className="text-lg text-gray-900 font-semibold">
-                  {ModuleDisplay}
+                  {moduleName}
                 </p>
                 {isModuleInactive && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                    Inactiva
+                    Inactivo
                   </span>
                 )}
               </div>

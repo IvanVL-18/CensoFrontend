@@ -1,15 +1,14 @@
-// Catalogs.types.ts
 export interface Catalog {
   id: string;
   name: string;
   slug: string;
   module_id: string;
-  Module_name?: string; 
-   Module_is_active?: boolean; 
-  Module?: {
+  module_name?: string;        
+  module_is_active?: boolean;  
+  Module?: {                  
     id: string;
     name: string;
-     deleted_at?: string | null;
+    deleted_at?: string | null;
   };
   created_at: string;
   updated_at: string;
