@@ -163,12 +163,16 @@ const CensoModulesView: React.FC = () => {
                       <td className="px-4 py-3 text-center">
                         <button
                           type="button"
-                          disabled={!row.checked}
+                          onClick={() => {
+                            if (!row.encrypted_id) return;
+                            navigate(`/censos/secciones/${row.encrypted_id}`);
+                          }}
+                          disabled={!(row.checked && row.encrypted_id)}
                           className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                           title={
-                            row.checked
+                            row.checked && row.encrypted_id
                               ? "Ir a secciones"
-                              : "Selecciona el módulo primero"
+                              : "Selecciona el módulo y guárdalo primero"
                           }
                         >
                           <PlusCircle size={18} />

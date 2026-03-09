@@ -1,0 +1,229 @@
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Save, Eye, ArrowRight } from "lucide-react";
+import { useCensoSections } from "./useCensoSections";
+
+const CensoSectionsView: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  const {
+    moduleInfo,
+    indexs,
+    rows,
+    loading,
+    saving,
+    error,
+    allChecked,
+    toggleSectionRow,
+    toggleAllSectionRows,
+    changeIndex,
+    saveChanges,
+  } = useCensoSections(id ?? "");
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  const handleSave = async () => {
+    await saveChanges();
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full p-6">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <p className="text-sm text-gray-500">Cargando secciones...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full p-6">
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        {/* HEADER */}
+        <div className="flex items-center justify-between bg-[var(--pantone-7421)] px-6 py-4 text-white">
+          <div>
+            <h1 className="text-lg font-semibold">Secciones</h1>
+            <p className="text-sm text-white/80">
+              {moduleInfo
+                ? `Módulo: ${moduleInfo.module_name}`
+                : "Asignación de secciones"}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/20"
+          >
+            <ArrowLeft size={18} />
+            Cerrar
+          </button>
+        </div>
+
+        {/* ERROR */}
+        {error && (
+          <div className="border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        <div className="p-6">
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
+            <table className="min-w-full border-collapse">
+              {/* HEADER TABLA */}
+              <thead className="bg-gray-50">
+                <tr className="text-left text-sm font-semibold text-gray-700">
+                  <th className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={allChecked}
+                        onChange={(e) => toggleAllSectionRows(e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                      <span>Seleccionar</span>
+                    </div>
+                  </th>
+
+                  <th className="px-4 py-3">Sección</th>
+                  <th className="px-4 py-3">Índice a asignar</th>
+                  <th className="px-4 py-3">Asignación actual</th>
+                  <th className="px-4 py-3 text-center">Acciones</th>
+                </tr>
+              </thead>
+
+              {/* BODY */}
+              <tbody>
+                {rows.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-4 py-6 text-center text-sm text-gray-500"
+                    >
+                      No hay secciones disponibles.
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((row) => (
+                    <tr
+                      key={row.section_id}
+                      className="border-t border-gray-200 text-sm text-gray-700"
+                    >
+                      {/* CHECK */}
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={row.checked}
+                          onChange={(e) =>
+                            toggleSectionRow(row.section_id, e.target.checked)
+                          }
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                      </td>
+
+                      <td className="px-4 py-3 font-medium">
+                        {row.section_name}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <select
+                          value={row.selected_index_id}
+                          onChange={(e) =>
+                            changeIndex(row.section_id, e.target.value)
+                          }
+                          disabled={!row.checked}
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
+                        >
+                          <option value="">Selecciona un índice</option>
+                          {indexs.map((index) => (
+                            <option key={index.id} value={index.id}>
+                              {index.name}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {row.checked ? (
+                          <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                            {row.selected_index_id
+                              ? (indexs.find(
+                                  (index) =>
+                                    String(index.id) ===
+                                    String(row.selected_index_id),
+                                )?.name ?? "Sin asignar")
+                              : (row.stored_index_name ?? "Sin asignar")}
+                          </span>
+                        ) : (
+                          <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                            Sin asignar
+                          </span>
+                        )}
+                      </td>
+
+                      
+
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            disabled={!row.checked}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-green-600 text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                            title={
+                              row.checked
+                                ? "Ver sección"
+                                : "Selecciona la sección primero"
+                            }
+                          >
+                            <Eye size={18} />
+                          </button>
+
+                          <button
+                            disabled={!row.checked}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-600 text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                            title={
+                              row.checked
+                                ? "Ir"
+                                : "Selecciona la sección primero"
+                            }
+                          >
+                            <ArrowRight size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* BOTONES */}
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--pantone-7421)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Save size={18} />
+              {saving ? "Guardando..." : "Guardar cambios"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CensoSectionsView;

@@ -24,6 +24,7 @@ import Verification from "./pages/Verification/Verification";
 import Censos from "./pages/censos/Censos";
 import { CensoDetail } from "./pages/censos/components/CensoDetail";
 import CensoModulesView from "./pages/censos/components/CensoModulesView";
+import CensoSectionsView from "./pages/censos/CensoSections/CensoSectionsView";
 
 import Questions from "./pages/Questions/Questions";
 export default function App() {
@@ -48,7 +49,7 @@ export default function App() {
         <Route path="/secciones" element={<Sections />} />
         <Route path="/ocupaciones" element={<Occupations />} />
         <Route path="/Roles" element={<Roles />} />
-        
+
         <Route path="/Form" element={<FormTestPage />} />
         <Route path="/preguntas" element={<Questions />} />
         <Route path="/permission-roles" element={<PermissionRoles />} />
@@ -60,10 +61,10 @@ export default function App() {
         <Route path="/censos" element={<Censos />} />
         <Route path="/censos/:id" element={<CensoDetail />} />
         <Route path="/censos/:id/modulos" element={<CensoModulesView />} />
+        <Route path="/censos/secciones/:id" element={<CensoSectionsView />} />
       </Route>
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
-
     </Routes>
   );
 }
