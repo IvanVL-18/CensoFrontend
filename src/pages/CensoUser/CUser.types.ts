@@ -1,3 +1,5 @@
+import type { MetaLink } from "../censos/Censos.types";
+
 export interface Censo {
   id: string;
   name: string;
@@ -9,23 +11,12 @@ export interface Censo {
   updated_at: string;
   deleted_at: string;
   status?: string;
+  // Agregar estos para el diseño
+  preguntas?: number;
+  respuestas?: number;
+  porcentaje?: number;
 }
 
-export interface CreateCensoDTO {
-  name: string;
-  description?: string;
-  init_date?: string;
-  deadline?: string;
-}
-
-export type UpdateCensoDTO = Partial<CreateCensoDTO>;
-
-export interface MetaLink {
-  url: string | null;
-  label: string;
-  page: number | null;
-  active: boolean;
-}
 
 export interface Meta {
   total: number;
@@ -105,43 +96,4 @@ export interface ViewCensoModalProps {
   isOpen: boolean;
   onClose: () => void;
   Censo: Censo | null;
-}
-
-/* =========================
-   MODULES + INDEXES
-========================= */
-
-export interface Index {
-  original_id: string;
-  id: string | number;
-  name: string;
-}
-
-export interface Module {
-  id: string | number;
-  name: string;
-}
-
-export interface IndexForCenso {
-  id: number;
-  index_id: number;
-  reference_id: number;
-  reference_type: string;
-
-  index?: Index;
-  reference?: Module;
-}
-
-export interface ModuleForCensoShowResponse {
-  censo: { id: string; name: string };
-  indexes: Index[]; // aquí id es string | number
-  modules: Module[];
-  indexForCensos?: IndexForCenso[];
-}
-
-export interface ModuleForCensoRequest {
-  items: Array<{
-    module_id: string;
-    index_id: string;
-  }>;
 }

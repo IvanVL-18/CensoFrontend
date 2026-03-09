@@ -14,18 +14,31 @@ export function ConfirmModal({
   onConfirm,
 }: ConfirmModalProps) {
   const [localError, setLocalError] = useState<string | null>(null);
+  const [hasAttempted, setHasAttempted] = useState(false);
 
   useEffect(() => {
-    setLocalError(error || null);
-  }, [error]);
-
-  useEffect(() => {
-    if (isOpen) setLocalError(null);
+    if (isOpen) {
+      setLocalError(null);
+      setHasAttempted(false);
+    }
   }, [isOpen]);
 
-  if (!isOpen) {
-    return null;
-  }
+  useEffect(() => {
+    if (hasAttempted) setLocalError(error || null);
+  }, [error, hasAttempted]);
+
+  const handleConfirm = () => {
+    setHasAttempted(true);
+    onConfirm();
+  };
+
+  const handleClose = () => {
+    setLocalError(null);
+    setHasAttempted(false);
+    onClose();
+  };
+
+  if (!isOpen) return null;
 
   const extractParts = (msg: string) => {
     const match = msg.match(/^(.*?)"([^"]+)"(.*)$/s);

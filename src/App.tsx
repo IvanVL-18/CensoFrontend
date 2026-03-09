@@ -20,13 +20,17 @@ import PermissionRoles from "./pages/PermissionRoles/PermissionRoles";
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
 import Verification from "./pages/Verification/Verification";
-import ResetPassword from "./pages/ResetPassword/ResetPassword"
+import ResetPassword from "./pages/ResetPassword/ResetPassword";
 
 import Censos from "./pages/censos/Censos";
 import { CensoDetail } from "./pages/censos/components/CensoDetail";
 import CensoModulesView from "./pages/censos/components/CensoModulesView";
 
 import Questions from "./pages/Questions/Questions";
+
+// Importar la nueva vista de CensoUser
+import { CUser } from "./pages/CensoUser/CUser"; // Ajusta la ruta si es necesario
+
 export default function App() {
   return (
     <Routes>
@@ -61,13 +65,17 @@ export default function App() {
         <Route path="/catalogos" element={<Catalogs />} />
         <Route path="/usuarios" element={<Users />} />
         <Route path="/Dependency" element={<Dependencies />} />
+        
+        {/* Rutas de censos existentes */}
         <Route path="/censos" element={<Censos />} />
         <Route path="/censos/:id" element={<CensoDetail />} />
         <Route path="/censos/:id/modulos" element={<CensoModulesView />} />
+        
+        {/* Nueva ruta para la vista de usuario (tarjetas) */}
+        <Route path="/censo-usuario" element={<CUser />} />
       </Route>
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
-
     </Routes>
   );
 }
