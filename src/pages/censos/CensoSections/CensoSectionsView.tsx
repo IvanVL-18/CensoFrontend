@@ -13,6 +13,7 @@ const CensoSectionsView: React.FC = () => {
     indexs,
     rows,
     loading,
+    paginating,
     saving,
     error,
     allChecked,
@@ -25,14 +26,6 @@ const CensoSectionsView: React.FC = () => {
     saveChanges,
     goToPage,
   } = useCensoSections(id ?? "");
-
-  const handleBack = () => {
-    navigate(-1);
-  };
-
-  const handleSave = async () => {
-    await saveChanges();
-  };
 
   if (loading) {
     return (
@@ -47,7 +40,7 @@ const CensoSectionsView: React.FC = () => {
   return (
     <div className="w-full p-6">
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-        {/* HEADER */}
+       
         <div className="flex items-center justify-between bg-[var(--pantone-7421)] px-6 py-4 text-white">
           <div>
             <h1 className="text-lg font-semibold">Secciones</h1>
@@ -57,10 +50,9 @@ const CensoSectionsView: React.FC = () => {
                 : "Asignación de secciones"}
             </p>
           </div>
-
           <button
             type="button"
-            onClick={handleBack}
+            onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/20"
           >
             <ArrowLeft size={18} />
@@ -68,7 +60,7 @@ const CensoSectionsView: React.FC = () => {
           </button>
         </div>
 
-        {/* ERROR */}
+      
         {error && (
           <div className="border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">
             {error}
@@ -76,8 +68,16 @@ const CensoSectionsView: React.FC = () => {
         )}
 
         <div className="p-6">
-          {/* TABLA */}
-          <div className="overflow-x-auto rounded-xl border border-gray-200">
+          
+          <div className="relative overflow-x-auto rounded-xl border border-gray-200">
+            {paginating && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70">
+                <span className="text-sm text-gray-400">
+                  Cargando página...
+                </span>
+              </div>
+            )}
+
             <table className="min-w-full border-collapse">
               <thead className="bg-gray-50">
                 <tr className="text-left text-sm font-semibold text-gray-700">
@@ -92,7 +92,6 @@ const CensoSectionsView: React.FC = () => {
                       <span>Seleccionar</span>
                     </div>
                   </th>
-
                   <th className="px-4 py-3">Sección</th>
                   <th className="px-4 py-3">Índice a asignar</th>
                   <th className="px-4 py-3">Asignación actual</th>
@@ -113,8 +112,7 @@ const CensoSectionsView: React.FC = () => {
                 ) : (
                   rows.map((row) => {
                     const selectedIndexName = indexs.find(
-                      (index) =>
-                        String(index.id) === String(row.selected_index_id),
+                      (idx) => String(idx.id) === String(row.selected_index_id),
                     )?.name;
 
                     return (
@@ -124,7 +122,6 @@ const CensoSectionsView: React.FC = () => {
                           row.checked ? "bg-green-50" : "bg-white"
                         }`}
                       >
-                        {/* CHECK */}
                         <td className="px-4 py-3">
                           <input
                             type="checkbox"
@@ -136,12 +133,10 @@ const CensoSectionsView: React.FC = () => {
                           />
                         </td>
 
-                        {/* NOMBRE SECCIÓN */}
                         <td className="px-4 py-3 font-medium">
                           {row.section_name}
                         </td>
 
-                        {/* SELECT ÍNDICES */}
                         <td className="px-4 py-3">
                           <select
                             value={row.selected_index_id}
@@ -152,15 +147,14 @@ const CensoSectionsView: React.FC = () => {
                             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
                           >
                             <option value="">Selecciona un índice</option>
-                            {indexs.map((index) => (
-                              <option key={index.id} value={index.id}>
-                                {index.name}
+                            {indexs.map((idx) => (
+                              <option key={idx.id} value={idx.id}>
+                                {idx.name}
                               </option>
                             ))}
                           </select>
                         </td>
 
-                        {/* ASIGNACIÓN ACTUAL */}
                         <td className="px-4 py-3">
                           {row.checked ? (
                             <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
@@ -175,7 +169,6 @@ const CensoSectionsView: React.FC = () => {
                           )}
                         </td>
 
-                        {/* ACCIONES */}
                         <td className="px-4 py-3 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <button
@@ -190,7 +183,6 @@ const CensoSectionsView: React.FC = () => {
                             >
                               <Eye size={18} />
                             </button>
-
                             <button
                               type="button"
                               disabled={!row.checked}
@@ -213,31 +205,27 @@ const CensoSectionsView: React.FC = () => {
             </table>
           </div>
 
-          {/* PAGINACIÓN */}
+         
           <div className="mt-4">
             <Pagination
-              meta={{
-                current_page: currentPage,
-                last_page: lastPage,
-              }}
+              meta={{ current_page: currentPage, last_page: lastPage }}
               links={paginationLinks}
               onPageNumber={goToPage}
             />
           </div>
 
-          {/* BOTONES */}
+          
           <div className="mt-6 flex items-center justify-end gap-3">
             <button
               type="button"
-              onClick={handleBack}
+              onClick={() => navigate(-1)}
               className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
             >
               Cancelar
             </button>
-
             <button
               type="button"
-              onClick={handleSave}
+              onClick={() => void saveChanges()}
               disabled={saving}
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--pantone-7421)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
