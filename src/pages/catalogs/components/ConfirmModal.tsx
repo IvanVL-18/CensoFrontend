@@ -40,6 +40,19 @@ export function ConfirmModal({
 
   if (!isOpen) return null;
 
+  const extractNameFromMessage = (msg: string) => {
+    const match = msg.match(/"([^"]+)"/);
+    if (match) {
+      return {
+        before: msg.replace(match[0], "").trim(),
+        name: match[1],
+      };
+    }
+    return null;
+  };
+
+  const parsed = message ? extractNameFromMessage(message) : null;
+
   const confirmButtonClasses = {
     danger: "bg-red-900 text-white hover:bg-red-800",
     primary: "bg-white border border-[#691b31] text-[#691b31] hover:bg-gray-100",
@@ -63,10 +76,21 @@ export function ConfirmModal({
               <X size={24} />
             </button>
           </div>
-          <div className="p-6">
-            <p className="text-gray-700">{message}</p>
-            {localError && <p className="text-red-600 text-sm mt-4">{localError}</p>}
+
+          <div className="p-6 space-y-4">
+            {parsed ? (
+              <>
+                <p className="text-gray-700">{parsed.before}</p>
+                <p className="text-gray-700 break-words">"{parsed.name}"</p>
+              </>
+            ) : (
+              <p className="text-gray-700">{message}</p>
+            )}
+            {localError && (
+              <p className="text-red-600 text-sm mt-4">{localError}</p>
+            )}
           </div>
+
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
             <button
               type="button"

@@ -46,7 +46,7 @@ export const createCensoSchema = (isEdit: boolean) => {
     name: z.string()
       .trim()
       .min(5, "El nombre debe tener al menos 5 caracteres.")
-      .max(65, "El nombre no puede exceder los 65 caracteres.")
+      .max(125, "El nombre no puede exceder los 65 caracteres.")
       .regex(
         nameDescriptionRegex,
         "El nombre no puede contener emojis ni símbolos especiales."

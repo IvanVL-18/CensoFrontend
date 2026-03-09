@@ -134,7 +134,7 @@ export interface IndexForCenso {
 
 export interface ModuleForCensoShowResponse {
   censo: { id: string; name: string };
-  indexes: Index[]; // aquí id es string | number
+  indexes: Index[];
   modules: Module[];
   indexForCensos?: IndexForCenso[];
 }
