@@ -4,6 +4,8 @@ import { FormErrors } from "./FormErrors";
 import type { DependencyModalProps } from "../Dependencies.types";
 import { Dependencieschema } from "../schemas/Dependencies.schema";
 
+const MAX_LENGTH = 45;
+
 export function DependencyModal({
   isOpen,
   isSubmitting,
@@ -12,15 +14,23 @@ export function DependencyModal({
   initialName = "",
   onClose,
   onSave,
-  onClearServerError, 
+  onClearServerError,
 }: DependencyModalProps) {
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [charCount, setCharCount] = useState(initialName.length);
+
+  useEffect(() => {
+    setServerError(error || null);
+  }, [error]);
 
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
       setFormErrors([]);
+      setServerError(null);
+      setCharCount(initialName.length);
       onClearServerError();
     }
   }, [isOpen, initialName, onClearServerError]);
@@ -49,20 +59,47 @@ export function DependencyModal({
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
-    setName(newName);
-    validateForm(newName);
+    if (newName.length <= MAX_LENGTH) {
+      setName(newName);
+      setCharCount(newName.length);
+      validateForm(newName);
+      setServerError(null);
+      if (error) onClearServerError();
+    }
+  };
 
-    if (error) onClearServerError();
+  const handleClose = () => {
+    setName("");
+    setFormErrors([]);
+    setServerError(null);
+    setCharCount(0);
+    onClearServerError();
+    onClose();
   };
 
   if (!isOpen) return null;
 
-  const hasClientErrors = formErrors.length > 0;
-  const hasServerError = !!error;
+  const hasErrors = formErrors.length > 0 || !!serverError;
+  const isNearLimit = charCount >= MAX_LENGTH - 10 && charCount <= MAX_LENGTH;
+  const isAtLimit = charCount >= MAX_LENGTH;
 
-  const handleClose = () => {
-    onClearServerError();
-    onClose();
+  const getInputBorderColor = () => {
+    if (hasErrors) return 'border-red-500 focus:ring-red-400';
+    if (isAtLimit) return 'border-red-300 focus:ring-red-400';
+    if (isNearLimit) return 'border-amber-300 focus:ring-amber-400';
+    return 'border-gray-300 focus:ring-[#DDC9A3]';
+  };
+
+  const getProgressBarColor = () => {
+    if (isAtLimit) return 'bg-red-600';
+    if (isNearLimit) return 'bg-amber-500';
+    return 'bg-[#DDC9A3]';
+  };
+
+  const getCharCountColor = () => {
+    if (isAtLimit) return 'text-red-600';
+    if (isNearLimit) return 'text-amber-600';
+    return 'text-gray-500';
   };
 
   return (
@@ -83,12 +120,17 @@ export function DependencyModal({
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
-              <label
-                htmlFor="DependencyName"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Nombre del Dependencia:
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label
+                  htmlFor="DependencyName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Nombre de la dependencia:
+                </label>
+                <span className={`text-xs font-medium ${getCharCountColor()}`}>
+                  {charCount}/{MAX_LENGTH} caracteres
+                </span>
+              </div>
 
               <input
                 type="text"
@@ -96,24 +138,26 @@ export function DependencyModal({
                 value={name}
                 onChange={handleNameChange}
                 placeholder="Ingresar nombre..."
-                className={`
-                  border rounded-lg p-2 w-full focus:outline-none focus:ring-2
-                  ${(hasClientErrors || hasServerError)
-                    ? "border-red-500 focus:ring-red-400"
-                    : "border-gray-300 focus:ring-[#DDC9A3]"
-                  }
-                `}
+                maxLength={MAX_LENGTH}
+                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor()}`}
                 disabled={isSubmitting}
                 autoFocus
               />
+
+              <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-300 ${getProgressBarColor()}`}
+                  style={{ width: `${(charCount / MAX_LENGTH) * 100}%` }}
+                />
+              </div>
 
               <div id="form-errors-client">
                 <FormErrors errors={formErrors} />
               </div>
 
-              {error && (
+              {serverError && (
                 <div id="form-errors-server">
-                  <FormErrors errors={[error]} />
+                  <FormErrors errors={[serverError]} />
                 </div>
               )}
             </div>
@@ -130,12 +174,11 @@ export function DependencyModal({
 
               <button
                 type="submit"
-                disabled={isSubmitting || hasClientErrors || name.trim() === initialName.trim()}
+                disabled={isSubmitting || formErrors.length > 0 || name.trim() === initialName.trim()}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
               </button>
-
             </div>
           </form>
         </div>
