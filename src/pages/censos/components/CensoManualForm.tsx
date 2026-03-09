@@ -3,7 +3,7 @@ import { Calendar, FileText } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { createCensoSchema } from "../schemas/Censos.schema";
 
-const MAX_LENGTH = 125;
+const MAX_LENGTH = 65;
 
 interface CensoManualFormProps {
   isSubmitting: boolean;

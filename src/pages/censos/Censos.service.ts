@@ -118,8 +118,7 @@ export const getCensoModules = async (
 
 /**
  
- * @param id
- * @param data 
+
  */
 export const updateCensoModules = async (
   id: string,
