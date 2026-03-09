@@ -14,31 +14,18 @@ export function ConfirmModal({
   onConfirm,
 }: ConfirmModalProps) {
   const [localError, setLocalError] = useState<string | null>(null);
-  const [hasAttempted, setHasAttempted] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      setLocalError(null);
-      setHasAttempted(false);
-    }
+    setLocalError(error || null);
+  }, [error]);
+
+  useEffect(() => {
+    if (isOpen) setLocalError(null);
   }, [isOpen]);
 
-  useEffect(() => {
-    if (hasAttempted) setLocalError(error || null);
-  }, [error, hasAttempted]);
-
-  const handleConfirm = () => {
-    setHasAttempted(true);
-    onConfirm();
-  };
-
-  const handleClose = () => {
-    setLocalError(null);
-    setHasAttempted(false);
-    onClose();
-  };
-
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   const confirmButtonClasses = {
     danger: "bg-red-900 text-white hover:bg-red-800",
@@ -65,6 +52,8 @@ export function ConfirmModal({
           </div>
           <div className="p-6">
             <p className="text-gray-700">{message}</p>
+
+            {/* Mensaje de Error (si existe) */}
             {localError && <p className="text-red-600 text-sm mt-4">{localError}</p>}
           </div>
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
