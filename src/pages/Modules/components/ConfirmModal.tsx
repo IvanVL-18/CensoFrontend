@@ -40,18 +40,19 @@ export function ConfirmModal({
 
   if (!isOpen) return null;
 
-  const extractNameFromMessage = (msg: string) => {
-    const match = msg.match(/"([^"]+)"/);
+  const extractParts = (msg: string) => {
+    const match = msg.match(/^(.*?)"([^"]+)"(.*)$/s);
     if (match) {
       return {
-        before: msg.replace(match[0], "").trim(),
-        name: match[1],
+        before: match[1],
+        name: match[2],
+        after: match[3],
       };
     }
     return null;
   };
 
-  const parsed = message ? extractNameFromMessage(message) : null;
+  const parsed = message ? extractParts(message) : null;
 
   const confirmButtonClasses = {
     danger: "bg-red-900 text-white hover:bg-red-800",
@@ -79,16 +80,26 @@ export function ConfirmModal({
 
           <div className="p-6 space-y-4">
             {parsed ? (
-              <>
-                <p className="text-gray-700">{parsed.before}</p>
-                <p className="text-gray-700 break-words">"{parsed.name}"</p>
-              </>
+              <p className="text-gray-700 break-words">
+                {(() => {
+                  let before = parsed.before;
+                  let after = parsed.after;
+                  let questionMark = '';
+                  if (before.trim().endsWith('?')) {
+                    before = before.replace(/\?+$/, '');
+                    questionMark = '?';
+                  }
+                  return (
+                    <>
+                      {before} "{parsed.name}"{questionMark}{after}
+                    </>
+                  );
+                })()}
+              </p>
             ) : (
-              <p className="text-gray-700">{message}</p>
+              <p className="text-gray-700 break-words">{message}</p>
             )}
-            {localError && (
-              <p className="text-red-600 text-sm mt-4">{localError}</p>
-            )}
+            {localError && <p className="text-red-600 text-sm">{localError}</p>}
           </div>
 
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
