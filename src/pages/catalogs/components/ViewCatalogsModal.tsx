@@ -85,7 +85,7 @@ export function ViewCatalogModal({ isOpen, onClose, Catalog }: ViewCatalogModalP
             {Catalog.deleted_at && (
               <div>
                 <label className="block text-sm font-medium text-gray-500">Fecha de desactivación:</label>
-                <p className="text-lg text-red-600 font-semibold">
+                <p className="text-lg text-gray-900 font-semibold">
                   {formatDate(Catalog.deleted_at)}
                 </p>
               </div>
