@@ -17,16 +17,13 @@ export function CensoCreateSelectionModal({
 
   return (
     <>
-     
       <div
-        className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[9999] transition-opacity"
+        className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-[9999] transition-opacity"
         onClick={onClose}
       />
-      
-      
-      <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+
+      <div className="fixed inset-0 bg-[#000000ab] z-[10000] flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-         
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">Nuevo censo</h2>
             <button onClick={onClose} className="text-white hover:text-gray-300">
@@ -34,7 +31,6 @@ export function CensoCreateSelectionModal({
             </button>
           </div>
 
-    
           <div className="p-6 space-y-4">
             <p className="text-gray-600 text-center mb-4">
               ¿Cómo deseas crear el censo?
