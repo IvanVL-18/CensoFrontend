@@ -47,11 +47,11 @@ export default function App() {
         <Route path="/Modulos" element={<Modules />} />
         <Route path="/secciones" element={<Sections />} />
         <Route path="/ocupaciones" element={<Occupations />} />
-        <Route path="/Roles" element={<Roles />} />
+        <Route path="/roles" element={<Roles />} />
         
         <Route path="/Form" element={<FormTestPage />} />
         <Route path="/preguntas" element={<Questions />} />
-        <Route path="/permission-roles" element={<PermissionRoles />} />
+        <Route path="/roles/permission-roles" element={<PermissionRoles />} />
         <Route path="/permisos" element={<Permissions />} />
         <Route path="/categorias" element={<Categories />} />
         <Route path="/catalogos" element={<Catalogs />} />
