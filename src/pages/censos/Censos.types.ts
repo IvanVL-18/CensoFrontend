@@ -28,10 +28,10 @@ export interface MetaLink {
 }
 
 export interface Meta {
-  total: number[];
-  per_page: number[];
-  current_page: number[];
-  last_page: number[];
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
   from: number;
   links: MetaLink[];
   path: string;
@@ -107,42 +107,41 @@ export interface ViewCensoModalProps {
   Censo: Censo | null;
 }
 
+/* =========================
+   MODULES + INDEXES
+========================= */
+
 export interface Index {
+  original_id: string;
   id: string | number;
-  name: string; 
+  name: string;
 }
 
-
-
 export interface Module {
-  id: number;
+  id: string | number;
   name: string;
-  
 }
 
 export interface IndexForCenso {
   id: number;
   index_id: number;
-  reference_id: number; 
+  reference_id: number;
   reference_type: string;
-  
+
   index?: Index;
   reference?: Module;
 }
 
 export interface ModuleForCensoShowResponse {
-  censo: {
-    id: string;
-    name: string;
-  };
-  indexs: Index[];        
-  modules: Module[];       
-  indexForCensos?: IndexForCenso[]; 
+  censo: { id: string; name: string };
+  indexes: Index[]; // aquí id es string | number
+  modules: Module[];
+  indexForCensos?: IndexForCenso[];
 }
 
 export interface ModuleForCensoRequest {
   items: Array<{
-    module_id: string;   
+    module_id: string;
     index_id: string;
   }>;
 }
