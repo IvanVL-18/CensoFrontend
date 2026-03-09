@@ -69,7 +69,7 @@ export default function ConfigurationPage() {
 
       {
         title: "Categorías",
-        description: "",
+        description: "Administra las categorías del sistema para controlar el acceso a los distintos módulos del censo",
         to: "/Categorias",
         icon: <FolderOpen className="w-5 h-5 text-[var(--pantone-7421)]" />,   
       },
