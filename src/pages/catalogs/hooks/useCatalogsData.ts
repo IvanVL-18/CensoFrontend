@@ -68,7 +68,7 @@ export function useCatalogsData() {
       const pageParam = new URL(url).searchParams.get("page");
       if (pageParam) setPage(Number(pageParam));
     } catch {
-      // Silently handle invalid URL
+     
     }
   }, []);
 
@@ -79,9 +79,8 @@ export function useCatalogsData() {
     }));
   }, []);
 
-// En useCatalogsData.ts - línea donde haces el return
 return {
-  Catalogs: catalogs, // Así se llama Catalogs (con C mayúscula)
+  Catalogs: catalogs, 
   loading,
   error,
   meta,

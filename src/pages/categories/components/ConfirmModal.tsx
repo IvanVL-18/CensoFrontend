@@ -40,6 +40,20 @@ export function ConfirmModal({
 
   if (!isOpen) return null;
 
+  const extractParts = (msg: string) => {
+    const match = msg.match(/^(.*?)"([^"]+)"(.*)$/s);
+    if (match) {
+      return {
+        before: match[1],
+        name: match[2],
+        after: match[3],
+      };
+    }
+    return null;
+  };
+
+  const parsed = message ? extractParts(message) : null;
+
   const confirmButtonClasses = {
     danger: "bg-red-900 text-white hover:bg-red-800",
     primary: "bg-white border border-[#691b31] text-[#691b31] hover:bg-gray-100",
@@ -63,10 +77,31 @@ export function ConfirmModal({
               <X size={24} />
             </button>
           </div>
-          <div className="p-6">
-            <p className="text-gray-700">{message}</p>
-            {localError && <p className="text-red-600 text-sm mt-4">{localError}</p>}
+
+          <div className="p-6 space-y-4">
+            {parsed ? (
+              <p className="text-gray-700 break-words">
+                {(() => {
+                  let before = parsed.before;
+                  let after = parsed.after;
+                  let questionMark = '';
+                  if (before.trim().endsWith('?')) {
+                    before = before.replace(/\?+$/, '');
+                    questionMark = '?';
+                  }
+                  return (
+                    <>
+                      {before} "{parsed.name}"{questionMark}{after}
+                    </>
+                  );
+                })()}
+              </p>
+            ) : (
+              <p className="text-gray-700 break-words">{message}</p>
+            )}
+            {localError && <p className="text-red-600 text-sm">{localError}</p>}
           </div>
+
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
             <button
               type="button"

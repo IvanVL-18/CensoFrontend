@@ -38,14 +38,14 @@ export function useCatalogsModals() {
       const ModuleId = fullCatalog.module_id
         ? String(fullCatalog.module_id)
         : (fullCatalog.Module?.id ? String(fullCatalog.Module.id) : "");
-      const ModuleName = fullCatalog.Module_name?.trim() || fullCatalog.Module?.name?.trim() || "";
+      const ModuleName = fullCatalog.module_name?.trim() || fullCatalog.Module?.name?.trim() || "";
 
       setFormState({
         isOpen: true,
         catalog: {
           ...fullCatalog,
           module_id: ModuleId,
-          Module_name: ModuleName,
+          module_name: ModuleName,
         },
       });
     } catch (error) {

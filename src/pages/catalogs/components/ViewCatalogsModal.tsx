@@ -21,7 +21,9 @@ function DetailRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-500">{label}</label>
-      <p className="text-lg text-gray-900 font-semibold">{value || "N/A"}</p>
+      <p className="text-lg text-gray-900 font-semibold break-words">
+        {value || "N/A"}
+      </p>
     </div>
   );
 }
@@ -53,10 +55,10 @@ export function ViewCatalogModal({ isOpen, onClose, Catalog }: ViewCatalogModalP
 
           <div className="p-6 space-y-4">
             {isModuleInactive && (
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
                 <div className="flex items-center">
-                  <AlertTriangle className="h-5 w-5 text-yellow-400 mr-2" />
-                  <p className="text-sm text-yellow-700">
+                  <AlertTriangle className="h-5 w-5 text-yellow-400 mr-2 flex-shrink-0" />
+                  <p className="text-sm text-yellow-700 break-words">
                     <span className="font-bold">Módulo inactivo:</span> Este módulo ha sido desactivado. El catálogo aún existe pero su módulo ya no está disponible.
                   </p>
                 </div>
@@ -68,12 +70,12 @@ export function ViewCatalogModal({ isOpen, onClose, Catalog }: ViewCatalogModalP
             
             <div>
               <label className="block text-sm font-medium text-gray-500">Módulo:</label>
-              <div className="flex items-center gap-2">
-                <p className="text-lg text-gray-900 font-semibold">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-lg text-gray-900 font-semibold break-words">
                   {moduleName}
                 </p>
                 {isModuleInactive && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 flex-shrink-0">
                     Inactivo
                   </span>
                 )}
@@ -83,12 +85,7 @@ export function ViewCatalogModal({ isOpen, onClose, Catalog }: ViewCatalogModalP
             <DetailRow label="Fecha de creación:" value={formatDate(Catalog.created_at)} />
             
             {Catalog.deleted_at && (
-              <div>
-                <label className="block text-sm font-medium text-gray-500">Fecha de desactivación:</label>
-                <p className="text-lg text-gray-900 font-semibold">
-                  {formatDate(Catalog.deleted_at)}
-                </p>
-              </div>
+              <DetailRow label="Fecha de desactivación:" value={formatDate(Catalog.deleted_at)} />
             )}
           </div>
 
