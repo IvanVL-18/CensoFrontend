@@ -19,18 +19,13 @@ export interface ModuleInfo {
 }
 
 export interface AssignedModule {
-  id: number;
-  censo_id: number;
-  index_id: number;
-  reference_id: number;
-  reference_type: string;
-  encrypted_id: string;
-  index: {
-    id: number;
+  module_for_censo_id: string;
+  module: {
+    module_id: string;
     name: string;
   };
-  reference: {
-    id: number;
+  index: {
+    index_id: string;
     name: string;
   };
 }
@@ -51,6 +46,7 @@ export interface CensoModuleRow {
 
   stored_index_id: string | null;
   stored_index_name: string | null;
+  stored_index_encrypted_id: string | null;
 }
 
 export interface CensoModulesItemPayload {

@@ -45,18 +45,19 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
       return modules.map((module) => {
         const assigned = assignedModules?.find(
           (item) =>
-            String(item.reference?.name).trim().toLowerCase() ===
+            String(item.module?.name).trim().toLowerCase() ===
             String(module.name).trim().toLowerCase(),
         );
 
         return {
           module_id: String(module.id),
           module_name: module.name,
-          checked: false,
-          selected_index_id: "",
-          encrypted_id: assigned ? assigned.encrypted_id : null,
-          stored_index_id: assigned ? String(assigned.index?.id) : null,
-          stored_index_name: assigned ? (assigned.index?.name ?? null) : null,
+          checked: !!assigned,
+          selected_index_id: assigned ? assigned.index.index_id : "",
+          encrypted_id: assigned ? assigned.module_for_censo_id : null,
+          stored_index_id: null,
+          stored_index_name: assigned ? assigned.index.name : null,
+          stored_index_encrypted_id: assigned ? assigned.index.index_id : null,
         };
       });
     },
@@ -75,7 +76,22 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
         setCenso(data.censo);
         setIndexs(fetchedIndexs);
         setHasAssignments(Boolean(data.indexForCensos?.length));
-        setRows(buildRows(data.modules ?? [], data.indexForCensos));
+        const builtRows = buildRows(data.modules ?? [], data.indexForCensos);
+
+        const rowsWithIndex = builtRows.map((row) => {
+          if (!row.stored_index_name) return row;
+          const match = fetchedIndexs.find(
+            (idx) =>
+              idx.name.trim().toLowerCase() ===
+              row.stored_index_name!.trim().toLowerCase(),
+          );
+          return {
+            ...row,
+            selected_index_id: match ? String(match.id) : "",
+          };
+        });
+
+        setRows(rowsWithIndex);
       } catch (err: any) {
         if (err?.name === "CanceledError" || err?.name === "AbortError") return;
         setError(
