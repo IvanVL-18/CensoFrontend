@@ -5,7 +5,7 @@ export const InstitutionSchema = z.object({
     .trim()
     .min(1, "El nombre es obligatorio.") 
     .min(5, "El nombre debe tener al menos 5 caracteres.")
-    .max(65, "El nombre no puede exceder los 65 caracteres.") 
+    .max(90, "El nombre no puede exceder los 65 caracteres.") 
     .regex(/^[\p{L}\p{M}\s]+$/u, "El campo nombre no puede contener números, emojis ni símbolos especiales."),
   
     geocode: z.string()
