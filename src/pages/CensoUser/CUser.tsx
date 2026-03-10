@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef, type ChangeEvent } from "reac
 import { CensosCards } from "./components/CensosCards";
 import { CensosToolbar } from "./components/CUserToolbar";
 import { getCensos } from "./CUser.service";
-import type { CensoFilter } from "./CUser.service";
 import type { Censo, PaginatedCensosResponse } from "./CUser.types";
 
 export function CUser() {
@@ -11,7 +10,6 @@ export function CUser() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [filter, setFilter] = useState<CensoFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState("id");
@@ -30,8 +28,9 @@ export function CUser() {
     setError(null);
 
     try {
+      // 👇 Forzamos el filtro "active" directamente
       const response = await getCensos(
-        filter,
+        "active",            // ← filtro fijo
         searchTerm,
         currentPage,
         sortBy,
@@ -47,7 +46,7 @@ export function CUser() {
     } finally {
       setLoading(false);
     }
-  }, [filter, searchTerm, currentPage, sortBy, sortDirection]);
+  }, [searchTerm, currentPage, sortBy, sortDirection]);
 
   useEffect(() => {
     fetchCensos();
@@ -55,11 +54,6 @@ export function CUser() {
       abortControllerRef.current?.abort();
     };
   }, [fetchCensos]);
-
-  const handleFilterChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setFilter(e.target.value as CensoFilter);
-    setCurrentPage(1);
-  };
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -75,9 +69,7 @@ export function CUser() {
   return (
     <div className="container mx-auto p-4">
       <CensosToolbar
-        filter={filter}
         searchTerm={searchTerm}
-        onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
       />
 
@@ -86,7 +78,6 @@ export function CUser() {
         meta={meta}
         loading={loading}
         error={error}
-        // Sin props de acciones
       />
 
       {meta && meta.last_page > 1 && (

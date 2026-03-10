@@ -1,19 +1,11 @@
 import api from "../../lib/Axios";
-import type {
-  Censo,
-  PaginatedCensosResponse,
- 
-} from "./CUser.types";
-
-import type {
-
-} from "./CUser.types";
+import type { Censo, PaginatedCensosResponse } from "./CUser.types";
 
 export type CensoFilter = "all" | "active" | "inactive";
 type CensoId = string | number;
 
 export const getCensos = async (
-  filter: CensoFilter = "all",
+  filter: CensoFilter = "active",  
   search: string = "",
   page: number = 1,
   sortBy: string = "id",
