@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import { X, MapPinned } from "lucide-react";
 
 import type { CreateInstitutionDTO, UpdateInstitutionDTO } from "../institutions.types";
@@ -21,6 +21,11 @@ interface InstitutionModalProps {
   onSave: (formData: CreateInstitutionDTO | UpdateInstitutionDTO) => Promise<void>;
 }
 
+const MAX_LENGTH_NAME = 90;
+const MAX_LENGTH_MUNICIPALITY = 40;
+const MAX_LENGTH_GEOCODE = 15;
+const MAX_LENGTH_TYPE = 20;
+
 export function InstitutionModal({
   isOpen,
   isSubmitting,
@@ -41,6 +46,11 @@ export function InstitutionModal({
   const [geocode, setGeocode] = useState(initialGeocode);
   const [typeinst, setTypeinst] = useState(initialType);
 
+  const [nameCharCount, setNameCharCount] = useState(initialName.length);
+  const [municipalityCharCount, setMunicipalityCharCount] = useState(initialMunicipality.length);
+  const [geocodeCharCount, setGeocodeCharCount] = useState(initialGeocode.length);
+  const [typeCharCount, setTypeCharCount] = useState(initialType.length);
+
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -51,6 +61,10 @@ export function InstitutionModal({
       setMunicipality(initialMunicipality);
       setGeocode(initialGeocode);
       setTypeinst(initialType);
+      setNameCharCount(initialName.length);
+      setMunicipalityCharCount(initialMunicipality.length);
+      setGeocodeCharCount(initialGeocode.length);
+      setTypeCharCount(initialType.length);
       setFormErrors([]);
       setHasChanges(false);
       setTouched({});
@@ -90,7 +104,6 @@ export function InstitutionModal({
   useEffect(() => {
     if (!isOpen) return;
 
-
     const changed =
       name !== initialName ||
       municipality !== initialMunicipality ||
@@ -100,11 +113,9 @@ export function InstitutionModal({
 
     setHasChanges(changed);
 
-    
     if (changed || formErrors.length > 0) {
       validateForm(name, municipality, geocode, typeinst);
     }
-  
   }, [
     name,
     municipality,
@@ -129,10 +140,8 @@ export function InstitutionModal({
       typeinst: true,
     });
 
-   
     if (!validateForm(name, municipality, geocode, typeinst, true)) return;
 
-  
     if (isEditMode) {
       const dataToSend: UpdateInstitutionDTO = {};
 
@@ -140,7 +149,6 @@ export function InstitutionModal({
       if (municipality !== initialMunicipality) dataToSend.municipality = municipality;
       if (geocode !== initialGeocode) dataToSend.geocode = geocode;
       if (typeinst !== initialType) dataToSend.typeinst = typeinst;
-
       if (pendingCoords) {
         dataToSend.lat = pendingCoords.lat;
         dataToSend.lon = pendingCoords.lon;
@@ -150,7 +158,6 @@ export function InstitutionModal({
       return;
     }
 
-    
     const createPayload: CreateInstitutionDTO = {
       name,
       municipality,
@@ -161,6 +168,28 @@ export function InstitutionModal({
 
     await onSave(createPayload);
   };
+
+  const getInputBorderColor = (fieldError: boolean, charCount: number, maxLength: number) => {
+    if (fieldError) return 'border-red-500 focus:ring-red-400';
+    if (charCount >= maxLength) return 'border-red-300 focus:ring-red-400';
+    if (charCount >= maxLength - 10) return 'border-amber-300 focus:ring-amber-400';
+    return 'border-gray-300 focus:ring-[#DDC9A3]';
+  };
+
+  const getProgressBarColor = (charCount: number, maxLength: number) => {
+    if (charCount >= maxLength) return 'bg-red-600';
+    if (charCount >= maxLength - 10) return 'bg-amber-500';
+    return 'bg-[#DDC9A3]';
+  };
+
+  const getCharCountColor = (charCount: number, maxLength: number) => {
+    if (charCount >= maxLength) return 'text-red-600';
+    if (charCount >= maxLength - 10) return 'text-amber-600';
+    return 'text-gray-500';
+  };
+
+  const hasFieldError = (fieldKeyword: string) =>
+    formErrors.some((e) => e.toLowerCase().includes(fieldKeyword));
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -175,10 +204,30 @@ export function InstitutionModal({
       setTouched((prev) => ({ ...prev, [fieldMap[id]]: true }));
     }
 
-    if (id === "institutionName") setName(value);
-    if (id === "municipality") setMunicipality(value);
-    if (id === "geocode") setGeocode(value);
-    if (id === "typeinst") setTypeinst(value);
+    if (id === "institutionName") {
+      if (value.length <= MAX_LENGTH_NAME) {
+        setName(value);
+        setNameCharCount(value.length);
+      }
+    }
+    if (id === "municipality") {
+      if (value.length <= MAX_LENGTH_MUNICIPALITY) {
+        setMunicipality(value);
+        setMunicipalityCharCount(value.length);
+      }
+    }
+    if (id === "geocode") {
+      if (value.length <= MAX_LENGTH_GEOCODE) {
+        setGeocode(value);
+        setGeocodeCharCount(value.length);
+      }
+    }
+    if (id === "typeinst") {
+      if (value.length <= MAX_LENGTH_TYPE) {
+        setTypeinst(value);
+        setTypeCharCount(value.length);
+      }
+    }
   };
 
   if (!isOpen) return null;
@@ -205,86 +254,126 @@ export function InstitutionModal({
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
-              <label
-                htmlFor="institutionName"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Nombre de la Institución:
-              </label>
-              <input
-                type="text"
-                id="institutionName"
-                value={name || ""}
-                onChange={handleInputChange}
-                placeholder="Ingresar nombre..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${
-                  formErrors.some((e) => e.toLowerCase().includes("nombre"))
-                    ? "border-red-500 focus:ring-red-400"
-                    : "border-gray-300 focus:ring-[#DDC9A3]"
-                }`}
-                disabled={isSubmitting}
-                autoFocus
-              />
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-1">
+                  <label htmlFor="institutionName" className="block text-sm font-medium text-gray-700">
+                    Nombre de la Institución:
+                  </label>
+                  <span className={`text-xs font-medium ${getCharCountColor(nameCharCount, MAX_LENGTH_NAME)}`}>
+                    {nameCharCount}/{MAX_LENGTH_NAME} caracteres
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  id="institutionName"
+                  value={name}
+                  onChange={handleInputChange}
+                  placeholder="Ingresar nombre..."
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor(
+                    hasFieldError("nombre"),
+                    nameCharCount,
+                    MAX_LENGTH_NAME
+                  )}`}
+                  disabled={isSubmitting}
+                  autoFocus
+                />
+                <div className="mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${getProgressBarColor(nameCharCount, MAX_LENGTH_NAME)}`}
+                    style={{ width: `${(nameCharCount / MAX_LENGTH_NAME) * 100}%` }}
+                  />
+                </div>
+              </div>
 
-              <label
-                htmlFor="municipality"
-                className="block text-sm font-medium text-gray-700 mb-2 mt-4"
-              >
-                Municipalidad:
-              </label>
-              <input
-                type="text"
-                id="municipality"
-                value={municipality || ""}
-                onChange={handleInputChange}
-                placeholder="Ingresar municipio..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${
-                  formErrors.some((e) => e.toLowerCase().includes("municipal"))
-                    ? "border-red-500 focus:ring-red-400"
-                    : "border-gray-300 focus:ring-[#DDC9A3]"
-                }`}
-                disabled={isSubmitting}
-              />
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-1">
+                  <label htmlFor="municipality" className="block text-sm font-medium text-gray-700">
+                    Municipalidad:
+                  </label>
+                  <span className={`text-xs font-medium ${getCharCountColor(municipalityCharCount, MAX_LENGTH_MUNICIPALITY)}`}>
+                    {municipalityCharCount}/{MAX_LENGTH_MUNICIPALITY} caracteres
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  id="municipality"
+                  value={municipality}
+                  onChange={handleInputChange}
+                  placeholder="Ingresar municipio..."
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor(
+                    hasFieldError("municipal"),
+                    municipalityCharCount,
+                    MAX_LENGTH_MUNICIPALITY
+                  )}`}
+                  disabled={isSubmitting}
+                />
+                <div className="mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${getProgressBarColor(municipalityCharCount, MAX_LENGTH_MUNICIPALITY)}`}
+                    style={{ width: `${(municipalityCharCount / MAX_LENGTH_MUNICIPALITY) * 100}%` }}
+                  />
+                </div>
+              </div>
 
-              <label
-                htmlFor="geocode"
-                className="block text-sm font-medium text-gray-700 mt-4 mb-2"
-              >
-                Código Postal / Geocódigo:
-              </label>
-              <input
-                type="text"
-                id="geocode"
-                value={geocode || ""}
-                onChange={handleInputChange}
-                placeholder="Ingresar código..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${
-                  formErrors.some((e) => e.toLowerCase().includes("geoc"))
-                    ? "border-red-500 focus:ring-red-400"
-                    : "border-gray-300 focus:ring-[#DDC9A3]"
-                }`}
-                disabled={isSubmitting}
-              />
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-1">
+                  <label htmlFor="geocode" className="block text-sm font-medium text-gray-700">
+                    Código Postal / Geocódigo:
+                  </label>
+                  <span className={`text-xs font-medium ${getCharCountColor(geocodeCharCount, MAX_LENGTH_GEOCODE)}`}>
+                    {geocodeCharCount}/{MAX_LENGTH_GEOCODE} caracteres
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  id="geocode"
+                  value={geocode}
+                  onChange={handleInputChange}
+                  placeholder="Ingresar código..."
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor(
+                    hasFieldError("geoc"),
+                    geocodeCharCount,
+                    MAX_LENGTH_GEOCODE
+                  )}`}
+                  disabled={isSubmitting}
+                />
+                <div className="mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${getProgressBarColor(geocodeCharCount, MAX_LENGTH_GEOCODE)}`}
+                    style={{ width: `${(geocodeCharCount / MAX_LENGTH_GEOCODE) * 100}%` }}
+                  />
+                </div>
+              </div>
 
-              <label
-                htmlFor="typeinst"
-                className="block text-sm font-medium text-gray-700 mb-2 mt-4"
-              >
-                Tipo:
-              </label>
-              <input
-                type="text"
-                id="typeinst"
-                value={typeinst || ""}
-                onChange={handleInputChange}
-                placeholder="Ingresar tipo..."
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${
-                  formErrors.some((e) => e.toLowerCase().includes("tipo"))
-                    ? "border-red-500 focus:ring-red-400"
-                    : "border-gray-300 focus:ring-[#DDC9A3]"
-                }`}
-                disabled={isSubmitting}
-              />
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-1">
+                  <label htmlFor="typeinst" className="block text-sm font-medium text-gray-700">
+                    Tipo:
+                  </label>
+                  <span className={`text-xs font-medium ${getCharCountColor(typeCharCount, MAX_LENGTH_TYPE)}`}>
+                    {typeCharCount}/{MAX_LENGTH_TYPE} caracteres
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  id="typeinst"
+                  value={typeinst}
+                  onChange={handleInputChange}
+                  placeholder="Ingresar tipo..."
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor(
+                    hasFieldError("tipo"),
+                    typeCharCount,
+                    MAX_LENGTH_TYPE
+                  )}`}
+                  disabled={isSubmitting}
+                />
+                <div className="mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${getProgressBarColor(typeCharCount, MAX_LENGTH_TYPE)}`}
+                    style={{ width: `${(typeCharCount / MAX_LENGTH_TYPE) * 100}%` }}
+                  />
+                </div>
+              </div>
 
               <div id="form-errors" className="mt-3">
                 <FormErrors errors={formErrors} />
