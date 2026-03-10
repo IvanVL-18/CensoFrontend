@@ -47,6 +47,7 @@ export interface CensoModuleRow {
   stored_index_id: string | null;
   stored_index_name: string | null;
   stored_index_encrypted_id: string | null;
+  stored_index_plain_id: string | null;
 }
 
 export interface CensoModulesItemPayload {

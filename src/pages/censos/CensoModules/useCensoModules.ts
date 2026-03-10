@@ -58,6 +58,7 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
           stored_index_id: null,
           stored_index_name: assigned ? assigned.index.name : null,
           stored_index_encrypted_id: assigned ? assigned.index.index_id : null,
+          stored_index_plain_id: null,
         };
       });
     },
@@ -88,6 +89,7 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
           return {
             ...row,
             selected_index_id: match ? String(match.id) : "",
+            stored_index_plain_id: match ? String(match.id) : null,
           };
         });
 
@@ -118,7 +120,9 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
           ? {
               ...row,
               checked,
-              selected_index_id: checked ? row.selected_index_id : "",
+              selected_index_id: checked
+                ? row.selected_index_id || row.stored_index_plain_id || ""
+                : "",
             }
           : row,
       ),
