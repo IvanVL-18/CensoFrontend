@@ -13,12 +13,25 @@ import type {
   PaginationLinksObj,
 } from "./CensoSections.types";
 
+// ─── FIX PRINCIPAL ────────────────────────────────────────────────────────────
+// El problema raíz: Crypt::encryptString() de Laravel usa un IV aleatorio, por
+// lo que cifrar el mismo section_id dos veces produce strings distintos.
+// "sections" (paginado) y "sectionsSelected" cifran el mismo id en momentos
+// distintos → claves distintas → el mapa nunca encuentra la sección.
+//
+// Solución: usar section_name como clave del mapa (estable y compartido entre
+// ambas fuentes de datos). El section_id cifrado se guarda como valor dentro
+// del mapa para usarlo en el payload.
+// ──────────────────────────────────────────────────────────────────────────────
+
 type SelectedSectionState = {
+  /** ID cifrado de la sección, para enviarlo en el payload al backend */
   section_id: string;
   index_id: string;
   stored_index_name: string | null;
 };
 
+/** Clave = nombre de la sección (estable entre paginación y sectionsSelected) */
 type SelectedSectionsMap = Record<string, SelectedSectionState>;
 
 type UseCensoSectionsReturn = {
@@ -35,9 +48,10 @@ type UseCensoSectionsReturn = {
   currentPage: number;
   lastPage: number;
   paginationLinks: PaginationLinksObj | null;
-  toggleSectionRow: (sectionId: string, checked: boolean) => void;
+  /** sectionName + sectionId (cifrado del paginado) para registrar selecciones nuevas */
+  toggleSectionRow: (sectionName: string, sectionId: string, checked: boolean) => void;
   toggleAllSectionRows: (checked: boolean) => void;
-  changeIndex: (sectionId: string, indexId: string) => void;
+  changeIndex: (sectionName: string, indexId: string) => void;
   saveChanges: () => Promise<boolean>;
   reload: () => Promise<void>;
   goToPage: (page: number) => void;
@@ -72,26 +86,37 @@ export const useCensoSections = (
 
   const initialLoadDone = useRef(false);
 
+  /**
+   * Construye el mapa inicial a partir de sectionsSelected.
+   * FIX #6: clave = section.name (estable) en lugar de section_id (cifrado
+   * no determinístico). El index se sigue buscando por nombre porque los ids
+   * cifrados de "indexs" tampoco son comparables con los de sectionsSelected.
+   */
   const buildInitialMap = useCallback(
     (
       selectedSections: SelectedSectionItem[],
       availableIndexes: SectionIndexOption[],
     ): SelectedSectionsMap => {
       const map: SelectedSectionsMap = {};
+
       selectedSections.forEach((item) => {
-        const sectionId = item.section?.section_id ?? "";
-        if (!sectionId) return;
+        const sectionName = item.section?.name ?? "";
+        const sectionId   = item.section?.section_id ?? "";
+        if (!sectionName) return;
+
         const matchedIndex = availableIndexes.find(
           (idx) =>
             idx.name.trim().toLowerCase() ===
             item.index?.name?.trim().toLowerCase(),
         );
-        map[sectionId] = {
-          section_id: sectionId,
-          index_id: matchedIndex ? String(matchedIndex.id) : "",
+
+        map[sectionName] = {
+          section_id:        sectionId,
+          index_id:          matchedIndex ? String(matchedIndex.id) : "",
           stored_index_name: item.index?.name ?? null,
         };
       });
+
       return map;
     },
     [],
@@ -105,20 +130,9 @@ export const useCensoSections = (
 
         const data = await getCensoSections(moduleForCensoId, page, signal);
 
-        console.log("=== FETCH PÁGINA ===", page);
-        console.log(
-          "sections recibidas:",
-          data.sections?.data?.map((s) => s.id),
-        );
-        console.log("current_page:", data.sections?.current_page);
-        console.log(
-          "mapRef ANTES de setSections:",
-          Object.keys(mapRef.current),
-        );
-
         if (signal?.aborted) return;
 
-        const fetchedIndexs = data.indexs ?? [];
+        const fetchedIndexs   = data.indexs ?? [];
         const fetchedSections = data.sections?.data ?? [];
         const fetchedSelected = data.sectionsSelected ?? [];
 
@@ -136,9 +150,9 @@ export const useCensoSections = (
         setLastPage(data.sections?.last_page ?? 1);
         setPaginationLinks({
           first: data.sections?.first_page_url ?? null,
-          last: data.sections?.last_page_url ?? null,
-          prev: data.sections?.prev_page_url ?? null,
-          next: data.sections?.next_page_url ?? null,
+          last:  data.sections?.last_page_url  ?? null,
+          prev:  data.sections?.prev_page_url  ?? null,
+          next:  data.sections?.next_page_url  ?? null,
         });
 
         setSections(fetchedSections);
@@ -165,24 +179,20 @@ export const useCensoSections = (
     return () => controller.abort();
   }, [loadData]);
 
+  /**
+   * FIX PRINCIPAL: búsqueda en el mapa por section.name en lugar de section.id.
+   * Ambas fuentes (paginado y sectionsSelected) comparten el mismo nombre,
+   * pero nunca el mismo string cifrado.
+   */
   const rows = useMemo<CensoSectionRow[]>(() => {
     const map = mapRef.current;
 
-    console.log("=== ROWS RECALCULANDO === mapVersion:", mapVersion);
-    console.log(
-      "sections IDs:",
-      sections.map((s) => s.id),
-    );
-    console.log("mapRef keys:", Object.keys(map));
-
     return sections.map((section) => {
-      const sectionId = String(section.id);
-      const sel = map[sectionId];
-      console.log(`  sección ${sectionId}: checked=${Boolean(sel)}`);
+      const sel = map[section.name]; // ← clave estable
       return {
-        section_id: sectionId,
-        section_name: section.name,
-        checked: Boolean(sel),
+        section_id:        section.id,   // id cifrado del paginado (para payload nuevos)
+        section_name:      section.name,
+        checked:           Boolean(sel),
         selected_index_id: sel?.index_id ?? "",
         stored_index_name: sel?.stored_index_name ?? null,
       };
@@ -194,18 +204,22 @@ export const useCensoSections = (
     [rows],
   );
 
+  /**
+   * FIX: firma ampliada con sectionName (clave del mapa) y sectionId (para payload).
+   * El view debe llamar con row.section_name y row.section_id.
+   */
   const toggleSectionRow = useCallback(
-    (sectionId: string, checked: boolean) => {
+    (sectionName: string, sectionId: string, checked: boolean) => {
       updateMap((prev) => {
         const next = { ...prev };
         if (checked) {
-          next[sectionId] = {
-            section_id: sectionId,
-            index_id: next[sectionId]?.index_id ?? "",
-            stored_index_name: next[sectionId]?.stored_index_name ?? null,
+          next[sectionName] = {
+            section_id:        sectionId,
+            index_id:          next[sectionName]?.index_id ?? "",
+            stored_index_name: next[sectionName]?.stored_index_name ?? null,
           };
         } else {
-          delete next[sectionId];
+          delete next[sectionName];
         }
         return next;
       });
@@ -218,15 +232,14 @@ export const useCensoSections = (
       updateMap((prev) => {
         const next = { ...prev };
         sections.forEach((section) => {
-          const sectionId = String(section.id);
           if (checked) {
-            next[sectionId] = {
-              section_id: sectionId,
-              index_id: next[sectionId]?.index_id ?? "",
-              stored_index_name: next[sectionId]?.stored_index_name ?? null,
+            next[section.name] = {
+              section_id:        section.id,
+              index_id:          next[section.name]?.index_id ?? "",
+              stored_index_name: next[section.name]?.stored_index_name ?? null,
             };
           } else {
-            delete next[sectionId];
+            delete next[section.name];
           }
         });
         return next;
@@ -235,13 +248,14 @@ export const useCensoSections = (
     [sections, updateMap],
   );
 
+  /** FIX: recibe sectionName como clave en lugar de sectionId cifrado */
   const changeIndex = useCallback(
-    (sectionId: string, indexId: string) => {
+    (sectionName: string, indexId: string) => {
       updateMap((prev) => {
-        if (!prev[sectionId]) return prev;
+        if (!prev[sectionName]) return prev;
         return {
           ...prev,
-          [sectionId]: { ...prev[sectionId], index_id: indexId },
+          [sectionName]: { ...prev[sectionName], index_id: indexId },
         };
       });
     },
@@ -254,9 +268,8 @@ export const useCensoSections = (
         .filter((item) => item.index_id)
         .map((item) => ({
           section_id: item.section_id,
-          index_id: item.index_id,
+          index_id:   item.index_id,
         })),
-
     [mapVersion],
   );
 
@@ -277,7 +290,7 @@ export const useCensoSections = (
       } else {
         await storeCensoSections({
           module_id: moduleForCensoId,
-          items: validItems,
+          items:     validItems,
         });
       }
 

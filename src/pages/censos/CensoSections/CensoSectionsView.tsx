@@ -124,7 +124,12 @@ const CensoSectionsView: React.FC = () => {
                             type="checkbox"
                             checked={row.checked}
                             onChange={(e) =>
-                              toggleSectionRow(row.section_id, e.target.checked)
+                              // FIX: pasamos section_name (clave del mapa) y section_id (payload)
+                              toggleSectionRow(
+                                row.section_name,
+                                row.section_id,
+                                e.target.checked,
+                              )
                             }
                             className="h-4 w-4 rounded border-gray-300"
                           />
@@ -138,7 +143,8 @@ const CensoSectionsView: React.FC = () => {
                           <select
                             value={row.selected_index_id}
                             onChange={(e) =>
-                              changeIndex(row.section_id, e.target.value)
+                              // FIX: pasamos section_name como clave del mapa
+                              changeIndex(row.section_name, e.target.value)
                             }
                             disabled={!row.checked}
                             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
