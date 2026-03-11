@@ -14,7 +14,6 @@ import Insitutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Indexs/Indexs";
 import Roles from "./pages/Roles/Roles";
-import FormTestPage from "./pages/FormIo/CensusQuestionsPage";
 import Permissions from "./pages/Permissions/Permissions";
 import PermissionRoles from "./pages/PermissionRoles/PermissionRoles";
 import Categories from "./pages/categories/Categories";
@@ -26,6 +25,8 @@ import { CensoDetail } from "./pages/censos/components/CensoDetail";
 import CensoUnitsView from "./pages/censos/components/CensoUnitsView";
 
 import Questions from "./pages/Questions/Questions";
+import Builder from "././pages/Designer/components/Builder"
+import "./App.css";
 export default function App() {
   return (
     <Routes>
@@ -49,7 +50,6 @@ export default function App() {
         <Route path="/ocupaciones" element={<Occupations />} />
         <Route path="/Roles" element={<Roles />} />
         
-        <Route path="/Form" element={<FormTestPage />} />
         <Route path="/preguntas" element={<Questions />} />
         <Route path="/permission-roles" element={<PermissionRoles />} />
         <Route path="/permisos" element={<Permissions />} />
@@ -60,6 +60,7 @@ export default function App() {
         <Route path="/censos" element={<Censos />} />
         <Route path="/censos/:id" element={<CensoDetail />} />
         <Route path="/censos/:id/modulos" element={<CensoUnitsView />} />
+        <Route path="/builder/:id" element={<Builder />} />
       </Route>
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
