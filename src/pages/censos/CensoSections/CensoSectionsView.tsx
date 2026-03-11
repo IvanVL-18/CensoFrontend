@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save, Eye, ArrowRight } from "lucide-react";
+import { ArrowLeft, Save, Eye, ArrowRight, Landmark } from "lucide-react";
 import { useCensoSections } from "./useCensoSections";
 import Pagination from "../../../components/Pagination";
 
@@ -40,7 +40,6 @@ const CensoSectionsView: React.FC = () => {
   return (
     <div className="w-full p-6">
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-       
         <div className="flex items-center justify-between bg-[var(--pantone-7421)] px-6 py-4 text-white">
           <div>
             <h1 className="text-lg font-semibold">Secciones</h1>
@@ -60,7 +59,6 @@ const CensoSectionsView: React.FC = () => {
           </button>
         </div>
 
-      
         {error && (
           <div className="border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">
             {error}
@@ -68,7 +66,6 @@ const CensoSectionsView: React.FC = () => {
         )}
 
         <div className="p-6">
-          
           <div className="relative overflow-x-auto rounded-xl border border-gray-200">
             {paginating && (
               <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70">
@@ -186,6 +183,18 @@ const CensoSectionsView: React.FC = () => {
                             <button
                               type="button"
                               disabled={!row.checked}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:bg-gray-300"
+                              title={
+                                row.checked
+                                  ? "Asignar institución"
+                                  : "Selecciona la sección primero"
+                              }
+                            >
+                              <Landmark size={18} />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={!row.checked}
                               className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-600 text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                               title={
                                 row.checked
@@ -205,7 +214,6 @@ const CensoSectionsView: React.FC = () => {
             </table>
           </div>
 
-         
           <div className="mt-4">
             <Pagination
               meta={{ current_page: currentPage, last_page: lastPage }}
@@ -214,7 +222,6 @@ const CensoSectionsView: React.FC = () => {
             />
           </div>
 
-          
           <div className="mt-6 flex items-center justify-end gap-3">
             <button
               type="button"
