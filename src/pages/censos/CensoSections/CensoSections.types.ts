@@ -44,17 +44,13 @@ export interface PaginatedSectionsResponse {
 }
 
 export interface SelectedSectionItem {
-  id: number;
-  censo_id: number;
-  index_id: number;
-  reference_id: number;
-  reference_type: string;
-  index: {
-    id: number;
+  section_for_censo_id: string;
+  section: {
+    section_id: string;
     name: string;
   };
-  reference: {
-    id: number;
+  index: {
+    index_id: string;
     name: string;
   };
 }

@@ -79,10 +79,12 @@ export const useCensoSections = (
     ): SelectedSectionsMap => {
       const map: SelectedSectionsMap = {};
       selectedSections.forEach((item) => {
-        const sectionId = String(item.reference?.id ?? "");
+        const sectionId = item.section?.section_id ?? "";
         if (!sectionId) return;
         const matchedIndex = availableIndexes.find(
-          (idx) => String(idx.id) === String(item.index?.id),
+          (idx) =>
+            idx.name.trim().toLowerCase() ===
+            item.index?.name?.trim().toLowerCase(),
         );
         map[sectionId] = {
           section_id: sectionId,
@@ -104,9 +106,15 @@ export const useCensoSections = (
         const data = await getCensoSections(moduleForCensoId, page, signal);
 
         console.log("=== FETCH PÁGINA ===", page);
-        console.log("sections recibidas:", data.sections?.data?.map((s) => s.id));
+        console.log(
+          "sections recibidas:",
+          data.sections?.data?.map((s) => s.id),
+        );
         console.log("current_page:", data.sections?.current_page);
-        console.log("mapRef ANTES de setSections:", Object.keys(mapRef.current));
+        console.log(
+          "mapRef ANTES de setSections:",
+          Object.keys(mapRef.current),
+        );
 
         if (signal?.aborted) return;
 
@@ -161,7 +169,10 @@ export const useCensoSections = (
     const map = mapRef.current;
 
     console.log("=== ROWS RECALCULANDO === mapVersion:", mapVersion);
-    console.log("sections IDs:", sections.map((s) => s.id));
+    console.log(
+      "sections IDs:",
+      sections.map((s) => s.id),
+    );
     console.log("mapRef keys:", Object.keys(map));
 
     return sections.map((section) => {
@@ -176,7 +187,6 @@ export const useCensoSections = (
         stored_index_name: sel?.stored_index_name ?? null,
       };
     });
-  
   }, [sections, mapVersion]);
 
   const allChecked = useMemo(
@@ -246,7 +256,7 @@ export const useCensoSections = (
           section_id: item.section_id,
           index_id: item.index_id,
         })),
-    
+
     [mapVersion],
   );
 
