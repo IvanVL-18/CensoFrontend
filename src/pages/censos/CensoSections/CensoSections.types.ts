@@ -68,6 +68,7 @@ export interface CensoSectionRow {
   checked: boolean;
   selected_index_id: string;
   stored_index_name: string | null;
+  section_for_censo_id?: string;   // ← nuevo campo
 }
 
 export interface CensoSectionItemPayload {

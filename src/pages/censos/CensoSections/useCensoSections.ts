@@ -25,8 +25,8 @@ import type {
 // ──────────────────────────────────────────────────────────────────────────────
 
 type SelectedSectionState = {
-  /** ID cifrado de la sección, para enviarlo en el payload al backend */
   section_id: string;
+  section_for_censo_id?: string;   // ← agregar
   index_id: string;
   stored_index_name: string | null;
 };
@@ -92,35 +92,37 @@ export const useCensoSections = (
    * no determinístico). El index se sigue buscando por nombre porque los ids
    * cifrados de "indexs" tampoco son comparables con los de sectionsSelected.
    */
-  const buildInitialMap = useCallback(
-    (
-      selectedSections: SelectedSectionItem[],
-      availableIndexes: SectionIndexOption[],
-    ): SelectedSectionsMap => {
-      const map: SelectedSectionsMap = {};
+ const buildInitialMap = useCallback(
+  (
+    selectedSections: SelectedSectionItem[],
+    availableIndexes: SectionIndexOption[],
+  ): SelectedSectionsMap => {
+    const map: SelectedSectionsMap = {};
 
-      selectedSections.forEach((item) => {
-        const sectionName = item.section?.name ?? "";
-        const sectionId   = item.section?.section_id ?? "";
-        if (!sectionName) return;
+    selectedSections.forEach((item) => {
+      const sectionName = item.section?.name ?? "";
+      const sectionId   = item.section?.section_id ?? "";
+      const sectionForCensoId = item.section_for_censo_id; // ← obtener
+      if (!sectionName) return;
 
-        const matchedIndex = availableIndexes.find(
-          (idx) =>
-            idx.name.trim().toLowerCase() ===
-            item.index?.name?.trim().toLowerCase(),
-        );
+      const matchedIndex = availableIndexes.find(
+        (idx) =>
+          idx.name.trim().toLowerCase() ===
+          item.index?.name?.trim().toLowerCase(),
+      );
 
-        map[sectionName] = {
-          section_id:        sectionId,
-          index_id:          matchedIndex ? String(matchedIndex.id) : "",
-          stored_index_name: item.index?.name ?? null,
-        };
-      });
+      map[sectionName] = {
+        section_id:          sectionId,
+        section_for_censo_id: sectionForCensoId, // ← asignar
+        index_id:            matchedIndex ? String(matchedIndex.id) : "",
+        stored_index_name:   item.index?.name ?? null,
+      };
+    });
 
-      return map;
-    },
-    [],
-  );
+    return map;
+  },
+  [],
+);
 
   const loadData = useCallback(
     async (page: number, signal?: AbortSignal, isInitial = false) => {
@@ -185,19 +187,19 @@ export const useCensoSections = (
    * pero nunca el mismo string cifrado.
    */
   const rows = useMemo<CensoSectionRow[]>(() => {
-    const map = mapRef.current;
-
-    return sections.map((section) => {
-      const sel = map[section.name]; // ← clave estable
-      return {
-        section_id:        section.id,   // id cifrado del paginado (para payload nuevos)
-        section_name:      section.name,
-        checked:           Boolean(sel),
-        selected_index_id: sel?.index_id ?? "",
-        stored_index_name: sel?.stored_index_name ?? null,
-      };
-    });
-  }, [sections, mapVersion]);
+  const map = mapRef.current;
+  return sections.map((section) => {
+    const sel = map[section.name];
+    return {
+      section_id:        section.id,
+      section_name:      section.name,
+      checked:           Boolean(sel),
+      selected_index_id: sel?.index_id ?? "",
+      stored_index_name: sel?.stored_index_name ?? null,
+      section_for_censo_id: sel?.section_for_censo_id, // ← agregar
+    };
+  });
+}, [sections, mapVersion]);
 
   const allChecked = useMemo(
     () => rows.length > 0 && rows.every((r) => r.checked),

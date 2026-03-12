@@ -199,17 +199,20 @@ const CensoSectionsView: React.FC = () => {
                               <Landmark size={18} />
                             </button>
                             <button
-                              type="button"
-                              disabled={!row.checked}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-600 text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-                              title={
-                                row.checked
-                                  ? "Ir"
-                                  : "Selecciona la sección primero"
-                              }
-                            >
-                              <ArrowRight size={18} />
-                            </button>
+  type="button"
+  disabled={!row.checked || !row.section_for_censo_id}
+  onClick={() => navigate(`/seccion-instituciones/${row.section_for_censo_id}`)}
+  className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-600 text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+  title={
+    row.checked
+      ? row.section_for_censo_id
+        ? "Asignar instituciones"
+        : "Guarda la sección primero"
+      : "Selecciona la sección primero"
+  }
+>
+  <ArrowRight size={18} />
+</button>
                           </div>
                         </td>
                       </tr>

@@ -27,6 +27,9 @@ import CensoModulesView from "./pages/censos/CensoModules/CensoModulesView";
 import CensoSectionsView from "./pages/censos/CensoSections/CensoSectionsView";
 
 import Questions from "./pages/Questions/Questions";
+import SectionInstitutionsView from "./pages/censos/CensoAssignaments/SectionInstitutionsView";
+
+
 export default function App() {
   return (
     <Routes>
@@ -62,7 +65,9 @@ export default function App() {
         <Route path="/censos/:id" element={<CensoDetail />} />
         <Route path="/censos/:id/modulos" element={<CensoModulesView />} />
         <Route path="/censos/secciones/:id" element={<CensoSectionsView />} />
+         <Route path="/seccion-instituciones/:id" element={<SectionInstitutionsView />} />
       </Route>
+     
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>
