@@ -13,11 +13,12 @@ import type {
   PaginationLinksObj,
 } from "./CensoSections.types";
 
-
 type SelectedSectionState = {
   section_id: string;
-  index_id: string;
+  index_id: string; // ID encriptado actual (se recalcula en rows según index_name)
+  index_name: string; // Nombre estable del índice (ej: "1.1") — fuente de verdad
   stored_index_name: string | null;
+  checked: boolean;
 };
 
 type SelectedSectionsMap = Record<string, SelectedSectionState>;
@@ -36,7 +37,11 @@ type UseCensoSectionsReturn = {
   currentPage: number;
   lastPage: number;
   paginationLinks: PaginationLinksObj | null;
-  toggleSectionRow: (sectionName: string, sectionId: string, checked: boolean) => void;
+  toggleSectionRow: (
+    sectionName: string,
+    sectionId: string,
+    checked: boolean,
+  ) => void;
   toggleAllSectionRows: (checked: boolean) => void;
   changeIndex: (sectionName: string, indexId: string) => void;
   saveChanges: () => Promise<boolean>;
@@ -81,8 +86,11 @@ export const useCensoSections = (
       const map: SelectedSectionsMap = {};
 
       selectedSections.forEach((item) => {
-        const sectionName = item.section?.name ?? "";
-        const sectionId   = item.section?.section_id ?? "";
+        // Normaliza espacios múltiples en el nombre clave del map
+        const sectionName = (item.section?.name ?? "")
+          .replace(/\s+/g, " ")
+          .trim();
+        const sectionId = item.section?.section_id ?? "";
         if (!sectionName) return;
 
         const matchedIndex = availableIndexes.find(
@@ -92,9 +100,11 @@ export const useCensoSections = (
         );
 
         map[sectionName] = {
-          section_id:        sectionId,
-          index_id:          matchedIndex ? String(matchedIndex.id) : "",
+          section_id: sectionId,
+          index_id: matchedIndex ? String(matchedIndex.id) : "",
+          index_name: item.index?.name ?? "",
           stored_index_name: item.index?.name ?? null,
+          checked: true,
         };
       });
 
@@ -113,15 +123,32 @@ export const useCensoSections = (
 
         if (signal?.aborted) return;
 
-        const fetchedIndexs   = data.indexs ?? [];
+        const fetchedIndexs = data.indexs ?? [];
         const fetchedSections = data.sections?.data ?? [];
         const fetchedSelected = data.sectionsSelected ?? [];
 
+        // Construye el mapa fresco del backend
+        const freshMap = buildInitialMap(fetchedSelected, fetchedIndexs);
+
         if (!initialLoadDone.current) {
+          // Primera carga: usa el mapa del backend tal cual
+          mapRef.current = freshMap;
           initialLoadDone.current = true;
-          if (fetchedSelected.length > 0) {
-            mapRef.current = buildInitialMap(fetchedSelected, fetchedIndexs);
-          }
+        } else {
+          // Paginaciones siguientes: agrega al map las entradas del backend
+          // que el usuario NO ha tocado aún (no existen en el map actual)
+          const currentMap = mapRef.current;
+          const merged: typeof currentMap = { ...currentMap };
+
+          Object.entries(freshMap).forEach(([name, backendEntry]) => {
+            if (!currentMap[name]) {
+              // Sección nueva en esta página que viene precargada del backend
+              merged[name] = backendEntry;
+            }
+            // Si ya existe en el map (el usuario la vio/modificó), no se toca
+          });
+
+          mapRef.current = merged;
         }
 
         setModuleInfo(data.module);
@@ -131,9 +158,9 @@ export const useCensoSections = (
         setLastPage(data.sections?.last_page ?? 1);
         setPaginationLinks({
           first: data.sections?.first_page_url ?? null,
-          last:  data.sections?.last_page_url  ?? null,
-          prev:  data.sections?.prev_page_url  ?? null,
-          next:  data.sections?.next_page_url  ?? null,
+          last: data.sections?.last_page_url ?? null,
+          prev: data.sections?.prev_page_url ?? null,
+          next: data.sections?.next_page_url ?? null,
         });
 
         setSections(fetchedSections);
@@ -164,16 +191,25 @@ export const useCensoSections = (
     const map = mapRef.current;
 
     return sections.map((section) => {
-      const sel = map[section.name]; 
+      // Normaliza espacios múltiples para evitar fallos de match
+      const normalizedName = section.name.replace(/\s+/g, " ").trim();
+      const sel = map[normalizedName] ?? map[section.name];
+      const isChecked = sel?.checked ?? false;
+
+      // Recalcula el index_id desde el nombre estable, por si los IDs encriptados cambiaron
+      const currentIndexId = sel?.index_name
+        ? (indexs.find((idx) => idx.name === sel.index_name)?.id ?? "")
+        : "";
+
       return {
-        section_id:        section.id,  
-        section_name:      section.name,
-        checked:           Boolean(sel),
-        selected_index_id: sel?.index_id ?? "",
-        stored_index_name: sel?.stored_index_name ?? null,
+        section_id: section.id,
+        section_name: section.name,
+        checked: isChecked,
+        selected_index_id: isChecked ? String(currentIndexId) : "",
+        stored_index_name: isChecked ? (sel?.stored_index_name ?? null) : null,
       };
     });
-  }, [sections, mapVersion]);
+  }, [sections, indexs, mapVersion]);
 
   const allChecked = useMemo(
     () => rows.length > 0 && rows.every((r) => r.checked),
@@ -183,17 +219,18 @@ export const useCensoSections = (
   const toggleSectionRow = useCallback(
     (sectionName: string, sectionId: string, checked: boolean) => {
       updateMap((prev) => {
-        const next = { ...prev };
-        if (checked) {
-          next[sectionName] = {
-            section_id:        sectionId,
-            index_id:          next[sectionName]?.index_id ?? "",
-            stored_index_name: next[sectionName]?.stored_index_name ?? null,
-          };
-        } else {
-          delete next[sectionName];
-        }
-        return next;
+        const key = sectionName.replace(/\s+/g, " ").trim();
+        const existing = prev[key];
+        return {
+          ...prev,
+          [key]: {
+            section_id: existing?.section_id ?? sectionId,
+            index_id: existing?.index_id ?? "",
+            index_name: existing?.index_name ?? "",
+            stored_index_name: existing?.stored_index_name ?? null,
+            checked,
+          },
+        };
       });
     },
     [updateMap],
@@ -204,15 +241,15 @@ export const useCensoSections = (
       updateMap((prev) => {
         const next = { ...prev };
         sections.forEach((section) => {
-          if (checked) {
-            next[section.name] = {
-              section_id:        section.id,
-              index_id:          next[section.name]?.index_id ?? "",
-              stored_index_name: next[section.name]?.stored_index_name ?? null,
-            };
-          } else {
-            delete next[section.name];
-          }
+          const key = section.name.replace(/\s+/g, " ").trim();
+          const existing = next[key];
+          next[key] = {
+            section_id: existing?.section_id ?? section.id,
+            index_id: existing?.index_id ?? "",
+            index_name: existing?.index_name ?? "",
+            stored_index_name: existing?.stored_index_name ?? null,
+            checked,
+          };
         });
         return next;
       });
@@ -223,23 +260,26 @@ export const useCensoSections = (
   const changeIndex = useCallback(
     (sectionName: string, indexId: string) => {
       updateMap((prev) => {
-        if (!prev[sectionName]) return prev;
+        const key = sectionName.replace(/\s+/g, " ").trim();
+        if (!prev[key]) return prev;
+        const idxName =
+          indexs.find((idx) => String(idx.id) === String(indexId))?.name ?? "";
         return {
           ...prev,
-          [sectionName]: { ...prev[sectionName], index_id: indexId },
+          [key]: { ...prev[key], index_id: indexId, index_name: idxName },
         };
       });
     },
-    [updateMap],
+    [updateMap, indexs],
   );
 
   const validItems = useMemo(
     () =>
       Object.values(mapRef.current)
-        .filter((item) => item.index_id)
+        .filter((item) => item.checked && item.index_id) // ← filtra por checked Y con index
         .map((item) => ({
           section_id: item.section_id,
-          index_id:   item.index_id,
+          index_id: item.index_id,
         })),
     [mapVersion],
   );
@@ -261,7 +301,7 @@ export const useCensoSections = (
       } else {
         await storeCensoSections({
           module_id: moduleForCensoId,
-          items:     validItems,
+          items: validItems,
         });
       }
 
