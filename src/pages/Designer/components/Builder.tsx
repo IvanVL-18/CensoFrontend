@@ -1,4 +1,5 @@
 import { Form, FormBuilder } from "@formio/react";
+import type { FormType } from "@formio/react";
 import { useState, useEffect, useRef, useDeferredValue } from "react";
 import {
     Card,
@@ -21,7 +22,6 @@ import OperationsConfigModal from "./OperationsConfigModal";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
-/** Tipo base mínimo para componentes de Form.io — reemplaza unknown[] */
 interface FormioComponent {
     type: string;
     key?: string;
@@ -41,11 +41,19 @@ const defaultSchema: FormSchema = {
     components: [],
 };
 
-/** Espera (ms) tras el último cambio antes de persistir */
-const DEBOUNCE_MS = 700;
-
-/** Tiempo (ms) antes de habilitar guardado tras la carga inicial */
+const DEBOUNCE_MS   = 700;
 const INIT_GUARD_MS = 800;
+
+// ─── Helpers de tipado ────────────────────────────────────────────────────────
+
+/**
+ * FormBuilder (v6) espera `initialForm: FormType` y Form espera `form: FormType`.
+ * Nuestro FormSchema tiene `display?: string` mientras que FormType espera
+ * `display?: FormDisplay` ("form" | "wizard" | "pdf").
+ * El cast es seguro porque solo usamos valores válidos de FormDisplay.
+ */
+const asFormType = (schema: FormSchema): FormType =>
+    schema as unknown as FormType;
 
 // ─── Sanitización ─────────────────────────────────────────────────────────────
 
@@ -53,7 +61,7 @@ const sanitizeComponents = (components: FormioComponent[]): FormioComponent[] =>
     components.map((comp) => {
         const s: FormioComponent = { ...comp };
 
-        if (s.inputMask === null)   s.inputMask   = "";
+        if (s.inputMask   === null) s.inputMask   = "";
         if (s.displayMask === null) s.displayMask = "";
 
         if (Array.isArray(s.components)) s.components = sanitizeComponents(s.components);
@@ -94,8 +102,8 @@ const SaveToast = ({
                 {status === "saving" && (
                     <ProgressBar now={60} animated striped label="Guardando..." />
                 )}
-                {status === "saved" && "Formulario guardado correctamente."}
-                {status === "error" && (
+                {status === "saved"  && "Formulario guardado correctamente."}
+                {status === "error"  && (
                     <span className="text-danger">
                         Error al guardar. Verifica tu conexión e intenta de nuevo.
                     </span>
@@ -110,27 +118,27 @@ const SaveToast = ({
 const Builder = () => {
     const { id } = useParams<{ id: string }>();
 
-    const [jsonSchema,    setJsonSchema]    = useState<FormSchema>(defaultSchema);
-    const [loading,       setLoading]       = useState<boolean>(true);
-    const [fetchError,    setFetchError]    = useState<string | null>(null);
-    const [saveStatus,    setSaveStatus]    = useState<SaveStatus>("idle");
-    const [questionName,  setQuestionName]  = useState<string>("");
-    const [instructions,  setInstructions]  = useState<string | null>(null);
-    const [modalShow,     setModalShow]     = useState<boolean>(false);
+    const [jsonSchema,   setJsonSchema]   = useState<FormSchema>(defaultSchema);
+    const [loading,      setLoading]      = useState<boolean>(true);
+    const [fetchError,   setFetchError]   = useState<string | null>(null);
+    const [saveStatus,   setSaveStatus]   = useState<SaveStatus>("idle");
+    const [questionName, setQuestionName] = useState<string>("");
+    const [instructions, setInstructions] = useState<string | null>(null);
+    const [modalShow,    setModalShow]    = useState<boolean>(false);
     const [showOperationsModal, setShowOperationsModal] = useState<boolean>(false);
 
-    // Guard: bloquea guardado durante la carga inicial
+    /**
+     * FIX — FormBuilder no es controlado: lee `initialForm` solo en el
+     * primer mount. Si el schema llega del API después del primer render,
+     * el canvas queda vacío. Solución: cambiar `builderKey` tras el fetch
+     * para que React desmonte y remonte el FormBuilder con el schema correcto.
+     */
+    const [builderKey, setBuilderKey] = useState<number>(0);
+
     const initialLoad     = useRef<boolean>(true);
-    // Ref del schema cargado para detectar falsas inicializaciones de FormBuilder
     const loadedSchemaRef = useRef<FormSchema>(defaultSchema);
-    // Timer de debounce para el guardado automático
     const saveTimer       = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    /**
-     * useDeferredValue permite que el preview del Form renderizado se actualice
-     * con menor prioridad, evitando conflictos con el FormBuilder.
-     * Reemplaza el useEffect + setTimeout(300ms) del original.
-     */
     const renderedSchema = useDeferredValue(jsonSchema);
 
     // ── Carga inicial ─────────────────────────────────────────────────
@@ -141,7 +149,6 @@ const Builder = () => {
             return;
         }
 
-        // Reset completo al cambiar de id
         setJsonSchema(defaultSchema);
         loadedSchemaRef.current = defaultSchema;
         setQuestionName("");
@@ -166,6 +173,9 @@ const Builder = () => {
                     setJsonSchema(clean);
                     loadedSchemaRef.current = clean;
                 }
+
+                // Remount del FormBuilder con el schema correcto del API
+                setBuilderKey((prev) => prev + 1);
             } catch {
                 setFetchError("No se pudo cargar la estructura del formulario.");
             } finally {
@@ -198,18 +208,13 @@ const Builder = () => {
             setSaveStatus("saved");
             setTimeout(() => setSaveStatus("idle"), 3000);
         } catch {
-            // FIX: el error ahora es visible al usuario en lugar de silenciarse
             setSaveStatus("error");
         }
     };
 
     // ── Handler del FormBuilder (con debounce) ────────────────────────
-    //
-    // IMPORTANTE: esta función NO está envuelta en useCallback a propósito.
-    // FormBuilder de @formio/react es muy sensible a cambios de referencia
-    // en su prop onChange — envolverla en useCallback puede hacer que pierda
-    // su contexto interno y degrade a solo-vista sin la barra de componentes.
-    //
+    // NO en useCallback a propósito: FormBuilder es sensible a cambios de
+    // referencia en onChange y puede perder la barra de componentes.
     const onFormChange = (schema: FormSchema) => {
         setJsonSchema({
             ...schema,
@@ -218,9 +223,7 @@ const Builder = () => {
 
         if (!id || initialLoad.current) return;
 
-        // Detectar falso onChange de inicialización:
-        // FormBuilder envía components vacío cuando el schema cargado tenía componentes
-        const incomingEmpty = !schema.components || schema.components.length === 0;
+        const incomingEmpty    = !schema.components || schema.components.length === 0;
         const loadedHadComponents =
             loadedSchemaRef.current.components &&
             loadedSchemaRef.current.components.length > 0;
@@ -232,7 +235,6 @@ const Builder = () => {
 
         loadedSchemaRef.current = schema;
 
-        // FIX: debounce — evita múltiples POST en paralelo por cambios rápidos
         if (saveTimer.current) clearTimeout(saveTimer.current);
         saveTimer.current = setTimeout(() => {
             persistSchema(schema);
@@ -240,17 +242,15 @@ const Builder = () => {
     };
 
     // ── Handler para cambios desde modales ────────────────────────────
-    //
-    // FIX: ya NO llama a onFormChange para evitar guardado duplicado.
-    // Actualiza el estado y persiste directamente sin debounce
-    // (los cambios de modal son discretos, no streams de keystrokes).
-    //
     const handleSchemaUpdate = (updatedSchema: FormSchema) => {
         setJsonSchema(updatedSchema);
         loadedSchemaRef.current = updatedSchema;
 
         if (saveTimer.current) clearTimeout(saveTimer.current);
         persistSchema(updatedSchema);
+
+        // Remount del FormBuilder para que refleje los cambios del modal
+        setBuilderKey((prev) => prev + 1);
     };
 
     // ── Estados de carga y error ──────────────────────────────────────
@@ -337,8 +337,15 @@ const Builder = () => {
                         schema={jsonSchema}
                         onSchemaChange={handleSchemaUpdate}
                     />
+
+                    {/*
+                     * key={builderKey}: fuerza remount cuando llega el schema del API.
+                     * initialForm: prop correcta en @formio/react v6 para FormBuilder.
+                     * asFormType(): cast seguro FormSchema → FormType para satisfacer TS.
+                     */}
                     <FormBuilder
-                        form={jsonSchema}
+                        key={builderKey}
+                        initialForm={asFormType(jsonSchema)}
                         onChange={onFormChange}
                         options={{ noDefaultSubmitButton: true } as object}
                     />
@@ -358,7 +365,7 @@ const Builder = () => {
                 <Card.Body>
                     <Card.Title className="text-center">As Rendered Form</Card.Title>
                     <Form
-                        form={renderedSchema}
+                        form={asFormType(renderedSchema)}
                         options={{ noDefaultSubmitButton: true } as object}
                     />
                 </Card.Body>
