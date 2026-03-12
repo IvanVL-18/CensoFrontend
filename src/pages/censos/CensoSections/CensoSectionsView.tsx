@@ -124,7 +124,6 @@ const CensoSectionsView: React.FC = () => {
                             type="checkbox"
                             checked={row.checked}
                             onChange={(e) =>
-                              // FIX: pasamos section_name (clave del mapa) y section_id (payload)
                               toggleSectionRow(
                                 row.section_name,
                                 row.section_id,
@@ -143,7 +142,7 @@ const CensoSectionsView: React.FC = () => {
                           <select
                             value={row.selected_index_id}
                             onChange={(e) =>
-                              // FIX: pasamos section_name como clave del mapa
+                              
                               changeIndex(row.section_name, e.target.value)
                             }
                             disabled={!row.checked}

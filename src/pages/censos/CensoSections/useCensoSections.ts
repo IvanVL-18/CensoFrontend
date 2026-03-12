@@ -13,25 +13,13 @@ import type {
   PaginationLinksObj,
 } from "./CensoSections.types";
 
-// ─── FIX PRINCIPAL ────────────────────────────────────────────────────────────
-// El problema raíz: Crypt::encryptString() de Laravel usa un IV aleatorio, por
-// lo que cifrar el mismo section_id dos veces produce strings distintos.
-// "sections" (paginado) y "sectionsSelected" cifran el mismo id en momentos
-// distintos → claves distintas → el mapa nunca encuentra la sección.
-//
-// Solución: usar section_name como clave del mapa (estable y compartido entre
-// ambas fuentes de datos). El section_id cifrado se guarda como valor dentro
-// del mapa para usarlo en el payload.
-// ──────────────────────────────────────────────────────────────────────────────
 
 type SelectedSectionState = {
-  /** ID cifrado de la sección, para enviarlo en el payload al backend */
   section_id: string;
   index_id: string;
   stored_index_name: string | null;
 };
 
-/** Clave = nombre de la sección (estable entre paginación y sectionsSelected) */
 type SelectedSectionsMap = Record<string, SelectedSectionState>;
 
 type UseCensoSectionsReturn = {
@@ -48,7 +36,6 @@ type UseCensoSectionsReturn = {
   currentPage: number;
   lastPage: number;
   paginationLinks: PaginationLinksObj | null;
-  /** sectionName + sectionId (cifrado del paginado) para registrar selecciones nuevas */
   toggleSectionRow: (sectionName: string, sectionId: string, checked: boolean) => void;
   toggleAllSectionRows: (checked: boolean) => void;
   changeIndex: (sectionName: string, indexId: string) => void;
@@ -86,12 +73,6 @@ export const useCensoSections = (
 
   const initialLoadDone = useRef(false);
 
-  /**
-   * Construye el mapa inicial a partir de sectionsSelected.
-   * FIX #6: clave = section.name (estable) en lugar de section_id (cifrado
-   * no determinístico). El index se sigue buscando por nombre porque los ids
-   * cifrados de "indexs" tampoco son comparables con los de sectionsSelected.
-   */
   const buildInitialMap = useCallback(
     (
       selectedSections: SelectedSectionItem[],
@@ -179,18 +160,13 @@ export const useCensoSections = (
     return () => controller.abort();
   }, [loadData]);
 
-  /**
-   * FIX PRINCIPAL: búsqueda en el mapa por section.name en lugar de section.id.
-   * Ambas fuentes (paginado y sectionsSelected) comparten el mismo nombre,
-   * pero nunca el mismo string cifrado.
-   */
   const rows = useMemo<CensoSectionRow[]>(() => {
     const map = mapRef.current;
 
     return sections.map((section) => {
-      const sel = map[section.name]; // ← clave estable
+      const sel = map[section.name]; 
       return {
-        section_id:        section.id,   // id cifrado del paginado (para payload nuevos)
+        section_id:        section.id,  
         section_name:      section.name,
         checked:           Boolean(sel),
         selected_index_id: sel?.index_id ?? "",
@@ -204,10 +180,6 @@ export const useCensoSections = (
     [rows],
   );
 
-  /**
-   * FIX: firma ampliada con sectionName (clave del mapa) y sectionId (para payload).
-   * El view debe llamar con row.section_name y row.section_id.
-   */
   const toggleSectionRow = useCallback(
     (sectionName: string, sectionId: string, checked: boolean) => {
       updateMap((prev) => {
@@ -248,7 +220,6 @@ export const useCensoSections = (
     [sections, updateMap],
   );
 
-  /** FIX: recibe sectionName como clave en lugar de sectionId cifrado */
   const changeIndex = useCallback(
     (sectionName: string, indexId: string) => {
       updateMap((prev) => {

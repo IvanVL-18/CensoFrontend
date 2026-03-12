@@ -8,7 +8,6 @@ export interface SectionIndexOption {
   name: string;
 }
 
-// FIX #5: eliminado campo "instructions" que el backend no devuelve
 export interface SectionInfo {
   id: string;
   name: string;
