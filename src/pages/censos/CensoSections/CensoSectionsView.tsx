@@ -28,7 +28,6 @@ const CensoSectionsView: React.FC = () => {
     goToPage,
   } = useCensoSections(id ?? "");
 
-  // Estado del modal de detalle
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
     null,
@@ -193,7 +192,7 @@ const CensoSectionsView: React.FC = () => {
 
                           <td className="px-4 py-3 text-center">
                             <div className="flex items-center justify-center gap-2">
-                              {/* Ojito — abre el modal de detalle */}
+                         
                               <button
                                 type="button"
                                 onClick={() => openSectionModal(row.section_id)}
@@ -266,7 +265,7 @@ const CensoSectionsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal de detalle de sección */}
+
       <ViewSectionModal
         isOpen={modalOpen}
         onClose={closeSectionModal}

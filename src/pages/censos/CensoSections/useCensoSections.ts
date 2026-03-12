@@ -15,8 +15,8 @@ import type {
 
 type SelectedSectionState = {
   section_id: string;
-  index_id: string; // ID encriptado actual (se recalcula en rows según index_name)
-  index_name: string; // Nombre estable del índice (ej: "1.1") — fuente de verdad
+  index_id: string; 
+  index_name: string;
   stored_index_name: string | null;
   checked: boolean;
 };
@@ -86,7 +86,6 @@ export const useCensoSections = (
       const map: SelectedSectionsMap = {};
 
       selectedSections.forEach((item) => {
-        // Normaliza espacios múltiples en el nombre clave del map
         const sectionName = (item.section?.name ?? "")
           .replace(/\s+/g, " ")
           .trim();
@@ -127,25 +126,22 @@ export const useCensoSections = (
         const fetchedSections = data.sections?.data ?? [];
         const fetchedSelected = data.sectionsSelected ?? [];
 
-        // Construye el mapa fresco del backend
         const freshMap = buildInitialMap(fetchedSelected, fetchedIndexs);
 
         if (!initialLoadDone.current) {
-          // Primera carga: usa el mapa del backend tal cual
           mapRef.current = freshMap;
           initialLoadDone.current = true;
         } else {
-          // Paginaciones siguientes: agrega al map las entradas del backend
-          // que el usuario NO ha tocado aún (no existen en el map actual)
+        
           const currentMap = mapRef.current;
           const merged: typeof currentMap = { ...currentMap };
 
           Object.entries(freshMap).forEach(([name, backendEntry]) => {
             if (!currentMap[name]) {
-              // Sección nueva en esta página que viene precargada del backend
+            
               merged[name] = backendEntry;
             }
-            // Si ya existe en el map (el usuario la vio/modificó), no se toca
+          
           });
 
           mapRef.current = merged;
@@ -191,12 +187,12 @@ export const useCensoSections = (
     const map = mapRef.current;
 
     return sections.map((section) => {
-      // Normaliza espacios múltiples para evitar fallos de match
+   
       const normalizedName = section.name.replace(/\s+/g, " ").trim();
       const sel = map[normalizedName] ?? map[section.name];
       const isChecked = sel?.checked ?? false;
 
-      // Recalcula el index_id desde el nombre estable, por si los IDs encriptados cambiaron
+     
       const currentIndexId = sel?.index_name
         ? (indexs.find((idx) => idx.name === sel.index_name)?.id ?? "")
         : "";
@@ -276,7 +272,7 @@ export const useCensoSections = (
   const validItems = useMemo(
     () =>
       Object.values(mapRef.current)
-        .filter((item) => item.checked && item.index_id) // ← filtra por checked Y con index
+        .filter((item) => item.checked && item.index_id) 
         .map((item) => ({
           section_id: item.section_id,
           index_id: item.index_id,
