@@ -1,4 +1,4 @@
-import { Col, Container, Nav, Row, Tab } from "react-bootstrap";
+/* import { Col, Container, Nav, Row, Tab } from "react-bootstrap";
 import PDFForm from "./PDFForm";
 import Renderer from "./Renderer";
 import SimpleForm from "./SimpleForm";
@@ -47,4 +47,4 @@ const Components = () => {
     );
 };
 
-export default Components;
+export default Components; */

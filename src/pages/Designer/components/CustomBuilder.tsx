@@ -1,4 +1,4 @@
-import { FormBuilder } from "@formio/react";
+/* import { FormBuilder } from "@formio/react";
 import { useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import { CopyBlock, atomOneLight } from "react-code-blocks";
@@ -70,3 +70,4 @@ const [options,setOptions] = useState({
     );
 };
 export default CustomBuilder;
+ */

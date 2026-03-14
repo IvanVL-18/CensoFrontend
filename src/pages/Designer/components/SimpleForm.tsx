@@ -1,4 +1,4 @@
-import { Form } from "@formio/react";
+/* import { Form } from "@formio/react";
 import { Col, Row } from "react-bootstrap";
 import { atomOneLight, CopyBlock } from "react-code-blocks";
 
@@ -29,3 +29,4 @@ const SimpleForm = () => {
     );
 };
 export default SimpleForm;
+ */

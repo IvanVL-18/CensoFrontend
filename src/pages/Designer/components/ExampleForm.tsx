@@ -1,4 +1,4 @@
-import { Card } from "react-bootstrap";
+/* import { Card } from "react-bootstrap";
 import { CopyBlock, atomOneLight } from "react-code-blocks";
 import { Form } from "@formio/react";
 import { ComponentProps } from "react";
@@ -26,4 +26,4 @@ export const ExampleForm = ({
             </div>
         </Card>
     );
-};
+}; */

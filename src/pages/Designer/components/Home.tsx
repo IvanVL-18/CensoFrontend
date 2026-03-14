@@ -1,4 +1,4 @@
-import { Container } from "react-bootstrap";
+/* import { Container } from "react-bootstrap";
 import { Form } from "@formio/react";
 import { atomOneLight, CopyBlock } from "react-code-blocks";
 import logo from "../assets/Light-Background.png";
@@ -130,4 +130,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default Home; */

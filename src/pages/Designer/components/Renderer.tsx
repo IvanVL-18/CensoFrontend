@@ -1,4 +1,4 @@
-import { Container } from "react-bootstrap";
+/* import { Container } from "react-bootstrap";
 import { ExampleForm } from "./ExampleForm";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,4 +86,4 @@ const Renderer = () => {
         </Container>
     );
 };
-export default Renderer;
+export default Renderer; */
