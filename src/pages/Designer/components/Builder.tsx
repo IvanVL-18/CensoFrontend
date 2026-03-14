@@ -13,6 +13,9 @@ import ReactJson from "@microlink/react-json-view";
 import { useParams } from "react-router-dom";
 import apiClient from "../services/axiosConfig";
 import "../styles/Builder.css";
+// ─── Bootstrap scoped: PostCSS prefixa todos los selectores con ".bs" ─────────
+// Solo aplica dentro de <div className="bs">, no afecta al resto de la app.
+import "../../../styles/bootstrap-scoped.css";
 import type { FormSchema, QuestionResponse } from "../interfaces/Question";
 import ContainerCustom from "./ContainerCustom";
 import OperationsConfigModal from "./OperationsConfigModal";
@@ -80,6 +83,8 @@ const sanitizeSchema = (schema: FormSchema): FormSchema => ({
 });
 
 // ─── Sub-componente: Toast de guardado ────────────────────────────────────────
+// NOTA: ToastContainer usa portal y se monta en document.body (fuera de .bs),
+// por eso le pasamos className="bs" directamente para que hereden los estilos.
 
 const SaveToast = ({
   status,
@@ -88,7 +93,7 @@ const SaveToast = ({
   status: SaveStatus;
   onClose: () => void;
 }) => (
-  <ToastContainer position="top-end" className="p-3 fixed-toast">
+  <ToastContainer position="top-end" className="bs p-3 fixed-toast">
     <Toast
       onClose={onClose}
       show={status !== "idle"}
@@ -261,116 +266,126 @@ const Builder = () => {
   // ── Estados de carga y error ──────────────────────────────────────
   if (loading) {
     return (
-      <div className="text-center my-4">
-        <Spinner animation="border" />
-        <p>Cargando...</p>
+      // .bs: scope wrapper — Bootstrap scoped solo aplica aquí dentro
+      <div className="bs">
+        <div className="text-center my-4">
+          <Spinner animation="border" />
+          <p>Cargando...</p>
+        </div>
       </div>
     );
   }
 
   if (fetchError) {
     return (
-      <div className="text-center my-4">
-        <Alert variant="danger">{fetchError}</Alert>
+      // .bs: scope wrapper — Bootstrap scoped solo aplica aquí dentro
+      <div className="bs">
+        <div className="text-center my-4">
+          <Alert variant="danger">{fetchError}</Alert>
+        </div>
       </div>
     );
   }
 
-  // ── Render ────────────────────────────────────────────────────────
+  // ── Render principal ──────────────────────────────────────────────
   return (
-    <div className="container my-4">
-      <SaveToast status={saveStatus} onClose={() => setSaveStatus("idle")} />
+    // .bs: scope wrapper — todos los estilos de Bootstrap quedan
+    // encapsulados aquí y no afectan al resto de la aplicación.
+    <div className="bs">
+      <div className="container my-4">
+        <SaveToast status={saveStatus} onClose={() => setSaveStatus("idle")} />
 
-      {/* Botón volver */}
-      <div className="mb-4 d-flex">
-        <Button variant="primary" onClick={() => window.history.back()}>
-          <i className="fa-solid fa-arrow-left"></i>
-        </Button>
-      </div>
+        {/* Botón volver */}
+        <div className="mb-4 d-flex">
+          <Button variant="primary" onClick={() => window.history.back()}>
+            <i className="fa-solid fa-arrow-left"></i>
+          </Button>
+        </div>
 
-      {/* Card con info de la pregunta */}
-      <Card className="question-card mb-4">
-        <Card.Body>
-          <div className="row">
-            <div className="column">
-              <div className="column-title">Pregunta</div>
-            </div>
-            {instructions && (
+        {/* Card con info de la pregunta */}
+        <Card className="question-card mb-4">
+          <Card.Body>
+            <div className="row">
               <div className="column">
-                <div className="column-title">
-                  Instrucciones: {instructions}
-                </div>
+                <div className="column-title">Pregunta</div>
               </div>
-            )}
-          </div>
-          <p className="question-text">{questionName}</p>
-        </Card.Body>
-      </Card>
+              {instructions && (
+                <div className="column">
+                  <div className="column-title">
+                    Instrucciones: {instructions}
+                  </div>
+                </div>
+              )}
+            </div>
+            <p className="question-text">{questionName}</p>
+          </Card.Body>
+        </Card>
 
-      {/* Botones de modales */}
-      <Button
-        variant="secondary"
-        className="mb-3"
-        onClick={() => setModalShow(true)}
-      >
-        Repetir <i className="fa-solid fa-repeat"></i>
-      </Button>
-      <Button
-        variant="secondary"
-        className="mb-3 ms-3"
-        onClick={() => setShowOperationsModal(true)}
-      >
-        Operaciones <i className="fa-solid fa-calculator"></i>
-      </Button>
+        {/* Botones de modales */}
+        <Button
+          variant="secondary"
+          className="mb-3"
+          onClick={() => setModalShow(true)}
+        >
+          Repetir <i className="fa-solid fa-repeat"></i>
+        </Button>
+        <Button
+          variant="secondary"
+          className="mb-3 ms-3"
+          onClick={() => setShowOperationsModal(true)}
+        >
+          Operaciones <i className="fa-solid fa-calculator"></i>
+        </Button>
 
-      {/* Form Builder */}
-      <Card className="mb-4">
-        <Card.Body>
-          <ContainerCustom
-            show={modalShow}
-            handleClose={() => setModalShow(false)}
-            schema={jsonSchema}
-            onSchemaChange={handleSchemaUpdate}
-          />
-          <OperationsConfigModal
-            show={showOperationsModal}
-            handleClose={() => setShowOperationsModal(false)}
-            schema={jsonSchema}
-            onSchemaChange={handleSchemaUpdate}
-          />
+        {/* Form Builder */}
+        <Card className="mb-4">
+          <Card.Body>
+            <ContainerCustom
+              show={modalShow}
+              handleClose={() => setModalShow(false)}
+              schema={jsonSchema}
+              onSchemaChange={handleSchemaUpdate}
+            />
+            <OperationsConfigModal
+              show={showOperationsModal}
+              handleClose={() => setShowOperationsModal(false)}
+              schema={jsonSchema}
+              onSchemaChange={handleSchemaUpdate}
+            />
 
-          {/*
-           * key={builderKey}: fuerza remount cuando llega el schema del API.
-           * initialForm: prop correcta en @formio/react v6 para FormBuilder.
-           * asFormType(): cast seguro FormSchema → FormType para satisfacer TS.
-           */}
-          <FormBuilder
-            key={builderKey}
-            form={asFormType(jsonSchema)}
-            onChange={onFormChange}
-            options={{ noDefaultSubmitButton: true } as object}
-          />
-        </Card.Body>
-      </Card>
+            {/*
+             * key={builderKey}: fuerza remount cuando llega el schema del API.
+             * initialForm: prop correcta en @formio/react v6 para FormBuilder.
+             * asFormType(): cast seguro FormSchema → FormType para satisfacer TS.
+             */}
+            <FormBuilder
+              key={builderKey}
+              form={asFormType(jsonSchema)}
+              onChange={onFormChange}
+              options={{ noDefaultSubmitButton: true } as object}
+            />
+          </Card.Body>
+        </Card>
 
-      {/* JSON Schema viewer */}
-      <Card className="mb-4">
-        <Card.Body>
-          <Card.Title className="text-center">As JSON Schema</Card.Title>
-          <ReactJson src={jsonSchema} name={null} collapsed={true} />
-        </Card.Body>
-      </Card>
+        {/* JSON Schema viewer */}
+        <Card className="mb-4">
+          <Card.Body>
+            <Card.Title className="text-center">As JSON Schema</Card.Title>
+            <ReactJson src={jsonSchema} name={null} collapsed={true} />
+          </Card.Body>
+        </Card>
 
-      {/* Form renderizado */}
-      <Card className="mb-4">
-        <Card.Body>
-          <Card.Title className="text-center">As Rendered Form</Card.Title>
-          <Form
-            form={asFormType(renderedSchema)}
-            options={{ noDefaultSubmitButton: true } as object}
-          />
-        </Card.Body>
-      </Card>
+        {/* Form renderizado */}
+        <Card className="mb-4">
+          <Card.Body>
+            <Card.Title className="text-center">As Rendered Form</Card.Title>
+            <Form
+              form={asFormType(renderedSchema)}
+              options={{ noDefaultSubmitButton: true } as object}
+            />
+          </Card.Body>
+        </Card>
+      </div>
     </div>
   );
 };

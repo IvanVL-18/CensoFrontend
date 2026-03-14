@@ -2,6 +2,9 @@ import { X, ChevronLeft, ChevronRight, Save, Calculator, AlertCircle, Loader2 } 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { getQuestionComponent } from "../Questions.service";
 import { Form } from "@formio/react";
+// Bootstrap scoped: solo aplica dentro de <div className="bs">
+// Form.io necesita Bootstrap para renderizar sus campos correctamente.
+import "../../../styles/bootstrap-scoped.css";
 
 const FormAny = Form as any;
 
@@ -33,6 +36,38 @@ type QuestionSchema = {
   operations?: OperationConfig[];
   [key: string]: any;
 };
+
+/* =========================================================
+   ================== SANITIZACIÓN =========================
+   ========================================================= */
+
+/**
+ * Recorre recursivamente todos los componentes y reemplaza
+ * inputMask/displayMask null por "" para evitar el crash de Form.io:
+ * "Cannot read properties of null (reading 'length')"
+ */
+const sanitizeComponents = (components: any[]): any[] =>
+  components.map((comp) => {
+    const s = { ...comp };
+
+    if (s.inputMask === null)   s.inputMask   = "";
+    if (s.displayMask === null) s.displayMask = "";
+
+    if (Array.isArray(s.components))
+      s.components = sanitizeComponents(s.components);
+    if (Array.isArray(s.columns))
+      s.columns = sanitizeComponents(s.columns);
+    if (Array.isArray(s.rows))
+      s.rows = s.rows.map((row: any[]) => sanitizeComponents(row));
+
+    return s;
+  });
+
+const sanitizeSchema = (schema: QuestionSchema): QuestionSchema => ({
+  ...schema,
+  display: schema.display ?? "form",
+  components: sanitizeComponents(schema.components ?? []),
+});
 
 /* =========================================================
    ================== MOTOR MATEMÁTICO =====================
@@ -145,6 +180,7 @@ const evaluateOperations = (
 
 /**
  * Gestiona la carga del schema:
+ * - Sanitiza inputMask/displayMask null antes de pasarlo a Form.io
  * - Deshabilita campos calculados (calculateValue)
  * - Construye el array de submissions según repeat_config
  * - Cancela el fetch si el modal se cierra antes de completar
@@ -221,6 +257,11 @@ const useFormSchema = (isOpen: boolean, questionId: string | number | null) => {
           typeof res.question_structure === "string"
             ? JSON.parse(res.question_structure)
             : { ...res.question_structure };
+
+        // ── FIX: sanitizar antes de cualquier otra operación ──────────
+        // inputMask/displayMask null causan crash en Form.io:
+        // "Cannot read properties of null (reading 'length')"
+        parsed = sanitizeSchema(parsed);
 
         if (parsed.components) disableCalculatedFields(parsed.components);
         parsed.display = "form";
@@ -471,19 +512,24 @@ export function PreviewQuestionModal({
 
           {!loading && schema && !error && (
             <>
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                <FormAny
-                  /**
-                   * La key combina questionId + currentIndex para forzar el
-                   * remontaje completo de Form.io al paginar, evitando que
-                   * datos de una iteración contaminen la siguiente.
-                   */
-                  key={`form-${questionId}-${currentIndex}`}
-                  form={schema}
-                  submission={submissionForPage}
-                  onChange={handleChange}
-                  options={{ noAlerts: true, language: "es", noDefaultSubmitButton: true }}
-                />
+              {/* .bs: Bootstrap scoped — Form.io necesita Bootstrap para renderizar
+                   correctamente sus inputs, grids y estilos internos. El wrapper .bs
+                   asegura que Bootstrap no afecte al resto del modal (que usa Tailwind). */}
+              <div className="bs">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                  <FormAny
+                    /**
+                     * La key combina questionId + currentIndex para forzar el
+                     * remontaje completo de Form.io al paginar, evitando que
+                     * datos de una iteración contaminen la siguiente.
+                     */
+                    key={`form-${questionId}-${currentIndex}`}
+                    form={schema}
+                    submission={submissionForPage}
+                    onChange={handleChange}
+                    options={{ noAlerts: true, language: "es", noDefaultSubmitButton: true }}
+                  />
+                </div>
               </div>
 
               <OperationResults results={evaluatedResults} />

@@ -1,0 +1,10 @@
+/*
+ * bootstrap-scoped.css
+ *
+ * Importa el CSS compilado de Bootstrap (no el SCSS fuente).
+ * PostCSS + postcss-prefix-selector prefijará todos los selectores
+ * de este archivo con ".bs", encapsulando Bootstrap solo en esa clase.
+ *
+ * NO modificar este archivo. La magia ocurre en postcss.config.js.
+ */
+@import "bootstrap/dist/css/bootstrap.css";
