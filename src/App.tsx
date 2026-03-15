@@ -63,7 +63,7 @@ export default function App() {
         <Route path="/Dependency" element={<Dependencies />} />
         <Route path="/censos" element={<Censos />} />
         <Route path="/censos/:id" element={<CensoDetail />} />
-        <Route path="/censos/:id/modulos" element={<CensoUnitsView />} />
+        <Route path="/censos/:id/modulos" element={<CensoModulesView />} />
         <Route path="/builder/:id" element={<Builder />} />
       </Route>
       {/* Fallback */}
