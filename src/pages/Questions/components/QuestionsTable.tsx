@@ -5,8 +5,10 @@ import {
   Trash2,
   CircleArrowUp,
   Ban,
+  FileSliders,
   type LucideProps,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { QuestionsTableProps } from "../Questions.types";
 
 const defaultProps = {
@@ -26,6 +28,9 @@ const IconCircleArrowUp = (props: LucideProps) => (
   <CircleArrowUp {...defaultProps} {...props} />
 );
 const IconBan = (props: LucideProps) => <Ban {...defaultProps} {...props} />;
+const IconBuilder = (props: LucideProps) => (
+  <FileSliders {...defaultProps} {...props} />
+);
 
 export function QuestionsTable({
   Questions,
@@ -39,6 +44,8 @@ export function QuestionsTable({
   onRestore,
   onDelete,
 }: QuestionsTableProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -182,6 +189,20 @@ export function QuestionsTable({
                       >
                         <IconBan />
                       </button>
+
+                      {/* --- Botón BUILDER --- */}
+                      <button
+                        title="Ir al Builder"
+                        onClick={() => navigate(`/builder/${Question.id}`)}
+                        className="
+                          bg-white text-[#691b31]
+                          hover:bg-[#4a1a6b] hover:text-white
+                          active:bg-[#691b31] active:text-white
+                          p-2 rounded-lg leading-none transition-colors
+                        "
+                      >
+                        <IconBuilder />
+                      </button>
                     </>
                   ) : (
                     <>
@@ -225,6 +246,20 @@ export function QuestionsTable({
                         "
                       >
                         <IconDelete />
+                      </button>
+
+                      {/* --- Botón BUILDER --- */}
+                      <button
+                        title="Ir al Builder"
+                        onClick={() => navigate(`/builder/${Question.id}`)}
+                        className="
+                          bg-white text-[#691b31]
+                          hover:bg-[#4a1a6b] hover:text-white
+                          active:bg-[#691b31] active:text-white
+                          p-2 rounded-lg leading-none transition-colors
+                        "
+                      >
+                        <IconBuilder />
                       </button>
                     </>
                   )}
