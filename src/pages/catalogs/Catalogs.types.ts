@@ -1,15 +1,14 @@
-// Catalogs.types.ts
 export interface Catalog {
   id: string;
   name: string;
   slug: string;
-  Module_id: string;
-  Module_name?: string; 
-   Module_is_active?: boolean; 
-  Module?: {
+  module_id: string;
+  module_name?: string;        
+  module_is_active?: boolean;  
+  Module?: {                  
     id: string;
     name: string;
-     deleted_at?: string | null;
+    deleted_at?: string | null;
   };
   created_at: string;
   updated_at: string;
@@ -24,7 +23,7 @@ export interface Module {
 export interface CreateCatalogDTO {
   name: string;
   slug: string;
-  Module_id: string;
+  module_id: string;
 }
 
 export type UpdateCatalogDTO = Partial<CreateCatalogDTO>;

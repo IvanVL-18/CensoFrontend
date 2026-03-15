@@ -80,6 +80,7 @@ const sanitizeSchema = (schema: QuestionSchema): QuestionSchema => ({
 const parseExpression = (expression: string) => {
   const match = expression.match(/(\w+)\(([^,]*)(?:,\s*([^)]+))?\)/);
   if (!match) return null;
+
   return {
     operation: match[1].toUpperCase(),
     variable: match[2]?.trim() || null,
@@ -482,6 +483,7 @@ export function PreviewQuestionModal({
     const finalData = commitCurrent();
     onSave?.(finalData);
     onClose();
+
   };
 
   if (!isOpen) return null;
@@ -503,6 +505,7 @@ export function PreviewQuestionModal({
           >
             <X size={22} />
           </button>
+
         </div>
 
         {/* BODY */}
@@ -535,6 +538,7 @@ export function PreviewQuestionModal({
               <OperationResults results={evaluatedResults} />
             </>
           )}
+
         </div>
 
         {/* FOOTER: paginador, solo visible si hay múltiples iteraciones */}
@@ -547,7 +551,9 @@ export function PreviewQuestionModal({
             onFinish={handleFinish}
           />
         )}
+
       </div>
+
     </div>
   );
 }

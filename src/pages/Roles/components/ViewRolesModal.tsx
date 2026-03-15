@@ -34,7 +34,7 @@ export function ViewRolModal({ isOpen, onClose, Rol }: ViewRolModalProps) {
 
   const handleAssignPermissions = () => {
     onClose();
-    navigate(`/permission-roles?role=${encodeURIComponent(Rol.id)}`);
+    navigate(`/roles/permission-roles?role=${encodeURIComponent(Rol.id)}`);
   };
 
   return (

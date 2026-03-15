@@ -33,7 +33,7 @@ export function useCatalogsMutations({
       setMutationError(null);
 
       try {
-        const catalogData = { name, slug, Module_id: ModuleId };
+        const catalogData = { name, slug, module_id: ModuleId };
         const response = editingCatalog
           ? await updateCatalog(editingCatalog.id, catalogData )
           : await createCatalog(catalogData);

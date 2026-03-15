@@ -166,11 +166,12 @@ export function ModuleModal({
 
               <button
                 type="submit"
-                disabled={isSubmitting || formErrors.length > 0}
+                disabled={isSubmitting || formErrors.length > 0 || name.trim() === initialName.trim()}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
               </button>
+
             </div>
           </form>
         </div>

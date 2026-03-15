@@ -54,7 +54,7 @@ const confirmConfig = {
 
 function CatalogsPageContent() {
   const [Modules, setModules] = useState<Module[]>([]);
-  const [originalActiveModules, setOriginalActiveModules] = useState<Module[]>([]); // Guarda solo activas
+  const [originalActiveModules, setOriginalActiveModules] = useState<Module[]>([]);
   const [loadingModules, setLoadingModules] = useState(false);
 
   const {
@@ -123,15 +123,15 @@ function CatalogsPageContent() {
 
   useEffect(() => {
     const editingCat = modals.editingCatalog;
-    if (editingCat?.Module_id) {
-      const currentModuleId = String(editingCat.Module_id).trim();
+    if (editingCat?.module_id) {
+      const currentModuleId = String(editingCat.module_id).trim();
       const exists = originalActiveModules.some(u => String(u.id).trim() === currentModuleId);
       if (!exists) {
         setModules([
           ...originalActiveModules,
           {
             id: currentModuleId,
-            name: editingCat.Module_name || 'Modulo desconocida',
+            name: editingCat.module_name || 'Modulo desconocida',
           }
         ]);
       } else {
@@ -168,8 +168,8 @@ function CatalogsPageContent() {
     title: modals.editingCatalog ? "Editar catálogo" : "Agregar catálogo",
     initialName: modals.editingCatalog?.name || "",
     initialSlug: modals.editingCatalog?.slug || "",
-    initialModuleId: modals.editingCatalog?.Module_id || "",
-    initialModuleName: modals.editingCatalog?.Module_name || modals.editingCatalog?.Module?.name || "",
+    initialModuleId: modals.editingCatalog?.module_id || "",
+    initialModuleName: modals.editingCatalog?.module_name || modals.editingCatalog?.Module?.name || "",
   };
 
   const confirmModal = modals.actionType && modals.actionCatalog

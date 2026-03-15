@@ -9,21 +9,29 @@ const names: Record<string, string> = {
   "graficador": "Graficador",
   "reportes": "Reportes",
   "configuracion": "Configuración",
-  // Agrega aquí otras rutas que quieras mostrar (opcional)
+  "modulos": "Módulos",
   "secciones": "Secciones",
-  "Modulos": "Modulos",
+  "ocupaciones": "Ocupaciones",
+  "indices": "Índices",
+  "dependencies": "Dependencias",
+  "preguntas": "Preguntas",
+  "roles": "Roles",
+  "catalogos": "Catálogos",
+  "permisos": "Permisos",
+  "permission-roles": "Asignar Permisos",
+  "categorias": "Categorías",
+  
 };
 
 export default function Breadcrumbs({ pathname }: { pathname: string }) {
   const parts = pathname.split("/").filter(Boolean);
 
-  // Filtrar solo segmentos conocidos (ignora IDs)
-  const visibleParts = parts.filter(part => names[part]);
+  
+  const visibleParts = parts.filter(part => names[part] || names[part.toLowerCase()]);
 
-  // Si no hay segmentos conocidos, no mostrar nada
+ 
   if (visibleParts.length === 0) return null;
 
-  // Construir ruta acumulada para enlaces
   const buildPath = (index: number) => {
     const originalIndex = parts.findIndex(p => p === visibleParts[index]);
     return "/" + parts.slice(0, originalIndex + 1).join("/");
@@ -34,7 +42,7 @@ export default function Breadcrumbs({ pathname }: { pathname: string }) {
       <ol className="flex items-center gap-2 text-sm text-neutral-500">
         {visibleParts.map((part, index) => {
           const isLast = index === visibleParts.length - 1;
-          const label = names[part];
+          const label = names[part] || names[part.toLowerCase()];
 
           return (
             <li key={index} className="flex items-center gap-2">

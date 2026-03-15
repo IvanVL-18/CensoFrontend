@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import type { ViewCensoModalProps } from "../Censos.types";
 
-// Acepta string, null o undefined
+
 const formatDateTime = (dateString: string | null | undefined) => {
   if (!dateString) return "N/A";
   try {

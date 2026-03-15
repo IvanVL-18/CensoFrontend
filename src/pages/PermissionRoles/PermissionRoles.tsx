@@ -189,7 +189,6 @@ function PermissionRolesContent() {
   const { addToast } = useToast();
   const navigate = useNavigate();
 
-  
   const [searchParams, setSearchParams] = useSearchParams();
   const roleEnc = searchParams.get("role") ?? "";
   const savedRoleId = localStorage.getItem("permissionRoles:lastRoleId") ?? "";
@@ -197,7 +196,7 @@ function PermissionRolesContent() {
   const { roles, loading: loadingRoles, error: rolesError } = useRolesSelect();
 
   const [roleId, setRoleId] = useState<string>(roleEnc || savedRoleId || "");
-  const [roleParamApplied, setRoleParamApplied] = useState(false); 
+  const [roleParamApplied, setRoleParamApplied] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [fetching, setFetching] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -206,7 +205,6 @@ function PermissionRolesContent() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [apiRoleName, setApiRoleName] = useState("");
 
-  
   useEffect(() => {
     if (loadingRoles) return;
 
@@ -215,21 +213,17 @@ function PermissionRolesContent() {
       return;
     }
 
-    
     if (!roleParamApplied && roleEnc) {
       if (roleId !== roleEnc) setRoleId(roleEnc);
       setRoleParamApplied(true);
       return;
     }
 
-    
     if (roleId) return;
 
-    
     if (roles.length > 0) setRoleId(roles[0].id);
   }, [loadingRoles, rolesError, roles, roleEnc, roleId, roleParamApplied]);
 
-  
   useEffect(() => {
     if (!roleId) return;
 
@@ -362,157 +356,191 @@ function PermissionRolesContent() {
   const busy = fetching || saving || loadingRoles;
 
   return (
-    <div className="w-full bg-[#F8FAFC]">
+    <div className="w-full">
       <ToastContainer />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <PermissionRolesToolbar
-            allOn={allOn}
-            onToggleAll={(next) => (next ? allowAll() : clearAll())}
-          />
+      <div className="mx-auto">
+        <div className="overflow-hidden rounded-xl border-slate-200 bg-white shadow-sm">
+          <PermissionRolesToolbar title="Asignar Permisos" />
 
-          <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-            <span className="font-semibold text-[#611232]">
-              Asignando permisos a:
-            </span>{" "}
-            <span className="text-slate-700">
-              {displayRoleName || "Selecciona un rol"}
-            </span>
-          </div>
+          <div className="p-5">
+            <div className="space-y-5">
+              <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                <span className="font-semibold text-[#611232]">
+                  Asignando permisos a:
+                </span>{" "}
+                <span className="text-slate-700">
+                  {displayRoleName || "Selecciona un rol"}
+                </span>
+              </div>
 
-          <FormErrors errors={errors} />
+              <div className="flex flex-col gap-4 rounded-md border border-slate-200 bg-white p-4 md:flex-row md:items-end md:justify-between">
+                <div className="w-full md:max-w-xs">
+                  <label className="block text-sm font-medium text-slate-700">
+                    Seleccionar rol <span className="text-[#9D2449]">*</span>
+                  </label>
 
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-slate-700">
-              Seleccionar rol <span className="text-[#9D2449]">*</span>
-            </label>
-
-            <select
-              value={roleId}
-              onChange={(e) => {
-                const next = e.target.value;
-                setRoleId(next);
-
-             
-                setSearchParams({ role: next }, { replace: true });
-
-     
-                setRoleParamApplied(true);
-              }}
-              disabled={busy}
-              className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#9D2449]/40 disabled:bg-slate-100 sm:max-w-md"
-            >
-              <option value="" disabled>
-                {loadingRoles ? "Cargando roles..." : "Selecciona un rol..."}
-              </option>
-
-              {rolesForSelect.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {(fetching || saving) && (
-            <p className="mt-4 text-sm text-slate-500">
-              {fetching ? "Cargando permisos..." : "Guardando..."}
-            </p>
-          )}
-
-          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {modules.map((m) => {
-              const Icon = m.icon;
-
-              const actionsSorted = Object.keys(m.actions).sort((a, b) => {
-                const ia = actionOrderIndex(a);
-                const ib = actionOrderIndex(b);
-                if (ia !== ib) return ia - ib;
-                return a.localeCompare(b, "es");
-              });
-
-              const allCardOn = actionsSorted.length
-                ? actionsSorted.every((a) => selected.has(m.actions[a]))
-                : false;
-
-              return (
-                <div
-                  key={m.moduleKey}
-                  className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <div className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[#611232]/10">
-                        <Icon className="h-4 w-4 text-[#611232]" />
-                      </div>
-                      <h3 className="text-sm font-semibold text-slate-800">
-                        {m.label}
-                      </h3>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        actionsSorted.forEach((a) =>
-                          togglePermission(m.actions[a], !allCardOn),
-                        )
-                      }
-                      className="text-xs font-semibold text-[#611232] hover:underline"
-                      disabled={!actionsSorted.length || busy}
+                  <div className="relative mt-1">
+                    <select
+                      value={roleId}
+                      onChange={(e) => {
+                        const next = e.target.value;
+                        setRoleId(next);
+                        setSearchParams({ role: next }, { replace: true });
+                        setRoleParamApplied(true);
+                      }}
+                      disabled={busy}
+                      className="h-10 w-full appearance-none rounded-xl border border-slate-300 bg-white pl-4 pr-14 text-sm text-slate-700 shadow-sm outline-none transition focus:ring-2 focus:ring-[#9D2449]/30 disabled:bg-slate-100"
                     >
-                      {allCardOn ? "Quitar todo" : "Permitir todo"}
-                    </button>
-                  </div>
+                      <option value="" disabled>
+                        {loadingRoles
+                          ? "Cargando roles..."
+                          : "Selecciona un rol..."}
+                      </option>
 
-                  <div className="mt-3 space-y-2">
-                    {actionsSorted.map((a) => {
-                      const pid = m.actions[a];
-                      return (
-                        <div
-                          key={a}
-                          className="flex items-center justify-between gap-2"
-                        >
-                          <span className="text-xs text-slate-700">
-                            {actionLabel(a)}
-                          </span>
+                      {rolesForSelect.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.name}
+                        </option>
+                      ))}
+                    </select>
 
-                          <GovSwitch
-                            label={`${m.label} - ${actionLabel(a)}`}
-                            checked={selected.has(pid)}
-                            onCheckedChange={(next: boolean) =>
-                              togglePermission(pid, next)
-                            }
-                            size="sm"
-                            showStateText={false}
-                          />
-                        </div>
-                      );
-                    })}
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+                      <div className="mr-3 h-5 w-px bg-slate-300" />
+                      <svg
+                        className="h-4 w-4 text-slate-500"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M6 8L10 12L14 8"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
 
-          <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              onClick={() => navigate(-1)}
-              disabled={busy}
-            >
-              Cancelar
-            </button>
+                <div className="flex items-center gap-3 md:pb-1">
+                  <span className="text-sm font-semibold text-[#611232]">
+                    Permitir todo
+                  </span>
+                  <GovSwitch
+                    label="Permitir todo (global)"
+                    checked={allOn}
+                    onCheckedChange={(next) => (next ? allowAll() : clearAll())}
+                    size="sm"
+                    showStateText={false}
+                  />
+                </div>
+              </div>
 
-            <button
-              type="button"
-              disabled={busy}
-              onClick={save}
-              className="rounded-md bg-[#611232] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9D2449] disabled:opacity-60"
-            >
-              Guardar
-            </button>
+              <FormErrors errors={errors} />
+
+              {(fetching || saving) && (
+                <p className="text-sm text-slate-500">
+                  {fetching ? "Cargando permisos..." : "Guardando..."}
+                </p>
+              )}
+
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {modules.map((m) => {
+                  const Icon = m.icon;
+
+                  const actionsSorted = Object.keys(m.actions).sort((a, b) => {
+                    const ia = actionOrderIndex(a);
+                    const ib = actionOrderIndex(b);
+                    if (ia !== ib) return ia - ib;
+                    return a.localeCompare(b, "es");
+                  });
+
+                  const allCardOn = actionsSorted.length
+                    ? actionsSorted.every((a) => selected.has(m.actions[a]))
+                    : false;
+
+                  return (
+                    <div
+                      key={m.moduleKey}
+                      className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[#611232]/10">
+                            <Icon className="h-4 w-4 text-[#611232]" />
+                          </div>
+                          <h3 className="text-sm font-semibold text-slate-800">
+                            {m.label}
+                          </h3>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            actionsSorted.forEach((a) =>
+                              togglePermission(m.actions[a], !allCardOn),
+                            )
+                          }
+                          className="text-xs font-semibold text-[#611232] hover:underline"
+                          disabled={!actionsSorted.length || busy}
+                        >
+                          {allCardOn ? "Quitar todo" : "Permitir todo"}
+                        </button>
+                      </div>
+
+                      <div className="mt-3 space-y-2">
+                        {actionsSorted.map((a) => {
+                          const pid = m.actions[a];
+                          return (
+                            <div
+                              key={a}
+                              className="flex items-center justify-between gap-2"
+                            >
+                              <span className="text-xs text-slate-700">
+                                {actionLabel(a)}
+                              </span>
+
+                              <GovSwitch
+                                label={`${m.label} - ${actionLabel(a)}`}
+                                checked={selected.has(pid)}
+                                onCheckedChange={(next: boolean) =>
+                                  togglePermission(pid, next)
+                                }
+                                size="sm"
+                                showStateText={false}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95 disabled:opacity-50"
+                  onClick={() => navigate(-1)}
+                  disabled={busy}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={save}
+                  className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                >
+                  Guardar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useMemo, type Dispatch, type SetStateAction } from "react";
 import { X, FileText, Upload } from "lucide-react";
 import { CensoManualForm } from "./CensoManualForm";
 import type { CensoManualFormRef } from "./CensoManualForm";
@@ -15,6 +15,10 @@ interface CensoCreateModalProps {
   onBulkUpload: (file: File) => void;
   mode: "create" | "upload";
   editingCenso?: Censo | null;
+  onFormValidityChange: Dispatch<SetStateAction<boolean>>;
+  isFormValid: boolean;
+  onDirtyChange?: (isDirty: boolean) => void;
+  isDirty?: boolean;
 }
 
 export function CensoCreateModal({
@@ -26,23 +30,28 @@ export function CensoCreateModal({
   onBulkUpload,
   mode,
   editingCenso,
+  onFormValidityChange,
+  isFormValid,
+  onDirtyChange,
+  isDirty,
 }: CensoCreateModalProps) {
   const manualFormRef = useRef<CensoManualFormRef>(null);
   const uploadDependencyRef = useRef<CensoUploadDependencyRef>(null);
 
- const formatDate = (dateStr?: string) => {
-  if (!dateStr) return undefined;
-  return dateStr.split('T')[0].split(' ')[0];
-};
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return undefined;
+    return dateStr.split('T')[0].split(' ')[0];
+  };
 
-  const initialData = editingCenso
-    ? {
-        name: editingCenso.name,
-        description: editingCenso.description,
-        init_date: formatDate(editingCenso.start_date),
-        deadline: formatDate(editingCenso.end_date),
-      }
-    : undefined;
+  const initialData = useMemo(() => {
+    if (!editingCenso) return undefined;
+    return {
+      name: editingCenso.name,
+      description: editingCenso.description,
+      init_date: formatDate(editingCenso.start_date),
+      deadline: formatDate(editingCenso.end_date),
+    };
+  }, [editingCenso]);
 
   const resetState = () => {
     manualFormRef.current?.reset();
@@ -52,6 +61,10 @@ export function CensoCreateModal({
   const handleClose = () => {
     resetState();
     onClose();
+  };
+
+  const handleFormValidityChange = (isValid: boolean) => {
+    onFormValidityChange(isValid);
   };
 
   if (!isOpen) return null;
@@ -66,13 +79,13 @@ export function CensoCreateModal({
   return (
     <>
       <div
-        className="fixed inset-0 bg-[#000000ab] z-40 transition-opacity"
+        className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-[9999] transition-opacity"
         onClick={handleClose}
       />
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+
+      <div className="fixed inset-0 bg-[#000000ab] z-[10000] flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
-          {/* Header */}
-          <div className="flex justify-between items-center p-4 bg-[#691b31]">
+          <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
             <button onClick={handleClose} className="text-white hover:text-gray-300">
               <X size={24} />
@@ -87,6 +100,8 @@ export function CensoCreateModal({
                 onSubmit={onSave}
                 error={error}
                 initialData={initialData}
+                onFullValidityChange={handleFormValidityChange}
+                onDirtyChange={onDirtyChange}
               />
             ) : (
               <CensoUploadDependency
@@ -98,7 +113,6 @@ export function CensoCreateModal({
             )}
           </div>
 
-          {/* Footer con botones */}
           <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
             <button
               type="button"
@@ -112,7 +126,7 @@ export function CensoCreateModal({
               <button
                 type="button"
                 onClick={() => manualFormRef.current?.submit()}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isFormValid || (!!editingCenso && !isDirty)}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50 flex items-center gap-2"
               >
                 {isSubmitting ? (

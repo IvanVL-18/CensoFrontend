@@ -3,34 +3,36 @@ import type { ViewIndexModalProps } from "../Indexs.types";
 
 const formatDate = (dateString: string | null) => {
   if (!dateString) {
-    return "N/A"; 
+    return "N/A";
   }
   try {
-    return new Date(dateString).toLocaleString('es-MX', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    return new Date(dateString).toLocaleString("es-MX", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
   } catch (e) {
     return "Fecha inválida";
   }
 };
 
-function DetailRow({ label, value }: { label: string, value: string | null }) {
+function DetailRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-500">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-gray-500">{label}</label>
       <p className="text-lg text-gray-900 font-semibold">{value || "N/A"}</p>
     </div>
   );
 }
 
-export function ViewIndexModal({ isOpen, onClose, Index }: ViewIndexModalProps) {
+export function ViewIndexModal({
+  isOpen,
+  onClose,
+  Index,
+}: ViewIndexModalProps) {
   if (!isOpen || !Index) {
     return null;
   }
@@ -38,14 +40,14 @@ export function ViewIndexModal({ isOpen, onClose, Index }: ViewIndexModalProps) 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* 1. Fondo Difuminado (Blur) */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"
+      <div
+        className="fixed inset-0 bg-blue bg-opacity-30 backdrop-blur-sm z-40 transition-opacity"
         onClick={onClose}
-      />
+      ></div>
 
       {/* 2. Contenedor del Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden z-10">
-          
+      <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
           {/* Cabecera del Modal (como los otros) */}
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">Detalle del Índice</h2>
@@ -60,17 +62,14 @@ export function ViewIndexModal({ isOpen, onClose, Index }: ViewIndexModalProps) 
 
           {/* Cuerpo del Modal (Los 3 campos) */}
           <div className="p-6 space-y-4">
-            <DetailRow 
-              label="Nombre del Índice:" 
-              value={Index.name} 
+            <DetailRow label="Nombre del Índice:" value={Index.name} />
+            <DetailRow
+              label="Fecha de creación:"
+              value={formatDate(Index.created_at)}
             />
-            <DetailRow 
-              label="Fecha de creación:" 
-              value={formatDate(Index.created_at)} 
-            />
-            <DetailRow 
-              label="Fecha de desactivación:" 
-              value={formatDate(Index.deleted_at)} 
+            <DetailRow
+              label="Fecha de desactivación:"
+              value={formatDate(Index.deleted_at)}
             />
           </div>
 
@@ -89,6 +88,7 @@ export function ViewIndexModal({ isOpen, onClose, Index }: ViewIndexModalProps) 
             </button>
           </div>
         </div>
+      </div>
     </div>
   );
 }
