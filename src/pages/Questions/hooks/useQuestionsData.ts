@@ -9,7 +9,6 @@ export function useQuestionsData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Controller espera "active" como default, no "all"
   const [filter, setFilter] = useState<QuestionFilter>("active"); 
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(""); 
