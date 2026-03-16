@@ -1,8 +1,8 @@
 export interface Question {
-  id: string; // El backend devuelve un ID encriptado (string)
+  id: string; 
   name: string;
-  instructions: string | null; // Nuevo campo según migración
-  commentaries: boolean | number; // Nuevo campo (puede venir como 1/0 o true/false)
+  instructions: string | null; 
+  commentaries: boolean | number; 
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -37,7 +37,6 @@ export interface PaginatedQuestionsResponse {
   meta: Meta;
 }
 
-// Para el manejo de errores de Excel (sin cambios)
 export interface ExcelFailure {
   row: number;
   field: string;
@@ -54,15 +53,15 @@ export interface CreateQuestionDTO {
 
 export type UpdateQuestionDTO = Partial<CreateQuestionDTO>;
 
-// Props de Modales (sin cambios mayores)
 export interface QuestionModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
-  error: string | null;
+  error: string | null;          
   title: string;
-  initialData?: Question | null; // Cambié initialName por initialData para cargar todo
+  initialData?: Question | null;
   onClose: () => void;
-  onSave: (data: CreateQuestionDTO) => void; // Ahora recibe un objeto completo
+  onSave: (data: CreateQuestionDTO) => void;
+  onClearServerError: () => void; 
 }
 
 export interface QuestionsTableProps {
