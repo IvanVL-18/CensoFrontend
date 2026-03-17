@@ -23,7 +23,8 @@ import ResetPassword from "./pages/ResetPassword/ResetPassword"
 
 import Censos from "./pages/censos/Censos";
 import { CensoDetail } from "./pages/censos/components/CensoDetail";
-import CensoModulesView from "./pages/censos/components/CensoModulesView";
+import CensoModulesView from "./pages/censos/CensoModules/CensoModulesView";
+import CensoSectionsView from "./pages/censos/CensoSections/CensoSectionsView";
 
 import Questions from "./pages/Questions/Questions";
 import Builder from "././pages/Designer/components/Builder"
@@ -64,11 +65,12 @@ export default function App() {
         <Route path="/censos" element={<Censos />} />
         <Route path="/censos/:id" element={<CensoDetail />} />
         <Route path="/censos/:id/modulos" element={<CensoModulesView />} />
+        <Route path="/censos/secciones/:id" element={<CensoSectionsView />} />
         <Route path="/builder/:id" element={<Builder />} />
+
       </Route>
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
-
     </Routes>
   );
 }
