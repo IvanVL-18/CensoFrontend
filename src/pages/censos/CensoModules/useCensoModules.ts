@@ -14,7 +14,7 @@ import type {
 
 type UseCensoModulesReturn = {
   censo: CensoInfo | null;
-  indexs: IndexInfo[];
+  indexes: IndexInfo[];
   rows: CensoModuleRow[];
   loading: boolean;
   saving: boolean;
@@ -30,7 +30,7 @@ type UseCensoModulesReturn = {
 
 export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
   const [censo, setCenso] = useState<CensoInfo | null>(null);
-  const [indexs, setIndexs] = useState<IndexInfo[]>([]);
+  const [indexes, setIndexes] = useState<IndexInfo[]>([]);
   const [rows, setRows] = useState<CensoModuleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,18 +44,20 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
     ): CensoModuleRow[] => {
       return modules.map((module) => {
         const assigned = assignedModules?.find(
-          (item) => item.module.module_id === String(module.id),
+          (item) =>
+            item.module.name.trim().toLowerCase() ===
+            module.name.trim().toLowerCase(),
         );
 
         return {
           module_id: String(module.id),
           module_name: module.name,
           checked: !!assigned,
-          selected_index_id: assigned ? assigned.index.index_id : "",
-          encrypted_id: assigned ? assigned.census_module_id : null,
+          selected_index_id: assigned ? assigned.index.id : "",
+          encrypted_id: assigned ? assigned.id : null,
           stored_index_id: null,
           stored_index_name: assigned ? assigned.index.name : null,
-          stored_index_encrypted_id: assigned ? assigned.index.index_id : null,
+          stored_index_encrypted_id: assigned ? assigned.index.id : null,
           stored_index_plain_id: null,
         };
       });
@@ -70,16 +72,16 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
         setError(null);
 
         const data = await getCensoModules(censoId, signal);
-        const fetchedIndexs = data.indexs ?? [];
+        const fetchedIndexes = data.indexes ?? [];
 
-        setCenso(data.censo);
-        setIndexs(fetchedIndexs);
-        setHasAssignments(Boolean(data.censusModules?.length));
-        const builtRows = buildRows(data.modules ?? [], data.censusModules);
+        setCenso(data.census);
+        setIndexes(fetchedIndexes);
+        setHasAssignments(Boolean(data.selectedModules?.length));
+        const builtRows = buildRows(data.modules ?? [], data.selectedModules);
 
         const rowsWithIndex = builtRows.map((row) => {
           if (!row.stored_index_name) return row;
-          const match = fetchedIndexs.find(
+          const match = fetchedIndexes.find(
             (idx) =>
               idx.name.trim().toLowerCase() ===
               row.stored_index_name!.trim().toLowerCase(),
@@ -107,7 +109,6 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
   useEffect(() => {
     const controller = new AbortController();
     void loadData(controller.signal);
-
     return () => controller.abort();
   }, [loadData]);
 
@@ -175,7 +176,7 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
       if (hasAssignments) {
         await updateCensoModules(censoId, { items: validItems });
       } else {
-        await storeCensoModules({ censo_id: censoId, items: validItems });
+        await storeCensoModules({ census_id: censoId, items: validItems });
       }
 
       await loadData();
@@ -196,7 +197,7 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
 
   return {
     censo,
-    indexs,
+    indexes,
     rows,
     loading,
     saving,

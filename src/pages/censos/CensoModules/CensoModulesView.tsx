@@ -9,7 +9,7 @@ const CensoModulesView: React.FC = () => {
 
   const {
     censo,
-    indexs,
+    indexes,
     rows,
     loading,
     saving,
@@ -134,7 +134,7 @@ const CensoModulesView: React.FC = () => {
                           className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
                         >
                           <option value="">Selecciona un índice</option>
-                          {indexs.map((index) => (
+                          {indexes.map((index) => (
                             <option key={index.id} value={index.id}>
                               {index.name}
                             </option>
@@ -146,7 +146,7 @@ const CensoModulesView: React.FC = () => {
                         {row.checked ? (
                           <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
                             {row.selected_index_id
-                              ? (indexs.find(
+                              ? (indexes.find(
                                   (index) =>
                                     String(index.id) ===
                                     String(row.selected_index_id),
