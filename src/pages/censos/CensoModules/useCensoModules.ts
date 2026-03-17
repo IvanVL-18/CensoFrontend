@@ -44,9 +44,7 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
     ): CensoModuleRow[] => {
       return modules.map((module) => {
         const assigned = assignedModules?.find(
-          (item) =>
-            String(item.module?.name).trim().toLowerCase() ===
-            String(module.name).trim().toLowerCase(),
+          (item) => item.module.module_id === String(module.id),
         );
 
         return {
@@ -54,7 +52,7 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
           module_name: module.name,
           checked: !!assigned,
           selected_index_id: assigned ? assigned.index.index_id : "",
-          encrypted_id: assigned ? assigned.module_for_censo_id : null,
+          encrypted_id: assigned ? assigned.census_module_id : null,
           stored_index_id: null,
           stored_index_name: assigned ? assigned.index.name : null,
           stored_index_encrypted_id: assigned ? assigned.index.index_id : null,
@@ -76,8 +74,8 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
 
         setCenso(data.censo);
         setIndexs(fetchedIndexs);
-        setHasAssignments(Boolean(data.indexForCensos?.length));
-        const builtRows = buildRows(data.modules ?? [], data.indexForCensos);
+        setHasAssignments(Boolean(data.censusModules?.length));
+        const builtRows = buildRows(data.modules ?? [], data.censusModules);
 
         const rowsWithIndex = builtRows.map((row) => {
           if (!row.stored_index_name) return row;
@@ -147,10 +145,7 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
     setRows((prev) =>
       prev.map((row) =>
         row.module_id === moduleId
-          ? {
-              ...row,
-              selected_index_id: indexId,
-            }
+          ? { ...row, selected_index_id: indexId }
           : row,
       ),
     );
@@ -178,14 +173,9 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
       setError(null);
 
       if (hasAssignments) {
-        await updateCensoModules(censoId, {
-          items: validItems,
-        });
+        await updateCensoModules(censoId, { items: validItems });
       } else {
-        await storeCensoModules({
-          censo_id: censoId,
-          items: validItems,
-        });
+        await storeCensoModules({ censo_id: censoId, items: validItems });
       }
 
       await loadData();
@@ -199,6 +189,7 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
       setSaving(false);
     }
   }, [censoId, hasAssignments, validItems, loadData]);
+
   const reload = useCallback(async () => {
     await loadData();
   }, [loadData]);

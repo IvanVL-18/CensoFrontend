@@ -19,7 +19,7 @@ export interface ModuleInfo {
 }
 
 export interface AssignedModule {
-  module_for_censo_id: string;
+  census_module_id: string; 
   module: {
     module_id: string;
     name: string;
@@ -34,7 +34,7 @@ export interface GetCensoModulesResponse {
   censo: CensoInfo;
   indexs: IndexInfo[];
   modules: ModuleInfo[];
-  indexForCensos?: AssignedModule[];
+  censusModules?: AssignedModule[]; 
 }
 
 export interface CensoModuleRow {
