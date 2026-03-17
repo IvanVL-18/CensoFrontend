@@ -11,7 +11,7 @@ const CensoSectionsView: React.FC = () => {
 
   const {
     moduleInfo,
-    indexs,
+    indexes,
     rows,
     loading,
     paginating,
@@ -62,7 +62,7 @@ const CensoSectionsView: React.FC = () => {
               <h1 className="text-lg font-semibold">Secciones</h1>
               <p className="text-sm text-white/80">
                 {moduleInfo
-                  ? `Módulo: ${moduleInfo.module_name}`
+                  ? `Módulo: ${moduleInfo.name}`
                   : "Asignación de secciones"}
               </p>
             </div>
@@ -127,7 +127,7 @@ const CensoSectionsView: React.FC = () => {
                     </tr>
                   ) : (
                     rows.map((row) => {
-                      const selectedIndexName = indexs.find(
+                      const selectedIndexName = indexes.find(
                         (idx) =>
                           String(idx.id) === String(row.selected_index_id),
                       )?.name;
@@ -168,7 +168,7 @@ const CensoSectionsView: React.FC = () => {
                               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
                             >
                               <option value="">Selecciona un índice</option>
-                              {indexs.map((idx) => (
+                              {indexes.map((idx) => (
                                 <option key={idx.id} value={idx.id}>
                                   {idx.name}
                                 </option>

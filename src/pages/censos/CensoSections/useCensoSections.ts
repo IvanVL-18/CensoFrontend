@@ -5,7 +5,7 @@ import {
   updateCensoSections,
 } from "./CensoSections.service";
 import type {
-  ModuleSectionInfo,
+  CensusModuleInfo,
   SectionIndexOption,
   SectionInfo,
   SelectedSectionItem,
@@ -15,17 +15,18 @@ import type {
 
 type SelectedSectionState = {
   section_id: string;
-  index_id: string; 
+  index_id: string;
   index_name: string;
   stored_index_name: string | null;
   checked: boolean;
+  census_section_id: string | null;
 };
 
 type SelectedSectionsMap = Record<string, SelectedSectionState>;
 
 type UseCensoSectionsReturn = {
-  moduleInfo: ModuleSectionInfo | null;
-  indexs: SectionIndexOption[];
+  moduleInfo: CensusModuleInfo | null;
+  indexes: SectionIndexOption[];
   sections: SectionInfo[];
   rows: CensoSectionRow[];
   loading: boolean;
@@ -50,10 +51,10 @@ type UseCensoSectionsReturn = {
 };
 
 export const useCensoSections = (
-  moduleForCensoId: string,
+  censusModuleId: string,
 ): UseCensoSectionsReturn => {
-  const [moduleInfo, setModuleInfo] = useState<ModuleSectionInfo | null>(null);
-  const [indexs, setIndexs] = useState<SectionIndexOption[]>([]);
+  const [moduleInfo, setModuleInfo] = useState<CensusModuleInfo | null>(null);
+  const [indexes, setIndexes] = useState<SectionIndexOption[]>([]);
   const [sections, setSections] = useState<SectionInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [paginating, setPaginating] = useState(false);
@@ -67,6 +68,7 @@ export const useCensoSections = (
 
   const mapRef = useRef<SelectedSectionsMap>({});
   const [mapVersion, setMapVersion] = useState(0);
+  const initialLoadDone = useRef(false);
 
   const updateMap = useCallback(
     (updater: (prev: SelectedSectionsMap) => SelectedSectionsMap) => {
@@ -75,8 +77,6 @@ export const useCensoSections = (
     },
     [],
   );
-
-  const initialLoadDone = useRef(false);
 
   const buildInitialMap = useCallback(
     (
@@ -89,7 +89,6 @@ export const useCensoSections = (
         const sectionName = (item.section?.name ?? "")
           .replace(/\s+/g, " ")
           .trim();
-        const sectionId = item.section?.section_id ?? "";
         if (!sectionName) return;
 
         const matchedIndex = availableIndexes.find(
@@ -99,11 +98,14 @@ export const useCensoSections = (
         );
 
         map[sectionName] = {
-          section_id: sectionId,
-          index_id: matchedIndex ? String(matchedIndex.id) : "",
+          section_id: item.section?.id ?? "",
+          index_id: matchedIndex
+            ? String(matchedIndex.id)
+            : (item.index?.id ?? ""),
           index_name: item.index?.name ?? "",
           stored_index_name: item.index?.name ?? null,
           checked: true,
+          census_section_id: item.id ?? null,
         };
       });
 
@@ -118,38 +120,48 @@ export const useCensoSections = (
         isInitial ? setLoading(true) : setPaginating(true);
         setError(null);
 
-        const data = await getCensoSections(moduleForCensoId, page, signal);
+        const data = await getCensoSections(censusModuleId, page, signal);
 
         if (signal?.aborted) return;
 
-        const fetchedIndexs = data.indexs ?? [];
+        const fetchedIndexes = data.indexes ?? [];
         const fetchedSections = data.sections?.data ?? [];
-        const fetchedSelected = data.sectionsSelected ?? [];
+        const fetchedSelected = data.selectedSections ?? [];
 
-        const freshMap = buildInitialMap(fetchedSelected, fetchedIndexs);
+        const freshMap = buildInitialMap(fetchedSelected, fetchedIndexes);
 
         if (!initialLoadDone.current) {
           mapRef.current = freshMap;
           initialLoadDone.current = true;
         } else {
-        
           const currentMap = mapRef.current;
-          const merged: typeof currentMap = { ...currentMap };
+          const merged = { ...currentMap };
 
           Object.entries(freshMap).forEach(([name, backendEntry]) => {
             if (!currentMap[name]) {
-            
               merged[name] = backendEntry;
+            } else {
+              merged[name] = {
+                ...currentMap[name],
+                section_id: backendEntry.section_id,
+                index_id: backendEntry.index_id,
+                census_section_id:
+                  backendEntry.census_section_id ??
+                  currentMap[name].census_section_id,
+                stored_index_name:
+                  backendEntry.stored_index_name ??
+                  currentMap[name].stored_index_name,
+              };
             }
-          
           });
 
           mapRef.current = merged;
         }
 
-        setModuleInfo(data.module);
-        setIndexs(fetchedIndexs);
-        setHasAssignments(Boolean(fetchedSelected.length));
+        setMapVersion((v) => v + 1);
+        setModuleInfo(data.censusModule);
+        setIndexes(fetchedIndexes);
+        setHasAssignments(fetchedSelected.length > 0);
         setCurrentPage(data.sections?.current_page ?? 1);
         setLastPage(data.sections?.last_page ?? 1);
         setPaginationLinks({
@@ -158,7 +170,6 @@ export const useCensoSections = (
           prev: data.sections?.prev_page_url ?? null,
           next: data.sections?.next_page_url ?? null,
         });
-
         setSections(fetchedSections);
       } catch (err: unknown) {
         const e = err as {
@@ -174,7 +185,7 @@ export const useCensoSections = (
         setPaginating(false);
       }
     },
-    [moduleForCensoId, buildInitialMap],
+    [censusModuleId, buildInitialMap],
   );
 
   useEffect(() => {
@@ -187,25 +198,21 @@ export const useCensoSections = (
     const map = mapRef.current;
 
     return sections.map((section) => {
-   
-      const normalizedName = section.name.replace(/\s+/g, " ").trim();
-      const sel = map[normalizedName] ?? map[section.name];
+      const key = section.name.replace(/\s+/g, " ").trim();
+      const sel = map[key] ?? map[section.name];
       const isChecked = sel?.checked ?? false;
-
-     
-      const currentIndexId = sel?.index_name
-        ? (indexs.find((idx) => idx.name === sel.index_name)?.id ?? "")
-        : "";
+      const currentIndexId = isChecked ? (sel?.index_id ?? "") : "";
 
       return {
         section_id: section.id,
         section_name: section.name,
         checked: isChecked,
-        selected_index_id: isChecked ? String(currentIndexId) : "",
+        selected_index_id: currentIndexId,
         stored_index_name: isChecked ? (sel?.stored_index_name ?? null) : null,
+        census_section_id: isChecked ? (sel?.census_section_id ?? null) : null,
       };
     });
-  }, [sections, indexs, mapVersion]);
+  }, [sections, indexes, mapVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const allChecked = useMemo(
     () => rows.length > 0 && rows.every((r) => r.checked),
@@ -224,6 +231,7 @@ export const useCensoSections = (
             index_id: existing?.index_id ?? "",
             index_name: existing?.index_name ?? "",
             stored_index_name: existing?.stored_index_name ?? null,
+            census_section_id: existing?.census_section_id ?? null,
             checked,
           },
         };
@@ -244,6 +252,7 @@ export const useCensoSections = (
             index_id: existing?.index_id ?? "",
             index_name: existing?.index_name ?? "",
             stored_index_name: existing?.stored_index_name ?? null,
+            census_section_id: existing?.census_section_id ?? null,
             checked,
           };
         });
@@ -259,29 +268,26 @@ export const useCensoSections = (
         const key = sectionName.replace(/\s+/g, " ").trim();
         if (!prev[key]) return prev;
         const idxName =
-          indexs.find((idx) => String(idx.id) === String(indexId))?.name ?? "";
+          indexes.find((idx) => String(idx.id) === String(indexId))?.name ?? "";
         return {
           ...prev,
           [key]: { ...prev[key], index_id: indexId, index_name: idxName },
         };
       });
     },
-    [updateMap, indexs],
+    [updateMap, indexes],
   );
 
   const validItems = useMemo(
     () =>
-      Object.values(mapRef.current)
-        .filter((item) => item.checked && item.index_id) 
-        .map((item) => ({
-          section_id: item.section_id,
-          index_id: item.index_id,
-        })),
-    [mapVersion],
+      Object.values(mapRef.current).filter(
+        (item) => item.checked && item.index_id,
+      ),
+    [mapVersion], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const saveChanges = useCallback(async () => {
-    if (!moduleForCensoId) return false;
+    if (!censusModuleId) return false;
 
     if (validItems.length === 0) {
       setError("Selecciona al menos una sección y asígnale un índice.");
@@ -293,18 +299,26 @@ export const useCensoSections = (
       setError(null);
 
       if (hasAssignments) {
-        await updateCensoSections(moduleForCensoId, { items: validItems });
+        await updateCensoSections(censusModuleId, {
+          items: validItems.map((item) => ({
+            census_section_id: item.census_section_id ?? null,
+            index_id: item.index_id,
+            section_id: item.section_id,
+          })),
+        });
       } else {
         await storeCensoSections({
-          module_id: moduleForCensoId,
-          items: validItems,
+          census_module_id: censusModuleId,
+          items: validItems.map((item) => ({
+            index_id: item.index_id,
+            section_id: item.section_id,
+          })),
         });
       }
 
       mapRef.current = {};
       initialLoadDone.current = false;
       setMapVersion(0);
-
       await loadData(currentPage, undefined, false);
       return true;
     } catch (err: unknown) {
@@ -327,7 +341,7 @@ export const useCensoSections = (
     } finally {
       setSaving(false);
     }
-  }, [moduleForCensoId, hasAssignments, validItems, loadData, currentPage]);
+  }, [censusModuleId, hasAssignments, validItems, loadData, currentPage]);
 
   const reload = useCallback(async () => {
     await loadData(currentPage, undefined, false);
@@ -343,7 +357,7 @@ export const useCensoSections = (
 
   return {
     moduleInfo,
-    indexs,
+    indexes,
     sections,
     rows,
     loading,

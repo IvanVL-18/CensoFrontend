@@ -6,15 +6,15 @@ import type {
   ApiMessageResponse,
 } from "./CensoSections.types";
 
-type EncryptedModuleForCensoId = string;
+type EncryptedCensusModuleId = string;
 
 export const getCensoSections = async (
-  moduleForCensoId: EncryptedModuleForCensoId,
+  censusModuleId: EncryptedCensusModuleId,
   page: number = 1,
   signal?: AbortSignal,
 ): Promise<GetCensoSectionsResponse> => {
   const response = await api.get<GetCensoSectionsResponse>(
-    `/section-for-censo/${moduleForCensoId}`,
+    `/census-section/${censusModuleId}`,
     {
       signal,
       params: { page },
@@ -28,7 +28,7 @@ export const storeCensoSections = async (
   payload: StoreCensoSectionsPayload,
 ): Promise<ApiMessageResponse> => {
   const response = await api.post<ApiMessageResponse>(
-    `/section-for-censo`,
+    `/census-section`,
     payload,
   );
 
@@ -36,11 +36,11 @@ export const storeCensoSections = async (
 };
 
 export const updateCensoSections = async (
-  moduleForCensoId: EncryptedModuleForCensoId,
+  censusModuleId: EncryptedCensusModuleId,
   payload: UpdateCensoSectionsPayload,
 ): Promise<ApiMessageResponse> => {
   const response = await api.put<ApiMessageResponse>(
-    `/section-for-censo/${moduleForCensoId}`,
+    `/census-section/${censusModuleId}`,
     payload,
   );
 

@@ -1,6 +1,7 @@
-export interface ModuleSectionInfo {
-  module_id: string;
-  module_name: string;
+
+export interface CensusModuleInfo {
+  id: string;   
+  name: string;
 }
 
 export interface SectionIndexOption {
@@ -9,9 +10,11 @@ export interface SectionIndexOption {
 }
 
 export interface SectionInfo {
-  id: string;
+  id: string;   
   name: string;
 }
+
+
 
 export interface PaginationLink {
   url: string | null;
@@ -42,46 +45,61 @@ export interface PaginatedSectionsResponse {
   total: number;
 }
 
+
+
 export interface SelectedSectionItem {
-  section_for_censo_id: string;
+  id: string;
   section: {
-    section_id: string;
+    id: string;
     name: string;
   };
   index: {
-    index_id: string;
+    id: string;
     name: string;
   };
 }
 
+
+
 export interface GetCensoSectionsResponse {
-  module: ModuleSectionInfo;
-  indexs: SectionIndexOption[];
+  censusModule: CensusModuleInfo;
+  indexes: SectionIndexOption[];
   sections: PaginatedSectionsResponse;
-  sectionsSelected: SelectedSectionItem[];
+  selectedSections: SelectedSectionItem[];
 }
+
+
 
 export interface CensoSectionRow {
-  section_id: string;
+  section_id: string;         
   section_name: string;
   checked: boolean;
-  selected_index_id: string;
+  selected_index_id: string;  
   stored_index_name: string | null;
+  census_section_id: string | null; 
 }
 
+
 export interface CensoSectionItemPayload {
+  index_id: string;   
+  section_id: string; 
+}
+
+export interface StoreCensoSectionsPayload {
+  census_module_id: string; 
+  items: CensoSectionItemPayload[];
+}
+
+export interface UpdateCensoSectionItemPayload {
+  census_section_id: string | null; 
   index_id: string;
   section_id: string;
 }
 
-export interface StoreCensoSectionsPayload {
-  module_id: string;
-  items: CensoSectionItemPayload[];
+export interface UpdateCensoSectionsPayload {
+  items: UpdateCensoSectionItemPayload[];
 }
 
-export interface UpdateCensoSectionsPayload {
-  items: CensoSectionItemPayload[];
-}
 
 export interface ApiMessageResponse {
   message: string;
