@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Eye, ArrowRight, Landmark } from "lucide-react";
 import { useCensoSections } from "./useCensoSections";
 import Pagination from "../../../components/Pagination";
-import { ViewSectionModal } from "./Viewsectionsmodal";
+import { ViewSectionModal } from "./ViewSectionsModal";
 
 const CensoSectionsView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -192,7 +192,6 @@ const CensoSectionsView: React.FC = () => {
 
                           <td className="px-4 py-3 text-center">
                             <div className="flex items-center justify-center gap-2">
-                         
                               <button
                                 type="button"
                                 onClick={() => openSectionModal(row.section_id)}
@@ -264,7 +263,6 @@ const CensoSectionsView: React.FC = () => {
           </div>
         </div>
       </div>
-
 
       <ViewSectionModal
         isOpen={modalOpen}
