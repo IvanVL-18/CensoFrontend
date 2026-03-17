@@ -19,22 +19,22 @@ export interface ModuleInfo {
 }
 
 export interface AssignedModule {
-  module_for_censo_id: string;
+  id: string;
   module: {
-    module_id: string;
+    id: string;
     name: string;
   };
   index: {
-    index_id: string;
+    id: string;
     name: string;
   };
 }
 
 export interface GetCensoModulesResponse {
-  censo: CensoInfo;
-  indexs: IndexInfo[];
+  census: CensoInfo;
+  indexes: IndexInfo[];
   modules: ModuleInfo[];
-  indexForCensos?: AssignedModule[];
+  selectedModules?: AssignedModule[];
 }
 
 export interface CensoModuleRow {
@@ -43,7 +43,6 @@ export interface CensoModuleRow {
   checked: boolean;
   selected_index_id: string;
   encrypted_id: string | null;
-
   stored_index_id: string | null;
   stored_index_name: string | null;
   stored_index_encrypted_id: string | null;
@@ -56,7 +55,7 @@ export interface CensoModulesItemPayload {
 }
 
 export interface StoreCensoModulesPayload {
-  censo_id: string;
+  census_id: string;  
   items: CensoModulesItemPayload[];
 }
 

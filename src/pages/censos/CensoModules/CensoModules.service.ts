@@ -13,7 +13,7 @@ export const getCensoModules = async (
   signal?: AbortSignal,
 ): Promise<GetCensoModulesResponse> => {
   const response = await api.get<GetCensoModulesResponse>(
-    `/module-for-censo/${censoId}`,
+    `/census-module/${censoId}`,
     { signal },
   );
 
@@ -24,7 +24,7 @@ export const storeCensoModules = async (
   payload: StoreCensoModulesPayload,
 ): Promise<ApiMessageResponse> => {
   const response = await api.post<ApiMessageResponse>(
-    `/module-for-censo`,
+    `/census-module`,
     payload,
   );
 
@@ -36,7 +36,7 @@ export const updateCensoModules = async (
   payload: UpdateCensoModulesPayload,
 ): Promise<ApiMessageResponse> => {
   const response = await api.put<ApiMessageResponse>(
-    `/module-for-censo/${censoId}`,
+    `/census-module/${censoId}`,
     payload,
   );
 
