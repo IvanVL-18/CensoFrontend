@@ -1,5 +1,6 @@
 import { X, UserRound, Phone, Smartphone, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ProfileData, CompleteProfileModalProps as Props } from "../Profile.types";
 import ProfileField from "./ProfileField";
 
@@ -13,8 +14,8 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
 
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/35 backdrop-blur-[2px]">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] overflow-y-auto bg-black/35 backdrop-blur-[2px]">
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg transition-all">
           <div className="relative p-4 sm:p-6">
@@ -90,6 +91,7 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

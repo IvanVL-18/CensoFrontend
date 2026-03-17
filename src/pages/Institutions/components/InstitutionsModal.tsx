@@ -240,7 +240,7 @@ export function InstitutionModal({
       ></div>
 
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
             <button
@@ -252,7 +252,7 @@ export function InstitutionModal({
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate>
+          <form onSubmit={handleSubmit} noValidate className="flex-1 overflow-y-auto">
             <div className="p-6">
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-1">

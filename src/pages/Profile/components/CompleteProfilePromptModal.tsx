@@ -1,4 +1,5 @@
 import { UserRound } from "lucide-react";
+import { createPortal } from "react-dom";
 import type { CompleteProfilePromptModalProps as Props } from "../Profile.types";
 
 export default function CompleteProfilePromptModal({
@@ -8,9 +9,9 @@ export default function CompleteProfilePromptModal({
 }: Props) {
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-[2px] px-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/35 backdrop-blur-[2px] px-4"
       onClick={onClose}
     >
       <div
@@ -33,13 +34,14 @@ export default function CompleteProfilePromptModal({
 
             <button
               onClick={onGoToComplete}
-              className="mt-5 inline-flex items-center justify-center rounded-lg bg-[var(--pantone-7421)] px-4 py-2 text-sm font-semibold text-white hover:opacity-95 active:opacity-90 transition"
+              className="mt-5 inline-flex items-center justify-center rounded-lg bg-[var(--pantone-7421)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-95 active:opacity-90"
             >
               Completar datos
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
