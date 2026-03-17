@@ -72,7 +72,9 @@ export function ViewRolModal({ isOpen, onClose, Rol }: ViewRolModalProps) {
             <button
               type="button"
               onClick={handleAssignPermissions}
-              className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95"
+              disabled={!!Rol.deleted_at}
+              className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={Rol.deleted_at ? "No se pueden asignar permisos a un rol desactivado" : "Asignar permisos al rol"}
             >
               Asignar permisos
             </button>

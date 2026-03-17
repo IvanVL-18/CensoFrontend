@@ -1,18 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Settings,
-  Shield,
   Users,
   Layers,
-  Building2,
   Briefcase,
   Hash,
   HelpCircle,
-  BookCopy,
-  FileText,
   BarChart3,
-  Tag,
   LayoutDashboard,
+  // Icons for consistency
+  Landmark,
+  ClipboardList,
+  CalendarRange,
+  Package,
+  Paperclip,
+  UserCog,
+  FolderOpen,
+  FileText,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -52,7 +55,6 @@ const ACTION_LABEL: Record<string, string> = {
 
 const moduleLabelMap: Record<string, string> = {
   dashboard: "Dashboard",
-  notifications: "Notificaciones",
   users: "Usuarios",
   roles: "Roles",
   institutions: "Instituciones",
@@ -60,7 +62,7 @@ const moduleLabelMap: Record<string, string> = {
   occupations: "Ocupaciones",
   censos: "Censos",
   graph: "Graficador",
-  categories: "Categoría",
+  categories: "Categorías",
   reports: "Reportes",
   modules: "Módulos",
   sections: "Secciones",
@@ -71,46 +73,48 @@ const moduleLabelMap: Record<string, string> = {
 
 const moduleIconMap: Record<string, any> = {
   dashboard: LayoutDashboard,
-  notifications: Settings,
   users: Users,
-  roles: Shield,
-  institutions: Building2,
+  roles: UserCog,
+  institutions: Landmark,
   dependencies: Layers,
   occupations: Briefcase,
-  censos: FileText,
+  censos: ClipboardList,
   graph: BarChart3,
-  categories: Tag,
-  reports: FileText,
-  modules: Layers,
-  sections: BookCopy,
+  categories: FolderOpen,
+  reports: CalendarRange,
+  modules: Package,
+  sections: Paperclip,
   indexes: Hash,
   questions: HelpCircle,
-  catalogs: BookCopy,
+  catalogs: FileText,
 };
 
 const MODULE_ORDER: string[] = [
+  // Items from Sidebar
   "dashboard",
-  "notifications",
-  "users",
-  "roles",
-  "institutions",
-  "dependencies",
-  "occupations",
-  "censos",
   "graph",
   "reports",
-  "categories",
+  "users",
+  "institutions",
+  "censos",
+
+  // Items from Configuration page (in their order)
   "modules",
   "sections",
+  "dependencies",
+  "occupations",
   "indexes",
   "questions",
+  "roles",
   "catalogs",
+  "categories",
 ];
 
 const normalizeModule = (m: string) => {
   const x = (m || "").toLowerCase().trim();
   if (x === "graficador") return "graph";
   if (x === "indexs" || x === "indices") return "indexes";
+  if (x === "dependencie") return "dependencies";
   return x || "otros";
 };
 
@@ -203,6 +207,7 @@ function PermissionRolesContent() {
 
   const [allPerms, setAllPerms] = useState<Permission[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [initialSelected, setInitialSelected] = useState<Set<number>>(new Set());
   const [apiRoleName, setApiRoleName] = useState("");
 
   useEffect(() => {
@@ -235,7 +240,9 @@ function PermissionRolesContent() {
       .then((data) => {
         setAllPerms(data.permissionsCollection ?? []);
         const ids = (data.role?.permissions ?? []).map((p) => p.id);
-        setSelected(new Set(ids));
+        const initialIdSet = new Set(ids);
+        setSelected(initialIdSet);
+        setInitialSelected(initialIdSet);
         localStorage.setItem("permissionRoles:lastRoleId", roleId);
         setApiRoleName(data.role?.name ?? "");
       })
@@ -253,6 +260,7 @@ function PermissionRolesContent() {
         ]);
         setAllPerms([]);
         setSelected(new Set());
+        setInitialSelected(new Set());
       })
       .finally(() => setFetching(false));
 
@@ -286,10 +294,14 @@ function PermissionRolesContent() {
     const map = new Map<string, ModuleCard>();
 
     allPerms.forEach((p) => {
-      const { module, action } = parsePermission(p.name);
+      const parsed = parsePermission(p.name);
 
+      // Ignorar explícitamente cualquier permiso relacionado con notificaciones
+      if (parsed.module === "notifications") return;
+
+      const { module, action } = parsed;
       const label = moduleLabelMap[module] ?? titleFromKey(module);
-      const icon = moduleIconMap[module] ?? Settings;
+      const icon = moduleIconMap[module] ?? Package; // Usar un ícono genérico de fallback
 
       if (!map.has(module)) {
         map.set(module, { moduleKey: module, label, icon, actions: {} });
@@ -306,6 +318,16 @@ function PermissionRolesContent() {
       (a, b) => orderIndex(a.moduleKey) - orderIndex(b.moduleKey),
     );
   }, [allPerms]);
+
+  const hasChanges = useMemo(() => {
+    if (initialSelected.size !== selected.size) return true;
+
+    for (const id of initialSelected) {
+      if (!selected.has(id)) return true;
+    }
+
+    return false;
+  }, [selected, initialSelected]);
 
   const allOn = useMemo(() => {
     if (!allPerms.length) return false;
@@ -447,7 +469,7 @@ function PermissionRolesContent() {
                 </p>
               )}
 
-              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {modules.map((m) => {
                   const Icon = m.icon;
 
@@ -533,11 +555,11 @@ function PermissionRolesContent() {
 
                 <button
                   type="button"
-                  disabled={busy}
+                  disabled={busy || !hasChanges}
                   onClick={save}
                   className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
                 >
-                  Guardar
+                  {saving ? "Guardando..." : "Guardar"}
                 </button>
               </div>
             </div>

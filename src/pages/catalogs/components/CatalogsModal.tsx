@@ -349,7 +349,7 @@ export function CatalogModal({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || allErrorMessages.length > 0}
+                disabled={isSubmitting || allErrorMessages.length > 0 || name.trim() === initialName.trim()}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
