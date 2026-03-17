@@ -109,25 +109,26 @@ export interface ViewCensoModalProps {
 
 export interface Index {
   id: string | number;
-  name: string; 
+  name: string;
 }
-
-
 
 export interface Module {
   id: number;
   name: string;
-  
 }
 
-export interface IndexForCenso {
-  id: number;
-  index_id: number;
-  reference_id: number; 
-  reference_type: string;
-  
-  index?: Index;
-  reference?: Module;
+// ---- Tipos del módulo CensusModule (antes polimórfico) ----
+
+export interface AssignedCensusModule {
+  census_module_id: string;
+  module: {
+    module_id: string;
+    name: string;
+  };
+  index: {
+    index_id: string;
+    name: string;
+  };
 }
 
 export interface ModuleForCensoShowResponse {
@@ -135,14 +136,14 @@ export interface ModuleForCensoShowResponse {
     id: string;
     name: string;
   };
-  indexs: Index[];        
-  modules: Module[];       
-  indexForCensos?: IndexForCenso[]; 
+  indexs: Index[];
+  modules: Module[];
+  censusModules?: AssignedCensusModule[]; 
 }
 
 export interface ModuleForCensoRequest {
   items: Array<{
-    module_id: string;   
+    module_id: string;
     index_id: string;
   }>;
 }

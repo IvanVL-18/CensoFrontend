@@ -7,11 +7,6 @@ import type {
   Index,
 } from "./Censos.types";
 
-import type {
-  ModuleForCensoShowResponse,
-  ModuleForCensoRequest,
-} from "./Censos.types";
-
 export type CensoFilter = "all" | "active" | "inactive";
 type CensoId = string | number;
 
@@ -30,8 +25,8 @@ export const getCensos = async (
   params.append("direction", direction);
 
   const response = await api.get<PaginatedCensosResponse>(
-    `/censos/${filter}/content`,
-    { params, signal }
+    `/censuses/${filter}/content`,
+    { params, signal },
   );
   return response.data;
 };
@@ -40,7 +35,9 @@ export const getCenso = async (
   id: CensoId,
   signal?: AbortSignal,
 ): Promise<Censo> => {
-  const response = await api.get<{ data: Censo } | Censo>(`/censos/${id}`, { signal });
+  const response = await api.get<{ data: Censo } | Censo>(`/censuses/${id}`, {
+    signal,
+  });
   const rawData = (response.data as any).data ?? response.data;
 
   return {
@@ -55,7 +52,7 @@ export const getCenso = async (
 export const createCenso = async (
   censoData: CreateCensoDTO,
 ): Promise<{ message: string; data?: Censo }> => {
-  const response = await api.post("/censos", censoData);
+  const response = await api.post("/censuses", censoData);
   return response.data;
 };
 
@@ -63,75 +60,42 @@ export const updateCenso = async (
   id: CensoId,
   censoData: UpdateCensoDTO,
 ): Promise<{ message: string }> => {
-  const response = await api.put(`/censos/${id}`, censoData);
+  const response = await api.put(`/censuses/${id}`, censoData);
   return response.data;
 };
 
 export const banCenso = async (id: CensoId): Promise<{ message: string }> => {
-  const response = await api.delete(`/censos/${id}`);
+  const response = await api.delete(`/censuses/${id}`);
   return response.data;
 };
 
-export const restoreCenso = async (id: CensoId): Promise<{ message: string }> => {
-  const response = await api.post(`/censos/${id}/restore`);
+export const restoreCenso = async (
+  id: CensoId,
+): Promise<{ message: string }> => {
+  const response = await api.post(`/censuses/${id}/restore`);
   return response.data;
 };
 
 export const forceDeleteCenso = async (
   id: CensoId,
 ): Promise<{ message: string }> => {
-  const response = await api.delete(`/censos/${id}/force-delete`);
+  const response = await api.delete(`/censuses/${id}/force-delete`);
   return response.data;
 };
 
 export const importCensos = async (
   formData: FormData,
 ): Promise<{ message: string }> => {
-  const response = await api.post("/censos/import", formData, {
+  const response = await api.post("/censuses/import", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
 };
 
 export const getIndices = async (signal?: AbortSignal): Promise<Index[]> => {
-  const response = await api.get<{ data: Index[] } | Index[]>('/index', { signal });
+  const response = await api.get<{ data: Index[] } | Index[]>("/index", {
+    signal,
+  });
   const rawData = (response.data as any).data ?? response.data;
   return rawData;
-};
-
-
-
-/**
-
- * @param id ID encriptado del censo
- */
-export const getCensoModules = async (
-  id: string,
-  signal?: AbortSignal
-): Promise<ModuleForCensoShowResponse> => {
-  const response = await api.get<ModuleForCensoShowResponse>(
-    `/module-for-censo/${id}`,
-    { signal }
-  );
-  return response.data;
-};
-
-/**
- 
- * @param id
- * @param data 
- */
-export const updateCensoModules = async (
-  id: string,
-  data: ModuleForCensoRequest
-): Promise<{ message: string }> => {
-  const response = await api.put(`/module-for-censo/${id}`, data);
-  return response.data;
-};
-
-export const createCensoModules = async (
-  data: ModuleForCensoRequest & { censo_id: number }
-): Promise<{ message: string }> => {
-  const response = await api.post("/module-for-censo", data);
-  return response.data;
 };
