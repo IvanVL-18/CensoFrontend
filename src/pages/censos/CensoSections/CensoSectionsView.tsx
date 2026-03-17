@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Eye, ArrowRight, Landmark } from "lucide-react";
 import { useCensoSections } from "./useCensoSections";
 import Pagination from "../../../components/Pagination";
-import { ViewSectionModal } from "./Viewsectionsmodal";
+import { ViewSectionModal } from "./ViewSectionsModal";
 
 const CensoSectionsView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
