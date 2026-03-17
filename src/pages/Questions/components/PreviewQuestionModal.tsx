@@ -8,7 +8,6 @@ import "../../../styles/bootstrap-scoped.css";
 
 const FormAny = Form as any;
 
-
 type OperationConfig = {
   label: string;
   expression: string;
@@ -34,6 +33,18 @@ type QuestionSchema = {
   [key: string]: any;
 };
 
+/**
+ * Metadata que devuelve el controlador junto con el schema.
+ * Corresponde a los campos extra de getsave_form en QuestionsController.
+ */
+type QuestionMeta = {
+  question: string;
+  index: string;
+  unit_name: string;
+  section_name: string;
+  questionary_year: string | number;
+};
+
 /* =========================================================
    ================== SANITIZACIÓN =========================
    ========================================================= */
@@ -42,6 +53,12 @@ type QuestionSchema = {
  * Recorre recursivamente todos los componentes y reemplaza
  * inputMask/displayMask null por "" para evitar el crash de Form.io:
  * "Cannot read properties of null (reading 'length')"
+ *
+ * FIX #2: rows ahora se trata correctamente como array de arrays de celdas.
+ * Antes se pasaba cada row directamente a sanitizeComponents (que espera
+ * componentes, no celdas), lo que funcionaba por accidente porque las celdas
+ * también tienen la propiedad components. Ahora se hace el spread explícito
+ * de cada celda y se sanitizan sus components internos.
  */
 const sanitizeComponents = (components: any[]): any[] =>
   components.map((comp) => {
@@ -52,10 +69,23 @@ const sanitizeComponents = (components: any[]): any[] =>
 
     if (Array.isArray(s.components))
       s.components = sanitizeComponents(s.components);
+
     if (Array.isArray(s.columns))
-      s.columns = sanitizeComponents(s.columns);
+      s.columns = s.columns.map((col: any) => ({
+        ...col,
+        components: sanitizeComponents(col.components ?? []),
+      }));
+
+    // FIX #2: rows es array de arrays de celdas { components: [...] }
     if (Array.isArray(s.rows))
-      s.rows = s.rows.map((row: any[]) => sanitizeComponents(row));
+      s.rows = s.rows.map((row: any[]) =>
+        Array.isArray(row)
+          ? row.map((cell: any) => ({
+              ...cell,
+              components: sanitizeComponents(cell.components ?? []),
+            }))
+          : row
+      );
 
     return s;
   });
@@ -179,34 +209,59 @@ const evaluateOperations = (
 /**
  * Gestiona la carga del schema:
  * - Sanitiza inputMask/displayMask null antes de pasarlo a Form.io
- * - Deshabilita campos calculados (calculateValue)
+ * - Deshabilita campos calculados (calculateValue) sin mutar el objeto original
  * - Construye el array de submissions según repeat_config
+ * - Expone metadata del controlador (question, index, unit_name, etc.)
  * - Cancela el fetch si el modal se cierra antes de completar
  */
 const useFormSchema = (isOpen: boolean, questionId: string | number | null) => {
-  const [schema, setSchema] = useState<QuestionSchema | null>(null);
+  const [schema, setSchema]           = useState<QuestionSchema | null>(null);
   const [submissions, setSubmissions] = useState<any[]>([{}]);
-  const [operations, setOperations] = useState<OperationConfig[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [operations, setOperations]   = useState<OperationConfig[]>([]);
+  const [meta, setMeta]               = useState<QuestionMeta | null>(null);
+  const [loading, setLoading]         = useState(false);
+  const [error, setError]             = useState<string | null>(null);
 
-  const disableCalculatedFields = useCallback((components: any[]) => {
-    if (!Array.isArray(components)) return;
-    components.forEach((comp: any) => {
+  /**
+   * FIX #4: ahora retorna un nuevo array en lugar de mutar los objetos recibidos,
+   * igual que hace sanitizeComponents. Así el schema nunca se muta después de
+   * ser parseado y es seguro reutilizarlo desde estado/caché.
+   */
+  const disableCalculatedFields = useCallback((components: any[]): any[] => {
+    if (!Array.isArray(components)) return [];
+
+    return components.map((comp: any) => {
+      const c = { ...comp };
+
       if (
-        comp.calculateValue &&
-        typeof comp.calculateValue === "string" &&
-        comp.calculateValue.trim() !== ""
+        c.calculateValue &&
+        typeof c.calculateValue === "string" &&
+        c.calculateValue.trim() !== ""
       ) {
-        comp.disabled = true;
+        c.disabled = true;
       }
-      if (comp.components) disableCalculatedFields(comp.components);
-      if (comp.columns)
-        comp.columns.forEach((col: any) => disableCalculatedFields(col.components ?? []));
-      if (comp.rows)
-        comp.rows.forEach((row: any[]) =>
-          row.forEach((cell: any) => disableCalculatedFields(cell.components ?? []))
+
+      if (Array.isArray(c.components))
+        c.components = disableCalculatedFields(c.components);
+
+      // FIX #1 del análisis anterior: Array.isArray en columns y rows
+      if (Array.isArray(c.columns))
+        c.columns = c.columns.map((col: any) => ({
+          ...col,
+          components: disableCalculatedFields(col.components ?? []),
+        }));
+
+      if (Array.isArray(c.rows))
+        c.rows = c.rows.map((row: any) =>
+          Array.isArray(row)
+            ? row.map((cell: any) => ({
+                ...cell,
+                components: disableCalculatedFields(cell.components ?? []),
+              }))
+            : row
         );
+
+      return c;
     });
   }, []);
 
@@ -233,6 +288,7 @@ const useFormSchema = (isOpen: boolean, questionId: string | number | null) => {
       setSchema(null);
       setSubmissions([{}]);
       setOperations([]);
+      setMeta(null);
       setError(null);
       return;
     }
@@ -240,10 +296,12 @@ const useFormSchema = (isOpen: boolean, questionId: string | number | null) => {
     if (!questionId) return;
 
     const controller = new AbortController();
+
     setLoading(true);
     setError(null);
     setSchema(null);
     setSubmissions([{}]);
+    setMeta(null);
 
     getQuestionComponent(questionId, controller.signal)
       .then((res) => {
@@ -256,13 +314,15 @@ const useFormSchema = (isOpen: boolean, questionId: string | number | null) => {
             ? JSON.parse(res.question_structure)
             : { ...res.question_structure };
 
-        // ── FIX: sanitizar antes de cualquier otra operación ──────────
-        // inputMask/displayMask null causan crash en Form.io:
-        // "Cannot read properties of null (reading 'length')"
+        // Sanitizar antes de cualquier otra operación
         parsed = sanitizeSchema(parsed);
 
-        if (parsed.components) disableCalculatedFields(parsed.components);
+        // FIX #4: disableCalculatedFields ahora retorna nuevo array (no muta)
+        if (parsed.components)
+          parsed = { ...parsed, components: disableCalculatedFields(parsed.components) };
+
         parsed.display = "form";
+
 
         setSubmissions(buildSubmissions(parsed.repeat_config));
         setOperations(parsed.operations ?? []);
@@ -278,12 +338,15 @@ const useFormSchema = (isOpen: boolean, questionId: string | number | null) => {
     return () => controller.abort();
   }, [isOpen, questionId, disableCalculatedFields, buildSubmissions]);
 
-  return { schema, submissions, setSubmissions, operations, loading, error };
+  return { schema, submissions, setSubmissions, operations, meta, loading, error };
 };
 
 /**
  * Gestiona la paginación entre iteraciones.
  * Usa una ref para el dato actual: evita re-renders que rompan el foco de Form.io.
+ *
+ * FIX #1: expone currentDataRef para que el componente principal pueda construir
+ * el snapshot de datos vivos al calcular los totales.
  */
 const useRepeatNavigation = (
   submissions: any[],
@@ -311,7 +374,9 @@ const useRepeatNavigation = (
   const commitAndNavigate = useCallback(
     (direction: 1 | -1) => {
       const fromIndex = currentIndex;
-      const toIndex = currentIndex + direction;
+      const toIndex   = currentIndex + direction;
+
+      if (toIndex < 0 || toIndex >= submissions.length) return;
 
       setSubmissions((prev) => {
         const copy = [...prev];
@@ -340,6 +405,7 @@ const useRepeatNavigation = (
   return {
     currentIndex,
     renderTrigger,
+    currentDataRef,   // FIX #1: expuesto para calcular totales con datos vivos
     handleChange,
     commitAndNavigate,
     commitCurrent,
@@ -387,18 +453,25 @@ const OperationResults = ({ results }: { results: OperationResult[] }) => {
   );
 };
 
+/**
+ * FIX #5: onFinish y onClose son opcionales para poder diferenciar
+ * entre un modal de solo preview (sin onSave) y uno con guardado.
+ * Si no hay onFinish en la última iteración, se muestra "Cerrar" en su lugar.
+ */
 const NavigationFooter = ({
   currentIndex,
   total,
   onPrev,
   onNext,
   onFinish,
+  onClose,
 }: {
   currentIndex: number;
   total: number;
   onPrev: () => void;
   onNext: () => void;
-  onFinish: () => void;
+  onFinish?: () => void;
+  onClose: () => void;
 }) => {
   if (total <= 1) return null;
 
@@ -423,12 +496,21 @@ const NavigationFooter = ({
         >
           Siguiente <ChevronRight size={16} />
         </button>
-      ) : (
+      ) : onFinish ? (
+        // FIX #5: solo muestra "Guardar" si se recibió el callback
         <button
           onClick={onFinish}
           className="flex items-center gap-2 px-5 py-2 text-sm font-semibold bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 transition-colors"
         >
           <Save size={16} /> Guardar Registro
+        </button>
+      ) : (
+        // Modo solo-preview: muestra "Cerrar" en lugar de "Guardar"
+        <button
+          onClick={onClose}
+          className="flex items-center gap-2 px-5 py-2 text-sm font-semibold bg-gray-600 text-white rounded-lg shadow-sm hover:bg-gray-700 transition-colors"
+        >
+          <X size={16} /> Cerrar
         </button>
       )}
     </div>
@@ -443,7 +525,8 @@ type PreviewQuestionModalProps = {
   isOpen: boolean;
   onClose: () => void;
   questionId: string | number | null;
-  /** Callback con los datos finales de TODAS las iteraciones */
+  /** Callback con los datos finales de TODAS las iteraciones.
+   *  Si se omite, el modal funciona en modo solo-preview (sin botón Guardar). */
   onSave?: (submissions: any[]) => void;
 };
 
@@ -453,12 +536,13 @@ export function PreviewQuestionModal({
   questionId,
   onSave,
 }: PreviewQuestionModalProps) {
-  const { schema, submissions, setSubmissions, operations, loading, error } =
+  const { schema, submissions, setSubmissions, operations, meta, loading, error } =
     useFormSchema(isOpen, questionId);
 
   const {
     currentIndex,
     renderTrigger,
+    currentDataRef,   // FIX #1
     handleChange,
     commitAndNavigate,
     commitCurrent,
@@ -466,21 +550,22 @@ export function PreviewQuestionModal({
   } = useRepeatNavigation(submissions, setSubmissions);
 
   /**
-   * Evaluamos con `renderTrigger` como dependencia para que los totales
-   * se actualicen en tiempo real mientras el usuario escribe,
-   * sin provocar un re-render de Form.io.
+   * FIX #1: los totales ahora usan un snapshot que incluye los datos vivos
+   * de la iteración activa (currentDataRef), no solo las iteraciones ya
+   * confirmadas con navigate. Equivalente al updateOperator() de formio_editor.js
+   * que pasa data_repeat_config completo tras cada submit.
    */
-  const evaluatedResults = useMemo(
-    () => evaluateOperations(operations, submissions),
+  const evaluatedResults = useMemo(() => {
+    const liveSubmissions = [...submissions];
+    liveSubmissions[currentIndex] = { ...currentDataRef.current };
+    return evaluateOperations(operations, liveSubmissions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [operations, submissions, renderTrigger]
-  );
+  }, [operations, submissions, renderTrigger, currentIndex]);
 
   const handleFinish = () => {
     const finalData = commitCurrent();
     onSave?.(finalData);
     onClose();
-
   };
 
   if (!isOpen) return null;
@@ -490,19 +575,32 @@ export function PreviewQuestionModal({
       className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[95vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] flex flex-col max-h-[95vh] overflow-hidden">
 
-        {/* HEADER */}
+        {/* HEADER — FIX #3: muestra índice y título de la pregunta cuando están disponibles */}
         <div className="flex justify-between items-center px-6 py-4 bg-[#9B2347] text-white shrink-0">
-          <h2 className="text-lg font-bold tracking-tight">Vista Previa del Componente</h2>
+          <div className="flex flex-col min-w-0">
+            <h2 className="text-lg font-bold tracking-tight truncate">
+              {meta
+                ? `${meta.index ? `${meta.index} — ` : ""}${meta.question || "Vista Previa"}`
+                : "Vista Previa del Componente"}
+            </h2>
+            {/* Subtítulo con sección, unidad y año */}
+            {meta && (meta.section_name || meta.unit_name || meta.questionary_year) && (
+              <span className="text-xs text-white/70 mt-0.5 truncate">
+                {[meta.section_name, meta.unit_name, meta.questionary_year]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            )}
+          </div>
           <button
             onClick={onClose}
             aria-label="Cerrar modal"
-            className="hover:bg-white/20 p-1.5 rounded-lg transition-colors"
+            className="hover:bg-white/20 p-1.5 rounded-lg transition-colors shrink-0 ml-4"
           >
             <X size={22} />
           </button>
-
         </div>
 
         {/* BODY */}
@@ -515,8 +613,8 @@ export function PreviewQuestionModal({
               {/* .bs: Bootstrap scoped — Form.io necesita Bootstrap para renderizar
                    correctamente sus inputs, grids y estilos internos. El wrapper .bs
                    asegura que Bootstrap no afecte al resto del modal (que usa Tailwind). */}
-              <div className="bs">
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+              <div className="bs overflow-x-auto">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 min-w-0">
                   <FormAny
                     /**
                      * La key combina questionId + currentIndex para forzar el
@@ -535,7 +633,6 @@ export function PreviewQuestionModal({
               <OperationResults results={evaluatedResults} />
             </>
           )}
-
         </div>
 
         {/* FOOTER: paginador, solo visible si hay múltiples iteraciones */}
@@ -545,12 +642,12 @@ export function PreviewQuestionModal({
             total={submissions.length}
             onPrev={() => commitAndNavigate(-1)}
             onNext={() => commitAndNavigate(1)}
-            onFinish={handleFinish}
+            onFinish={onSave ? handleFinish : undefined}  // FIX #5
+            onClose={onClose}
           />
         )}
 
       </div>
-
     </div>
   );
 }
