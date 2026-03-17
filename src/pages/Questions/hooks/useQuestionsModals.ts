@@ -1,5 +1,7 @@
 import { useState, useCallback } from "react";
 import type { Question } from "../Questions.types";
+import { getQuestion } from "../Questions.service"; 
+
 
 export function useQuestionsModals() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -20,9 +22,15 @@ const closePreview = useCallback(() => {
     setIsFormOpen(true);
   }, []);
 
-  const openEdit = useCallback((Question: Question) => {
-    setEditingQuestion(Question);
+const openEdit = useCallback(async (question: Question) => {
+    setEditingQuestion(question);
     setIsFormOpen(true);
+
+    try {
+      const fullQuestion = await getQuestion(question.id);
+      setEditingQuestion(fullQuestion);
+    } catch {
+    }
   }, []);
 
   const closeForm = useCallback(() => {

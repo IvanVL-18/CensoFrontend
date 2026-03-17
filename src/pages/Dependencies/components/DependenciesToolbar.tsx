@@ -26,7 +26,7 @@ export function DependenciesToolbar({
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-red-900">
-        <h1 className="text-xl md:text-2xl font-bold text-white">Dependencies</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-white">Dependencias</h1>
 
         <div className="flex items-center gap-2">
           <AddButton

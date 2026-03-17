@@ -10,7 +10,6 @@ import { QuestionModal } from "./components/QuestionsModal";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { ViewQuestionModal } from "./components/ViewQuestionsModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
-
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 
@@ -46,19 +45,12 @@ function QuestionsPageContent() {
     handlePageChange,
   } = useQuestionsData();
 
-  const handleViewClick = async (partialQuestion: any) => {
-    try {
-      const fullQuestion = await getQuestion(partialQuestion.id);
-      modals.openView(fullQuestion);
-    } catch (error) {
-      console.error("Error al cargar detalles del módulo", error);
-    }
-  };
   const modals = useQuestionsModals();
 
   const {
     isSubmitting,
     mutationError,
+    clearMutationError,
     handleSave,
     handleConfirmAction,
     handleBulkUpload,
@@ -69,9 +61,27 @@ function QuestionsPageContent() {
     openBulkError: modals.openBulkError,
   });
 
- const modalTitle = modals.editingQuestion ? "Editar Pregunta" : "Nueva Pregunta";
-  // CAMBIO: Pasamos el objeto completo como initialData
-  const modalInitialData = modals.editingQuestion || null;
+  const handleEditClick = async (partialQuestion: any) => {
+    modals.openEdit(partialQuestion); 
+    try {
+      const fullQuestion = await getQuestion(partialQuestion.id);
+      modals.openEdit(fullQuestion); 
+    } catch {
+    }
+  };
+
+  const handleViewClick = async (partialQuestion: any) => {
+    try {
+      const fullQuestion = await getQuestion(partialQuestion.id);
+      modals.openView(fullQuestion);
+    } catch {
+      console.error("Error al cargar detalles de la pregunta");
+    }
+  };
+
+  const modalTitle = modals.editingQuestion
+    ? "Editar Pregunta"
+    : "Nueva Pregunta";
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -79,18 +89,18 @@ function QuestionsPageContent() {
   let confirmButtonColor: "danger" | "primary" = "danger";
 
   if (modals.actionType === "ban") {
-    confirmTitle = "Desactivar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el módulo "${modals.actionQuestion?.name}"?`;
+    confirmTitle = "Desactivar Pregunta";
+    confirmMessage = `¿Estás seguro de que quieres desactivar la pregunta "${modals.actionQuestion?.name}"?`;
     confirmButtonText = "Desactivar";
     confirmButtonColor = "danger";
   } else if (modals.actionType === "restore") {
-    confirmTitle = "Restaurar Módulo";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el módulo "${modals.actionQuestion?.name}"?`;
+    confirmTitle = "Restaurar Pregunta";
+    confirmMessage = `¿Estás seguro de que quieres restaurar la pregunta "${modals.actionQuestion?.name}"?`;
     confirmButtonText = "Restaurar";
     confirmButtonColor = "primary";
   } else if (modals.actionType === "delete") {
     confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el módulo "${modals.actionQuestion?.name}"? Esta acción no se puede deshacer.`;
+    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE la pregunta "${modals.actionQuestion?.name}"? Esta acción no se puede deshacer.`;
     confirmButtonText = "Eliminar";
     confirmButtonColor = "danger";
   }
@@ -99,7 +109,6 @@ function QuestionsPageContent() {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
       <ToastContainer />
 
-      {/* Barra de Herramientas */}
       <QuestionsToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -110,7 +119,6 @@ function QuestionsPageContent() {
         onBulkUpload={handleBulkUpload}
       />
 
-      {/* Tabla de Resultados */}
       <div className="p-4">
         <QuestionsTable
           loading={loading}
@@ -119,13 +127,12 @@ function QuestionsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={modals.openEdit}
+          onEdit={handleEditClick} 
           onBan={(u) => modals.openConfirm(u, "ban")}
           onRestore={(u) => modals.openConfirm(u, "restore")}
           onDelete={(u) => modals.openConfirm(u, "delete")}
         />
 
-        {/* Paginación */}
         <div className="border-t border-gray-200 bg-gray-50">
           <Pagination
             meta={meta}
@@ -135,17 +142,19 @@ function QuestionsPageContent() {
         </div>
       </div>
 
-      {/* --- MODALES --- */}
-
       {/* 1. Crear / Editar */}
       <QuestionModal
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
         title={modalTitle}
-        initialData={modalInitialData} // USAMOS LA NUEVA PROP
-        onClose={modals.closeForm}
-        onSave={(data) => handleSave(data, modals.editingQuestion)} // Pasamos data completa
+        initialData={modals.editingQuestion || null}
+        onClose={() => {
+          clearMutationError(); 
+          modals.closeForm();
+        }}
+        onSave={(data) => handleSave(data, modals.editingQuestion)}
+        onClearServerError={clearMutationError} // ← igual que Dependencies
       />
 
       {/* 2. Confirmación (Ban/Restore/Delete) */}
@@ -168,13 +177,13 @@ function QuestionsPageContent() {
         isOpen={modals.isViewOpen}
         Question={modals.viewingQuestion}
         onClose={modals.closeView}
-        onOpenPreview={modals.openPreview} 
+        onOpenPreview={modals.openPreview}
       />
 
       <PreviewQuestionModal
         isOpen={modals.isPreviewOpen}
         onClose={modals.closePreview}
-        questionId={modals.viewingQuestion?.id || null} 
+        questionId={modals.viewingQuestion?.id || null}
       />
 
       {/* 4. Errores de Excel */}

@@ -54,7 +54,7 @@ const confirmConfig = {
 
 function CatalogsPageContent() {
   const [Modules, setModules] = useState<Module[]>([]);
-  const [originalActiveModules, setOriginalActiveModules] = useState<Module[]>([]); // Guarda solo activas
+  const [originalActiveModules, setOriginalActiveModules] = useState<Module[]>([]);
   const [loadingModules, setLoadingModules] = useState(false);
 
   const {
@@ -131,7 +131,7 @@ function CatalogsPageContent() {
           ...originalActiveModules,
           {
             id: currentModuleId,
-            name: editingCat.Module_name || 'Modulo desconocida',
+            name: editingCat.module_name || 'Modulo desconocida',
           }
         ]);
       } else {
@@ -169,7 +169,7 @@ function CatalogsPageContent() {
     initialName: modals.editingCatalog?.name || "",
     initialSlug: modals.editingCatalog?.slug || "",
     initialModuleId: modals.editingCatalog?.module_id || "",
-    initialModuleName: modals.editingCatalog?.Module_name || modals.editingCatalog?.Module?.name || "",
+    initialModuleName: modals.editingCatalog?.module_name || modals.editingCatalog?.Module?.name || "",
   };
 
   const confirmModal = modals.actionType && modals.actionCatalog

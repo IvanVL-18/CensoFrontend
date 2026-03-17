@@ -79,11 +79,11 @@ export function CensoCreateModal({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[9999] transition-opacity"
+        className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-[9999] transition-opacity"
         onClick={handleClose}
       />
 
-      <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-[#000000ab] z-[10000] flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>

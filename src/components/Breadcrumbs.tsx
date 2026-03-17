@@ -9,16 +9,17 @@ const names: Record<string, string> = {
   "graficador": "Graficador",
   "reportes": "Reportes",
   "configuracion": "Configuración",
-  "Modulos": "Módulos",
-  "Secciones": "Secciones",
-  "Ocupaciones": "Ocupaciones",
-  "Indices": "Índices",
-  "Dependencias": "Dependencias",
-  "Preguntas": "Preguntas",
-  "Roles": "Roles",
-  "Catalogos": "Catálogos",
-  "Permisos": "Permisos",
-  "Categorias": "Categorías",
+  "modulos": "Módulos",
+  "secciones": "Secciones",
+  "ocupaciones": "Ocupaciones",
+  "indices": "Índices",
+  "dependencies": "Dependencias",
+  "preguntas": "Preguntas",
+  "roles": "Roles",
+  "catalogos": "Catálogos",
+  "permisos": "Permisos",
+  "permission-roles": "Asignar Permisos",
+  "categorias": "Categorías",
   
 };
 
@@ -26,7 +27,7 @@ export default function Breadcrumbs({ pathname }: { pathname: string }) {
   const parts = pathname.split("/").filter(Boolean);
 
   
-  const visibleParts = parts.filter(part => names[part]);
+  const visibleParts = parts.filter(part => names[part] || names[part.toLowerCase()]);
 
  
   if (visibleParts.length === 0) return null;
@@ -41,7 +42,7 @@ export default function Breadcrumbs({ pathname }: { pathname: string }) {
       <ol className="flex items-center gap-2 text-sm text-neutral-500">
         {visibleParts.map((part, index) => {
           const isLast = index === visibleParts.length - 1;
-          const label = names[part];
+          const label = names[part] || names[part.toLowerCase()];
 
           return (
             <li key={index} className="flex items-center gap-2">

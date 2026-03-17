@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import type { ConfirmModalProps } from "../Sections.types";
 
@@ -12,6 +13,16 @@ export function ConfirmModal({
   onClose,
   onConfirm,
 }: ConfirmModalProps) {
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLocalError(error || null);
+  }, [error]);
+
+  useEffect(() => {
+    if (isOpen) setLocalError(null);
+  }, [isOpen]);
+
   if (!isOpen) {
     return null;
   }
@@ -50,7 +61,7 @@ export function ConfirmModal({
             <p className="text-gray-700">{message}</p>
 
             {/* Mensaje de Error (si existe) */}
-            {error && <p className="text-red-600 text-sm mt-4">{error}</p>}
+            {localError && <p className="text-red-600 text-sm mt-4">{localError}</p>}
           </div>
 
           {/* Pie de página del Modal (Botones) */}

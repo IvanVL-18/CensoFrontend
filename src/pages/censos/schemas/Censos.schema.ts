@@ -60,7 +60,7 @@ export const createCensoSchema = (isEdit: boolean) => {
       .refine(val => val === "" || nameDescriptionRegex.test(val), {
         message: "La descripción no puede contener emojis ni símbolos especiales."
       })
-      .max(255, "La descripción no puede exceder los 255 caracteres.")
+      .max(200, "La descripción no puede exceder los 200 caracteres.")
       .optional(),
 
     init_date: initDateValidation,

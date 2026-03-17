@@ -1,17 +1,12 @@
 import { X, AlertCircle } from "lucide-react";
 import type { BulkErrorModalProps } from "../Questions.types";
 
-// DICCIONARIO DE TRADUCCIÓN
-// Claves: Deben coincidir con los "slugs" que Laravel Excel genera desde tus encabezados.
-// Valores: Texto bonito para el usuario.
 const FIELD_LABELS: Record<string, string> = {
-  // Mapeo exacto de 'QuestionsImport.php' -> $expectedHeaders
   titulo_de_la_pregunta: "Título de la Pregunta",
   instrucciones_de_la_pregunta: "Instrucciones",
   comentarios_de_la_pregunta: "Comentarios (Si/No)",
   estructura_de_la_pregunta: "Estructura (JSON)",
   
-  // Mapeos extra por si acaso el validador usa el nombre de la BD
   name: "Título de la Pregunta",
   instructions: "Instrucciones",
   commentaries: "Comentarios",

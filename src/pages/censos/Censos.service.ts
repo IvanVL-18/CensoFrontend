@@ -99,3 +99,39 @@ export const getIndices = async (signal?: AbortSignal): Promise<Index[]> => {
   const rawData = (response.data as any).data ?? response.data;
   return rawData;
 };
+
+
+
+/**
+
+ * @param id ID encriptado del censo
+ */
+export const getCensoModules = async (
+  id: string,
+  signal?: AbortSignal
+): Promise<ModuleForCensoShowResponse> => {
+  const response = await api.get<ModuleForCensoShowResponse>(
+    `/module-for-censo/${id}`,
+    { signal }
+  );
+  return response.data;
+};
+
+/**
+ 
+
+ */
+export const updateCensoModules = async (
+  id: string,
+  data: ModuleForCensoRequest
+): Promise<{ message: string }> => {
+  const response = await api.put(`/module-for-censo/${id}`, data);
+  return response.data;
+};
+
+export const createCensoModules = async (
+  data: ModuleForCensoRequest & { censo_id: number }
+): Promise<{ message: string }> => {
+  const response = await api.post("/module-for-censo", data);
+  return response.data;
+};

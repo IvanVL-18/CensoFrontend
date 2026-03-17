@@ -3,7 +3,8 @@ import { Calendar, FileText } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { createCensoSchema } from "../schemas/Censos.schema";
 
-const MAX_LENGTH = 125;
+const MAX_NAME_LENGTH = 65;
+const MAX_DESC_LENGTH = 200;
 
 interface CensoManualFormProps {
   isSubmitting: boolean;
@@ -40,7 +41,8 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
     const [description, setDescription] = useState(initialData?.description ?? "");
     const [startDate, setStartDate] = useState(initialData?.init_date ?? "");
     const [endDate, setEndDate] = useState(initialData?.deadline ?? "");
-    const [charCount, setCharCount] = useState(initialData?.name?.length ?? 0);
+    const [nameCharCount, setNameCharCount] = useState(initialData?.name?.length ?? 0);
+    const [descCharCount, setDescCharCount] = useState(initialData?.description?.length ?? 0);
     const [formErrors, setFormErrors] = useState<string[]>([]);
     const [serverError, setServerError] = useState<string | null>(error ?? null);
     const [touchedFields, setTouchedFields] = useState({
@@ -121,7 +123,8 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setDescription(initialData.description ?? "");
         setStartDate(initialData.init_date ?? "");
         setEndDate(initialData.deadline ?? "");
-        setCharCount(newName.length);
+        setNameCharCount(newName.length);
+        setDescCharCount(initialData.description?.length ?? 0);
         setTouchedFields({ name: true, description: true, init_date: true, deadline: true });
         setSubmitted(false);
         setIgnoreServerError(false);
@@ -130,7 +133,8 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setDescription("");
         setStartDate("");
         setEndDate("");
-        setCharCount(0);
+        setNameCharCount(0);
+        setDescCharCount(0);
         setTouchedFields({ name: false, description: false, init_date: false, deadline: false });
         setFormErrors([]);
         setServerError(null);
@@ -145,7 +149,8 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         setDescription("");
         setStartDate("");
         setEndDate("");
-        setCharCount(0);
+        setNameCharCount(0);
+        setDescCharCount(0);
         setFormErrors([]);
         setServerError(null);
         setTouchedFields({ name: false, description: false, init_date: false, deadline: false });
@@ -171,9 +176,9 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
 
     const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
       const newName = e.target.value;
-      if (newName.length <= MAX_LENGTH) {
+      if (newName.length <= MAX_NAME_LENGTH) {
         setName(newName);
-        setCharCount(newName.length);
+        setNameCharCount(newName.length);
         setServerError(null);
         setTouchedFields(prev => ({ ...prev, name: true }));
         setSubmitted(false);
@@ -198,29 +203,37 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
     };
 
     const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-      setDescription(e.target.value);
-      setServerError(null);
-      setTouchedFields(prev => ({ ...prev, description: true }));
-      setSubmitted(false);
-      setIgnoreServerError(false);
+      const newDesc = e.target.value;
+      if (newDesc.length <= MAX_DESC_LENGTH) {
+        setDescription(newDesc);
+        setDescCharCount(newDesc.length);
+        setServerError(null);
+        setTouchedFields(prev => ({ ...prev, description: true }));
+        setSubmitted(false);
+        setIgnoreServerError(false);
+      }
     };
 
     const handleFormSubmit = (e: FormEvent) => e.preventDefault();
 
     const hasErrors = formErrors.length > 0 || !!serverError;
-    const isNearLimit = charCount >= MAX_LENGTH - 10 && charCount <= MAX_LENGTH;
-    const isAtLimit = charCount >= MAX_LENGTH;
 
-    const inputBorderColor = hasErrors
+    const isNameNearLimit = nameCharCount >= MAX_NAME_LENGTH - 10 && nameCharCount <= MAX_NAME_LENGTH;
+    const isNameAtLimit = nameCharCount >= MAX_NAME_LENGTH;
+    const nameInputBorderColor = hasErrors
       ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-      : isAtLimit
+      : isNameAtLimit
       ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-      : isNearLimit
+      : isNameNearLimit
       ? 'border-amber-300 focus:border-amber-500 focus:ring-amber-200'
       : 'border-gray-200 focus:border-[#DDC9A3] focus:ring-[#DDC9A3]/20';
+    const nameProgressBarColor = isNameAtLimit ? 'bg-red-500' : isNameNearLimit ? 'bg-amber-500' : 'bg-[#DDC9A3]';
+    const nameCharCountColor = isNameAtLimit ? 'text-red-600' : isNameNearLimit ? 'text-amber-600' : 'text-gray-400';
 
-    const progressBarColor = isAtLimit ? 'bg-red-500' : isNearLimit ? 'bg-amber-500' : 'bg-[#DDC9A3]';
-    const charCountColor = isAtLimit ? 'text-red-600' : isNearLimit ? 'text-amber-600' : 'text-gray-400';
+    const isDescNearLimit = descCharCount >= MAX_DESC_LENGTH - 30 && descCharCount <= MAX_DESC_LENGTH;
+    const isDescAtLimit = descCharCount >= MAX_DESC_LENGTH;
+    const descProgressBarColor = isDescAtLimit ? 'bg-red-500' : isDescNearLimit ? 'bg-amber-500' : 'bg-[#DDC9A3]';
+    const descCharCountColor = isDescAtLimit ? 'text-red-600' : isDescNearLimit ? 'text-amber-600' : 'text-gray-400';
 
     return (
       <form onSubmit={handleFormSubmit} noValidate className="space-y-5">
@@ -229,8 +242,8 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
             <label htmlFor="censoName" className="flex items-center text-sm font-semibold text-gray-700">
               Nombre del censo
             </label>
-            <span className={`text-xs font-medium ${charCountColor}`}>
-              {charCount}/{MAX_LENGTH}
+            <span className={`text-xs font-medium ${nameCharCountColor}`}>
+              {nameCharCount}/{MAX_NAME_LENGTH}
             </span>
           </div>
           <input
@@ -239,15 +252,15 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
             value={name}
             onChange={handleNameChange}
             placeholder="Ej. Censo de población 2024"
-            maxLength={MAX_LENGTH}
-            className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-4 transition duration-200 ${inputBorderColor}`}
+            maxLength={MAX_NAME_LENGTH}
+            className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-4 transition duration-200 ${nameInputBorderColor}`}
             disabled={isSubmitting}
             autoFocus
           />
           <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
             <div
-              className={`h-full transition-all duration-300 ease-out ${progressBarColor}`}
-              style={{ width: `${(charCount / MAX_LENGTH) * 100}%` }}
+              className={`h-full transition-all duration-300 ease-out ${nameProgressBarColor}`}
+              style={{ width: `${(nameCharCount / MAX_NAME_LENGTH) * 100}%` }}
             />
           </div>
         </div>
@@ -288,18 +301,30 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
         </div>
 
         <div>
-          <label htmlFor="description" className="flex items-center text-sm font-semibold text-gray-700 mb-2">
-            <FileText size={16} className="mr-2 text-gray-400" />
-            Descripción breve
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="description" className="flex items-center text-sm font-semibold text-gray-700">
+              <FileText size={16} className="mr-2 text-gray-400" />
+              Descripción breve (opcional)
+            </label>
+            <span className={`text-xs font-medium ${descCharCountColor}`}>
+              {descCharCount}/{MAX_DESC_LENGTH}
+            </span>
+          </div>
           <textarea
             id="description"
             value={description}
             onChange={handleDescriptionChange}
             rows={3}
+            maxLength={MAX_DESC_LENGTH}
             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 resize-none"
             placeholder="Describe el propósito o alcance del censo..."
           />
+          <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all duration-300 ease-out ${descProgressBarColor}`}
+              style={{ width: `${(descCharCount / MAX_DESC_LENGTH) * 100}%` }}
+            />
+          </div>
         </div>
 
         <FormErrors errors={formErrors} />

@@ -1,6 +1,17 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Package, Paperclip, Briefcase, Hash, Layers, HelpCircle, Shield, FileText, UserCog, FolderOpen} from "lucide-react";
+import {
+  Package,
+  Paperclip,
+  Briefcase,
+  Hash,
+  Layers,
+  HelpCircle,
+  Shield,
+  FileText,
+  UserCog,
+  FolderOpen,
+} from "lucide-react";
 
 import ConfigurationLayout from "./components/ConfigurationLayout";
 import ConfigurationNavCard from "./components/ConfigurationNavCard";
@@ -12,78 +23,79 @@ export default function ConfigurationPage() {
     () => [
       {
         title: "Módulos",
-        description:
-          "Gestiona los módulos/Modulos del sistema para organizar la estructura de los censos.",
+        description: "Organiza la estructura del censo por módulos.",
         to: "/Modulos",
         icon: <Package className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {
         title: "Secciones",
-        description: "Crea y administra las secciones que componen los módulos del censo.",
+        description: "Administra secciones dentro de cada módulo.",
         to: "/Secciones",
         icon: <Paperclip className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {
         title: "Ocupaciones",
-        description: "Administra el catálogo de ocupaciones utilizado en el censo.",
+        description: "Gestiona el catálogo de ocupaciones del censo.",
         to: "/Ocupaciones",
-        className: "sm:col-span-2 xl:col-span-1",
         icon: <Briefcase className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {
         title: "Índices",
-        description: "Administra los índices numéricos para la estructura del censo.",
+        description: "Configura índices y numeración de la estructura.",
         to: "/Indices",
         icon: <Hash className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {
         title: "Dependencias",
-        description: "Administra las Dependencias institucionales relacionadas con la estructura del censo.",
+        description: "Administra dependencias institucionales vinculadas.",
         to: "/Dependency",
         icon: <Layers className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {
         title: "Preguntas",
-        description: "Administra las preguntas que conforman los cuestionarios del censo.",
+        description: "Crea y gestiona preguntas del cuestionario.",
         to: "/Preguntas",
         icon: <HelpCircle className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {
         title: "Roles",
-        description: "Administra los roles y permisos del sistema para controlar el acceso a los distintos módulos del censo.",
+        description: "Define roles para controlar accesos por módulo.",
         to: "/Roles",
         icon: <UserCog className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {
         title: "Catálogos",
-        description: "Administra los catalogos y permisos del sistema para controlar el acceso a los distintos módulos del censo.",
+        description: "Gestiona catálogos del sistema para formularios.",
         to: "/Catalogos",
         icon: <FileText className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
       {
         title: "Permisos",
-        description: "Administra los permisos del sistema para controlar el acceso a los distintos módulos del censo.",
+        description: "Configura permisos y acciones disponibles.",
         to: "/Permisos",
-        icon: <Shield className="w-5 h-5 text-[var(--pantone-7421)]" />,  
+        icon: <Shield className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
-
       {
         title: "Categorías",
-        description: "",
+        description: "Administra las categorías del sistema para controlar el acceso a los distintos módulos del censo",
         to: "/Categorias",
-        icon: <FolderOpen className="w-5 h-5 text-[var(--pantone-7421)]" />,   
+        icon: <FolderOpen className="w-5 h-5 text-[var(--pantone-7421)]" />,
       },
-         
-
     ],
     []
   );
 
   return (
     <ConfigurationLayout title="Configuración">
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {items.map((item, index) => (
-          <ConfigurationNavCard key={index} {...item} onClick={() => navigate(item.to)} />
+          <ConfigurationNavCard
+            key={index}
+            {...item}
+            onClick={() => navigate(item.to)}
+            className="h-full"
+          />
         ))}
       </div>
     </ConfigurationLayout>

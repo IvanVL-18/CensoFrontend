@@ -28,10 +28,10 @@ export interface MetaLink {
 }
 
 export interface Meta {
-  total: number[];
-  per_page: number[];
-  current_page: number[];
-  last_page: number[];
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
   from: number;
   links: MetaLink[];
   path: string;
@@ -107,38 +107,36 @@ export interface ViewCensoModalProps {
   Censo: Censo | null;
 }
 
+/* =========================
+   MODULES + INDEXES
+========================= */
+
 export interface Index {
+  original_id: string;
   id: string | number;
   name: string;
 }
 
 export interface Module {
-  id: number;
+  id: string | number;
   name: string;
 }
 
-// ---- Tipos del módulo CensusModule (antes polimórfico) ----
+export interface IndexForCenso {
+  id: number;
+  index_id: number;
+  reference_id: number;
+  reference_type: string;
 
-export interface AssignedCensusModule {
-  census_module_id: string;
-  module: {
-    module_id: string;
-    name: string;
-  };
-  index: {
-    index_id: string;
-    name: string;
-  };
+  index?: Index;
+  reference?: Module;
 }
 
 export interface ModuleForCensoShowResponse {
-  censo: {
-    id: string;
-    name: string;
-  };
-  indexs: Index[];
+  censo: { id: string; name: string };
+  indexes: Index[];
   modules: Module[];
-  censusModules?: AssignedCensusModule[]; 
+  indexForCensos?: IndexForCenso[];
 }
 
 export interface ModuleForCensoRequest {
