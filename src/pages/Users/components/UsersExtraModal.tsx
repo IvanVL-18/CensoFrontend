@@ -151,7 +151,7 @@ export function UsersExtraModal({
         onClick={handleClose}
       ></div>
 
-      <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/10 backdrop-blur-md">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <div>

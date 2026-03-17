@@ -142,8 +142,13 @@ export function MapModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#000000ab] z-[60] flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl h-3/4 flex flex-col overflow-hidden">
+    <>
+      <div
+        className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-[59] transition-opacity"
+        onClick={onClose}
+      ></div>
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl h-3/4 flex flex-col overflow-hidden">
       
         <div className="flex justify-between items-center p-4 bg-red-900 text-white">
           <h2 className="text-xl font-bold truncate">
@@ -226,6 +231,7 @@ export function MapModal({
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
