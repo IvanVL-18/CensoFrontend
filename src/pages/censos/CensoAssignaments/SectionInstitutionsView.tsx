@@ -12,7 +12,7 @@ const SectionInstitutionsView: React.FC = () => {
     sectionInfo,
     institutions,
     selectedIds,
-    originalAssignmentsSet,
+    originalAssignments,
     loading,
     saving,
     error,
@@ -28,7 +28,6 @@ const SectionInstitutionsView: React.FC = () => {
     clearMessages,
   } = useSectionInstitutions(id ?? "");
 
-  // Auto-limpiar mensajes después de 3 segundos
   useEffect(() => {
     if (error || successMessage) {
       const timer = setTimeout(() => {
@@ -50,7 +49,19 @@ const SectionInstitutionsView: React.FC = () => {
 
   const allChecked =
     institutions.length > 0 &&
-    institutions.every((inst) => selectedIds.has(inst.id));
+    institutions.every((inst) => selectedIds.has(String(inst.id)));
+
+  // Función para obtener el nombre del índice (puede venir de sectionInfo o de la asignación)
+  const getIndexNameForInstitution = (instId: string): string => {
+    const assignment = originalAssignments[String(instId)];
+    // Si la asignación tiene un índice específico, podrías mostrarlo
+    // Por ahora, como no tenemos el nombre del índice, usamos el de la sección
+    if (assignment?.indexId) {
+      // Aquí podrías buscar el nombre del índice en alguna lista si la tuvieras
+      return sectionInfo?.index || "Índice asignado";
+    }
+    return sectionInfo?.index || "";
+  };
 
   return (
     <div className="w-full p-6">
@@ -61,7 +72,7 @@ const SectionInstitutionsView: React.FC = () => {
             <h1 className="text-lg font-semibold">Asignar instituciones</h1>
             {sectionInfo && (
               <p className="text-sm text-white/80">
-                Sección: {sectionInfo.name} | Índice: {sectionInfo.index}
+                Sección: {sectionInfo.name} | Índice: {sectionInfo.index || "No especificado"}
               </p>
             )}
           </div>
@@ -75,7 +86,7 @@ const SectionInstitutionsView: React.FC = () => {
           </button>
         </div>
 
-        {/* Mensajes flotantes de éxito/error */}
+        {/* Mensajes */}
         {successMessage && (
           <div className="mx-6 mt-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700 border border-green-200">
             {successMessage}
@@ -121,7 +132,7 @@ const SectionInstitutionsView: React.FC = () => {
                       <span>Seleccionar</span>
                     </div>
                   </th>
-                  <th className="px-4 py-3">Nombre de la institución</th>
+                  <th className="px-4 py-3">Nombre</th>
                   <th className="px-4 py-3 text-center">Estado</th>
                 </tr>
               </thead>
@@ -137,18 +148,22 @@ const SectionInstitutionsView: React.FC = () => {
                   </tr>
                 ) : (
                   institutions.map((inst) => {
-                    const isOriginallyAssigned = originalAssignmentsSet.has(inst.id);
+                    const instIdStr = String(inst.id);
+                    const isOriginallyAssigned = Boolean(originalAssignments[instIdStr]);
+                    const isSelected = selectedIds.has(instIdStr);
+                    const indexName = getIndexNameForInstitution(instIdStr);
+
                     return (
                       <tr
-                        key={inst.id}
+                        key={instIdStr}
                         className={`border-t border-gray-200 text-sm text-gray-700 ${
-                          selectedIds.has(inst.id) ? "bg-green-50" : "bg-white"
+                          isSelected ? "bg-green-50" : "bg-white"
                         }`}
                       >
                         <td className="px-4 py-3">
                           <input
                             type="checkbox"
-                            checked={selectedIds.has(inst.id)}
+                            checked={isSelected}
                             onChange={(e) =>
                               toggleInstitution(inst.id, e.target.checked)
                             }
@@ -160,7 +175,7 @@ const SectionInstitutionsView: React.FC = () => {
                           {isOriginallyAssigned ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
                               <CheckCircle size={14} />
-                              Asignada
+                              Asignada {indexName ? `(Índice: ${indexName})` : ""}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">

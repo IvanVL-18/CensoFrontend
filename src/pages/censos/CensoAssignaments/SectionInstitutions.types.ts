@@ -1,13 +1,13 @@
+// SectionInstitutions.types.ts
 export interface SectionInfo {
   section_id: string;
-  index: string;
+  index: string;          // nombre del índice (o podrías tener un objeto)
   name: string;
 }
 
 export interface InstitutionItem {
-  id: string;
+  id: string;             // asumo string, pero puede ser number; lo normalizamos
   name: string;
-  // Se pueden mantener otros campos opcionales, pero no se usarán
   municipality?: string;
   geocode?: string;
   typeinst?: string;
@@ -23,13 +23,12 @@ export interface AssignmentItem {
 
 export interface GetSectionInstitutionsResponse {
   section: SectionInfo;
-  assignments: AssignmentItem[];
+  assigments: AssignmentItem[];   // con una 's'
   institutions: InstitutionItem[];
 }
-
 export interface StoreSectionInstitutionsPayload {
   section_id: string;
-  institutions: string[];
+  institutions: string[];   // solo IDs de instituciones
 }
 
 export interface ApiMessageResponse {
