@@ -15,7 +15,6 @@ import type {
 
 type SelectedSectionState = {
   section_id: string;
-  section_for_censo_id?: string;
   index_id: string;
   index_name: string;
   stored_index_name: string | null;
@@ -50,8 +49,6 @@ type UseCensoSectionsReturn = {
   reload: () => Promise<void>;
   goToPage: (page: number) => void;
 };
-
-const PAGE_SIZE = 10;
 
 export const useCensoSections = (
   censusModuleId: string,
@@ -90,8 +87,7 @@ export const useCensoSections = (
 
       selectedSections.forEach((item) => {
         const sectionName = item.section?.name ?? "";
-        const sectionId = item.section?.section_id ?? "";
-        const sectionForCensoId = item.section_for_censo_id;
+        const sectionId = item.section?.id ?? "";
         if (!sectionName) return;
 
         const matchedIndex = availableIndexes.find(
@@ -102,7 +98,6 @@ export const useCensoSections = (
 
         map[sectionName] = {
           section_id: sectionId,
-          section_for_censo_id: sectionForCensoId,
           index_id: matchedIndex ? String(matchedIndex.id) : "",
           index_name: item.index?.name ?? "",
           stored_index_name: item.index?.name ?? null,
@@ -154,9 +149,6 @@ export const useCensoSections = (
                 stored_index_name:
                   backendEntry.stored_index_name ??
                   currentMap[name].stored_index_name,
-                section_for_censo_id:
-                  backendEntry.section_for_censo_id ??
-                  currentMap[name].section_for_censo_id,
                 checked: true,
               };
             }
@@ -211,7 +203,7 @@ export const useCensoSections = (
         checked: sel?.checked ?? false,
         selected_index_id: sel?.index_id ?? "",
         stored_index_name: sel?.stored_index_name ?? null,
-        section_for_censo_id: sel?.section_for_censo_id,
+        census_section_id: sel?.census_section_id,
       };
     });
   }, [sections, mapVersion]);
@@ -234,7 +226,6 @@ export const useCensoSections = (
             index_name: existing?.index_name ?? "",
             stored_index_name: existing?.stored_index_name ?? null,
             census_section_id: existing?.census_section_id ?? null,
-            section_for_censo_id: existing?.section_for_censo_id,
             checked,
           },
         };
@@ -256,7 +247,6 @@ export const useCensoSections = (
             index_name: existing?.index_name ?? "",
             stored_index_name: existing?.stored_index_name ?? null,
             census_section_id: existing?.census_section_id ?? null,
-            section_for_censo_id: existing?.section_for_censo_id,
             checked,
           };
         });

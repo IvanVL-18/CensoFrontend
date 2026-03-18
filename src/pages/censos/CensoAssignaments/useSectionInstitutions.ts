@@ -12,9 +12,7 @@ import type {
 
 interface InstitutionState {
   institutionId: string;
-  assignmentId?: number;
-  indexId?: number;
-  indexName?: string;
+  assignmentId?: string;
 }
 
 type InstitutionMap = Record<string, InstitutionState>;
@@ -62,12 +60,10 @@ export const useSectionInstitutions = (
   const buildOriginalMap = useCallback((assignments: AssignmentItem[]): InstitutionMap => {
     const map: InstitutionMap = {};
     assignments.forEach((a) => {
-      const instId = String(a.institution_id);
+      const instId = a.institution_id;
       map[instId] = {
         institutionId: instId,
         assignmentId: a.id,
-        indexId: a.index_for_censo_id,
-        indexName: undefined,
       };
     });
     return map;
@@ -80,7 +76,8 @@ export const useSectionInstitutions = (
       
       const data = await getSectionInstitutions(sectionId, signal);
       
-      const receivedAssignments = Array.isArray(data.assigments) ? data.assigments : [];
+      // CORRECCIÓN: usar 'assignments' (con doble 's') en lugar de 'assigments'
+      const receivedAssignments = Array.isArray(data.assignments) ? data.assignments : [];
       const receivedInstitutions = Array.isArray(data.institutions) ? data.institutions : [];
 
       setSectionInfo(data.section || null);
@@ -92,7 +89,7 @@ export const useSectionInstitutions = (
       setMapVersion(v => v + 1);
       
       const initialSelected = new Set(
-        receivedAssignments.map(a => String(a.institution_id))
+        receivedAssignments.map(a => a.institution_id)
       );
       setSelectedIds(initialSelected);
       
@@ -152,6 +149,7 @@ export const useSectionInstitutions = (
     if (!sectionInfo) return false;
     
     const institutionsToSave = Array.from(selectedIds);
+    const items = institutionsToSave.map(institution_id => ({ institution_id }));
     
     try {
       setSaving(true);
@@ -163,12 +161,12 @@ export const useSectionInstitutions = (
       let response;
       if (hasExisting) {
         response = await updateSectionInstitutions(sectionInfo.section_id, {
-          institutions: institutionsToSave,
+          items,
         });
       } else {
         response = await storeSectionInstitutions({
-          section_id: sectionInfo.section_id,
-          institutions: institutionsToSave,
+          census_section_id: sectionInfo.section_id,
+          items,
         });
       }
 

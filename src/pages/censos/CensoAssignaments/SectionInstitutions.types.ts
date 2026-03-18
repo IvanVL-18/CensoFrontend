@@ -13,22 +13,24 @@ export interface InstitutionItem {
 }
 
 export interface AssignmentItem {
-  id: number;
-  institution_id: number;
-  index_for_censo_id: number;
-  created_at: string;
-  updated_at: string;
+  id: string;
+  institution_id: string;
+  name: string;
 }
 
 export interface GetSectionInstitutionsResponse {
   section: SectionInfo;
-  assigments: AssignmentItem[];
+  assignments: AssignmentItem[];
   institutions: InstitutionItem[];
 }
 
 export interface StoreSectionInstitutionsPayload {
-  section_id: string;
-  institutions: string[];
+  census_section_id: string;
+  items: { institution_id: string }[];
+}
+
+export interface UpdateSectionInstitutionsPayload {
+  items: { institution_id: string }[];
 }
 
 export interface ApiMessageResponse {

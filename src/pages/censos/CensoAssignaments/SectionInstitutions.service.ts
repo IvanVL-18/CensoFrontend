@@ -2,6 +2,7 @@ import api from "../../../lib/Axios";
 import type {
   GetSectionInstitutionsResponse,
   StoreSectionInstitutionsPayload,
+  UpdateSectionInstitutionsPayload,
   ApiMessageResponse,
 } from "./SectionInstitutions.types";
 
@@ -28,7 +29,7 @@ export const storeSectionInstitutions = async (
 
 export const updateSectionInstitutions = async (
   sectionId: string,
-  payload: Pick<StoreSectionInstitutionsPayload, 'institutions'>
+  payload: UpdateSectionInstitutionsPayload
 ): Promise<ApiMessageResponse> => {
   const response = await api.put<ApiMessageResponse>(
     `/assignment-for-census/${sectionId}`,
