@@ -48,8 +48,10 @@ export interface PaginatedSectionsResponse {
 
 
 export interface SelectedSectionItem {
+  section_for_censo_id: any;
   id: string;
   section: {
+    section_id: string;
     id: string;
     name: string;
   };
@@ -76,7 +78,7 @@ export interface CensoSectionRow {
   checked: boolean;
   selected_index_id: string;  
   stored_index_name: string | null;
-  census_section_id: string | null; 
+  section_for_censo_id?: string; 
 }
 
 

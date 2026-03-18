@@ -15,6 +15,7 @@ import type {
 
 type SelectedSectionState = {
   section_id: string;
+  section_for_censo_id?: string;
   index_id: string;
   index_name: string;
   stored_index_name: string | null;
@@ -49,6 +50,8 @@ type UseCensoSectionsReturn = {
   reload: () => Promise<void>;
   goToPage: (page: number) => void;
 };
+
+const PAGE_SIZE = 10;
 
 export const useCensoSections = (
   censusModuleId: string,
@@ -86,9 +89,9 @@ export const useCensoSections = (
       const map: SelectedSectionsMap = {};
 
       selectedSections.forEach((item) => {
-        const sectionName = (item.section?.name ?? "")
-          .replace(/\s+/g, " ")
-          .trim();
+        const sectionName = item.section?.name ?? "";
+        const sectionId = item.section?.section_id ?? "";
+        const sectionForCensoId = item.section_for_censo_id;
         if (!sectionName) return;
 
         const matchedIndex = availableIndexes.find(
@@ -98,10 +101,9 @@ export const useCensoSections = (
         );
 
         map[sectionName] = {
-          section_id: item.section?.id ?? "",
-          index_id: matchedIndex
-            ? String(matchedIndex.id)
-            : (item.index?.id ?? ""),
+          section_id: sectionId,
+          section_for_censo_id: sectionForCensoId,
+          index_id: matchedIndex ? String(matchedIndex.id) : "",
           index_name: item.index?.name ?? "",
           stored_index_name: item.index?.name ?? null,
           checked: true,
@@ -145,12 +147,17 @@ export const useCensoSections = (
                 ...currentMap[name],
                 section_id: backendEntry.section_id,
                 index_id: backendEntry.index_id,
+                index_name: backendEntry.index_name,
                 census_section_id:
                   backendEntry.census_section_id ??
                   currentMap[name].census_section_id,
                 stored_index_name:
                   backendEntry.stored_index_name ??
                   currentMap[name].stored_index_name,
+                section_for_censo_id:
+                  backendEntry.section_for_censo_id ??
+                  currentMap[name].section_for_censo_id,
+                checked: true,
               };
             }
           });
@@ -196,23 +203,18 @@ export const useCensoSections = (
 
   const rows = useMemo<CensoSectionRow[]>(() => {
     const map = mapRef.current;
-
     return sections.map((section) => {
-      const key = section.name.replace(/\s+/g, " ").trim();
-      const sel = map[key] ?? map[section.name];
-      const isChecked = sel?.checked ?? false;
-      const currentIndexId = isChecked ? (sel?.index_id ?? "") : "";
-
+      const sel = map[section.name];
       return {
         section_id: section.id,
         section_name: section.name,
-        checked: isChecked,
-        selected_index_id: currentIndexId,
-        stored_index_name: isChecked ? (sel?.stored_index_name ?? null) : null,
-        census_section_id: isChecked ? (sel?.census_section_id ?? null) : null,
+        checked: sel?.checked ?? false,
+        selected_index_id: sel?.index_id ?? "",
+        stored_index_name: sel?.stored_index_name ?? null,
+        section_for_censo_id: sel?.section_for_censo_id,
       };
     });
-  }, [sections, indexes, mapVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sections, mapVersion]);
 
   const allChecked = useMemo(
     () => rows.length > 0 && rows.every((r) => r.checked),
@@ -232,6 +234,7 @@ export const useCensoSections = (
             index_name: existing?.index_name ?? "",
             stored_index_name: existing?.stored_index_name ?? null,
             census_section_id: existing?.census_section_id ?? null,
+            section_for_censo_id: existing?.section_for_censo_id,
             checked,
           },
         };
@@ -253,6 +256,7 @@ export const useCensoSections = (
             index_name: existing?.index_name ?? "",
             stored_index_name: existing?.stored_index_name ?? null,
             census_section_id: existing?.census_section_id ?? null,
+            section_for_censo_id: existing?.section_for_censo_id,
             checked,
           };
         });
@@ -271,7 +275,11 @@ export const useCensoSections = (
           indexes.find((idx) => String(idx.id) === String(indexId))?.name ?? "";
         return {
           ...prev,
-          [key]: { ...prev[key], index_id: indexId, index_name: idxName },
+          [key]: {
+            ...prev[key],
+            index_id: indexId,
+            index_name: idxName,
+          },
         };
       });
     },
@@ -283,7 +291,7 @@ export const useCensoSections = (
       Object.values(mapRef.current).filter(
         (item) => item.checked && item.index_id,
       ),
-    [mapVersion], // eslint-disable-line react-hooks/exhaustive-deps
+    [mapVersion],
   );
 
   const saveChanges = useCallback(async () => {
