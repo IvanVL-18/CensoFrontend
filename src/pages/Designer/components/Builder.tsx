@@ -307,7 +307,8 @@ const Builder = () => {
           <Card.Body>
             <div className="row">
               <div className="column">
-                <div className="column-title">Pregunta</div>
+                <div className="column-title">Pregunta: {questionName}</div>
+                <br />
               </div>
               {instructions && (
                 <div className="column">
@@ -317,7 +318,6 @@ const Builder = () => {
                 </div>
               )}
             </div>
-            <p className="question-text">{questionName}</p>
           </Card.Body>
         </Card>
 
