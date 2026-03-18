@@ -1,5 +1,4 @@
 
-
 export interface CensusSectionInfo {
   id: string;   
   index: string; 
@@ -15,6 +14,7 @@ export interface QuestionIndexOption {
   id: string;   
   name: string;
 }
+
 
 export interface PaginationLink {
   url: string | null;
@@ -45,6 +45,8 @@ export interface PaginatedQuestionsResponse {
   total: number;
 }
 
+
+
 export interface SelectedQuestionItem {
   id: string; 
   question: {
@@ -57,12 +59,16 @@ export interface SelectedQuestionItem {
   };
 }
 
+
+
 export interface GetCensusQuestionsResponse {
   censusSection: CensusSectionInfo;
   questions: PaginatedQuestionsResponse;
   indexes: QuestionIndexOption[];
   selectedQuestions: SelectedQuestionItem[];
 }
+
+
 
 export interface CensusQuestionRow {
   question_id: string;
@@ -73,6 +79,8 @@ export interface CensusQuestionRow {
   census_question_id: string | null; 
 }
 
+
+
 export interface CensusQuestionItemPayload {
   index_id: string;
   question_id: string;
@@ -82,6 +90,17 @@ export interface StoreCensusQuestionsPayload {
   census_section_id: string; 
   items: CensusQuestionItemPayload[];
 }
+
+export interface UpdateCensusQuestionItemPayload {
+  census_question_id: string | null; 
+  index_id: string;
+  question_id: string;
+}
+
+export interface UpdateCensusQuestionsPayload {
+  items: UpdateCensusQuestionItemPayload[];
+}
+
 
 
 export interface ApiMessageResponse {

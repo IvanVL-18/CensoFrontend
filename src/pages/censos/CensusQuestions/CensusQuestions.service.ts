@@ -2,6 +2,7 @@ import api from "../../../lib/Axios";
 import type {
   GetCensusQuestionsResponse,
   StoreCensusQuestionsPayload,
+  UpdateCensusQuestionsPayload,
   ApiMessageResponse,
 } from "./Censusquestions.types";
 
@@ -15,12 +16,8 @@ export const getCensusQuestions = async (
 ): Promise<GetCensusQuestionsResponse> => {
   const response = await api.get<GetCensusQuestionsResponse>(
     `/census-question/${censusSectionId}`,
-    {
-      signal,
-      params: { page },
-    },
+    { signal, params: { page } },
   );
-
   return response.data;
 };
 
@@ -32,6 +29,17 @@ export const storeCensusQuestions = async (
     `/census-question`,
     payload,
   );
+  return response.data;
+};
 
+
+export const updateCensusQuestions = async (
+  censusSectionId: EncryptedCensusSectionId,
+  payload: UpdateCensusQuestionsPayload,
+): Promise<ApiMessageResponse> => {
+  const response = await api.put<ApiMessageResponse>(
+    `/census-question/${censusSectionId}`,
+    payload,
+  );
   return response.data;
 };

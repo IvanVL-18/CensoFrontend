@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCensusQuestions,
   storeCensusQuestions,
+  updateCensusQuestions,
 } from "./Censusquestions.service";
 import type {
   CensusSectionInfo,
@@ -11,6 +12,7 @@ import type {
   CensusQuestionRow,
   PaginationLinksObj,
 } from "./Censusquestions.types";
+
 
 
 type SelectedQuestionState = {
@@ -23,6 +25,7 @@ type SelectedQuestionState = {
 };
 
 type SelectedQuestionsMap = Record<string, SelectedQuestionState>;
+
 
 
 type UseCensusQuestionsReturn = {
@@ -52,6 +55,7 @@ type UseCensusQuestionsReturn = {
 };
 
 
+
 export const useCensusQuestions = (
   censusSectionId: string,
 ): UseCensusQuestionsReturn => {
@@ -74,6 +78,7 @@ export const useCensusQuestions = (
   const [mapVersion, setMapVersion] = useState(0);
   const initialLoadDone = useRef(false);
 
+  
 
   const updateMap = useCallback(
     (updater: (prev: SelectedQuestionsMap) => SelectedQuestionsMap) => {
@@ -119,6 +124,7 @@ export const useCensusQuestions = (
     [],
   );
 
+  
 
   const loadData = useCallback(
     async (page: number, signal?: AbortSignal, isInitial = false) => {
@@ -200,6 +206,7 @@ export const useCensusQuestions = (
     return () => controller.abort();
   }, [loadData]);
 
+  
 
   const rows = useMemo<CensusQuestionRow[]>(() => {
     const map = mapRef.current;
@@ -228,6 +235,7 @@ export const useCensusQuestions = (
     [rows],
   );
 
+ 
 
   const toggleQuestionRow = useCallback(
     (questionName: string, questionId: string, checked: boolean) => {
@@ -309,14 +317,24 @@ export const useCensusQuestions = (
       setSaving(true);
       setError(null);
 
-     
-      await storeCensusQuestions({
-        census_section_id: censusSectionId,
-        items: validItems.map((item) => ({
-          index_id: item.index_id,
-          question_id: item.question_id,
-        })),
-      });
+    
+      if (hasAssignments) {
+        await updateCensusQuestions(censusSectionId, {
+          items: validItems.map((item) => ({
+            census_question_id: item.census_question_id ?? null,
+            index_id: item.index_id,
+            question_id: item.question_id,
+          })),
+        });
+      } else {
+        await storeCensusQuestions({
+          census_section_id: censusSectionId,
+          items: validItems.map((item) => ({
+            index_id: item.index_id,
+            question_id: item.question_id,
+          })),
+        });
+      }
 
       mapRef.current = {};
       initialLoadDone.current = false;
@@ -343,7 +361,7 @@ export const useCensusQuestions = (
     } finally {
       setSaving(false);
     }
-  }, [censusSectionId, validItems, loadData, currentPage]);
+  }, [censusSectionId, hasAssignments, validItems, loadData, currentPage]);
 
   const reload = useCallback(async () => {
     await loadData(currentPage, undefined, false);
