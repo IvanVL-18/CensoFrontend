@@ -28,6 +28,7 @@ import CensoSectionsView from "./pages/censos/CensoSections/CensoSectionsView";
 
 import Questions from "./pages/Questions/Questions";
 import Builder from "././pages/Designer/components/Builder"
+import PreviewQuestionPage from "./pages/Answers/Answers"
 import "./App.css";
 export default function App() {
   return (
@@ -67,7 +68,8 @@ export default function App() {
         <Route path="/censos/:id/modulos" element={<CensoModulesView />} />
         <Route path="/censos/secciones/:id" element={<CensoSectionsView />} />
         <Route path="/builder/:id" element={<Builder />} />
-
+        
+        <Route path="/Respuestas/:id/preview" element={<PreviewQuestionPage />} />
       </Route>
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
