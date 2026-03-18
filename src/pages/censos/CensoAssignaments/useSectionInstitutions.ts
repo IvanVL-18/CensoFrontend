@@ -52,7 +52,7 @@ export const useSectionInstitutions = (
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   const originalMapRef = useRef<InstitutionMap>({});
   const [mapVersion, setMapVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -60,9 +60,8 @@ export const useSectionInstitutions = (
   const buildOriginalMap = useCallback((assignments: AssignmentItem[]): InstitutionMap => {
     const map: InstitutionMap = {};
     assignments.forEach((a) => {
-      const instId = a.institution_id;
-      map[instId] = {
-        institutionId: instId,
+      map[a.institution_id] = {
+        institutionId: a.institution_id,
         assignmentId: a.id,
       };
     });
@@ -73,26 +72,33 @@ export const useSectionInstitutions = (
     try {
       setLoading(true);
       setError(null);
-      
+
       const data = await getSectionInstitutions(sectionId, signal);
-      
-      // CORRECCIÓN: usar 'assignments' (con doble 's') en lugar de 'assigments'
+
       const receivedAssignments = Array.isArray(data.assignments) ? data.assignments : [];
       const receivedInstitutions = Array.isArray(data.institutions) ? data.institutions : [];
 
       setSectionInfo(data.section || null);
       setAllInstitutions(receivedInstitutions);
       setAssignments(receivedAssignments);
-      
-      const newOriginalMap = buildOriginalMap(receivedAssignments);
-      originalMapRef.current = newOriginalMap;
-      setMapVersion(v => v + 1);
-      
-      const initialSelected = new Set(
-        receivedAssignments.map(a => a.institution_id)
-      );
+
+      const nameToIdMap = new Map<string, string>();
+      receivedInstitutions.forEach((inst) => {
+        nameToIdMap.set(inst.name, String(inst.id));
+      });
+
+      const initialSelected = new Set<string>();
+      receivedAssignments.forEach((assignment) => {
+        const realId = nameToIdMap.get(assignment.name);
+        if (realId) {
+          initialSelected.add(realId);
+        }
+      });
       setSelectedIds(initialSelected);
-      
+
+      originalMapRef.current = buildOriginalMap(receivedAssignments);
+      setMapVersion((v) => v + 1);
+
     } catch (err: any) {
       if (err.name !== "CanceledError" && err.name !== "AbortError") {
         const backendMessage = err.response?.data?.message;
@@ -112,7 +118,7 @@ export const useSectionInstitutions = (
   const filteredInstitutions = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
     if (!term) return allInstitutions;
-    return allInstitutions.filter(inst =>
+    return allInstitutions.filter((inst) =>
       inst.name.toLowerCase().includes(term)
     );
   }, [allInstitutions, searchTerm]);
@@ -124,7 +130,7 @@ export const useSectionInstitutions = (
   }, [filteredInstitutions, currentPage]);
 
   const toggleInstitution = useCallback((id: string, checked: boolean) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       const idStr = String(id);
       if (checked) next.add(idStr);
@@ -134,9 +140,9 @@ export const useSectionInstitutions = (
   }, []);
 
   const toggleAll = useCallback((checked: boolean) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
-      paginatedInstitutions.forEach(inst => {
+      paginatedInstitutions.forEach((inst) => {
         const idStr = String(inst.id);
         if (checked) next.add(idStr);
         else next.delete(idStr);
@@ -147,17 +153,17 @@ export const useSectionInstitutions = (
 
   const saveChanges = useCallback(async () => {
     if (!sectionInfo) return false;
-    
+
     const institutionsToSave = Array.from(selectedIds);
-    const items = institutionsToSave.map(institution_id => ({ institution_id }));
-    
+    const items = institutionsToSave.map((institution_id) => ({ institution_id }));
+
     try {
       setSaving(true);
       setError(null);
       setSuccessMessage(null);
 
       const hasExisting = assignments.length > 0;
-      
+
       let response;
       if (hasExisting) {
         response = await updateSectionInstitutions(sectionInfo.section_id, {
@@ -170,9 +176,8 @@ export const useSectionInstitutions = (
         });
       }
 
-      setSuccessMessage(response?.message || "Cambios guardados correctamente");
       await loadData();
-      
+
       return true;
     } catch (err: any) {
       const msg = err.response?.data?.message ?? "Error al guardar";
