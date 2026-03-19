@@ -1,4 +1,5 @@
 import "/src/assets/global-variables.css";
+import EstrellaHeader from "../../../Estrella_header.svg"
 
 type Props = {
   title?: string;
@@ -12,7 +13,7 @@ export default function WelcomeCard({
   title = "Censos del Estado de Hidalgo",
   subtitle = "Plataforma oficial para la gestión y análisis de censos",
   userName,
-  logoSrc = "/Estrella_header.svg",
+  logoSrc = EstrellaHeader,
 }: Props) {
   return (
     <section

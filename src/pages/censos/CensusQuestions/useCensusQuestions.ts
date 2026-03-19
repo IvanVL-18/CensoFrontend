@@ -3,7 +3,7 @@ import {
   getCensusQuestions,
   storeCensusQuestions,
   updateCensusQuestions,
-} from "./Censusquestions.service";
+} from "./CensusQuestions.service";
 import type {
   CensusSectionInfo,
   QuestionOption,
@@ -11,7 +11,7 @@ import type {
   SelectedQuestionItem,
   CensusQuestionRow,
   PaginationLinksObj,
-} from "./Censusquestions.types";
+} from "./CensusQuestions.types";
 
 
 
