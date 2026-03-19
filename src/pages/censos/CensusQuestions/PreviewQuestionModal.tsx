@@ -1,6 +1,6 @@
 import { X, ChevronLeft, ChevronRight, Save, Calculator, AlertCircle, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { getQuestionComponent } from "./Censusquestions.service";
+import { getQuestionComponent } from "./CensusQuestions.service";
 import { Form } from "@formio/react";
 // Bootstrap scoped: solo aplica dentro de <div className="bs">
 // Form.io necesita Bootstrap para renderizar sus campos correctamente.
