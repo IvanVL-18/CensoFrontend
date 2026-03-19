@@ -1,20 +1,18 @@
-
 export interface CensusSectionInfo {
-  id: string;   
-  index: string; 
-  name: string;  
+  id: string;
+  index: string;
+  name: string;
 }
 
 export interface QuestionOption {
-  id: string;   
+  id: string;
   name: string;
 }
 
 export interface QuestionIndexOption {
-  id: string;   
+  id: string;
   name: string;
 }
-
 
 export interface PaginationLink {
   url: string | null;
@@ -45,10 +43,8 @@ export interface PaginatedQuestionsResponse {
   total: number;
 }
 
-
-
 export interface SelectedQuestionItem {
-  id: string; 
+  id: string;
   question: {
     id: string;
     name: string;
@@ -59,8 +55,6 @@ export interface SelectedQuestionItem {
   };
 }
 
-
-
 export interface GetCensusQuestionsResponse {
   censusSection: CensusSectionInfo;
   questions: PaginatedQuestionsResponse;
@@ -68,18 +62,14 @@ export interface GetCensusQuestionsResponse {
   selectedQuestions: SelectedQuestionItem[];
 }
 
-
-
 export interface CensusQuestionRow {
   question_id: string;
   question_name: string;
   checked: boolean;
   selected_index_id: string;
   stored_index_name: string | null;
-  census_question_id: string | null; 
+  census_question_id: string | null;
 }
-
-
 
 export interface CensusQuestionItemPayload {
   index_id: string;
@@ -87,12 +77,12 @@ export interface CensusQuestionItemPayload {
 }
 
 export interface StoreCensusQuestionsPayload {
-  census_section_id: string; 
+  census_section_id: string;
   items: CensusQuestionItemPayload[];
 }
 
 export interface UpdateCensusQuestionItemPayload {
-  census_question_id: string | null; 
+  census_question_id: string | null;
   index_id: string;
   question_id: string;
 }
@@ -101,8 +91,8 @@ export interface UpdateCensusQuestionsPayload {
   items: UpdateCensusQuestionItemPayload[];
 }
 
-
-
 export interface ApiMessageResponse {
   message: string;
 }
+
+export type EncryptedCensusSectionId = string;

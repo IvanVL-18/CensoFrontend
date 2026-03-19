@@ -4,9 +4,8 @@ import type {
   StoreCensoSectionsPayload,
   UpdateCensoSectionsPayload,
   ApiMessageResponse,
+  EncryptedCensusModuleId,
 } from "./CensoSections.types";
-
-type EncryptedCensusModuleId = string;
 
 export const getCensoSections = async (
   censusModuleId: EncryptedCensusModuleId,
