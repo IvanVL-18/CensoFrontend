@@ -24,7 +24,6 @@ const CensoModulesView: React.FC = () => {
   const handleSave = async () => {
     const ok = await saveChanges();
     if (ok) {
-      console.log("Módulos guardados correctamente");
     }
   };
 
