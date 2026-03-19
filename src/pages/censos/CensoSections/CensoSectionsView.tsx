@@ -214,11 +214,20 @@ const CensoSectionsView: React.FC = () => {
                               </button>
                               <button
                                 type="button"
-                                disabled={!row.checked}
+                                disabled={
+                                  !row.checked || !row.census_section_id
+                                }
+                                onClick={() => {
+                                  if (row.census_section_id) {
+                                    navigate(
+                                      `/censos/preguntas/${row.census_section_id}`,
+                                    );
+                                  }
+                                }}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-600 text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                                 title={
-                                  row.checked
-                                    ? "Ir"
+                                  row.checked && row.census_section_id
+                                    ? "Asignar preguntas"
                                     : "Selecciona la sección primero"
                                 }
                               >

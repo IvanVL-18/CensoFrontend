@@ -266,7 +266,6 @@ export function useInstitutions() {
           if (pendingAddressData.municipality) dataToSave.municipality = pendingAddressData.municipality;
         }
         
-        console.log("Datos enviados al backend:", dataToSave); 
         if (editingInstitution) {
           response = await updateInstitution(
             editingInstitution.id,

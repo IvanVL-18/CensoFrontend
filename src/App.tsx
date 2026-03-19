@@ -19,15 +19,16 @@ import PermissionRoles from "./pages/PermissionRoles/PermissionRoles";
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
 import Verification from "./pages/Verification/Verification";
-import ResetPassword from "./pages/ResetPassword/ResetPassword"
+import ResetPassword from "./pages/ResetPassword/ResetPassword";
 
 import Censos from "./pages/censos/Censos";
 import { CensoDetail } from "./pages/censos/components/CensoDetail";
 import CensoModulesView from "./pages/censos/CensoModules/CensoModulesView";
 import CensoSectionsView from "./pages/censos/CensoSections/CensoSectionsView";
+import CensusQuestionsView from "./pages/censos/CensusQuestions/CensusQuestionsView";
 
 import Questions from "./pages/Questions/Questions";
-import Builder from "././pages/Designer/components/Builder"
+import Builder from "././pages/Designer/components/Builder";
 import "./App.css";
 export default function App() {
   return (
@@ -43,7 +44,7 @@ export default function App() {
         <Route path="/indices" element={<Index />} />
         <Route path="/verification" element={<Verification />} />
 
-        <Route path="/ResetPassword" element={<ResetPassword/>} />
+        <Route path="/ResetPassword" element={<ResetPassword />} />
 
         {/* Censos */}
         <Route path="/graficador" element={<ChartsPage />} />
@@ -54,7 +55,7 @@ export default function App() {
         <Route path="/secciones" element={<Sections />} />
         <Route path="/ocupaciones" element={<Occupations />} />
         <Route path="/roles" element={<Roles />} />
-        
+
         <Route path="/preguntas" element={<Questions />} />
         <Route path="/roles/permission-roles" element={<PermissionRoles />} />
         <Route path="/permisos" element={<Permissions />} />
@@ -66,8 +67,8 @@ export default function App() {
         <Route path="/censos/:id" element={<CensoDetail />} />
         <Route path="/censos/:id/modulos" element={<CensoModulesView />} />
         <Route path="/censos/secciones/:id" element={<CensoSectionsView />} />
+        <Route path="/censos/preguntas/:id" element={<CensusQuestionsView />} />
         <Route path="/builder/:id" element={<Builder />} />
-
       </Route>
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
