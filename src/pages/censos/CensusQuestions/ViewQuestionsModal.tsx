@@ -1,11 +1,13 @@
-import { X } from "lucide-react";
+import { X, Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../../../lib/Axios";
+import { PreviewQuestionModal } from "./PreviewQuestionModal";
+// Ajusta la ruta según donde tengas PreviewQuestionModal en tu proyecto
 
 interface QuestionDetail {
   id: string;
   name: string;
-  description: string | null;
+  instructions: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -36,17 +38,27 @@ const formatDate = (dateString: string | null) => {
 function DetailRow({
   label,
   value,
+  isLongText = false,
 }: {
   label: string;
   value: string | null | undefined;
+  isLongText?: boolean;
 }) {
   const safeValue = value?.trim() ? value : "N/A";
   return (
-    <div>
-      <label className="block text-sm font-medium text-gray-500">{label}</label>
-      <p className="text-lg font-semibold text-gray-900 break-words">
-        {safeValue}
-      </p>
+    <div className={isLongText ? "col-span-2" : ""}>
+      <label className="block text-sm font-medium text-gray-500 mb-1">
+        {label}
+      </label>
+      {isLongText ? (
+        <div className="bg-gray-50 p-3 rounded-lg text-sm border border-gray-100 whitespace-pre-wrap break-words text-gray-900">
+          {safeValue}
+        </div>
+      ) : (
+        <p className="text-lg font-semibold text-gray-900 break-words">
+          {safeValue}
+        </p>
+      )}
     </div>
   );
 }
@@ -59,6 +71,9 @@ export function ViewQuestionModal({
   const [question, setQuestion] = useState<QuestionDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Estado del PreviewQuestionModal (Form.io)
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !questionId) return;
@@ -98,23 +113,27 @@ export function ViewQuestionModal({
     return () => controller.abort();
   }, [isOpen, questionId]);
 
+
+  const handleClose = () => {
+    setPreviewOpen(false);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-40 bg-black bg-opacity-30 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      />
-
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#000000ab] p-4">
+      
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
+
+          
           <div className="flex justify-between items-center p-4 bg-[var(--pantone-7421)]">
             <h2 className="text-xl font-bold text-white">
               Detalle de la Pregunta
             </h2>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-white hover:text-gray-300"
               aria-label="Cerrar modal"
             >
@@ -122,6 +141,7 @@ export function ViewQuestionModal({
             </button>
           </div>
 
+         
           <div className="overflow-y-auto p-6">
             {loading && (
               <p className="text-center text-sm text-gray-400 py-6">
@@ -135,18 +155,16 @@ export function ViewQuestionModal({
 
             {question && !loading && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="col-span-2">
-                  <DetailRow
-                    label="Nombre de la Pregunta:"
-                    value={question.name}
-                  />
-                </div>
-                <div className="col-span-2">
-                  <DetailRow
-                    label="Descripción:"
-                    value={question.description}
-                  />
-                </div>
+                <DetailRow
+                  label="Nombre de la Pregunta:"
+                  value={question.name}
+                  isLongText
+                />
+                <DetailRow
+                  label="Instrucciones:"
+                  value={question.instructions}
+                  isLongText
+                />
                 <DetailRow
                   label="Fecha de creación:"
                   value={formatDate(question.created_at)}
@@ -159,10 +177,22 @@ export function ViewQuestionModal({
             )}
           </div>
 
-          <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
+        
+          <div className="flex justify-end items-center gap-4 p-4 bg-gray-50 border-t border-gray-100">
+         
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => setPreviewOpen(true)}
+              disabled={!question}
+              className="flex items-center gap-2 bg-[var(--pantone-7421)] text-white font-bold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Eye size={18} />
+              Ver Componente
+            </button>
+
+            <button
+              type="button"
+              onClick={handleClose}
               className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95"
             >
               Cerrar
@@ -170,6 +200,14 @@ export function ViewQuestionModal({
           </div>
         </div>
       </div>
+
+      
+      <PreviewQuestionModal
+        isOpen={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        questionId={questionId}
+
+      />
     </>
   );
 }

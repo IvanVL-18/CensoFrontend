@@ -8,7 +8,6 @@ import type {
 
 type EncryptedCensusSectionId = string;
 
-
 export const getCensusQuestions = async (
   censusSectionId: EncryptedCensusSectionId,
   page: number = 1,
@@ -21,7 +20,6 @@ export const getCensusQuestions = async (
   return response.data;
 };
 
-
 export const storeCensusQuestions = async (
   payload: StoreCensusQuestionsPayload,
 ): Promise<ApiMessageResponse> => {
@@ -32,7 +30,6 @@ export const storeCensusQuestions = async (
   return response.data;
 };
 
-
 export const updateCensusQuestions = async (
   censusSectionId: EncryptedCensusSectionId,
   payload: UpdateCensusQuestionsPayload,
@@ -40,6 +37,17 @@ export const updateCensusQuestions = async (
   const response = await api.put<ApiMessageResponse>(
     `/census-question/${censusSectionId}`,
     payload,
+  );
+  return response.data;
+};
+
+export const getQuestionComponent = async (
+  questionId: string | number,
+  signal?: AbortSignal,
+): Promise<any> => {
+  const response = await api.get(
+    `/questions/get-component/${encodeURIComponent(String(questionId))}`,
+    { signal },
   );
   return response.data;
 };
