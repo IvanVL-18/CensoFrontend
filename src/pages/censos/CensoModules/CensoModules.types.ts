@@ -66,3 +66,5 @@ export interface UpdateCensoModulesPayload {
 export interface ApiMessageResponse {
   message: string;
 }
+
+export type EncryptedCensoId = string;
