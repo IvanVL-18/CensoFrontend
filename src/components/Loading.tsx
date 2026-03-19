@@ -1,6 +1,5 @@
 import React from "react";
-import mark from "../../public/Estrella_header.svg";
-
+import mark from "../Estrella_header.svg";
 type LoadingProps = {
   size?: number;
   fullScreen?: boolean;
