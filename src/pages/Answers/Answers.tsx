@@ -8,6 +8,7 @@ function AnswersPageContent() {
       // Si la pregunta no tiene repeat, submissions tiene 1 elemento → mandamos el objeto directamente.
       // Si tiene repeat, mandamos el array completo para que el backend lo serialice.
       const payload = submissions.length === 1 ? submissions[0] : submissions;
+        console.log("🟡 PAYLOAD QUE SE ENVÍA:", JSON.stringify(payload, null, 2));
       await saveAnswer(payload);
       alert("¡Respuesta guardada correctamente en la base de datos!");
     } catch (error) {
