@@ -1,5 +1,6 @@
-import { X, Calendar, FileText, Layers, PieChart, Clock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { X, Calendar, PieChart, Clock, Settings, Layers, Copy } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { ViewCensoModalProps } from "../Censos.types";
 
 const formatDate = (dateString?: string | null) => {
@@ -31,11 +32,10 @@ const formatDateTime = (dateString?: string | null) => {
   }
 };
 
-export function ViewCensoModal({
-  isOpen,
-  onClose,
-  Censo,
-}: ViewCensoModalProps) {
+export function ViewCensoModal({ isOpen, onClose, Censo }: ViewCensoModalProps) {
+  const navigate = useNavigate();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   if (!isOpen || !Censo) return null;
 
   const createdYear = Censo.created_at
@@ -48,18 +48,67 @@ export function ViewCensoModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
+
         <div className="flex justify-between items-center p-4 bg-[#691b31] shrink-0">
-          <h2 className="text-xl font-bold text-white">{Censo.name}</h2>
-          <button
-            onClick={onClose}
-            className="text-white hover:text-gray-300"
-            aria-label="Cerrar modal"
-          >
-            <X size={24} />
-          </button>
+          <h2 className="text-xl font-bold text-white line-clamp-1 pr-2">
+            {Censo.name}
+          </h2>
+
+          <div className="flex items-center gap-2">
+     
+            <div className="relative">
+              <button
+                onClick={() => setSettingsOpen((v) => !v)}
+                className="p-1.5 rounded-full hover:bg-white/20 transition-colors text-white"
+                aria-label="Configuración"
+              >
+                <Settings size={20} />
+              </button>
+
+              {settingsOpen && (
+                <>
+   
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setSettingsOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-20 py-1">
+                    <button
+                      onClick={() => {
+                        setSettingsOpen(false);
+                        onClose();
+                        navigate(`/censos/${Censo.id}/modulos`);
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <Layers size={16} className="mr-2 text-[#691b31]" />
+                      Módulos
+                    </button>
+                    <button
+                      disabled
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
+                      title="Próximamente"
+                    >
+                      <Copy size={16} className="mr-2" />
+                      Clonar censo
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={onClose}
+              className="text-white hover:text-gray-300"
+              aria-label="Cerrar modal"
+            >
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         <div className="overflow-y-auto divide-y divide-gray-200">
+
           <div className="px-6 py-4 flex items-center gap-2 text-gray-600">
             <Clock size={18} className="text-[#C3A67C]" />
             <span className="text-sm font-medium">Creado:</span>
@@ -81,18 +130,14 @@ export function ViewCensoModal({
                 <Calendar size={16} className="text-[#691b31]" />
                 <h3 className="text-sm font-semibold">Fecha de inicio</h3>
               </div>
-              <p className="text-base font-medium">
-                {formatDate(Censo.start_date)}
-              </p>
+              <p className="text-base font-medium">{formatDate(Censo.start_date)}</p>
             </div>
             <div>
               <div className="flex items-center gap-2 text-gray-700 mb-1">
                 <Calendar size={16} className="text-[#691b31]" />
                 <h3 className="text-sm font-semibold">Fecha de fin</h3>
               </div>
-              <p className="text-base font-medium">
-                {formatDate(Censo.end_date)}
-              </p>
+              <p className="text-base font-medium">{formatDate(Censo.end_date)}</p>
             </div>
           </div>
 
@@ -101,51 +146,14 @@ export function ViewCensoModal({
               <h3 className="text-sm font-semibold text-gray-700 mb-1">
                 Fecha de creación
               </h3>
-              <p className="text-sm text-gray-600">
-                {formatDateTime(Censo.created_at)}
-              </p>
+              <p className="text-sm text-gray-600">{formatDateTime(Censo.created_at)}</p>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-1">
                 Fecha de desactivación
               </h3>
-              <p className="text-sm text-gray-600">
-                {formatDateTime(Censo.deleted_at)}
-              </p>
+              <p className="text-sm text-gray-600">{formatDateTime(Censo.deleted_at)}</p>
             </div>
-          </div>
-
-          <div className="px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link
-              to={`/censos/${Censo.id}/modulos`}
-              onClick={onClose}
-              className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-[#691b31] hover:bg-gray-50 transition-all"
-            >
-              <div className="p-2 bg-[#691b31] rounded-full">
-                <Layers size={20} className="text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Módulos</h3>
-                <p className="text-xs text-gray-500">
-                  Administrar módulos del censo
-                </p>
-              </div>
-            </Link>
-            <Link
-              to={`/censos/${Censo.id}/secciones`}
-              onClick={onClose}
-              className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-[#691b31] hover:bg-gray-50 transition-all"
-            >
-              <div className="p-2 bg-[#691b31] rounded-full">
-                <FileText size={20} className="text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Secciones</h3>
-                <p className="text-xs text-gray-500">
-                  Gestionar secciones y preguntas
-                </p>
-              </div>
-            </Link>
           </div>
 
           <div className="px-6 py-4">
@@ -185,12 +193,8 @@ export function ViewCensoModal({
               </div>
               <div className="flex-1 space-y-2 w-full">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">
-                    Total de preguntas
-                  </span>
-                  <span className="text-xl font-bold text-gray-800">
-                    {totalPreguntas}
-                  </span>
+                  <span className="text-sm text-gray-600">Total de preguntas</span>
+                  <span className="text-xl font-bold text-gray-800">{totalPreguntas}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -198,14 +202,13 @@ export function ViewCensoModal({
                     style={{ width: `${porcentaje}%` }}
                   />
                 </div>
-                <p className="text-xs text-gray-500">
-                  * Total de preguntas del censo
-                </p>
+                <p className="text-xs text-gray-500">* Total de preguntas del censo</p>
               </div>
             </div>
           </div>
         </div>
 
+   
         <div className="flex justify-end items-center gap-4 p-4 bg-gray-50 border-t border-gray-100 shrink-0">
           <button
             type="button"
