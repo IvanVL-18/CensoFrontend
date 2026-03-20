@@ -155,6 +155,7 @@ function CensosPageContent() {
           loading={loading}
           error={error}
           onEdit={handleOpenEdit}
+          onView={(censo) => modals.openView(censo)}
           onBan={(u) => modals.openConfirm(u, "ban")}
           onRestore={(u) => modals.openConfirm(u, "restore")}
           onDelete={(u) => modals.openConfirm(u, "delete")}
