@@ -52,10 +52,11 @@ export interface CensoModuleRow {
 export interface CensoModulesItemPayload {
   index_id: string;
   module_id: string;
+  census_module_id?: string | null;
 }
 
 export interface StoreCensoModulesPayload {
-  census_id: string;  
+  census_id: string;
   items: CensoModulesItemPayload[];
 }
 
