@@ -158,6 +158,7 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
       .map((row) => ({
         module_id: row.module_id,
         index_id: row.selected_index_id,
+        census_module_id: row.encrypted_id ?? null,
       }));
   }, [rows]);
 
