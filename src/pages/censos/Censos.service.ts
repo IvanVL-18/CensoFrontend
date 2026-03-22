@@ -127,3 +127,15 @@ export const createCensoModules = async (
   const response = await api.post("/module-for-censo", data);
   return response.data;
 };
+
+
+export const cloneCenso = async (
+  sourceCensusId: CensoId,
+  targetCensusId: CensoId,
+): Promise<{ message: string }> => {
+  const response = await api.post("/censuses/clone", {
+    source_census_id: sourceCensusId,
+    target_census_id: targetCensusId,
+  });
+  return response.data;
+};

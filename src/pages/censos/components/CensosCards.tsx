@@ -8,7 +8,6 @@ import {
   Calendar,
 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import type { Censo, Meta } from "../Censos.types";
 
 export interface CensosCardsProps {
@@ -16,7 +15,7 @@ export interface CensosCardsProps {
   meta: Meta | null;
   loading: boolean;
   error: string | null;
-  
+  onView: (censo: Censo) => void;
   onEdit: (censo: Censo) => void;
   onBan: (censo: Censo) => void;
   onRestore: (censo: Censo) => void;
@@ -27,6 +26,7 @@ export function CensosCards({
   censos,
   loading,
   error,
+  onView,
   onEdit,
   onBan,
   onRestore,
@@ -72,7 +72,6 @@ export function CensosCards({
           yearDisplay = "—";
         }
 
-        
         const formatDate = (dateStr?: string | null) => {
           if (!dateStr) return "—";
           try {
@@ -94,7 +93,6 @@ export function CensosCards({
             key={censo.id}
             className="bg-white rounded-2xl shadow-md border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col hover:border-red-700 group overflow-hidden"
           >
-            {/* Cabecera roja estilo institucional */}
             <div className="flex justify-between items-center p-4 bg-red-900">
               <h3 className="text-lg font-semibold text-white line-clamp-2 pr-2">
                 {censo.name}
@@ -159,9 +157,8 @@ export function CensosCards({
               </div>
             </div>
 
-            {/* Contenido del card */}
+            {/* Contenido */}
             <div className="p-5 flex flex-col flex-1">
-       
               <div className="mb-4">
                 <span
                   className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${
@@ -179,7 +176,6 @@ export function CensosCards({
                 </span>
               </div>
 
-              
               <div className="space-y-2 text-sm text-gray-600 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
                 <div className="flex items-center">
                   <Calendar size={16} className="mr-2 text-red-600" />
@@ -197,19 +193,14 @@ export function CensosCards({
                 </div>
               </div>
 
-           
-              <Link
-                to={`/censos/${censo.id}`}
-className="mt-auto w-full 
-bg-[var(--pantone-465)] 
-hover:bg-[#a8844f] 
-text-white font-medium py-2.5 px-4 rounded-lg 
-transition-all duration-300 flex items-center justify-center 
-shadow-md hover:shadow-lg focus:outline-none 
-focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"              >
+              <button
+                type="button"
+                onClick={() => onView(censo)}
+                className="mt-auto w-full bg-[var(--pantone-465)] hover:bg-[#a8844f] text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
+              >
                 Ver detalles
                 <Eye size={18} className="ml-2" />
-              </Link>
+              </button>
             </div>
           </div>
         );
