@@ -103,12 +103,12 @@ export const getquestionComponent = async (
 // En Answers.service.ts (al final)
 
 export const saveAnswer = async (
+  censusQuestionId: string,
   answerData: any
 ): Promise<{ message: string; data?: any }> => {
-  // answerData puede ser:
-  //   - un objeto plano   → pregunta sin repeat (1 iteración)
-  //   - un array de objetos → pregunta con repeat (varias iteraciones)
-  // El backend recibe el campo 'answer' y lo serializa a JSON si es necesario.
-  const response = await api.post("/answers", { answer: answerData });
+  const response = await api.post("/answers", {
+    census_question_id: censusQuestionId, // ← encriptado, llega directo del URL
+    answer: answerData,
+  });
   return response.data;
 };
