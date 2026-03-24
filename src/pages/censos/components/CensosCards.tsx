@@ -68,6 +68,7 @@ export function CensosCards({
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {censos.map((censo) => {
         const isActive = !censo.deleted_at || censo.deleted_at === "null";
+        const isInactive = !isActive;
         const statusText = isActive ? "Activo" : "Inactivo";
 
         let yearDisplay: number | string = censo.year || "";
@@ -97,16 +98,33 @@ export function CensosCards({
         return (
           <div
             key={censo.id}
-            className="bg-white rounded-2xl shadow-md border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col hover:border-red-700 group overflow-hidden"
+            className={`rounded-2xl shadow-md border flex flex-col overflow-hidden transition-all duration-300 ${
+              isInactive
+                ? "bg-[#fafafb] border-[#eceff3]"
+                : "bg-white border-gray-200 hover:shadow-xl hover:border-red-700 group"
+            }`}
           >
-            <div className="flex justify-between items-center p-4 bg-red-900">
+            <div
+              className={`flex justify-between items-center p-4 ${
+                isInactive ? "bg-[#c4cad3]" : "bg-red-900"
+              }`}
+            >
               <h3 className="text-lg font-semibold text-white line-clamp-2 pr-2">
                 {censo.name}
               </h3>
+
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => onView(censo)}
-                  className="p-1.5 rounded-full hover:bg-red-500 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white"
+                  onClick={() => {
+                    if (isInactive) return;
+                    onView(censo);
+                  }}
+                  disabled={isInactive}
+                  className={`p-1.5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white ${
+                    isInactive
+                      ? "bg-white/25 text-white/85 cursor-not-allowed"
+                      : "hover:bg-red-500 text-white"
+                  }`}
                   aria-label="Ver detalles"
                 >
                   <Eye size={18} />
@@ -117,11 +135,14 @@ export function CensosCards({
                     onClick={() =>
                       setMenuOpenId(menuOpenId === censo.id ? null : censo.id)
                     }
-                    className="p-1.5 rounded-full hover:bg-red-500 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white"
+                    className={`p-1.5 rounded-full transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white ${
+                      isInactive ? "hover:bg-white/20" : "hover:bg-red-500"
+                    }`}
                     aria-label="Opciones"
                   >
                     <MoreVertical size={18} />
                   </button>
+
                   {menuOpenId === censo.id && (
                     <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10 py-1">
                       {isActive ? (
@@ -154,7 +175,7 @@ export function CensosCards({
                             }}
                             className="flex items-center w-full px-4 py-2 text-sm text-green-600 hover:bg-gray-100 transition-colors"
                           >
-                            <CircleArrowUp size={16} className="mr-2" />{" "}
+                            <CircleArrowUp size={16} className="mr-2" />
                             Restaurar
                           </button>
                           <button
@@ -180,30 +201,55 @@ export function CensosCards({
                   className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${
                     isActive
                       ? "bg-green-100 text-green-800 border border-green-200"
-                      : "bg-gray-100 text-gray-800 border border-gray-200"
+                      : "bg-[#f5f7fa] text-[#6b7280] border border-[#e5e7eb]"
                   }`}
                 >
                   <span
                     className={`w-2 h-2 rounded-full mr-1.5 ${
-                      isActive ? "bg-green-500 animate-pulse" : "bg-gray-500"
+                      isActive ? "bg-green-500 animate-pulse" : "bg-[#9ca3af]"
                     }`}
                   />
                   {statusText} {yearDisplay !== "—" ? `· ${yearDisplay}` : ""}
                 </span>
               </div>
 
-              <div className="space-y-2 text-sm text-gray-600 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
+              <div
+                className={`space-y-2 text-sm mb-4 p-3 rounded-lg border ${
+                  isInactive
+                    ? "bg-[#f8f9fb] border-[#e7eaf0] text-[#7b8594]"
+                    : "bg-gray-50 border-gray-100 text-gray-600"
+                }`}
+              >
                 <div className="flex items-center">
-                  <Calendar size={16} className="mr-2 text-red-600" />
+                  <Calendar
+                    size={16}
+                    className={
+                      isInactive ? "mr-2 text-[#b0b8c4]" : "mr-2 text-red-600"
+                    }
+                  />
                   <span className="font-medium">Inicio:</span>
-                  <span className="ml-1 font-mono text-gray-800">
+                  <span
+                    className={`ml-1 font-mono ${
+                      isInactive ? "text-[#7b8594]" : "text-gray-800"
+                    }`}
+                  >
                     {startDate}
                   </span>
                 </div>
+
                 <div className="flex items-center">
-                  <Calendar size={16} className="mr-2 text-amber-600" />
+                  <Calendar
+                    size={16}
+                    className={
+                      isInactive ? "mr-2 text-[#b0b8c4]" : "mr-2 text-amber-600"
+                    }
+                  />
                   <span className="font-medium">Fin:</span>
-                  <span className="ml-1 font-mono text-gray-800">
+                  <span
+                    className={`ml-1 font-mono ${
+                      isInactive ? "text-[#7b8594]" : "text-gray-800"
+                    }`}
+                  >
                     {endDate}
                   </span>
                 </div>
@@ -212,16 +258,33 @@ export function CensosCards({
               <div className="mt-auto flex gap-2">
                 <button
                   type="button"
-                  onClick={() => onModules(censo)}
-                  className="flex-1 bg-[var(--pantone-465)] hover:bg-[#a8844f] text-white font-medium py-2.5 px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
+                  onClick={() => {
+                    if (isInactive) return;
+                    onModules(censo);
+                  }}
+                  disabled={isInactive}
+                  className={`flex-1 font-medium py-2.5 px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md ${
+                    isInactive
+                      ? "bg-[#eef1f5] text-[#9aa3b2] cursor-not-allowed shadow-none"
+                      : "bg-[var(--pantone-465)] hover:bg-[#a8844f] text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
+                  }`}
                 >
                   <ListOrdered size={16} />
                   Asignaciones
                 </button>
+
                 <button
                   type="button"
-                  onClick={() => onClone(censo)}
-                  className="flex-1 bg-[var(--pantone-465)] hover:bg-[#a8844f] text-white font-medium py-2.5 px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
+                  onClick={() => {
+                    if (isInactive) return;
+                    onClone(censo);
+                  }}
+                  disabled={isInactive}
+                  className={`flex-1 font-medium py-2.5 px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md ${
+                    isInactive
+                      ? "bg-[#eef1f5] text-[#9aa3b2] cursor-not-allowed shadow-none"
+                      : "bg-[var(--pantone-465)] hover:bg-[#a8844f] text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
+                  }`}
                 >
                   <Copy size={16} />
                   Clonar
