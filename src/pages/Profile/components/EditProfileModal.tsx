@@ -68,7 +68,7 @@ export default function EditProfileModal({ open, onClose, user }: Props) {
                   maxLength={20}
                 />
                 <ProfileField
-                  className="md:col-span-2"
+                  className="sm:col-span-2"
                   label="Dirección"
                   icon={MapPin}
                   value={draft.address ?? ""}
