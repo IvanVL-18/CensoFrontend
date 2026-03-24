@@ -61,7 +61,8 @@ export function CensosCards({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {censos.map((censo) => {
-        const isActive = !censo.deleted_at;
+        const isActive = !censo.deleted_at || censo.deleted_at === "null"; 
+
         const statusText = isActive ? "Activo" : "Inactivo";
 
         let yearDisplay: number | string = censo.year || "";
@@ -109,7 +110,7 @@ export function CensosCards({
                 </button>
                 {menuOpenId === censo.id && (
                   <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10 py-1">
-                    {!censo.deleted_at ? (
+                    {isActive ? ( 
                       <>
                         <button
                           onClick={() => {
@@ -157,7 +158,6 @@ export function CensosCards({
               </div>
             </div>
 
-            {/* Contenido */}
             <div className="p-5 flex flex-col flex-1">
               <div className="mb-4">
                 <span
