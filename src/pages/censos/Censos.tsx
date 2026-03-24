@@ -6,7 +6,6 @@ import { CensosToolbar } from "./components/CensosToolbar";
 import { CensosCards } from "./components/CensosCards";
 import Pagination from "../../components/Pagination";
 import { CensoCreateModal } from "./components/CensoCreateModal";
-import { CensoCreateSelectionModal } from "./components/CensoCreateSelectionModal";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { ViewCensoModal } from "./components/ViewCensosModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
@@ -48,7 +47,6 @@ function CensosPageContent() {
   } = useCensosData();
   const navigate = useNavigate();
 
-  const [showSelectionModal, setShowSelectionModal] = useState(false);
   const [createModalMode, setCreateModalMode] = useState<"create" | "upload">(
     "create",
   );
@@ -81,25 +79,9 @@ function CensosPageContent() {
   }, [modals.isFormOpen, modals.editingCenso]);
 
   const handleAddClick = () => {
-    setShowSelectionModal(true);
-  };
-
-  const handleSelectManual = () => {
     setCreateModalMode("create");
     modals.openCreate();
     setFormKey((prev) => prev + 1);
-    setShowSelectionModal(false);
-  };
-
-  const handleSelectTemplate = () => {
-    setCreateModalMode("upload");
-    modals.openCreate();
-    setFormKey((prev) => prev + 1);
-    setShowSelectionModal(false);
-  };
-
-  const handleCloseSelection = () => {
-    setShowSelectionModal(false);
   };
 
   const handleCloseForm = () => {
@@ -176,13 +158,6 @@ function CensosPageContent() {
           />
         </div>
       </div>
-
-      <CensoCreateSelectionModal
-        isOpen={showSelectionModal}
-        onClose={handleCloseSelection}
-        onSelectManual={handleSelectManual}
-        onSelectTemplate={handleSelectTemplate}
-      />
 
       <CensoCreateModal
         key={formKey}

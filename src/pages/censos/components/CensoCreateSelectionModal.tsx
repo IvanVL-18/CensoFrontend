@@ -8,7 +8,7 @@ interface CensoCreateSelectionModalProps {
 }
 
 export function CensoCreateSelectionModal({
-  isOpen,
+  isOpen, 
   onClose,
   onSelectManual,
   onSelectTemplate,

@@ -33,7 +33,7 @@ export const CensoManualForm = forwardRef<CensoManualFormRef, CensoManualFormPro
     onSubmit,
     error,
     initialData,
-    onErrorChange,
+    onErrorChange, 
     onFullValidityChange,
     onDirtyChange,
   }, ref) => {

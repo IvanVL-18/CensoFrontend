@@ -40,7 +40,7 @@ export function CensoCreateModal({
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return undefined;
-    return dateStr.split('T')[0].split(' ')[0];
+    return dateStr.split("T")[0].split(" ")[0];
   };
 
   const initialData = useMemo(() => {
@@ -73,7 +73,7 @@ export function CensoCreateModal({
     mode === "create"
       ? editingCenso
         ? "Editar censo"
-        : "Crear censo manual"
+        : "Crear censo"
       : "Subir censo por plantilla";
 
   return (
@@ -87,7 +87,10 @@ export function CensoCreateModal({
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button onClick={handleClose} className="text-white hover:text-gray-300">
+            <button
+              onClick={handleClose}
+              className="text-white hover:text-gray-300"
+            >
               <X size={24} />
             </button>
           </div>
@@ -126,7 +129,9 @@ export function CensoCreateModal({
               <button
                 type="button"
                 onClick={() => manualFormRef.current?.submit()}
-                disabled={isSubmitting || !isFormValid || (!!editingCenso && !isDirty)}
+                disabled={
+                  isSubmitting || !isFormValid || (!!editingCenso && !isDirty)
+                }
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50 flex items-center gap-2"
               >
                 {isSubmitting ? (
