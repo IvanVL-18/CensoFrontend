@@ -125,7 +125,7 @@ export const createCensoModules = async (
   data: ModuleForCensoRequest & { censo_id: number },
 ): Promise<{ message: string }> => {
   const response = await api.post("/module-for-censo", data);
-  return response.data;
+  return response.data; 
 };
 
 
