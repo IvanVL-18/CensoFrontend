@@ -1,17 +1,7 @@
 import React, { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save, Search } from "lucide-react";
+import { ArrowLeft, Save, Search, Building2 } from "lucide-react";
 import { useCensusAssignments } from "./UsecensusAssignments";
-
-const getInitials = (name: string): string => {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return "?";
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0][0] + words[1][0]).toUpperCase();
-};
-
-const getAvatarColor = (checked: boolean) =>
-  checked ? { bg: "#BC955B", text: "#fff" } : { bg: "#691B31", text: "#fff" };
 
 const CensusAssignmentsView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -120,9 +110,6 @@ const CensusAssignmentsView: React.FC = () => {
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {filteredRows.map((row) => {
-                const initials = getInitials(row.institution_name);
-                const color = getAvatarColor(row.checked);
-
                 return (
                   <div
                     key={row.institution_id}
@@ -144,10 +131,11 @@ const CensusAssignmentsView: React.FC = () => {
                     </div>
 
                     <div
-                      className="mb-3 flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium"
-                      style={{ backgroundColor: color.bg, color: color.text }}
+                      className={`mb-3 flex h-10 w-10 items-center justify-center rounded-full ${
+                        row.checked ? "bg-[#BC955B]" : "bg-[#691B31]"
+                      }`}
                     >
-                      {initials}
+                      <Building2 size={20} color="#fff" />
                     </div>
 
                     <p className="line-clamp-2 text-sm font-medium leading-snug text-gray-800">
