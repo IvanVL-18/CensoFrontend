@@ -6,6 +6,8 @@ import {
   Ban,
   MoreVertical,
   Calendar,
+  ListOrdered,
+  Copy,
 } from "lucide-react";
 import { useState } from "react";
 import type { Censo, Meta } from "../Censos.types";
@@ -20,6 +22,8 @@ export interface CensosCardsProps {
   onBan: (censo: Censo) => void;
   onRestore: (censo: Censo) => void;
   onDelete: (censo: Censo) => void;
+  onModules: (censo: Censo) => void;
+  onClone: (censo: Censo) => void;
 }
 
 export function CensosCards({
@@ -31,6 +35,8 @@ export function CensosCards({
   onBan,
   onRestore,
   onDelete,
+  onModules,
+  onClone,
 }: CensosCardsProps) {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
@@ -61,8 +67,7 @@ export function CensosCards({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {censos.map((censo) => {
-        const isActive = !censo.deleted_at || censo.deleted_at === "null"; 
-
+        const isActive = !censo.deleted_at || censo.deleted_at === "null";
         const statusText = isActive ? "Activo" : "Inactivo";
 
         let yearDisplay: number | string = censo.year || "";
@@ -98,63 +103,74 @@ export function CensosCards({
               <h3 className="text-lg font-semibold text-white line-clamp-2 pr-2">
                 {censo.name}
               </h3>
-              <div className="relative">
+              <div className="flex items-center gap-1">
                 <button
-                  onClick={() =>
-                    setMenuOpenId(menuOpenId === censo.id ? null : censo.id)
-                  }
+                  onClick={() => onView(censo)}
                   className="p-1.5 rounded-full hover:bg-red-500 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white"
-                  aria-label="Opciones"
+                  aria-label="Ver detalles"
                 >
-                  <MoreVertical size={18} />
+                  <Eye size={18} />
                 </button>
-                {menuOpenId === censo.id && (
-                  <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10 py-1">
-                    {isActive ? ( 
-                      <>
-                        <button
-                          onClick={() => {
-                            onEdit(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                        >
-                          <Edit size={16} className="mr-2" /> Editar
-                        </button>
-                        <button
-                          onClick={() => {
-                            onBan(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
-                        >
-                          <Ban size={16} className="mr-2" /> Desactivar
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => {
-                            onRestore(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-green-600 hover:bg-gray-100 transition-colors"
-                        >
-                          <CircleArrowUp size={16} className="mr-2" /> Restaurar
-                        </button>
-                        <button
-                          onClick={() => {
-                            onDelete(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
-                        >
-                          <Trash2 size={16} className="mr-2" /> Eliminar
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
+
+                <div className="relative">
+                  <button
+                    onClick={() =>
+                      setMenuOpenId(menuOpenId === censo.id ? null : censo.id)
+                    }
+                    className="p-1.5 rounded-full hover:bg-red-500 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white"
+                    aria-label="Opciones"
+                  >
+                    <MoreVertical size={18} />
+                  </button>
+                  {menuOpenId === censo.id && (
+                    <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10 py-1">
+                      {isActive ? (
+                        <>
+                          <button
+                            onClick={() => {
+                              onEdit(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            <Edit size={16} className="mr-2" /> Editar
+                          </button>
+                          <button
+                            onClick={() => {
+                              onBan(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                          >
+                            <Ban size={16} className="mr-2" /> Desactivar
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => {
+                              onRestore(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-green-600 hover:bg-gray-100 transition-colors"
+                          >
+                            <CircleArrowUp size={16} className="mr-2" />{" "}
+                            Restaurar
+                          </button>
+                          <button
+                            onClick={() => {
+                              onDelete(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                          >
+                            <Trash2 size={16} className="mr-2" /> Eliminar
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -193,14 +209,24 @@ export function CensosCards({
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => onView(censo)}
-                className="mt-auto w-full bg-[var(--pantone-465)] hover:bg-[#a8844f] text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
-              >
-                Ver detalles
-                <Eye size={18} className="ml-2" />
-              </button>
+              <div className="mt-auto flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => onModules(censo)}
+                  className="flex-1 bg-[var(--pantone-465)] hover:bg-[#a8844f] text-white font-medium py-2.5 px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
+                >
+                  <ListOrdered size={16} />
+                  Asignaciones
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onClone(censo)}
+                  className="flex-1 bg-[var(--pantone-465)] hover:bg-[#a8844f] text-white font-medium py-2.5 px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
+                >
+                  <Copy size={16} />
+                  Clonar
+                </button>
+              </div>
             </div>
           </div>
         );

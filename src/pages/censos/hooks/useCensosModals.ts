@@ -62,6 +62,20 @@ export function useCensosModals() {
     setBulkErrors([]);
   }, []);
 
+  // ✅ Clone modal
+  const [isCloneOpen, setIsCloneOpen] = useState(false);
+  const [cloningCenso, setCloningCenso] = useState<Censo | null>(null);
+
+  const openClone = useCallback((censo: Censo) => {
+    setCloningCenso(censo);
+    setIsCloneOpen(true);
+  }, []);
+
+  const closeClone = useCallback(() => {
+    setIsCloneOpen(false);
+    setCloningCenso(null);
+  }, []);
+
   return {
     isFormOpen,
     editingCenso,
@@ -81,5 +95,9 @@ export function useCensosModals() {
     bulkErrors,
     openBulkError,
     closeBulkError,
+    isCloneOpen,     
+    cloningCenso,    
+    openClone,       
+    closeClone,      
   };
 }
