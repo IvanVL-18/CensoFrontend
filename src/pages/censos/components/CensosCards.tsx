@@ -1,5 +1,4 @@
 import {
-  Eye,
   Edit,
   Trash2,
   CircleArrowUp,
@@ -8,8 +7,9 @@ import {
   Calendar,
   ListOrdered,
   Copy,
+  Eye,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Censo, Meta } from "../Censos.types";
 
 export interface CensosCardsProps {
@@ -39,6 +39,23 @@ export function CensosCards({
   onClone,
 }: CensosCardsProps) {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const menuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!menuOpenId) return;
+
+      const activeMenu = menuRefs.current[menuOpenId];
+      if (activeMenu && !activeMenu.contains(event.target as Node)) {
+        setMenuOpenId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuOpenId]);
 
   if (loading) {
     return (
@@ -64,6 +81,123 @@ export function CensosCards({
     );
   }
 
+  const formatDate = (dateStr?: string | null) => {
+    if (!dateStr) return "—";
+    try {
+      return new Date(dateStr).toLocaleDateString("es-MX", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    } catch {
+      return "—";
+    }
+  };
+
+  const getDaysLeft = (dateStr?: string | null) => {
+    if (!dateStr) return null;
+
+    const end = new Date(dateStr);
+    if (isNaN(end.getTime())) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+
+    const diffMs = end.getTime() - today.getTime();
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  };
+
+  const getStartDateStyles = (isInactive: boolean) => {
+    if (isInactive) {
+      return {
+        row: "bg-white border border-[#e5e7eb]",
+        icon: "text-[#6b7280]",
+        label: "text-[#111827]",
+        value: "text-[#111827]",
+      };
+    }
+
+    return {
+      row: "bg-white border border-emerald-300",
+      icon: "text-[#111827]",
+      label: "text-[#111827]",
+      value: "text-[#111827]",
+    };
+  };
+
+  const getEndDateStyles = (daysLeft: number | null, isInactive: boolean) => {
+    if (isInactive) {
+      return {
+        row: "bg-white border border-[#e5e7eb]",
+        icon: "text-[#6b7280]",
+        label: "text-[#111827]",
+        value: "text-[#111827]",
+      };
+    }
+
+    if (daysLeft === null) {
+      return {
+        row: "bg-white border border-gray-200",
+        icon: "text-[#111827]",
+        label: "text-[#111827]",
+        value: "text-[#111827]",
+      };
+    }
+
+    if (daysLeft > 90) {
+      return {
+        row: "bg-white border border-emerald-300",
+        icon: "text-[#111827]",
+        label: "text-[#111827]",
+        value: "text-[#111827]",
+      };
+    }
+
+    if (daysLeft > 60) {
+      return {
+        row: "bg-white border border-lime-300",
+        icon: "text-[#111827]",
+        label: "text-[#111827]",
+        value: "text-[#111827]",
+      };
+    }
+
+    if (daysLeft > 40) {
+      return {
+        row: "bg-white border border-yellow-300",
+        icon: "text-[#111827]",
+        label: "text-[#111827]",
+        value: "text-[#111827]",
+      };
+    }
+
+    if (daysLeft > 20) {
+      return {
+        row: "bg-white border border-amber-300",
+        icon: "text-[#111827]",
+        label: "text-[#111827]",
+        value: "text-[#111827]",
+      };
+    }
+
+    if (daysLeft > 7) {
+      return {
+        row: "bg-white border border-orange-300",
+        icon: "text-[#111827]",
+        label: "text-[#111827]",
+        value: "text-[#111827]",
+      };
+    }
+
+    return {
+      row: "bg-white border border-red-300",
+      icon: "text-[#111827]",
+      label: "text-[#111827]",
+      value: "text-[#111827]",
+    };
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {censos.map((censo) => {
@@ -79,21 +213,12 @@ export function CensosCards({
           yearDisplay = "—";
         }
 
-        const formatDate = (dateStr?: string | null) => {
-          if (!dateStr) return "—";
-          try {
-            return new Date(dateStr).toLocaleDateString("es-MX", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            });
-          } catch {
-            return "—";
-          }
-        };
-
         const startDate = formatDate(censo.start_date);
         const endDate = formatDate(censo.end_date);
+        const daysLeft = getDaysLeft(censo.end_date);
+
+        const startStyles = getStartDateStyles(isInactive);
+        const endStyles = getEndDateStyles(daysLeft, isInactive);
 
         return (
           <div
@@ -105,93 +230,109 @@ export function CensosCards({
             }`}
           >
             <div
-              className={`flex justify-between items-center p-4 ${
+              className={`flex justify-between items-start p-4 ${
                 isInactive ? "bg-[#c4cad3]" : "bg-red-900"
               }`}
             >
-              <h3 className="text-lg font-semibold text-white line-clamp-2 pr-2">
+              <h3 className="text-lg font-semibold text-white line-clamp-2 pr-3">
                 {censo.name}
               </h3>
 
-              <div className="flex items-center gap-1">
+              <div
+                className="relative shrink-0"
+                ref={(el) => {
+                  menuRefs.current[String(censo.id)] = el;
+                }}
+              >
                 <button
-                  onClick={() => {
-                    if (isInactive) return;
-                    onView(censo);
-                  }}
-                  disabled={isInactive}
-                  className={`p-1.5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white ${
-                    isInactive
-                      ? "bg-white/25 text-white/85 cursor-not-allowed"
-                      : "hover:bg-red-500 text-white"
+                  onClick={() =>
+                    setMenuOpenId(
+                      menuOpenId === String(censo.id) ? null : String(censo.id),
+                    )
+                  }
+                  className={`p-1.5 rounded-full transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white ${
+                    isInactive ? "hover:bg-white/20" : "hover:bg-red-500"
                   }`}
-                  aria-label="Ver detalles"
+                  aria-label="Opciones"
                 >
-                  <Eye size={18} />
+                  <MoreVertical size={18} />
                 </button>
 
-                <div className="relative">
-                  <button
-                    onClick={() =>
-                      setMenuOpenId(menuOpenId === censo.id ? null : censo.id)
-                    }
-                    className={`p-1.5 rounded-full transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white ${
-                      isInactive ? "hover:bg-white/20" : "hover:bg-red-500"
-                    }`}
-                    aria-label="Opciones"
-                  >
-                    <MoreVertical size={18} />
-                  </button>
+                {menuOpenId === String(censo.id) && (
+                  <div className="absolute right-0 mt-2 w-auto min-w-fit whitespace-nowrap rounded-xl border border-gray-200 bg-white shadow-xl z-20 py-1.5">
+                    {isActive ? (
+                      <>
+                        <button
+                          onClick={() => {
+                            onView(censo);
+                            setMenuOpenId(null);
+                          }}
+                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                          <Eye size={16} className="shrink-0" />
+                          <span>Detalles</span>
+                        </button>
 
-                  {menuOpenId === censo.id && (
-                    <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10 py-1">
-                      {isActive ? (
-                        <>
-                          <button
-                            onClick={() => {
-                              onEdit(censo);
-                              setMenuOpenId(null);
-                            }}
-                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                          >
-                            <Edit size={16} className="mr-2" /> Editar
-                          </button>
-                          <button
-                            onClick={() => {
-                              onBan(censo);
-                              setMenuOpenId(null);
-                            }}
-                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
-                          >
-                            <Ban size={16} className="mr-2" /> Desactivar
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => {
-                              onRestore(censo);
-                              setMenuOpenId(null);
-                            }}
-                            className="flex items-center w-full px-4 py-2 text-sm text-green-600 hover:bg-gray-100 transition-colors"
-                          >
-                            <CircleArrowUp size={16} className="mr-2" />
-                            Restaurar
-                          </button>
-                          <button
-                            onClick={() => {
-                              onDelete(censo);
-                              setMenuOpenId(null);
-                            }}
-                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
-                          >
-                            <Trash2 size={16} className="mr-2" /> Eliminar
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
+                        <button
+                          onClick={() => {
+                            onEdit(censo);
+                            setMenuOpenId(null);
+                          }}
+                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                          <Edit size={16} className="shrink-0" />
+                          <span>Editar</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            onBan(censo);
+                            setMenuOpenId(null);
+                          }}
+                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                        >
+                          <Ban size={16} className="shrink-0" />
+                          <span>Desactivar</span>
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => {
+                            onView(censo);
+                            setMenuOpenId(null);
+                          }}
+                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                          <Eye size={16} className="shrink-0" />
+                          <span>Detalles</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            onRestore(censo);
+                            setMenuOpenId(null);
+                          }}
+                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-green-600 hover:bg-gray-100 transition-colors"
+                        >
+                          <CircleArrowUp size={16} className="shrink-0" />
+                          <span>Restaurar</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            onDelete(censo);
+                            setMenuOpenId(null);
+                          }}
+                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                        >
+                          <Trash2 size={16} className="shrink-0" />
+                          <span>Eliminar</span>
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -214,42 +355,30 @@ export function CensosCards({
               </div>
 
               <div
-                className={`space-y-2 text-sm mb-4 p-3 rounded-lg border ${
+                className={`space-y-3 text-sm mb-4 p-3 rounded-lg border ${
                   isInactive
-                    ? "bg-[#f8f9fb] border-[#e7eaf0] text-[#7b8594]"
-                    : "bg-gray-50 border-gray-100 text-gray-600"
+                    ? "bg-[#f8f9fb] border-[#e7eaf0]"
+                    : "bg-gray-50 border-gray-100"
                 }`}
               >
-                <div className="flex items-center">
-                  <Calendar
-                    size={16}
-                    className={
-                      isInactive ? "mr-2 text-[#b0b8c4]" : "mr-2 text-red-600"
-                    }
-                  />
-                  <span className="font-medium">Inicio:</span>
-                  <span
-                    className={`ml-1 font-mono ${
-                      isInactive ? "text-[#7b8594]" : "text-gray-800"
-                    }`}
-                  >
+                <div
+                  className={`flex items-center rounded-xl px-3 py-3 ${startStyles.row}`}
+                >
+                  <Calendar size={16} className={`mr-2 ${startStyles.icon}`} />
+                  <span className={`font-medium ${startStyles.label}`}>
+                    Inicio:
+                  </span>
+                  <span className={`ml-1 font-mono ${startStyles.value}`}>
                     {startDate}
                   </span>
                 </div>
 
-                <div className="flex items-center">
-                  <Calendar
-                    size={16}
-                    className={
-                      isInactive ? "mr-2 text-[#b0b8c4]" : "mr-2 text-amber-600"
-                    }
-                  />
-                  <span className="font-medium">Fin:</span>
-                  <span
-                    className={`ml-1 font-mono ${
-                      isInactive ? "text-[#7b8594]" : "text-gray-800"
-                    }`}
-                  >
+                <div
+                  className={`flex items-center rounded-xl px-3 py-3 ${endStyles.row}`}
+                >
+                  <Calendar size={16} className={`mr-2 ${endStyles.icon}`} />
+                  <span className={`font-medium ${endStyles.label}`}>Fin:</span>
+                  <span className={`ml-1 font-mono ${endStyles.value}`}>
                     {endDate}
                   </span>
                 </div>
