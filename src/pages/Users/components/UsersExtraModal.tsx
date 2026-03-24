@@ -1,14 +1,20 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { UsersExtraSchema } from "../schemas/UsersExtra.schema";
 import type { User, UpdateUserDTO } from "../Users.types";
+
+const NAME_MAX_LENGTH = 50;
+const LASTNAME_MAX_LENGTH = 50;
+const PHONE_MAX_LENGTH = 20;
+const MOBILE_MAX_LENGTH = 20;
+const ADDRESS_MAX_LENGTH = 200;
+
+const norm = (v: any) => (v === null || v === undefined ? "" : String(v));
+const toNull = (v: string) => {
+  const s = v.trim();
+  return s === "" ? null : s;
+};
 
 interface Props {
   isOpen: boolean;
@@ -18,12 +24,6 @@ interface Props {
   onClose: () => void;
   onSave: (data: UpdateUserDTO) => void;
 }
-
-const norm = (v: any) => (v === null || v === undefined ? "" : String(v));
-const toNull = (v: string) => {
-  const s = v.trim();
-  return s === "" ? null : s;
-};
 
 export function UsersExtraModal({
   isOpen,
@@ -40,119 +40,148 @@ export function UsersExtraModal({
     mobile: "",
     address: "",
   });
-
-  const [formErrors, setFormErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!isOpen || !User) return;
-
-    setFormData({
+    const initialData = {
       name: norm(User.name),
       lastname: norm(User.lastname),
       phone: norm(User.phone),
       mobile: norm(User.mobile),
       address: norm(User.address),
-    });
-
-    setFormErrors([]);
+    };
+    setFormData(initialData);
     setFieldErrors({});
+    setTouched(
+      Object.fromEntries(
+        Object.entries(initialData).map(([k, v]) => [k, v !== ""])
+      )
+    );
   }, [isOpen, User]);
 
-  const hasChanges = useMemo(() => {
-    if (!User) return false;
-    return (
-      norm(formData.name).trim() !== norm(User.name).trim() ||
-      norm(formData.lastname).trim() !== norm(User.lastname).trim() ||
-      norm(formData.phone).trim() !== norm(User.phone).trim() ||
-      norm(formData.mobile).trim() !== norm(User.mobile).trim() ||
-      norm(formData.address).trim() !== norm(User.address).trim()
-    );
-  }, [formData, User]);
-
-  const validateForm = () => {
-    const result = UsersExtraSchema.safeParse(formData);
-    if (!result.success) {
-      setFormErrors(result.error.issues.map((i) => i.message));
-      return false;
-    }
-    setFormErrors([]);
-    return true;
-  };
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-
-    setFormData((p) => {
-      const next = { ...p, [name]: value };
-
-      const result = UsersExtraSchema.safeParse(next);
-      if (!result.success) {
-        setFormErrors(result.error.issues.map((i) => i.message));
-
-        const fe: Record<string, string> = {};
-        result.error.issues.forEach((issue) => {
-          const key = String(issue.path?.[0] ?? "form");
-          if (!fe[key]) fe[key] = issue.message;
-        });
-        setFieldErrors(fe);
-      } else {
-        setFormErrors([]);
-        setFieldErrors({});
-      }
-
-      return next;
-    });
-  };
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!User) return;
-    if (!validateForm()) return;
-
-    const trim = (v: any) => (v ?? "").toString().trim();
-
-    const payload: UpdateUserDTO = {};
-
-    if (trim(formData.name) !== trim(User.name))
-      payload.name = toNull(formData.name);
-    if (trim(formData.lastname) !== trim(User.lastname))
-      payload.lastname = toNull(formData.lastname);
-    if (trim(formData.phone) !== trim(User.phone))
-      payload.phone = toNull(formData.phone);
-    if (trim(formData.mobile) !== trim(User.mobile))
-      payload.mobile = toNull(formData.mobile);
-    if (trim(formData.address) !== trim(User.address))
-      payload.address = toNull(formData.address);
-
-    if (Object.keys(payload).length === 0) {
-      setFormErrors(["No hay cambios para guardar."]);
-      return;
-    }
-
-    onSave(payload);
-  };
-
   const handleClose = () => {
-    setFormErrors([]);
+    setFormData({ name: "", lastname: "", phone: "", mobile: "", address: "" });
     setFieldErrors({});
+    setTouched({});
     onClose();
   };
 
+  const validateForm = (data: typeof formData) => {
+    const result = UsersExtraSchema.safeParse(data);
+    const errors: Record<string, string> = {};
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        if (field) errors[field] = issue.message;
+      });
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleFieldChange = (field: keyof typeof formData, maxLength: number) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value = e.target.value.slice(0, maxLength);
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      setTouched((prev) => ({ ...prev, [field]: true }));
+      validateForm({ ...formData, [field]: value });
+    };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const allTouched = Object.keys(formData).reduce(
+      (acc, k) => ({ ...acc, [k]: true }),
+      {}
+    );
+    setTouched(allTouched);
+    if (validateForm(formData)) {
+      const payload: UpdateUserDTO = {};
+      const trim = (v: any) => (v ?? "").toString().trim();
+
+      if (trim(formData.name) !== trim(User?.name))
+        payload.name = toNull(formData.name);
+      if (trim(formData.lastname) !== trim(User?.lastname))
+        payload.lastname = toNull(formData.lastname);
+      if (trim(formData.phone) !== trim(User?.phone))
+        payload.phone = toNull(formData.phone);
+      if (trim(formData.mobile) !== trim(User?.mobile))
+        payload.mobile = toNull(formData.mobile);
+      if (trim(formData.address) !== trim(User?.address))
+        payload.address = toNull(formData.address);
+
+      if (Object.keys(payload).length > 0) onSave(payload);
+    }
+  };
+
+  const visibleErrors = useMemo(
+    () =>
+      Object.entries(fieldErrors)
+        .filter(([key]) => touched[key])
+        .map(([, msg]) => msg)
+        .filter(Boolean),
+    [fieldErrors, touched]
+  );
+
+  const hasChanges = useMemo(() => {
+    if (!User) return false;
+    const trim = (v: any) => (v ?? "").toString().trim();
+    return (
+      trim(formData.name) !== trim(User.name) ||
+      trim(formData.lastname) !== trim(User.lastname) ||
+      trim(formData.phone) !== trim(User.phone) ||
+      trim(formData.mobile) !== trim(User.mobile) ||
+      trim(formData.address) !== trim(User.address)
+    );
+  }, [formData, User]);
+
   if (!isOpen || !User) return null;
 
-  const hasClientErrors = formErrors.length > 0;
+  const getFieldStyles = (field: keyof typeof formData, maxLength: number) => {
+    const value = formData[field];
+    const length = value.length;
+    const hasError = touched[field] && !!fieldErrors[field];
+    const isNearLimit = length >= maxLength - 10 && length <= maxLength;
+    const isAtLimit = length >= maxLength;
+
+    const borderColor = hasError
+      ? "border-red-500 focus:ring-red-400"
+      : isAtLimit
+      ? "border-red-300 focus:ring-red-400"
+      : isNearLimit
+      ? "border-amber-300 focus:ring-amber-400"
+      : "border-gray-300 focus:ring-[#DDC9A3]";
+
+    const progressColor = isAtLimit
+      ? "bg-red-600"
+      : isNearLimit
+      ? "bg-amber-500"
+      : "bg-[#DDC9A3]";
+
+    const charCountColor = isAtLimit
+      ? "text-red-600"
+      : isNearLimit
+      ? "text-amber-600"
+      : "text-gray-500";
+
+    return { borderColor, progressColor, charCountColor, length };
+  };
+
+  const nameStyles = getFieldStyles("name", NAME_MAX_LENGTH);
+  const lastnameStyles = getFieldStyles("lastname", LASTNAME_MAX_LENGTH);
+  const phoneStyles = getFieldStyles("phone", PHONE_MAX_LENGTH);
+  const mobileStyles = getFieldStyles("mobile", MOBILE_MAX_LENGTH);
+  const addressStyles = getFieldStyles("address", ADDRESS_MAX_LENGTH);
 
   return (
     <>
       <div
-        className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-40 transition-opacity"
+        className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-9999 transition-opacity"
         onClick={handleClose}
-      ></div>
-
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/10 backdrop-blur-md">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      />
+      <div className="fixed inset-0 bg-[#000000ab] z-10000 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <div>
               <h2 className="text-xl font-bold text-white">Datos Personales</h2>
@@ -166,92 +195,157 @@ export function UsersExtraModal({
             </button>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            noValidate
-            className="flex-1 overflow-y-auto"
-          >
+          <form onSubmit={handleSubmit} noValidate>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre:
-                </label>
-                <input
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Apellido:
-                </label>
-                <input
-                  name="lastname"
-                  value={formData.lastname}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Teléfono:
-                </label>
-                <input
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
-                />
-                {fieldErrors.phone && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {fieldErrors.phone}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Celular:
-                </label>
-                <input
-                  name="mobile"
-                  value={formData.mobile}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
-                />
-                {fieldErrors.mobile && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {fieldErrors.mobile}
-                  </p>
-                )}
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Dirección:
-                </label>
-                <textarea
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  rows={3}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <div id="form-errors-client">
-                  <FormErrors errors={formErrors} />
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Nombre:
+                  </label>
+                  <span
+                    className={`text-xs font-medium ${nameStyles.charCountColor}`}
+                  >
+                    {nameStyles.length}/{NAME_MAX_LENGTH} caracteres
+                  </span>
                 </div>
-                {error && (
-                  <div id="form-errors-server">
-                    <FormErrors errors={[error]} />
-                  </div>
-                )}
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={handleFieldChange("name", NAME_MAX_LENGTH)}
+                  placeholder="Ingresar nombre..."
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${nameStyles.borderColor}`}
+                  disabled={isSubmitting}
+                  autoFocus
+                />
+                <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${nameStyles.progressColor}`}
+                    style={{
+                      width: `${(nameStyles.length / NAME_MAX_LENGTH) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Apellido:
+                  </label>
+                  <span
+                    className={`text-xs font-medium ${lastnameStyles.charCountColor}`}
+                  >
+                    {lastnameStyles.length}/{LASTNAME_MAX_LENGTH} caracteres
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  value={formData.lastname}
+                  onChange={handleFieldChange("lastname", LASTNAME_MAX_LENGTH)}
+                  placeholder="Ingresar apellido..."
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${lastnameStyles.borderColor}`}
+                  disabled={isSubmitting}
+                />
+                <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${lastnameStyles.progressColor}`}
+                    style={{
+                      width: `${(lastnameStyles.length / LASTNAME_MAX_LENGTH) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Teléfono:
+                  </label>
+                  <span
+                    className={`text-xs font-medium ${phoneStyles.charCountColor}`}
+                  >
+                    {phoneStyles.length}/{PHONE_MAX_LENGTH} caracteres
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  value={formData.phone}
+                  onChange={handleFieldChange("phone", PHONE_MAX_LENGTH)}
+                  placeholder="Ingresar teléfono..."
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${phoneStyles.borderColor}`}
+                  disabled={isSubmitting}
+                />
+                <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${phoneStyles.progressColor}`}
+                    style={{
+                      width: `${(phoneStyles.length / PHONE_MAX_LENGTH) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Celular:
+                  </label>
+                  <span
+                    className={`text-xs font-medium ${mobileStyles.charCountColor}`}
+                  >
+                    {mobileStyles.length}/{MOBILE_MAX_LENGTH} caracteres
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  value={formData.mobile}
+                  onChange={handleFieldChange("mobile", MOBILE_MAX_LENGTH)}
+                  placeholder="Ingresar celular..."
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${mobileStyles.borderColor}`}
+                  disabled={isSubmitting}
+                />
+                <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${mobileStyles.progressColor}`}
+                    style={{
+                      width: `${(mobileStyles.length / MOBILE_MAX_LENGTH) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Dirección:
+                  </label>
+                  <span
+                    className={`text-xs font-medium ${addressStyles.charCountColor}`}
+                  >
+                    {addressStyles.length}/{ADDRESS_MAX_LENGTH} caracteres
+                  </span>
+                </div>
+                <textarea
+                  rows={3}
+                  value={formData.address}
+                  onChange={handleFieldChange("address", ADDRESS_MAX_LENGTH)}
+                  placeholder="Ingresar dirección..."
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${addressStyles.borderColor}`}
+                  disabled={isSubmitting}
+                />
+                <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${addressStyles.progressColor}`}
+                    style={{
+                      width: `${(addressStyles.length / ADDRESS_MAX_LENGTH) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <FormErrors errors={visibleErrors} />
+                {error && <FormErrors errors={[error]} />}
               </div>
             </div>
 
@@ -264,10 +358,9 @@ export function UsersExtraModal({
               >
                 Cancelar
               </button>
-
               <button
                 type="submit"
-                disabled={isSubmitting || hasClientErrors || !hasChanges}
+                disabled={isSubmitting || visibleErrors.length > 0 || !hasChanges}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}

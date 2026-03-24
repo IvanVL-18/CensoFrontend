@@ -15,9 +15,29 @@ import {
 } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { UserSchema } from "../schemas/Users.schema";
-
 import type { Rol } from "../../Roles/Roles.types";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
+
+const EMAIL_MAX_LENGTH = 55;
+const PASSWORD_MAX_LENGTH = 30;
+
+const findIdInCatalog = (catalog: any[], relation: any, fallbackId: any) => {
+  if (relation?.name) {
+    const match = catalog.find(
+      (item) =>
+        String(item.name).trim().toLowerCase() ===
+        String(relation.name).trim().toLowerCase()
+    );
+    if (match) return String(match.id);
+  }
+  if (fallbackId) {
+    const directMatch = catalog.find(
+      (item) => String(item.id) === String(fallbackId)
+    );
+    if (directMatch) return String(directMatch.id);
+  }
+  return "";
+};
 
 interface ExtendedUserModalProps {
   isOpen: boolean;
@@ -57,20 +77,113 @@ export function UserModal({
     dependency_id: "",
     institution_id: "",
   });
-  const [formErrors, setFormErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [pwdFocus, setPwdFocus] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [pwdFocus, setPwdFocus] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const role_id = findIdInCatalog(roles, initialData?.role, initialData?.role_id);
+    const occupation_id = findIdInCatalog(
+      occupations,
+      initialData?.occupation,
+      initialData?.occupation_id
+    );
+    const dependency_id = findIdInCatalog(
+      dependencies,
+      initialData?.dependency,
+      initialData?.dependency_id
+    );
+    const institution_id = findIdInCatalog(
+      institutions,
+      initialData?.institution,
+      initialData?.institution_id
+    );
+
+    const newFormData = {
+      email: initialData?.email || "",
+      password: "",
+      password_confirmation: "",
+      role_id,
+      occupation_id,
+      dependency_id,
+      institution_id,
+    };
+
+    setFormData(newFormData);
+    setFieldErrors({});
+    setTouched(
+      Object.fromEntries(
+        Object.entries(newFormData).map(([k, v]) => [k, v !== ""])
+      )
+    );
+  }, [isOpen, initialData, roles, occupations, dependencies, institutions]);
+
+  const validateForm = (data: typeof formData, isCreation = !initialData) => {
+    let dataForValidation: any = { ...data };
+    if (!isCreation && !dataForValidation.password) {
+      const { password, password_confirmation, ...rest } = dataForValidation;
+      dataForValidation = rest;
+    }
+    const result = UserSchema.safeParse(dataForValidation);
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const path = issue.path[0] as string;
+        if (path && !errors[path]) errors[path] = issue.message;
+      });
+      setFieldErrors(errors);
+      return false;
+    }
+    setFieldErrors({});
+    return true;
+  };
+
+  const handleFieldChange =
+    (field: keyof typeof formData, maxLength?: number) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      let value = e.target.value;
+      if (maxLength) value = value.slice(0, maxLength);
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      setTouched((prev) => ({ ...prev, [field]: true }));
+      validateForm({ ...formData, [field]: value }, !initialData);
+    };
+
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.slice(0, PASSWORD_MAX_LENGTH);
+    setFormData((prev) => ({ ...prev, password: value }));
+    setTouched((prev) => ({ ...prev, password: true }));
+    validateForm({ ...formData, password: value }, !initialData);
+  };
+
+  const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.slice(0, PASSWORD_MAX_LENGTH);
+    setFormData((prev) => ({ ...prev, password_confirmation: value }));
+    setTouched((prev) => ({ ...prev, password_confirmation: true }));
+    validateForm({ ...formData, password_confirmation: value }, !initialData);
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const allTouched = Object.keys(formData).reduce(
+      (acc, k) => ({ ...acc, [k]: true }),
+      {}
+    );
+    setTouched(allTouched);
+    if (validateForm(formData, !initialData)) {
+      onSave(formData);
+    }
+  };
 
   const hasChanges = useMemo(() => {
     if (!initialData) return true;
-
     const normalize = (val: any) =>
       val === null || val === undefined ? "" : String(val).trim();
 
-    const emailChanged =
-      normalize(formData.email) !== normalize(initialData.email);
+    const emailChanged = normalize(formData.email) !== normalize(initialData.email);
     const passwordChanged = formData.password !== "";
 
     const getSelectedName = (list: any[], id: string | number) => {
@@ -81,34 +194,33 @@ export function UserModal({
     const checkRelationChange = (
       currentId: string | number,
       initialRel: any,
-      catalog: any[],
+      catalog: any[]
     ) => {
       const initialId = initialRel?.id || "";
-      const initialName = initialRel?.name || "";
       if (normalize(currentId) === normalize(initialId)) return false;
       const currentName = getSelectedName(catalog, currentId);
-      return normalize(currentName) !== normalize(initialName);
+      return normalize(currentName) !== normalize(initialRel?.name || "");
     };
 
     const roleChanged = checkRelationChange(
       formData.role_id,
       initialData.role,
-      roles,
+      roles
     );
     const occupationChanged = checkRelationChange(
       formData.occupation_id,
       initialData.occupation,
-      occupations,
+      occupations
     );
     const dependencyChanged = checkRelationChange(
       formData.dependency_id,
       initialData.dependency,
-      dependencies,
+      dependencies
     );
     const institutionChanged = checkRelationChange(
       formData.institution_id,
       initialData.institution,
-      institutions,
+      institutions
     );
 
     return (
@@ -121,209 +233,123 @@ export function UserModal({
     );
   }, [formData, initialData, roles, occupations, dependencies, institutions]);
 
-  const validateForm = (data: typeof formData) => {
-    const dataForValidation: any = { ...data };
-    if (initialData && !dataForValidation.password) {
-      delete dataForValidation.password;
-      delete dataForValidation.password_confirmation;
-    }
+  const visibleErrors = useMemo(
+    () =>
+      Object.entries(fieldErrors)
+        .filter(([key]) => touched[key])
+        .map(([, msg]) => msg)
+        .filter(Boolean),
+    [fieldErrors, touched]
+  );
 
-    const result = UserSchema.safeParse(dataForValidation);
+  const getFieldStyles = (field: keyof typeof formData, maxLength: number) => {
+    const value = formData[field];
+    const length = value.length;
+    const hasError = touched[field] && !!fieldErrors[field];
+    const isNearLimit = length >= maxLength - 10 && length <= maxLength;
+    const isAtLimit = length >= maxLength;
 
-    if (!result.success) {
-      const listIssues = result.error.issues.filter((issue) => {
-        const field = String(issue.path?.[0] ?? "");
-        return field !== "password" && field !== "password_confirmation";
-      });
+    const borderColor = hasError
+      ? "border-red-500 focus:ring-red-400"
+      : isAtLimit
+      ? "border-red-300 focus:ring-red-400"
+      : isNearLimit
+      ? "border-amber-300 focus:ring-amber-400"
+      : "border-gray-300 focus:ring-[#DDC9A3]";
 
-      setFormErrors(listIssues.map((i) => i.message));
+    const progressColor = isAtLimit
+      ? "bg-red-600"
+      : isNearLimit
+      ? "bg-amber-500"
+      : "bg-[#DDC9A3]";
 
-      const fe: Record<string, string> = {};
-      result.error.issues.forEach((issue) => {
-        const key = String(issue.path?.[0] ?? "form");
-        if (!fe[key]) fe[key] = issue.message;
-      });
-      setFieldErrors(fe);
+    const charCountColor = isAtLimit
+      ? "text-red-600"
+      : isNearLimit
+      ? "text-amber-600"
+      : "text-gray-500";
 
-      return false;
-    }
-
-    setFormErrors([]);
-    setFieldErrors({});
-    return true;
+    return { borderColor, progressColor, charCountColor, length };
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      const findIdInCatalog = (
-        catalog: any[],
-        relation: any,
-        fallbackId: any,
-      ) => {
-        if (relation && relation.name) {
-          const match = catalog.find(
-            (item) =>
-              String(item.name).trim().toLowerCase() ===
-              String(relation.name).trim().toLowerCase(),
-          );
-          if (match) return match.id;
-        }
-        if (fallbackId) {
-          const directMatch = catalog.find(
-            (item) => String(item.id) === String(fallbackId),
-          );
-          if (directMatch) return directMatch.id;
-        }
-
-        return "";
-      };
-      setFormData({
-        email: initialData?.email || "",
-        password: "",
-        password_confirmation: "",
-        role_id: findIdInCatalog(
-          roles,
-          initialData?.role,
-          initialData?.role_id,
-        ),
-        occupation_id: findIdInCatalog(
-          occupations,
-          initialData?.occupation,
-          initialData?.occupation_id,
-        ),
-        dependency_id: findIdInCatalog(
-          dependencies,
-          initialData?.dependency,
-          initialData?.dependency_id,
-        ),
-        institution_id: findIdInCatalog(
-          institutions,
-          initialData?.institution,
-          initialData?.institution_id,
-        ),
-      });
-      setFormErrors([]);
-    }
-  }, [isOpen, initialData, roles, occupations, dependencies, institutions]);
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-
-    const ok = validateForm(formData);
-    if (!ok) return;
-
-    onSave(formData);
-  };
-
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => {
-      const next = { ...prev, [name]: value };
-      validateForm(next);
-      return next;
-    });
-  };
-
-  if (!isOpen) {
-    return null;
-  }
-
-  const hasClientErrors =
-    formErrors.length > 0 || Object.keys(fieldErrors).length > 0;
-  const handleClose = () => {
-    setFormErrors([]);
-    setFieldErrors({});
-    onClose();
-  };
-  const showConfirmStatus =
-    (!initialData || formData.password.length > 0) &&
-    formData.password_confirmation.length > 0;
-
-  const passwordsMatch =
-    formData.password.length > 0 &&
-    formData.password === formData.password_confirmation;
-
-  const needsPasswordMatch = !initialData || formData.password.length > 0;
-
-  const confirmMismatch =
-    needsPasswordMatch &&
-    formData.password_confirmation.length > 0 &&
-    formData.password !== formData.password_confirmation;
+  const emailStyles = getFieldStyles("email", EMAIL_MAX_LENGTH);
+  const passwordStyles = getFieldStyles("password", PASSWORD_MAX_LENGTH);
 
   const canSave =
-    !isSubmitting && !hasClientErrors && hasChanges && !confirmMismatch;
+    !isSubmitting &&
+    Object.keys(fieldErrors).length === 0 &&
+    hasChanges &&
+    !(touched.password_confirmation && fieldErrors.password_confirmation);
+
+  if (!isOpen) return null;
 
   return (
     <>
       <div
         className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-40 transition-opacity"
-        onClick={handleClose}
-      ></div>
-
+        onClick={onClose}
+      />
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-hidden max-h-[90vh] flex flex-col">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button
-              onClick={handleClose}
-              className="text-white hover:text-gray-300"
-            >
+            <button onClick={onClose} className="text-white hover:text-gray-300">
               <X size={24} />
             </button>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            noValidate
-            className="flex-1 overflow-y-auto"
-          >
+          <form onSubmit={handleSubmit} noValidate className="flex-1 overflow-y-auto">
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Correo Electrónico:
-                </label>
+                <div className="flex justify-between items-center mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Correo Electrónico:
+                  </label>
+                  <span className={`text-xs font-medium ${emailStyles.charCountColor}`}>
+                    {emailStyles.length}/{EMAIL_MAX_LENGTH} caracteres
+                  </span>
+                </div>
                 <input
                   type="email"
                   id="email"
                   name="email"
                   value={formData.email}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                  onChange={handleFieldChange("email", EMAIL_MAX_LENGTH)}
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${emailStyles.borderColor}`}
+                  disabled={isSubmitting}
+                  autoFocus
                 />
-                {fieldErrors.email && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {fieldErrors.email}
-                  </p>
-                )}
+                <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${emailStyles.progressColor}`}
+                    style={{ width: `${(emailStyles.length / EMAIL_MAX_LENGTH) * 100}%` }}
+                  />
+                </div>
               </div>
 
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Contraseña{" "}
-                  {initialData
-                    ? "(Dejar vacía para no cambiar)"
-                    : "(Obligatoria)"}
-                  :
-                </label>
+                <div className="flex justify-between items-center mb-1">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    Contraseña{" "}
+                    {initialData
+                      ? "(Dejar vacía para no cambiar)"
+                      : "(Obligatoria)"}:
+                  </label>
+                  <span className={`text-xs font-medium ${passwordStyles.charCountColor}`}>
+                    {passwordStyles.length}/{PASSWORD_MAX_LENGTH} caracteres
+                  </span>
+                </div>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
                     value={formData.password}
-                    onChange={handleChange}
+                    onChange={handlePasswordChange}
                     onFocus={() => setPwdFocus(true)}
                     onBlur={() => setPwdFocus(false)}
-                    className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
+                    className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 pr-10 ${passwordStyles.borderColor}`}
+                    disabled={isSubmitting}
                   />
                   <button
                     type="button"
@@ -334,25 +360,23 @@ export function UserModal({
                     {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-                 {(!initialData || formData.password.length > 0) && (
-                    <PasswordStrengthMeter
-                      password={formData.password}
-                      className="mt-2"
-                      showRules={pwdFocus}
-                    />
-                  )}
-                  {fieldErrors.password && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {fieldErrors.password}
-                    </p>
-                  )}
+                <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${passwordStyles.progressColor}`}
+                    style={{ width: `${(passwordStyles.length / PASSWORD_MAX_LENGTH) * 100}%` }}
+                  />
+                </div>
+                {(!initialData || formData.password.length > 0) && (
+                  <PasswordStrengthMeter
+                    password={formData.password}
+                    className="mt-2"
+                    showRules={pwdFocus}
+                  />
+                )}
               </div>
 
               <div>
-                <label
-                  htmlFor="password_confirmation"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
+                <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700 mb-1">
                   Confirmar Contraseña:
                 </label>
                 <div className="relative">
@@ -361,8 +385,13 @@ export function UserModal({
                     id="password_confirmation"
                     name="password_confirmation"
                     value={formData.password_confirmation}
-                    onChange={handleChange}
-                    className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
+                    onChange={handleConfirmPasswordChange}
+                    className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10 ${
+                      touched.password_confirmation && fieldErrors.password_confirmation
+                        ? "border-red-500 focus:ring-red-400"
+                        : "border-gray-300"
+                    }`}
+                    disabled={isSubmitting}
                   />
                   <button
                     type="button"
@@ -373,13 +402,15 @@ export function UserModal({
                     {showConfirmPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-                {showConfirmStatus && (
+                {touched.password_confirmation && formData.password_confirmation.length > 0 && (
                   <div
                     className={`mt-2 flex items-center gap-2 text-xs font-medium ${
-                      passwordsMatch ? "text-emerald-700" : "text-rose-700"
+                      formData.password === formData.password_confirmation
+                        ? "text-emerald-700"
+                        : "text-rose-700"
                     }`}
                   >
-                    {passwordsMatch ? (
+                    {formData.password === formData.password_confirmation ? (
                       <>
                         <CheckCircle2 className="h-4 w-4" />
                         <span>Las contraseñas coinciden</span>
@@ -392,22 +423,19 @@ export function UserModal({
                     )}
                   </div>
                 )}
-               
               </div>
 
               <div>
-                <label
-                  htmlFor="role_id"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
+                <label htmlFor="role_id" className="block text-sm font-medium text-gray-700 mb-1">
                   Rol:
                 </label>
                 <select
                   id="role_id"
                   name="role_id"
                   value={formData.role_id}
-                  onChange={handleChange}
+                  onChange={handleFieldChange("role_id")}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                  disabled={isSubmitting}
                 >
                   <option value="">Seleccionar Rol</option>
                   {roles.map((role) => (
@@ -419,18 +447,16 @@ export function UserModal({
               </div>
 
               <div>
-                <label
-                  htmlFor="occupation_id"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
+                <label htmlFor="occupation_id" className="block text-sm font-medium text-gray-700 mb-1">
                   Ocupación:
                 </label>
                 <select
                   id="occupation_id"
                   name="occupation_id"
                   value={formData.occupation_id}
-                  onChange={handleChange}
+                  onChange={handleFieldChange("occupation_id")}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                  disabled={isSubmitting}
                 >
                   <option value="">Seleccionar Ocupación</option>
                   {occupations.map((occ: any) => (
@@ -442,44 +468,37 @@ export function UserModal({
               </div>
 
               <div>
-                <label
-                  htmlFor="dependency_id"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
+                <label htmlFor="dependency_id" className="block text-sm font-medium text-gray-700 mb-1">
                   Dependencia:
                 </label>
                 <select
                   id="dependency_id"
                   name="dependency_id"
                   value={formData.dependency_id}
-                  onChange={handleChange}
+                  onChange={handleFieldChange("dependency_id")}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                  disabled={isSubmitting}
                 >
                   <option value="">Seleccionar Dependencia</option>
-                  {dependencies.length === 0 && (
-                    <option disabled>Cargando dependencia...</option>
-                  )}
-                  {dependencies.map((dependency: any) => (
-                    <option key={dependency.id} value={dependency.id}>
-                      {dependency.name}
+                  {dependencies.map((dep: any) => (
+                    <option key={dep.id} value={dep.id}>
+                      {dep.name}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label
-                  htmlFor="institution_id"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
+                <label htmlFor="institution_id" className="block text-sm font-medium text-gray-700 mb-1">
                   Institución:
                 </label>
                 <select
                   id="institution_id"
                   name="institution_id"
                   value={formData.institution_id}
-                  onChange={handleChange}
+                  onChange={handleFieldChange("institution_id")}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                  disabled={isSubmitting}
                 >
                   <option value="">Seleccionar Institución</option>
                   {institutions.map((inst: any) => (
@@ -491,14 +510,8 @@ export function UserModal({
               </div>
 
               <div className="md:col-span-2">
-                <div id="form-errors-client">
-                  <FormErrors errors={formErrors} />
-                </div>
-                {error && (
-                  <div id="form-errors-server">
-                    <FormErrors errors={[error]} />
-                  </div>
-                )}
+                <FormErrors errors={visibleErrors} />
+                {error && <FormErrors errors={[error]} />}
               </div>
             </div>
 
@@ -518,7 +531,7 @@ export function UserModal({
               </button>
               <button
                 type="button"
-                onClick={handleClose}
+                onClick={onClose}
                 disabled={isSubmitting}
                 className="bg-[#C3A67C] text-white font-bold py-2 px-6 rounded-lg hover:brightness-95 disabled:opacity-50"
               >
