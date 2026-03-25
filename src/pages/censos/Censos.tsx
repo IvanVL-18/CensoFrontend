@@ -14,6 +14,7 @@ import { Toast } from "../../components/Toast";
 import type { CensoManualFormRef } from "./components/CensoManualForm";
 import { useNavigate } from "react-router-dom";
 import { CloneCensoModal } from "./components/CloneCensoModal";
+import { getCenso } from "./Censos.service";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
@@ -91,12 +92,21 @@ function CensosPageContent() {
     clearMutationError();
   };
 
-  const handleOpenEdit = (censo: any) => {
+  const handleOpenEdit = async (censo: any) => {
+    // Abrimos el modal con la información básica que ya tenemos (nombre, fechas, etc.)
     modals.openEdit(censo);
     setFormKey((prev) => prev + 1);
     setIsFormValid(false);
     setIsDirty(false);
     clearMutationError();
+
+    try {
+      // Consultamos el censo completo para obtener la descripción y otros detalles
+      const fullCenso = await getCenso(censo.id);
+      modals.openEdit(fullCenso);
+    } catch (err) {
+      console.error("Error al cargar el detalle del censo:", err);
+    }
   };
 
   let confirmTitle = "";
