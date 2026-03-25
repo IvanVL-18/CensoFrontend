@@ -292,6 +292,7 @@ export function UserModal({
                   type="email"
                   id="email"
                   name="email"
+                  autoComplete="email"
                   value={formData.email}
                   onChange={handleChange}
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
@@ -319,6 +320,7 @@ export function UserModal({
                     type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
+                    autoComplete="new-password"
                     value={formData.password}
                     onChange={handleChange}
                     onFocus={() => setPwdFocus(true)}
@@ -334,18 +336,18 @@ export function UserModal({
                     {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-                 {(!initialData || formData.password.length > 0) && (
-                    <PasswordStrengthMeter
-                      password={formData.password}
-                      className="mt-2"
-                      showRules={pwdFocus}
-                    />
-                  )}
-                  {fieldErrors.password && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {fieldErrors.password}
-                    </p>
-                  )}
+                {(!initialData || formData.password.length > 0) && (
+                  <PasswordStrengthMeter
+                    password={formData.password}
+                    className="mt-2"
+                    showRules={pwdFocus}
+                  />
+                )}
+                {fieldErrors.password && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.password}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -370,7 +372,11 @@ export function UserModal({
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
                   >
-                    {showConfirmPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
+                    {showConfirmPassword ? (
+                      <EyeClosed size={20} />
+                    ) : (
+                      <Eye size={20} />
+                    )}
                   </button>
                 </div>
                 {showConfirmStatus && (
@@ -392,7 +398,6 @@ export function UserModal({
                     )}
                   </div>
                 )}
-               
               </div>
 
               <div>
