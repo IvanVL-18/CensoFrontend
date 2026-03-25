@@ -7,7 +7,7 @@ import CompleteProfileModal from "./CompleteProfileModal";
 import EditProfileModal from "./EditProfileModal";
 
 // 👇 1. Importamos el hook de tu contexto
-import { useAuthContext } from "../../../context/AuthContext"; 
+import { useAuthContext } from "../../../context/AuthContext";
 
 export default function ProfileMenu() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -22,16 +22,16 @@ export default function ProfileMenu() {
   const { user, logout } = useAuthContext();
 
   const jobTitle = "Usuario";
-  
+
   // 👇 3. Usamos el nombre que viene de Laravel
   const displayName = user?.name || "Usuario";
-  
+
   // Tomamos las primeras dos letras del nombre para el avatar
   const initials = displayName.substring(0, 2).toUpperCase();
 
   useEffect(() => {
     const hasSeenModal = sessionStorage.getItem("hasSeenCompleteProfileModal");
-    
+
     // 👇 4. Usamos la propiedad "complete" (booleano) que tu AuthController envía
     if (user && !user.complete && !hasSeenModal) {
       setPromptOpen(true);
@@ -42,7 +42,8 @@ export default function ProfileMenu() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!menuRef.current) return;
-      if (!menuRef.current.contains(event.target as Node)) setDropdownOpen(false);
+      if (!menuRef.current.contains(event.target as Node))
+        setDropdownOpen(false);
     };
 
     const handleEsc = (event: KeyboardEvent) => {
@@ -67,7 +68,7 @@ export default function ProfileMenu() {
   const handleLogout = async () => {
     try {
       // Llamamos al logout del contexto (invalida la cookie en el backend y borra el estado)
-      await logout(); 
+      await logout();
       sessionStorage.removeItem("hasSeenCompleteProfileModal");
       navigate("/login");
     } catch (error) {
@@ -97,7 +98,6 @@ export default function ProfileMenu() {
 
         <ChevronDown className="w-4 h-4" />
       </button>
-
       {dropdownOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 text-gray-700 z-40">
           <div className="px-3 py-3 border-b border-gray-100 flex items-center gap-3">
@@ -111,7 +111,7 @@ export default function ProfileMenu() {
               </span>
               <span className="text-xs text-gray-500 truncate max-w-[150px]">
                 {/* Nota: Tu backend no envía el email en el login actualmente. Si lo agregas en Laravel, puedes mostrarlo aquí como user.email */}
-                {user?.name ? "Usuario Activo" : "Sesión"} 
+                {user?.name ? "Usuario Activo" : "Sesión"}
               </span>
             </div>
           </div>
@@ -140,28 +140,28 @@ export default function ProfileMenu() {
           </div>
         </div>
       )}
-
-      <CompleteProfilePromptModal
-        open={promptOpen}
-        onClose={() => setPromptOpen(false)}
-        onGoToComplete={() => {
-          setPromptOpen(false);
-          setCompleteOpen(true);
-        }}
-      />
-
-      {/* Nota: Es posible que necesites ajustar las props de estos modales si dependían del objeto "user.profile" que estaba quemado antes */}
-      <CompleteProfileModal
-        open={completeOpen}
-        onClose={() => setCompleteOpen(false)}
-        user={user as any} 
-      />
-
-      <EditProfileModal
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-        user={user as any}
-      />
+      {user && (
+        <>
+          <CompleteProfilePromptModal
+            open={promptOpen}
+            onClose={() => setPromptOpen(false)}
+            onGoToComplete={() => {
+              setPromptOpen(false);
+              setCompleteOpen(true);
+            }}
+          />
+          <CompleteProfileModal
+            open={completeOpen}
+            onClose={() => setCompleteOpen(false)}
+            user={user as any}
+          />
+          <EditProfileModal
+            open={editOpen}
+            onClose={() => setEditOpen(false)}
+            user={user as any}
+          />
+        </>
+      )}
     </div>
   );
 }

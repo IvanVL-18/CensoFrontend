@@ -4,14 +4,14 @@ import type { ProfileData, EditProfileModalProps as Props } from "../Profile.typ
 import ProfileField from "./ProfileField";
 
 export default function EditProfileModal({ open, onClose, user }: Props) {
-  const [draft, setDraft] = useState<ProfileData>(user.profile);
+  const [draft, setDraft] = useState<ProfileData>(user?.profile ?? {} as ProfileData);
 
-  useEffect(() => {
-    if (!open) return;
+useEffect(() => {
+    if (!open || !user) return;
     setDraft(user.profile);
   }, [open, user]);
 
-  if (!open) return null;
+if (!open || !user) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/35 backdrop-blur-[2px]">

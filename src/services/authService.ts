@@ -1,51 +1,60 @@
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
-
-// El token viaja en la HttpOnly cookie automáticamente en cada request
-axios.defaults.withCredentials = true;
+import api from '../lib/Axios'; // Asegúrate de que la ruta sea correcta
 
 export interface LoginCredentials {
   email: string;
   password: string;
 }
 
-// access_token ya NO viene en el body — el backend lo setea como HttpOnly cookie
 export interface LoginResponse {
-  token_type: "Bearer";
   name?: string;
-  complete: boolean; // false = perfil incompleto, redirigir a completar
+  token_type: string;
+  complete: boolean;
 }
 
-export interface AuthError {
-  message: string;
+
+
+export interface MeResponse {
+  id: number;
+  name: string;
+  email: string;    // 👈 Agregado
+  complete: boolean;
+  profile: {        // 👈 Agregado
+    name?: string;
+    lastname?: string;
+    phone?: string;
+    mobile?: string;
+    address?: string;
+  };
 }
 
-export async function loginRequest(
-  credentials: LoginCredentials
-): Promise<LoginResponse> {
-  try {
-    const { data } = await axios.post<LoginResponse>(
-      `${API_URL}/login`,
-      credentials
-    );
-    return data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      // Lanza el mensaje que manda Laravel (ej: "Credenciales incorrectas")
-      throw new Error(
-        error.response?.data?.message ?? "Error al iniciar sesión"
-      );
-    }
-    throw error;
-  }
+/**
+ * POST /login
+ */
+export async function loginRequest(credentials: LoginCredentials): Promise<LoginResponse> {
+  // Axios ya usa el baseURL, así que solo ponemos el endpoint
+  const { data } = await api.post<LoginResponse>('/login', credentials);
+  return data;
 }
 
-// Ya no recibe token — la cookie se envía sola gracias a withCredentials
+/**
+ * POST /logout
+ */
 export async function logoutRequest(): Promise<void> {
+  await api.post('/logout');
+}
+
+/**
+ * GET /me
+ * Usamos un try/catch específico aquí para manejar el 401 
+ * silenciosamente durante la carga inicial.
+ */
+export async function meRequest(): Promise<MeResponse | null> {
   try {
-    await axios.post(`${API_URL}/logout`);
-  } catch {
-    // No importa si falla, limpiamos contexto de todas formas
+    const { data } = await api.get<MeResponse>('/me');
+    return data;
+  } catch (error: any) {
+    // Si es 401, simplemente devolvemos null (usuario no logueado)
+    if (error.status === 401) return null;
+    throw error;
   }
 }

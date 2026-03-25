@@ -4,15 +4,19 @@ import { createPortal } from "react-dom";
 import type { ProfileData, CompleteProfileModalProps as Props } from "../Profile.types";
 import ProfileField from "./ProfileField";
 
-export default function CompleteProfileModal({ open, onClose, user }: Props) {
-  const [draft, setDraft] = useState<ProfileData>(user.profile);
+export default function CompleteProfileModal({
+  open,
+  onClose,
+  user,
+}: Props) { // <--- Change this from CompleteProfileModalProps to Props
+  if (!open) return null;  const [draft, setDraft] = useState<ProfileData>(user.profile);
 
   useEffect(() => {
     if (!open) return;
     setDraft(user.profile);
   }, [open, user]);
 
-  if (!open) return null;
+  if (!open || !user) return null; // ← guarda aquí
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] overflow-y-auto bg-black/35 backdrop-blur-[2px]">
