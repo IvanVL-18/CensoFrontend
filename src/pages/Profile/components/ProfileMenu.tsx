@@ -1,16 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import CompleteProfilePromptModal from "./CompleteProfilePromptModal";
 import CompleteProfileModal from "./CompleteProfileModal";
 import EditProfileModal from "./EditProfileModal";
-import type { AuthUser } from "../Profile.types";
 
-function isProfileIncomplete(u: AuthUser) {
-  const p = u.profile;
-  return !p.name || !p.lastname || !p.phone || !p.mobile || !p.address;
-}
+// 👇 1. Importamos el hook de tu contexto
+import { useAuthContext } from "../../../context/AuthContext"; 
 
 export default function ProfileMenu() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -20,32 +17,23 @@ export default function ProfileMenu() {
 
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-  const user: AuthUser = useMemo(
-    () => ({
-      email: "usuario@hidalgo.gob.mx",
-      profile: {
-        name: "",
-        lastname: "",
-        phone: "",
-        mobile: "",
-        address: "",
-      },
-    }),
-    []
-  );
+
+  // 👇 2. Obtenemos el usuario y la función logout desde la memoria
+  const { user, logout } = useAuthContext();
 
   const jobTitle = "Usuario";
-  const displayName =
-    user.profile.name || user.profile.lastname
-      ? `${user.profile.name} ${user.profile.lastname}`.trim()
-      : "Usuario";
-
-  const initials =
-    (user.profile.name?.[0] || "") + (user.profile.lastname?.[0] || "");
+  
+  // 👇 3. Usamos el nombre que viene de Laravel
+  const displayName = user?.name || "Usuario";
+  
+  // Tomamos las primeras dos letras del nombre para el avatar
+  const initials = displayName.substring(0, 2).toUpperCase();
 
   useEffect(() => {
     const hasSeenModal = sessionStorage.getItem("hasSeenCompleteProfileModal");
-    if (isProfileIncomplete(user) && !hasSeenModal) {
+    
+    // 👇 4. Usamos la propiedad "complete" (booleano) que tu AuthController envía
+    if (user && !user.complete && !hasSeenModal) {
       setPromptOpen(true);
       sessionStorage.setItem("hasSeenCompleteProfileModal", "true");
     }
@@ -75,11 +63,16 @@ export default function ProfileMenu() {
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("hasSeenCompleteProfileModal");
-    navigate("/login");
+  // 👇 5. Actualizamos el cierre de sesión
+  const handleLogout = async () => {
+    try {
+      // Llamamos al logout del contexto (invalida la cookie en el backend y borra el estado)
+      await logout(); 
+      sessionStorage.removeItem("hasSeenCompleteProfileModal");
+      navigate("/login");
+    } catch (error) {
+      console.error("Error al cerrar sesión", error);
+    }
   };
 
   return (
@@ -90,7 +83,7 @@ export default function ProfileMenu() {
         className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition"
       >
         <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-semibold">
-          {initials ? initials.toUpperCase() : <User className="w-4 h-4" />}
+          {initials ? initials : <User className="w-4 h-4" />}
         </div>
 
         <div className="hidden sm:flex flex-col items-start leading-tight">
@@ -117,7 +110,8 @@ export default function ProfileMenu() {
                 {displayName}
               </span>
               <span className="text-xs text-gray-500 truncate max-w-[150px]">
-                {user.email}
+                {/* Nota: Tu backend no envía el email en el login actualmente. Si lo agregas en Laravel, puedes mostrarlo aquí como user.email */}
+                {user?.name ? "Usuario Activo" : "Sesión"} 
               </span>
             </div>
           </div>
@@ -156,16 +150,17 @@ export default function ProfileMenu() {
         }}
       />
 
+      {/* Nota: Es posible que necesites ajustar las props de estos modales si dependían del objeto "user.profile" que estaba quemado antes */}
       <CompleteProfileModal
         open={completeOpen}
         onClose={() => setCompleteOpen(false)}
-        user={user}
+        user={user as any} 
       />
 
       <EditProfileModal
         open={editOpen}
         onClose={() => setEditOpen(false)}
-        user={user}
+        user={user as any}
       />
     </div>
   );

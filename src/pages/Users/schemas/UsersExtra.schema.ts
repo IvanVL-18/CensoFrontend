@@ -13,7 +13,7 @@ export const UsersExtraSchema = z.object({
     .max(20, "Celular máximo 20 caracteres")
     .optional()
     .refine((v) => !v || /^[0-9+\-\s()]+$/.test(v), "Celular inválido"),
-  address: z.string().max(200, "Dirección máximo 200 caracteres").optional(),
+  address: z.string().max(150, "Dirección máximo 150 caracteres").optional(),
 });
 
 export type UsersExtraFormData = z.infer<typeof UsersExtraSchema>;
