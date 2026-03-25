@@ -27,7 +27,7 @@ export default function ProfileField({
           maxLength={maxLength}
           className={`w-full rounded-lg border border-slate-200 bg-white ${
             Icon ? "pl-10" : "pl-3"
-          } pr-3 py-2 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/25 focus:border-[var(--pantone-7421)]`}
+          } pr-3 py-2 text-base sm:text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/25 focus:border-[var(--pantone-7421)]`}
         />
       </div>
     </div>

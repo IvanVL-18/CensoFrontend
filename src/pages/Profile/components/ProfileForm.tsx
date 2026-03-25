@@ -18,7 +18,7 @@ export default function ProfileForm({
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-800 shadow-sm
+        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-base sm:text-xs text-gray-800 shadow-sm
         focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)]/60 focus:border-[var(--pantone-7421)]"
       />
 
