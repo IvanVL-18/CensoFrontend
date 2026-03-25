@@ -15,6 +15,7 @@ import type { CensoManualFormRef } from "./components/CensoManualForm";
 import { useNavigate } from "react-router-dom";
 import { CloneCensoModal } from "./components/CloneCensoModal";
 import { getCenso } from "./Censos.service";
+import type { Censo } from "./Censos.types";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
@@ -72,6 +73,10 @@ function CensosPageContent() {
   const censoFormRef = useRef<CensoManualFormRef>(null);
   const [isFormValid, setIsFormValid] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [isPreparingEdit, setIsPreparingEdit] = useState(false);
+  const [descriptionCache, setDescriptionCache] = useState<
+    Record<string, string>
+  >({});
 
   useEffect(() => {
     if (modals.isFormOpen && !modals.editingCenso) {
@@ -92,20 +97,45 @@ function CensosPageContent() {
     clearMutationError();
   };
 
-  const handleOpenEdit = async (censo: any) => {
-    // Abrimos el modal con la información básica que ya tenemos (nombre, fechas, etc.)
-    modals.openEdit(censo);
-    setFormKey((prev) => prev + 1);
+  const handleOpenEdit = async (censo: Censo) => {
+    if (isPreparingEdit) return;
+
+    const censoId = String(censo.id);
+    const cachedDescription = descriptionCache[censoId] ?? censo.description ?? "";
+
+    setIsPreparingEdit(true);
     setIsFormValid(false);
     setIsDirty(false);
     clearMutationError();
 
     try {
-      // Consultamos el censo completo para obtener la descripción y otros detalles
       const fullCenso = await getCenso(censo.id);
-      modals.openEdit(fullCenso);
+      const resolvedDescription =
+        fullCenso.description ?? cachedDescription;
+
+      if (resolvedDescription.trim() !== "") {
+        setDescriptionCache((prev) => ({
+          ...prev,
+          [censoId]: resolvedDescription.trim(),
+        }));
+      }
+
+      modals.openEdit({
+        ...censo,
+        ...fullCenso,
+        description: resolvedDescription,
+        start_date: fullCenso.start_date ?? censo.start_date,
+        end_date: fullCenso.end_date ?? censo.end_date,
+      });
     } catch (err) {
       console.error("Error al cargar el detalle del censo:", err);
+      modals.openEdit({
+        ...censo,
+        description: cachedDescription,
+      });
+    } finally {
+      setFormKey((prev) => prev + 1);
+      setIsPreparingEdit(false);
     }
   };
 
@@ -175,10 +205,27 @@ function CensosPageContent() {
         isSubmitting={isSubmitting}
         error={mutationError}
         onClose={handleCloseForm}
-        onSave={(data) => handleSave(data, modals.editingCenso)}
+        onSave={(data) => {
+          const id = modals.editingCenso?.id;
+          const submittedDescription = data?.description;
+
+          if (
+            id &&
+            typeof submittedDescription === "string" &&
+            submittedDescription.trim() !== ""
+          ) {
+            setDescriptionCache((prev) => ({
+              ...prev,
+              [String(id)]: submittedDescription.trim(),
+            }));
+          }
+
+          handleSave(data, modals.editingCenso);
+        }}
         onBulkUpload={handleBulkUpload}
         mode={createModalMode}
         editingCenso={modals.editingCenso}
+        isPreparingEdit={isPreparingEdit}
         onFormValidityChange={setIsFormValid}
         isFormValid={isFormValid}
         onDirtyChange={setIsDirty}

@@ -16,6 +16,7 @@ const MAX_DESC_LENGTH = 200;
 
 interface CensoManualFormProps {
   isSubmitting: boolean;
+  isPreparingEdit?: boolean;
   onSubmit: (data: any) => void;
   error?: string | null;
   initialData?: {
@@ -42,6 +43,7 @@ export const CensoManualForm = forwardRef<
   (
     {
       isSubmitting,
+      isPreparingEdit = false,
       onSubmit,
       error,
       initialData,
@@ -267,7 +269,11 @@ export const CensoManualForm = forwardRef<
 
             const currentDesc = description?.trim() ?? "";
             const baseDesc = initialData.description?.trim() ?? "";
-            if (currentDesc !== baseDesc) payload.description = currentDesc;
+            if (currentDesc !== "") {
+              payload.description = currentDesc;
+            } else if (currentDesc !== baseDesc && baseDesc !== "") {
+              payload.description = currentDesc;
+            }
 
             if (startDate !== (initialData.init_date ?? ""))
               payload.init_date = startDate;
@@ -482,7 +488,11 @@ export const CensoManualForm = forwardRef<
             rows={3}
             maxLength={MAX_DESC_LENGTH}
             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 resize-none"
-            placeholder="Describe el propósito o alcance del censo..."
+            placeholder={
+              isPreparingEdit
+                ? "Cargando descripción..."
+                : "Describe el propósito o alcance del censo..."
+            }
           />
           <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
             <div

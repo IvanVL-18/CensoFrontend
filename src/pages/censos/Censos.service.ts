@@ -12,6 +12,15 @@ import type {
 export type CensoFilter = "all" | "active" | "inactive";
 type CensoId = string | number;
 
+const firstDefined = <T>(
+  ...values: Array<T | null | undefined>
+): T | undefined => {
+  for (const value of values) {
+    if (value !== null && value !== undefined) return value;
+  }
+  return undefined;
+};
+
 export const getCensos = async (
   filter: CensoFilter = "all",
   search: string = "",
@@ -37,17 +46,37 @@ export const getCenso = async (
   id: CensoId,
   signal?: AbortSignal,
 ): Promise<Censo> => {
-  const response = await api.get<{ data: Censo } | Censo>(`/censuses/${id}`, {
+  const response = await api.get(`/censuses/${id}`, {
     signal,
   });
-  const rawData = (response.data as any).data ?? response.data;
+  const responseData = response.data as any;
+  const rawData = responseData?.data?.data ?? responseData?.data ?? responseData;
+  const censoData = rawData?.censo ?? rawData?.census ?? rawData;
 
   return {
     ...rawData,
-    description: rawData.description,
-    start_date: rawData.init_date || rawData.start_date,
-    end_date: rawData.deadline || rawData.end_date,
-    created_at: rawData.created_at,
+    ...censoData,
+    description: firstDefined(
+      censoData?.description,
+      censoData?.descripcion,
+      rawData?.description,
+      rawData?.descripcion,
+    ),
+    start_date: firstDefined(
+      censoData?.init_date,
+      censoData?.start_date,
+      rawData?.init_date,
+      rawData?.start_date,
+    ),
+    end_date: firstDefined(
+      censoData?.deadline,
+      censoData?.end_date,
+      rawData?.deadline,
+      rawData?.end_date,
+    ),
+    created_at: firstDefined(censoData?.created_at, rawData?.created_at) ?? "",
+    updated_at: firstDefined(censoData?.updated_at, rawData?.updated_at) ?? "",
+    deleted_at: firstDefined(censoData?.deleted_at, rawData?.deleted_at) ?? null,
   };
 };
 
