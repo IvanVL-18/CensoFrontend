@@ -58,7 +58,10 @@ export function ViewCensoModal({
           }`}
         >
           <div className="flex items-center gap-3 min-w-0">
-            <h2 className="text-xl font-bold text-white line-clamp-1 pr-2">
+            <h2
+              className="truncate text-xl font-bold text-white cursor-default"
+              title={Censo.name}
+            >
               {Censo.name}
             </h2>
 

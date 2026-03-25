@@ -59,15 +59,15 @@ export function CensosCards({
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center p-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700" />
+      <div className="flex items-center justify-center p-12">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[var(--pantone-7421)]" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center p-8 text-red-600 font-semibold bg-red-50 rounded-lg border border-red-200">
+      <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-center font-semibold text-red-600">
         {error}
       </div>
     );
@@ -75,7 +75,7 @@ export function CensosCards({
 
   if (censos.length === 0) {
     return (
-      <div className="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center text-gray-500">
         No se encontraron censos.
       </div>
     );
@@ -83,6 +83,7 @@ export function CensosCards({
 
   const formatDate = (dateStr?: string | null) => {
     if (!dateStr) return "—";
+
     try {
       return new Date(dateStr).toLocaleDateString("es-MX", {
         year: "numeric",
@@ -112,15 +113,15 @@ export function CensosCards({
     if (isInactive) {
       return {
         row: "bg-white border border-[#e5e7eb]",
-        icon: "text-[#6b7280]",
+        icon: "text-[#9ca3af]",
         label: "text-[#111827]",
         value: "text-[#111827]",
       };
     }
 
     return {
-      row: "bg-white border border-emerald-300",
-      icon: "text-[#111827]",
+      row: "bg-white border border-[#e5e7eb]",
+      icon: "text-emerald-600",
       label: "text-[#111827]",
       value: "text-[#111827]",
     };
@@ -130,7 +131,7 @@ export function CensosCards({
     if (isInactive) {
       return {
         row: "bg-white border border-[#e5e7eb]",
-        icon: "text-[#6b7280]",
+        icon: "text-[#9ca3af]",
         label: "text-[#111827]",
         value: "text-[#111827]",
       };
@@ -138,8 +139,8 @@ export function CensosCards({
 
     if (daysLeft === null) {
       return {
-        row: "bg-white border border-gray-200",
-        icon: "text-[#111827]",
+        row: "bg-white border border-[#e5e7eb]",
+        icon: "text-[#6b7280]",
         label: "text-[#111827]",
         value: "text-[#111827]",
       };
@@ -147,8 +148,8 @@ export function CensosCards({
 
     if (daysLeft > 90) {
       return {
-        row: "bg-white border border-emerald-300",
-        icon: "text-[#111827]",
+        row: "bg-white border border-[#e5e7eb]",
+        icon: "text-emerald-600",
         label: "text-[#111827]",
         value: "text-[#111827]",
       };
@@ -156,8 +157,8 @@ export function CensosCards({
 
     if (daysLeft > 60) {
       return {
-        row: "bg-white border border-lime-300",
-        icon: "text-[#111827]",
+        row: "bg-white border border-[#e5e7eb]",
+        icon: "text-lime-600",
         label: "text-[#111827]",
         value: "text-[#111827]",
       };
@@ -165,8 +166,8 @@ export function CensosCards({
 
     if (daysLeft > 40) {
       return {
-        row: "bg-white border border-yellow-300",
-        icon: "text-[#111827]",
+        row: "bg-white border border-[#e5e7eb]",
+        icon: "text-yellow-500",
         label: "text-[#111827]",
         value: "text-[#111827]",
       };
@@ -174,8 +175,8 @@ export function CensosCards({
 
     if (daysLeft > 20) {
       return {
-        row: "bg-white border border-amber-300",
-        icon: "text-[#111827]",
+        row: "bg-white border border-[#e5e7eb]",
+        icon: "text-amber-500",
         label: "text-[#111827]",
         value: "text-[#111827]",
       };
@@ -183,23 +184,23 @@ export function CensosCards({
 
     if (daysLeft > 7) {
       return {
-        row: "bg-white border border-orange-300",
-        icon: "text-[#111827]",
+        row: "bg-white border border-[#e5e7eb]",
+        icon: "text-orange-500",
         label: "text-[#111827]",
         value: "text-[#111827]",
       };
     }
 
     return {
-      row: "bg-white border border-red-300",
-      icon: "text-[#111827]",
+      row: "bg-white border border-[#e5e7eb]",
+      icon: "text-red-500",
       label: "text-[#111827]",
       value: "text-[#111827]",
     };
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {censos.map((censo) => {
         const isActive = !censo.deleted_at || censo.deleted_at === "null";
         const isInactive = !isActive;
@@ -223,21 +224,25 @@ export function CensosCards({
         return (
           <div
             key={censo.id}
-            className={`rounded-2xl shadow-md border flex flex-col overflow-hidden transition-all duration-300 ${
+            className={`group flex flex-col overflow-hidden rounded-2xl border shadow-md transition-all duration-300 ${
               isInactive
-                ? "bg-[#fafafb] border-[#eceff3]"
-                : "bg-white border-gray-200 hover:shadow-xl hover:border-red-700 group"
+                ? "border-[#eceff3] bg-[#fafafb]"
+                : "border-gray-200 bg-white hover:border-[var(--pantone-7421)] hover:shadow-xl"
             }`}
           >
             <div
-              className={`flex justify-between items-start p-4 ${
-                isInactive ? "bg-[#c4cad3]" : "bg-red-900"
+              className={`flex items-start justify-between p-5 ${
+                isInactive ? "bg-[#c4cad3]" : "bg-[var(--pantone-7421)]"
               }`}
             >
-              <h3 className="text-lg font-semibold text-white line-clamp-2 pr-3">
-                {censo.name}
-              </h3>
-
+              <div className="min-w-0 flex-1 overflow-hidden pr-3">
+                <p
+                  className="truncate text-lg font-semibold text-white cursor-default"
+                  title={censo.name}
+                >
+                  {censo.name}
+                </p>
+              </div>
               <div
                 className="relative shrink-0"
                 ref={(el) => {
@@ -250,8 +255,8 @@ export function CensosCards({
                       menuOpenId === String(censo.id) ? null : String(censo.id),
                     )
                   }
-                  className={`p-1.5 rounded-full transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white ${
-                    isInactive ? "hover:bg-white/20" : "hover:bg-red-500"
+                  className={`rounded-full p-1.5 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white ${
+                    isInactive ? "hover:bg-white/20" : "hover:bg-white/15"
                   }`}
                   aria-label="Opciones"
                 >
@@ -259,7 +264,7 @@ export function CensosCards({
                 </button>
 
                 {menuOpenId === String(censo.id) && (
-                  <div className="absolute right-0 mt-2 w-auto min-w-fit whitespace-nowrap rounded-xl border border-gray-200 bg-white shadow-xl z-20 py-1.5">
+                  <div className="absolute right-0 z-20 mt-2 min-w-fit whitespace-nowrap rounded-xl border border-gray-200 bg-white py-1.5 shadow-xl">
                     {isActive ? (
                       <>
                         <button
@@ -267,7 +272,7 @@ export function CensosCards({
                             onView(censo);
                             setMenuOpenId(null);
                           }}
-                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100"
                         >
                           <Eye size={16} className="shrink-0" />
                           <span>Detalles</span>
@@ -278,7 +283,7 @@ export function CensosCards({
                             onEdit(censo);
                             setMenuOpenId(null);
                           }}
-                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100"
                         >
                           <Edit size={16} className="shrink-0" />
                           <span>Editar</span>
@@ -289,7 +294,7 @@ export function CensosCards({
                             onBan(censo);
                             setMenuOpenId(null);
                           }}
-                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-[var(--pantone-7421)] transition-colors hover:bg-gray-100"
                         >
                           <Ban size={16} className="shrink-0" />
                           <span>Desactivar</span>
@@ -302,7 +307,7 @@ export function CensosCards({
                             onView(censo);
                             setMenuOpenId(null);
                           }}
-                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100"
                         >
                           <Eye size={16} className="shrink-0" />
                           <span>Detalles</span>
@@ -313,7 +318,7 @@ export function CensosCards({
                             onRestore(censo);
                             setMenuOpenId(null);
                           }}
-                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-green-600 hover:bg-gray-100 transition-colors"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-green-600 transition-colors hover:bg-gray-100"
                         >
                           <CircleArrowUp size={16} className="shrink-0" />
                           <span>Restaurar</span>
@@ -324,7 +329,7 @@ export function CensosCards({
                             onDelete(censo);
                             setMenuOpenId(null);
                           }}
-                          className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-[var(--pantone-7421)] transition-colors hover:bg-gray-100"
                         >
                           <Trash2 size={16} className="shrink-0" />
                           <span>Eliminar</span>
@@ -336,17 +341,17 @@ export function CensosCards({
               </div>
             </div>
 
-            <div className="p-5 flex flex-col flex-1">
+            <div className="flex flex-1 flex-col p-5">
               <div className="mb-4">
                 <span
-                  className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${
+                  className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium shadow-sm ${
                     isActive
-                      ? "bg-green-100 text-green-800 border border-green-200"
-                      : "bg-[#f5f7fa] text-[#6b7280] border border-[#e5e7eb]"
+                      ? "border border-green-200 bg-green-100 text-green-800"
+                      : "border border-[#e5e7eb] bg-[#f5f7fa] text-[#6b7280]"
                   }`}
                 >
                   <span
-                    className={`w-2 h-2 rounded-full mr-1.5 ${
+                    className={`mr-1.5 h-2 w-2 rounded-full ${
                       isActive ? "bg-green-500 animate-pulse" : "bg-[#9ca3af]"
                     }`}
                   />
@@ -355,10 +360,10 @@ export function CensosCards({
               </div>
 
               <div
-                className={`space-y-3 text-sm mb-4 p-3 rounded-lg border ${
+                className={`mb-4 space-y-3 rounded-lg border p-3 text-sm ${
                   isInactive
-                    ? "bg-[#f8f9fb] border-[#e7eaf0]"
-                    : "bg-gray-50 border-gray-100"
+                    ? "border-[#e7eaf0] bg-[#f8f9fb]"
+                    : "border-gray-100 bg-gray-50"
                 }`}
               >
                 <div
@@ -392,10 +397,10 @@ export function CensosCards({
                     onModules(censo);
                   }}
                   disabled={isInactive}
-                  className={`flex-1 font-medium py-2.5 px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md ${
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 font-medium shadow-md transition-all duration-300 ${
                     isInactive
-                      ? "bg-[#eef1f5] text-[#9aa3b2] cursor-not-allowed shadow-none"
-                      : "bg-[var(--pantone-465)] hover:bg-[#a8844f] text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
+                      ? "cursor-not-allowed bg-[#eef1f5] text-[#9aa3b2] shadow-none"
+                      : "bg-[var(--pantone-465)] text-white hover:bg-[#a8844f] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
                   }`}
                 >
                   <ListOrdered size={16} />
@@ -409,10 +414,10 @@ export function CensosCards({
                     onClone(censo);
                   }}
                   disabled={isInactive}
-                  className={`flex-1 font-medium py-2.5 px-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md ${
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 font-medium shadow-md transition-all duration-300 ${
                     isInactive
-                      ? "bg-[#eef1f5] text-[#9aa3b2] cursor-not-allowed shadow-none"
-                      : "bg-[var(--pantone-465)] hover:bg-[#a8844f] text-white hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
+                      ? "cursor-not-allowed bg-[#eef1f5] text-[#9aa3b2] shadow-none"
+                      : "bg-[var(--pantone-465)] text-white hover:bg-[#a8844f] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
                   }`}
                 >
                   <Copy size={16} />
