@@ -38,7 +38,7 @@ export default function Dashboard() {
   const [links, setLinks] = useState<Links | null>(null);
 
   const [search, setSearch] = useState("");
-  const [loadingTable, setLoadingTable] = useState(false);
+  const [loadingTable, setLoadingTable] = useState(true);
   const [errorTable, setErrorTable] = useState<string | null>(null);
 
   const [sortField, setSortField] = useState<SortField>("id");
@@ -50,7 +50,6 @@ export default function Dashboard() {
       setErrorTable(null);
 
       const res = await getAllCensos(page);
-      console.log("getAllCensos:", res);
 
       setItems(res.data ?? []);
       setMeta(res.meta ?? null);
@@ -85,7 +84,6 @@ export default function Dashboard() {
 
       try {
         const qb = await getQuestionsByCenso();
-        console.log("questions raw:", qb);
 
         setQByCenso(
           (qb.data ?? []).map((x: any) => ({
@@ -146,7 +144,6 @@ export default function Dashboard() {
   const handlePageNumber = (page: number) => fetchCensos(page);
 
   const handleViewCenso = (id: string) => {
-    console.log("Ver cuestionario:", id);
   };
 
   return (

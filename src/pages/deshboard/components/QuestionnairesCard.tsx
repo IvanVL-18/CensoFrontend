@@ -90,35 +90,28 @@ export default function QuestionnairesCard({
           </thead>
 
           <tbody className="bg-white divide-y divide-gray-200">
-            {loading && (
+            {loading ? (
               <tr>
                 <td colSpan={3} className="p-6">
                   <Loading />
                 </td>
               </tr>
-            )}
-
-            {!loading && error && (
+            ) : error ? (
               <tr>
                 <td
                   colSpan={3}
                   className="text-center p-6 text-red-600 font-semibold"
                 >
-                  {error}
+                  {error || "Error al cargar censos"}
                 </td>
               </tr>
-            )}
-
-            {!loading && !error && items.length === 0 && (
+            ) : items.length === 0 ? (
               <tr>
                 <td colSpan={3} className="text-center p-6 text-gray-500">
                   No se encontraron Censos.
                 </td>
               </tr>
-            )}
-
-            {!loading &&
-              !error &&
+            ) : (
               items.map((it, index) => (
                 <tr key={String(it.id)} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -147,7 +140,8 @@ export default function QuestionnairesCard({
                     </button>
                   </td>
                 </tr>
-              ))}
+              ))
+            )}
           </tbody>
         </table>
       </div>
