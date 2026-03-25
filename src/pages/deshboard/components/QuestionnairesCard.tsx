@@ -2,6 +2,7 @@ import { ArrowUpDown, Eye, type LucideProps } from "lucide-react";
 import { SearchInput } from "../../../components/SearchInput";
 import Pagination from "../../../components/Pagination";
 import type { QuestionnaireItem, Links, Meta } from "../dashboard.types";
+import Loading from "../../../components/Loading";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -91,15 +92,18 @@ export default function QuestionnairesCard({
           <tbody className="bg-white divide-y divide-gray-200">
             {loading && (
               <tr>
-                <td colSpan={3} className="text-center p-6 text-gray-500">
-                  Cargando...
+                <td colSpan={3} className="p-6">
+                  <Loading />
                 </td>
               </tr>
             )}
 
             {!loading && error && (
               <tr>
-                <td colSpan={3} className="text-center p-6 text-red-600 font-semibold">
+                <td
+                  colSpan={3}
+                  className="text-center p-6 text-red-600 font-semibold"
+                >
                   {error}
                 </td>
               </tr>
@@ -116,9 +120,9 @@ export default function QuestionnairesCard({
             {!loading &&
               !error &&
               items.map((it, index) => (
-                <tr key={it.id} className="hover:bg-gray-50">
+                <tr key={String(it.id)} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {meta ? meta.from + index : index + 1}
+                    {meta ? (meta.from ?? 1) + index : index + 1}
                   </td>
 
                   <td
@@ -131,7 +135,7 @@ export default function QuestionnairesCard({
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
                     <button
                       title="Ver"
-                      onClick={() => onView(it.id)}
+                      onClick={() => onView(String(it.id))}
                       className="
                         bg-white text-[#691b31]
                         hover:bg-[#9d7e43] hover:text-white

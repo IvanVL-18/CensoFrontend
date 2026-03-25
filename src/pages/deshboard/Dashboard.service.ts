@@ -21,14 +21,17 @@ export const getCentralizedInstitutions = async () => {
 
 export const getQuestionsByCenso = async () => {
   const res = await api.get<QuestionsByCensoResponse>(
-    `/dashboard/questions-by-censo`
+    `/dashboard/questions-by-censuses`
   );
   return res.data;
 };
 
 export const getAllCensos = async (page: number = 1) => {
-  const res = await api.get<PaginatedCensosResponse>(`/dashboard/get-censos`, {
-    params: { page },
-  });
+  const res = await api.get<PaginatedCensosResponse>(
+    `/dashboard/get-censuses`,
+    {
+      params: { page },
+    }
+  );
   return res.data;
 };
