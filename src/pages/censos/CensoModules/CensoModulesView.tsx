@@ -106,7 +106,9 @@ const CensoModulesView: React.FC = () => {
                   rows.map((row) => (
                     <tr
                       key={row.module_id}
-                      className="border-t border-gray-200 text-sm text-gray-700"
+                      className={`border-t border-gray-200 text-sm text-gray-700 ${
+                        row.checked ? "bg-green-50" : "bg-white"
+                      }`}
                     >
                       <td className="px-4 py-3">
                         <input
