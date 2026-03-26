@@ -3,22 +3,56 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ProfileData, CompleteProfileModalProps as Props } from "../Profile.types";
 import ProfileField from "./ProfileField";
+import { completeProfile } from "../Profile.service";
+import type { AuthUser } from "../Profile.types";
 
-export default function CompleteProfileModal({ open, onClose, user }: Props) {
-  const [draft, setDraft] = useState<ProfileData>(user.profile);
+export default function CompleteProfileModal({
+  open,
+  onClose,
+  user,
+}: Props) { // <--- Change this from CompleteProfileModalProps to Props
+  if (!open) return null;  const [draft, setDraft] = useState<ProfileData>(user.profile);
 
   useEffect(() => {
     if (!open) return;
     setDraft(user.profile);
+    setError(null);
   }, [open, user]);
 
-  if (!open) return null;
+  if (!open || !user) return null; // ← guarda aquí
+
+  const handleSave = async () => {
+    
+    if (!draft.name?.trim() || !draft.lastname?.trim() || !draft.address?.trim()) {
+      setError("Nombre, apellidos y dirección son obligatorios.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await completeProfile(draft);
+      onCompleted({
+        ...user,
+        profile: {
+          ...draft,
+          profile_completed_at: new Date().toISOString(),
+        },
+      });
+    } catch {
+      setError("Ocurrió un error al guardar. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] overflow-y-auto bg-black/35 backdrop-blur-[2px]">
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg transition-all">
           <div className="relative p-4 sm:p-6">
+
             <button
               onClick={onClose}
               aria-label="Cerrar"
@@ -27,17 +61,17 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
               <X className="h-5 w-5" />
             </button>
 
-            <div className="flex items-start gap-3">
-              <div className="min-w-0">
-                <p className="text-lg font-semibold text-slate-900">
-                  Ingresa tus datos
-                </p>
-                <p className="mt-0.5 text-sm text-slate-500">
-                  Completa tu infomación para poder ingresar al sistema.
-                </p>
-              </div>
+            
+            <div className="pr-8">
+              <p className="text-lg font-semibold text-slate-900">
+                Ingresa tus datos
+              </p>
+              <p className="mt-0.5 text-sm text-slate-500">
+                Completa tu información para poder ingresar al sistema.
+              </p>
             </div>
 
+            
             <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                 <ProfileField
@@ -79,15 +113,23 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
               </div>
             </div>
 
+      
+            {error && (
+              <p className="mt-3 text-sm text-red-500">{error}</p>
+            )}
+
+            
             <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end">
               <button
                 type="button"
-                onClick={() => console.log("UI only (complete):", draft)}
-                className="w-full rounded-lg bg-[var(--pantone-7421)] px-4 py-2 text-sm font-semibold text-white hover:opacity-95 active:opacity-90 transition sm:w-auto"
+                onClick={handleSave}
+                disabled={loading}
+                className="w-full rounded-lg bg-[var(--pantone-7421)] px-4 py-2 text-sm font-semibold text-white hover:opacity-95 active:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed sm:w-auto"
               >
-                Guardar
+                {loading ? "Guardando..." : "Guardar"}
               </button>
             </div>
+
           </div>
         </div>
       </div>
