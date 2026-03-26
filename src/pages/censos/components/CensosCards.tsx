@@ -5,8 +5,6 @@ import {
   Ban,
   MoreVertical,
   Calendar,
-  ListOrdered,
-  Copy,
   Eye,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -272,7 +270,7 @@ export function CensosCards({
                             onView(censo);
                             setMenuOpenId(null);
                           }}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-sky-100 hover:text-sky-800"
                         >
                           <Eye size={16} className="shrink-0" />
                           <span>Detalles</span>
@@ -283,7 +281,7 @@ export function CensosCards({
                             onEdit(censo);
                             setMenuOpenId(null);
                           }}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-amber-50 hover:text-amber-800"
                         >
                           <Edit size={16} className="shrink-0" />
                           <span>Editar</span>
@@ -294,7 +292,7 @@ export function CensosCards({
                             onBan(censo);
                             setMenuOpenId(null);
                           }}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-[var(--pantone-7421)] transition-colors hover:bg-gray-100"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-[var(--pantone-7421)] transition-colors hover:bg-rose-100 hover:text-rose-800"
                         >
                           <Ban size={16} className="shrink-0" />
                           <span>Desactivar</span>
@@ -403,7 +401,6 @@ export function CensosCards({
                       : "bg-[var(--pantone-465)] text-white hover:bg-[#a8844f] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
                   }`}
                 >
-                  <ListOrdered size={16} />
                   Asignaciones
                 </button>
 
@@ -420,7 +417,6 @@ export function CensosCards({
                       : "bg-[var(--pantone-465)] text-white hover:bg-[#a8844f] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
                   }`}
                 >
-                  <Copy size={16} />
                   Clonar
                 </button>
               </div>
