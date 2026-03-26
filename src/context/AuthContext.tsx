@@ -89,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── Verificación de permisos ─────────────────────────────────────────────
   // Super Admin tiene acceso total sin verificar la lista de permisos.
+  // Para el resto se comprueba el array que devuelve el backend en /me.
   const hasPermission = useCallback(
     (permission: string): boolean => {
       if (!user) return false;

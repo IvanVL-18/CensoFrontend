@@ -30,6 +30,8 @@ import Questions from "./pages/Questions/Questions";
 import Builder from "././pages/Designer/components/Builder";
 import "./App.css";
 
+
+
 export default function App() {
   return (
     <Routes>
@@ -37,7 +39,6 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
 
       {/* ── Área autenticada ─────────────────────────────────────────────── */}
-      {/* ProtectedRoute sin permission = solo verifica autenticación         */}
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
 
@@ -47,14 +48,15 @@ export default function App() {
           <Route path="/inicio"        element={<HomePage />} />
           <Route path="/verification"  element={<Verification />} />
           <Route path="/ResetPassword" element={<ResetPassword />} />
+          <Route path="/configuracion" element={<ConfigurationsPage />} />
 
           {/* Dashboard */}
-          <Route element={<ProtectedRoute permission="dashboard.ver" />}>
+          <Route element={<ProtectedRoute permission="dashboard.view" />}>
             <Route path="/dashboard" element={<DashboardPage />} />
           </Route>
 
           {/* ── Censos ───────────────────────────────────────────────────── */}
-          <Route element={<ProtectedRoute permission="censos.ver" />}>
+          <Route element={<ProtectedRoute permission="censos.view" />}>
             <Route path="/censos"               element={<Censos />} />
             <Route path="/censos/:id"           element={<CensoDetail />} />
             <Route path="/censos/:id/modulos"   element={<CensoModulesView />} />
@@ -62,77 +64,69 @@ export default function App() {
             <Route path="/censos/preguntas/:id" element={<CensusQuestionsView />} />
           </Route>
 
-          <Route element={<ProtectedRoute permission="censos.editar" />}>
+          <Route element={<ProtectedRoute permission="censos.edit" />}>
             <Route path="/builder/:id" element={<Builder />} />
           </Route>
 
           {/* ── Catálogos ────────────────────────────────────────────────── */}
-          <Route element={<ProtectedRoute permission="modulos.ver" />}>
+          <Route element={<ProtectedRoute permission="modules.view" />}>
             <Route path="/Modulos" element={<Modules />} />
           </Route>
 
-          <Route element={<ProtectedRoute permission="secciones.ver" />}>
+          <Route element={<ProtectedRoute permission="sections.view" />}>
             <Route path="/secciones" element={<Sections />} />
           </Route>
 
-          <Route element={<ProtectedRoute permission="preguntas.ver" />}>
+          <Route element={<ProtectedRoute permission="questions.view" />}>
             <Route path="/preguntas" element={<Questions />} />
           </Route>
 
-          <Route element={<ProtectedRoute permission="ocupaciones.ver" />}>
+          <Route element={<ProtectedRoute permission="occupations.view" />}>
             <Route path="/ocupaciones" element={<Occupations />} />
           </Route>
 
-          <Route element={<ProtectedRoute permission="categorias.ver" />}>
+          <Route element={<ProtectedRoute permission="categories.view" />}>
             <Route path="/categorias" element={<Categories />} />
           </Route>
 
-          <Route element={<ProtectedRoute permission="catalogos.ver" />}>
+          <Route element={<ProtectedRoute permission="catalogs.view" />}>
             <Route path="/catalogos" element={<Catalogs />} />
           </Route>
 
           {/* ── Administración ───────────────────────────────────────────── */}
-          <Route element={<ProtectedRoute permission="usuarios.ver" />}>
+          <Route element={<ProtectedRoute permission="users.view" />}>
             <Route path="/usuarios" element={<Users />} />
           </Route>
 
-          <Route element={<ProtectedRoute permission="instituciones.ver" />}>
+          <Route element={<ProtectedRoute permission="institutions.view" />}>
             <Route path="/instituciones" element={<Insitutions />} />
           </Route>
 
-          <Route element={<ProtectedRoute permission="dependencias.ver" />}>
+          <Route element={<ProtectedRoute permission="dependencie.view" />}>
             <Route path="/Dependency" element={<Dependencies />} />
           </Route>
 
           {/* ── Roles y Permisos ─────────────────────────────────────────── */}
-          <Route element={<ProtectedRoute permission="roles.ver" />}>
-            <Route path="/roles" element={<Roles />} />
-          </Route>
-
-          <Route element={<ProtectedRoute permission="roles.editar" />}>
-            <Route path="/roles/permission-roles" element={<PermissionRoles />} />
-          </Route>
-
-          <Route element={<ProtectedRoute permission="permisos.ver" />}>
+          <Route element={<ProtectedRoute permission="roles.view" />}>
+            <Route path="/roles"    element={<Roles />} />
             <Route path="/permisos" element={<Permissions />} />
           </Route>
 
+          <Route element={<ProtectedRoute permission="roles.edit" />}>
+            <Route path="/roles/permission-roles" element={<PermissionRoles />} />
+          </Route>
+
           {/* ── Reportes y análisis ──────────────────────────────────────── */}
-          <Route element={<ProtectedRoute permission="indices.ver" />}>
+          <Route element={<ProtectedRoute permission="indexs.view" />}>
             <Route path="/indices" element={<Index />} />
           </Route>
 
-          <Route element={<ProtectedRoute permission="graficas.ver" />}>
+          <Route element={<ProtectedRoute permission="graficador.view" />}>
             <Route path="/graficador" element={<ChartsPage />} />
           </Route>
 
-          <Route element={<ProtectedRoute permission="reportes.ver" />}>
+          <Route element={<ProtectedRoute permission="reports.view" />}>
             <Route path="/reportes" element={<ReportsPage />} />
-          </Route>
-
-          {/* ── Configuración ────────────────────────────────────────────── */}
-          <Route element={<ProtectedRoute permission="configuracion.ver" />}>
-            <Route path="/configuracion" element={<ConfigurationsPage />} />
           </Route>
 
         </Route>
