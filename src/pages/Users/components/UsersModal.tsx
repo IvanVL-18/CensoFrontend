@@ -64,13 +64,11 @@ export function UserModal({
   const [pwdFocus, setPwdFocus] = useState(false);
 
   const hasChanges = useMemo(() => {
-    if (!initialData) return true;
-
     const normalize = (val: any) =>
       val === null || val === undefined ? "" : String(val).trim();
 
     const emailChanged =
-      normalize(formData.email) !== normalize(initialData.email);
+      normalize(formData.email) !== normalize(initialData?.email);
     const passwordChanged = formData.password !== "";
 
     const getSelectedName = (list: any[], id: string | number) => {
@@ -92,22 +90,22 @@ export function UserModal({
 
     const roleChanged = checkRelationChange(
       formData.role_id,
-      initialData.role,
+      initialData?.role,
       roles,
     );
     const occupationChanged = checkRelationChange(
       formData.occupation_id,
-      initialData.occupation,
+      initialData?.occupation,
       occupations,
     );
     const dependencyChanged = checkRelationChange(
       formData.dependency_id,
-      initialData.dependency,
+      initialData?.dependency,
       dependencies,
     );
     const institutionChanged = checkRelationChange(
       formData.institution_id,
-      initialData.institution,
+      initialData?.institution,
       institutions,
     );
 
@@ -253,8 +251,8 @@ export function UserModal({
     formData.password_confirmation.length > 0 &&
     formData.password !== formData.password_confirmation;
 
-  const canSave =
-    !isSubmitting && !hasClientErrors && hasChanges && !confirmMismatch;
+  const isUnchanged = !hasChanges;
+  const isDisabled = isSubmitting || hasClientErrors || isUnchanged || confirmMismatch;
 
   return (
     <>
@@ -531,7 +529,7 @@ export function UserModal({
               </button>
               <button
                 type="submit"
-                disabled={!canSave}
+                disabled={isDisabled}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
