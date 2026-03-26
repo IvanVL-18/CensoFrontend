@@ -238,7 +238,7 @@ export function CensosCards({
                   className="truncate text-lg font-semibold text-white cursor-default"
                   title={censo.name}
                 >
-                  {censo.name}
+                  {censo.name} 
                 </p>
               </div>
               <div
