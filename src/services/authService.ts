@@ -1,4 +1,4 @@
-import api from '../lib/Axios'; // Asegúrate de que la ruta sea correcta
+import api from '../lib/Axios';
 
 export interface LoginCredentials {
   email: string;
@@ -11,14 +11,14 @@ export interface LoginResponse {
   complete: boolean;
 }
 
-
-
 export interface MeResponse {
-  id: number;
+  id: string;
   name: string;
-  email: string;    // 👈 Agregado
+  email: string;
   complete: boolean;
-  profile: {        // 👈 Agregado
+  role: string | null;
+  permissions: string[];
+  profile?: {
     name?: string;
     lastname?: string;
     phone?: string;
@@ -31,7 +31,6 @@ export interface MeResponse {
  * POST /login
  */
 export async function loginRequest(credentials: LoginCredentials): Promise<LoginResponse> {
-  // Axios ya usa el baseURL, así que solo ponemos el endpoint
   const { data } = await api.post<LoginResponse>('/login', credentials);
   return data;
 }
@@ -45,15 +44,13 @@ export async function logoutRequest(): Promise<void> {
 
 /**
  * GET /me
- * Usamos un try/catch específico aquí para manejar el 401 
- * silenciosamente durante la carga inicial.
+ * Devuelve el usuario autenticado con su rol y permisos, o null si no hay sesión.
  */
 export async function meRequest(): Promise<MeResponse | null> {
   try {
     const { data } = await api.get<MeResponse>('/me');
     return data;
   } catch (error: any) {
-    // Si es 401, simplemente devolvemos null (usuario no logueado)
     if (error.status === 401) return null;
     throw error;
   }

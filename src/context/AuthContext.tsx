@@ -8,11 +8,13 @@ import {
 import type { ReactNode } from "react";
 
 import { loginRequest, logoutRequest, meRequest } from "../services/authService";
-import type { LoginCredentials } from "../services/authService";
+import type { LoginCredentials, MeResponse } from "../services/authService";
 
 interface AuthUser {
   name: string;
   complete: boolean;
+  role: string | null;
+  permissions: string[];
 }
 
 interface AuthContextType {
@@ -24,38 +26,44 @@ interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
+  hasPermission: (permission: string) => boolean;
+  markProfileComplete: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+function toAuthUser(me: MeResponse): AuthUser {
+  return {
+    name: me.name ?? "Usuario",
+    complete: me.complete,
+    role: me.role,
+    permissions: me.permissions ?? [],
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]           = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser]               = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading]     = useState(false);
   const [isHydrating, setIsHydrating] = useState(true); // true hasta que /me responda
-  const [error, setError]         = useState<string | null>(null);
+  const [error, setError]             = useState<string | null>(null);
 
   // ── Rehidratación en cada recarga de página ──────────────────────────────
-  // Si la cookie de 7 días sigue vigente, /api/me devuelve el usuario
-  // y el estado se restaura sin pedirle al usuario que vuelva a iniciar sesión.
   useEffect(() => {
     meRequest()
-      .then((me) => {
-        if (me) setUser({ name: me.name, complete: me.complete });
-      })
+      .then((me) => { if (me) setUser(toAuthUser(me)); })
       .catch(() => { /* sin cookie válida → usuario null, pantalla de login */ })
       .finally(() => setIsHydrating(false));
   }, []);
 
   // ── Login ────────────────────────────────────────────────────────────────
+  // Tras el login llamamos a /me para obtener rol y permisos desde un solo lugar.
   const login = useCallback(async (credentials: LoginCredentials) => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await loginRequest(credentials);
-      setUser({
-        name: data.name ?? "Usuario",
-        complete: data.complete,
-      });
+      await loginRequest(credentials);
+      const me = await meRequest();
+      if (me) setUser(toAuthUser(me));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
       throw err; // LoginCard lo captura para no navegar
@@ -75,6 +83,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearError = useCallback(() => setError(null), []);
 
+  const markProfileComplete = useCallback(() => {
+    setUser((prev) => prev ? { ...prev, complete: true } : prev);
+  }, []);
+
+  // ── Verificación de permisos ─────────────────────────────────────────────
+  // Super Admin tiene acceso total sin verificar la lista de permisos.
+  const hasPermission = useCallback(
+    (permission: string): boolean => {
+      if (!user) return false;
+      if (user.role === "Super Admin") return true;
+      return user.permissions.includes(permission);
+    },
+    [user]
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -86,6 +109,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         clearError,
+        hasPermission,
+        markProfileComplete,
       }}
     >
       {children}

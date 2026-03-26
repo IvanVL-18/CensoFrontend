@@ -8,7 +8,7 @@ export default function EditProfileModal({ open, onClose, user }: Props) {
 
 useEffect(() => {
     if (!open || !user) return;
-    setDraft(user.profile);
+    setDraft(user.profile ?? { name: null, lastname: null, phone: null, mobile: null, address: null });
   }, [open, user]);
 
 if (!open || !user) return null;
