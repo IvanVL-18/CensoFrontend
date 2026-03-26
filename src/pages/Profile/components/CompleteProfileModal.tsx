@@ -6,14 +6,12 @@ import ProfileField from "./ProfileField";
 import { completeProfile } from "../Profile.service";
 import type { AuthUser } from "../Profile.types";
 
-interface ExtendedProps extends Props {
-  onCompleted: (user: AuthUser) => void;
-}
-
-export default function CompleteProfileModal({ open, onClose, user, onCompleted }: ExtendedProps) {
-  const [draft, setDraft]   = useState<ProfileData>(user.profile);
-  const [loading, setLoading] = useState(false);
-  const [error, setError]   = useState<string | null>(null);
+export default function CompleteProfileModal({
+  open,
+  onClose,
+  user,
+}: Props) { // <--- Change this from CompleteProfileModalProps to Props
+  if (!open) return null;  const [draft, setDraft] = useState<ProfileData>(user.profile);
 
   useEffect(() => {
     if (!open) return;
@@ -21,7 +19,7 @@ export default function CompleteProfileModal({ open, onClose, user, onCompleted 
     setError(null);
   }, [open, user]);
 
-  if (!open) return null;
+  if (!open || !user) return null; // ← guarda aquí
 
   const handleSave = async () => {
     

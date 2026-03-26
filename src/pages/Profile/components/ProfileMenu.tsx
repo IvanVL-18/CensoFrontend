@@ -5,8 +5,9 @@ import { useNavigate } from "react-router-dom";
 import CompleteProfilePromptModal from "./CompleteProfilePromptModal";
 import CompleteProfileModal from "./CompleteProfileModal";
 import EditProfileModal from "./EditProfileModal";
-import type { AuthUser } from "../Profile.types";
-import { getProfile } from "../Profile.service";
+
+// 👇 1. Importamos el hook de tu contexto
+import { useAuthContext } from "../../../context/AuthContext";
 
 export default function ProfileMenu() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -18,41 +19,31 @@ export default function ProfileMenu() {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    getProfile(controller.signal)
-      .then((profile) => {
-  
-        const email = localStorage.getItem("email") ?? "";
-
-        const authUser: AuthUser = { email, profile };
-        setUser(authUser);
-
-      
-        if (!profile.profile_completed_at) {
-          setCompleteOpen(true);
-        }
-      })
-      .catch(() => {});
-
-    return () => controller.abort();
-  }, []);
-
-  const displayName = user?.profile.name || user?.profile.lastname
-    ? `${user?.profile.name ?? ""} ${user?.profile.lastname ?? ""}`.trim()
-    : "Usuario";
-
-  const initials =
-    (user?.profile.name?.[0] ?? "") + (user?.profile.lastname?.[0] ?? "");
+  // 👇 2. Obtenemos el usuario y la función logout desde la memoria
+  const { user, logout } = useAuthContext();
 
   const jobTitle = "Usuario";
 
+  // 👇 3. Usamos el nombre que viene de Laravel
+  const displayName = user?.name || "Usuario";
+
+  // Tomamos las primeras dos letras del nombre para el avatar
+  const initials = displayName.substring(0, 2).toUpperCase();
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+    const hasSeenModal = sessionStorage.getItem("hasSeenCompleteProfileModal");
+
+    // 👇 4. Usamos la propiedad "complete" (booleano) que tu AuthController envía
+    if (user && !user.complete && !hasSeenModal) {
+      setPromptOpen(true);
+      sessionStorage.setItem("hasSeenCompleteProfileModal", "true");
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(event.target as Node))
         setDropdownOpen(false);
     };
     const handleEsc = (e: KeyboardEvent) => {
@@ -71,10 +62,16 @@ export default function ProfileMenu() {
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    navigate("/login");
+  // 👇 5. Actualizamos el cierre de sesión
+  const handleLogout = async () => {
+    try {
+      // Llamamos al logout del contexto (invalida la cookie en el backend y borra el estado)
+      await logout();
+      sessionStorage.removeItem("hasSeenCompleteProfileModal");
+      navigate("/login");
+    } catch (error) {
+      console.error("Error al cerrar sesión", error);
+    }
   };
 
   const handleProfileCompleted = (updatedProfile: AuthUser) => {
@@ -92,7 +89,7 @@ export default function ProfileMenu() {
         className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition"
       >
         <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-semibold">
-          {initials ? initials.toUpperCase() : <User className="w-4 h-4" />}
+          {initials ? initials : <User className="w-4 h-4" />}
         </div>
 
         <div className="hidden sm:flex flex-col items-start leading-tight">
@@ -102,7 +99,6 @@ export default function ProfileMenu() {
 
         <ChevronDown className="w-4 h-4" />
       </button>
-
       {dropdownOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 text-gray-700 z-40">
           <div className="px-3 py-3 border-b border-gray-100 flex items-center gap-3">
@@ -110,8 +106,13 @@ export default function ProfileMenu() {
               <User className="w-5 h-5 text-[var(--pantone-7421)]" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold truncate max-w-[150px]">{displayName}</span>
-              <span className="text-xs text-gray-500 truncate max-w-[150px]">{user.email}</span>
+              <span className="text-sm font-semibold truncate max-w-[150px]">
+                {displayName}
+              </span>
+              <span className="text-xs text-gray-500 truncate max-w-[150px]">
+                {/* Nota: Tu backend no envía el email en el login actualmente. Si lo agregas en Laravel, puedes mostrarlo aquí como user.email */}
+                {user?.name ? "Usuario Activo" : "Sesión"}
+              </span>
             </div>
           </div>
 
@@ -136,25 +137,28 @@ export default function ProfileMenu() {
           </div>
         </div>
       )}
-
-      <CompleteProfilePromptModal
-        open={promptOpen}
-        onClose={() => setPromptOpen(false)}
-        onGoToComplete={() => { setPromptOpen(false); setCompleteOpen(true); }}
-      />
-
-      <CompleteProfileModal
-        open={completeOpen}
-        onClose={() => setCompleteOpen(false)}
-        user={user}
-        onCompleted={handleProfileCompleted} 
-      />
-
-      <EditProfileModal
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-        user={user}
-      />
+      {user && (
+        <>
+          <CompleteProfilePromptModal
+            open={promptOpen}
+            onClose={() => setPromptOpen(false)}
+            onGoToComplete={() => {
+              setPromptOpen(false);
+              setCompleteOpen(true);
+            }}
+          />
+          <CompleteProfileModal
+            open={completeOpen}
+            onClose={() => setCompleteOpen(false)}
+            user={user as any}
+          />
+          <EditProfileModal
+            open={editOpen}
+            onClose={() => setEditOpen(false)}
+            user={user as any}
+          />
+        </>
+      )}
     </div>
   );
 }
