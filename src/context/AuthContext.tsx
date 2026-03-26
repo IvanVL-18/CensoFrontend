@@ -55,6 +55,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (window.location.pathname === "/login") {
+      setIsHydrating(false);
+      return;
+    }
+
     meRequest()
       .then((me) => {
         if (!me) return;

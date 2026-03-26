@@ -27,6 +27,8 @@ export default function ProfileMenu() {
   const jobTitle = "Usuario";
   const displayName = user?.name || "Usuario";
   const initials = displayName.substring(0, 2).toUpperCase();
+  const hasUser = !!user;
+  const showInitials = !!user?.name && user.name.trim().toLowerCase() !== "usuario";
 
   useEffect(() => {
     const hasSeenModal = sessionStorage.getItem("hasSeenCompleteProfileModal");
@@ -79,8 +81,6 @@ export default function ProfileMenu() {
     setPromptOpen(false);
   };
 
-  if (!user) return null;
-
   return (
     <div className="relative" ref={menuRef}>
       <button
@@ -89,7 +89,7 @@ export default function ProfileMenu() {
         className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition"
       >
         <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-semibold">
-          {initials ? initials : <User className="w-4 h-4" />}
+          {showInitials ? initials : <User className="w-4 h-4" />}
         </div>
 
         <div className="hidden sm:flex flex-col items-start leading-tight">
@@ -109,7 +109,7 @@ export default function ProfileMenu() {
             <div className="flex flex-col">
               <span className="text-sm font-semibold truncate max-w-[150px]">{displayName}</span>
               <span className="text-xs text-gray-500 truncate max-w-[150px]">
-                {user.email || "Usuario Activo"}
+                {user?.email || "Usuario activo"}
               </span>
             </div>
           </div>
@@ -119,9 +119,11 @@ export default function ProfileMenu() {
               type="button"
               className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50"
               onClick={() => {
+                if (!hasUser) return;
                 setEditOpen(true);
                 setDropdownOpen(false);
               }}
+              disabled={!hasUser}
             >
               <User className="w-4 h-4 text-gray-500" />
               <span>Ver perfil</span>
@@ -130,10 +132,11 @@ export default function ProfileMenu() {
             <button
               type="button"
               onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-gray-50"
+              disabled={!hasUser}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <LogOut className="w-4 h-4" />
-              <span>Cerrar sesion</span>
+              <span>Cerrar sesión</span>
             </button>
           </div>
         </div>
@@ -148,18 +151,22 @@ export default function ProfileMenu() {
         }}
       />
 
-      <CompleteProfileModal
-        open={completeOpen}
-        onClose={() => setCompleteOpen(false)}
-        user={user}
-        onCompleted={handleProfileCompleted}
-      />
+      {user && (
+        <CompleteProfileModal
+          open={completeOpen}
+          onClose={() => setCompleteOpen(false)}
+          user={user}
+          onCompleted={handleProfileCompleted}
+        />
+      )}
 
-      <EditProfileModal
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-        user={user}
-      />
+      {user && (
+        <EditProfileModal
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
+          user={user}
+        />
+      )}
     </div>
   );
 }
