@@ -4,7 +4,6 @@ export type ProfileData = {
   phone: string | null;
   mobile: string | null;
   address: string | null;
-  profile_completed_at: string | null;
 };
 
 export type AuthUser = {
@@ -33,12 +32,7 @@ export type CompleteProfilePromptModalProps = Pick<
   "open" | "onClose" | "onGoToComplete"
 >;
 
-export type CompleteProfileModalProps = Pick<
-  Props,
-  "open" | "onClose" | "user"
-> & {
-  onCompleted: (user: AuthUser) => void;
-};
+export type CompleteProfileModalProps = Pick<Props, "open" | "onClose" | "user">;
 
 export type EditProfileModalProps = Pick<Props, "open" | "onClose" | "user">;
 

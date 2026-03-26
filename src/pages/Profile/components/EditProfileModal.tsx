@@ -5,14 +5,14 @@ import type { ProfileData, EditProfileModalProps as Props } from "../Profile.typ
 import ProfileField from "./ProfileField";
 
 export default function EditProfileModal({ open, onClose, user }: Props) {
-  const [draft, setDraft] = useState<ProfileData>(user?.profile ?? {} as ProfileData);
+  const [draft, setDraft] = useState<ProfileData>(user.profile);
 
-useEffect(() => {
-    if (!open || !user) return;
+  useEffect(() => {
+    if (!open) return;
     setDraft(user.profile);
   }, [open, user]);
 
-if (!open || !user) return null;
+  if (!open) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[9999]">
