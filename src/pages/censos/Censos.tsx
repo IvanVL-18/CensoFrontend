@@ -6,13 +6,16 @@ import { CensosToolbar } from "./components/CensosToolbar";
 import { CensosCards } from "./components/CensosCards";
 import Pagination from "../../components/Pagination";
 import { CensoCreateModal } from "./components/CensoCreateModal";
-import { CensoCreateSelectionModal } from "./components/CensoCreateSelectionModal";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { ViewCensoModal } from "./components/ViewCensosModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 import type { CensoManualFormRef } from "./components/CensoManualForm";
+import { useNavigate } from "react-router-dom";
+import { CloneCensoModal } from "./components/CloneCensoModal";
+import { getCenso } from "./Censos.service";
+import type { Censo } from "./Censos.types";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
@@ -44,9 +47,11 @@ function CensosPageContent() {
     handleSearch,
     handlePageChange,
   } = useCensosData();
+  const navigate = useNavigate();
 
-  const [showSelectionModal, setShowSelectionModal] = useState(false);
-  const [createModalMode, setCreateModalMode] = useState<"create" | "upload">("create");
+  const [createModalMode, setCreateModalMode] = useState<"create" | "upload">(
+    "create",
+  );
   const [formKey, setFormKey] = useState(0);
 
   const modals = useCensosModals();
@@ -68,6 +73,10 @@ function CensosPageContent() {
   const censoFormRef = useRef<CensoManualFormRef>(null);
   const [isFormValid, setIsFormValid] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [isPreparingEdit, setIsPreparingEdit] = useState(false);
+  const [descriptionCache, setDescriptionCache] = useState<
+    Record<string, string>
+  >({});
 
   useEffect(() => {
     if (modals.isFormOpen && !modals.editingCenso) {
@@ -76,25 +85,9 @@ function CensosPageContent() {
   }, [modals.isFormOpen, modals.editingCenso]);
 
   const handleAddClick = () => {
-    setShowSelectionModal(true);
-  };
-
-  const handleSelectManual = () => {
     setCreateModalMode("create");
     modals.openCreate();
-    setFormKey(prev => prev + 1);
-    setShowSelectionModal(false);
-  };
-
-  const handleSelectTemplate = () => {
-    setCreateModalMode("upload");
-    modals.openCreate();
-    setFormKey(prev => prev + 1);
-    setShowSelectionModal(false);
-  };
-
-  const handleCloseSelection = () => {
-    setShowSelectionModal(false);
+    setFormKey((prev) => prev + 1);
   };
 
   const handleCloseForm = () => {
@@ -104,12 +97,46 @@ function CensosPageContent() {
     clearMutationError();
   };
 
-  const handleOpenEdit = (censo: any) => {
-    modals.openEdit(censo);
-    setFormKey(prev => prev + 1);
+  const handleOpenEdit = async (censo: Censo) => {
+    if (isPreparingEdit) return;
+
+    const censoId = String(censo.id);
+    const cachedDescription = descriptionCache[censoId] ?? censo.description ?? "";
+
+    setIsPreparingEdit(true);
     setIsFormValid(false);
     setIsDirty(false);
     clearMutationError();
+
+    try {
+      const fullCenso = await getCenso(censo.id);
+      const resolvedDescription =
+        fullCenso.description ?? cachedDescription;
+
+      if (resolvedDescription.trim() !== "") {
+        setDescriptionCache((prev) => ({
+          ...prev,
+          [censoId]: resolvedDescription.trim(),
+        }));
+      }
+
+      modals.openEdit({
+        ...censo,
+        ...fullCenso,
+        description: resolvedDescription,
+        start_date: fullCenso.start_date ?? censo.start_date,
+        end_date: fullCenso.end_date ?? censo.end_date,
+      });
+    } catch (err) {
+      console.error("Error al cargar el detalle del censo:", err);
+      modals.openEdit({
+        ...censo,
+        description: cachedDescription,
+      });
+    } finally {
+      setFormKey((prev) => prev + 1);
+      setIsPreparingEdit(false);
+    }
   };
 
   let confirmTitle = "";
@@ -159,6 +186,8 @@ function CensosPageContent() {
           onBan={(u) => modals.openConfirm(u, "ban")}
           onRestore={(u) => modals.openConfirm(u, "restore")}
           onDelete={(u) => modals.openConfirm(u, "delete")}
+          onModules={(censo) => navigate(`/censos/${censo.id}/modulos`)}
+          onClone={(censo) => modals.openClone(censo)}
         />
 
         <div className="border-t border-gray-200 bg-gray-50 mt-6">
@@ -170,23 +199,33 @@ function CensosPageContent() {
         </div>
       </div>
 
-      <CensoCreateSelectionModal
-        isOpen={showSelectionModal}
-        onClose={handleCloseSelection}
-        onSelectManual={handleSelectManual}
-        onSelectTemplate={handleSelectTemplate}
-      />
-
       <CensoCreateModal
         key={formKey}
         isOpen={modals.isFormOpen}
         isSubmitting={isSubmitting}
         error={mutationError}
         onClose={handleCloseForm}
-        onSave={(data) => handleSave(data, modals.editingCenso)}
+        onSave={(data) => {
+          const id = modals.editingCenso?.id;
+          const submittedDescription = data?.description;
+
+          if (
+            id &&
+            typeof submittedDescription === "string" &&
+            submittedDescription.trim() !== ""
+          ) {
+            setDescriptionCache((prev) => ({
+              ...prev,
+              [String(id)]: submittedDescription.trim(),
+            }));
+          }
+
+          handleSave(data, modals.editingCenso);
+        }}
         onBulkUpload={handleBulkUpload}
         mode={createModalMode}
         editingCenso={modals.editingCenso}
+        isPreparingEdit={isPreparingEdit}
         onFormValidityChange={setIsFormValid}
         isFormValid={isFormValid}
         onDirtyChange={setIsDirty}
@@ -217,6 +256,13 @@ function CensosPageContent() {
         isOpen={modals.isBulkErrorOpen}
         errors={modals.bulkErrors}
         onClose={modals.closeBulkError}
+      />
+
+      <CloneCensoModal
+        isOpen={modals.isCloneOpen}
+        onClose={modals.closeClone}
+        targetCenso={modals.cloningCenso}
+        onSuccess={refreshCensos}
       />
     </div>
   );

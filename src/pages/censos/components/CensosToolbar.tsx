@@ -1,5 +1,5 @@
-import { type ChangeEvent, useRef } from "react";
-import { CirclePlus, FileDown } from "lucide-react";
+import { type ChangeEvent } from "react";
+import { CirclePlus } from "lucide-react";
 
 import type { CensoFilter } from "../Censos.service";
 import { SearchInput } from "../../../components/SearchInput";
@@ -19,32 +19,16 @@ interface CensosToolbarProps {
 export function CensosToolbar({
   filter,
   searchTerm,
-  isSubmitting,
   onFilterChange,
   onSearchChange,
   onAddClick,
-  onBulkUpload,
 }: CensosToolbarProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onBulkUpload(file);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
   return (
     <>
-      <div className="flex justify-between items-center p-4 bg-red-900">
-        <h1 className="text-xl md:text-2xl font-bold text-white">Censos</h1>
+      <div className="flex items-center justify-between bg-[var(--pantone-7421)] p-4">
+        <h1 className="text-xl font-bold text-white md:text-2xl">Censos</h1>
 
         <div className="flex items-center gap-2">
-          {/* Input de archivo oculto que solo acepta Excel/CSV */}
-          
           <AddButton
             label="Agregar censo"
             onClick={onAddClick}
@@ -54,7 +38,7 @@ export function CensosToolbar({
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 px-4 pt-4">
+      <div className="mb-4 flex flex-col items-center justify-between gap-4 px-4 pt-4 md:flex-row">
         <StatusFilterSelect value={filter} onChange={onFilterChange} />
 
         <div className="w-full md:w-80">

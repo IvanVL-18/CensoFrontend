@@ -11,9 +11,10 @@ import { useAuthContext } from "../../../context/AuthContext";
 
 export default function ProfileMenu() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [promptOpen, setPromptOpen] = useState(false);
+  const [promptOpen, setPromptOpen]     = useState(false);
   const [completeOpen, setCompleteOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  const [editOpen, setEditOpen]         = useState(false);
+  const [user, setUser]                 = useState<AuthUser | null>(null);
 
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
@@ -45,19 +46,16 @@ export default function ProfileMenu() {
       if (!menuRef.current.contains(event.target as Node))
         setDropdownOpen(false);
     };
-
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
         setDropdownOpen(false);
         setPromptOpen(false);
         setCompleteOpen(false);
         setEditOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEsc);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEsc);
@@ -76,6 +74,13 @@ export default function ProfileMenu() {
     }
   };
 
+  const handleProfileCompleted = (updatedProfile: AuthUser) => {
+    setUser(updatedProfile);
+    setCompleteOpen(false);
+  };
+
+  if (!user) return null; 
+
   return (
     <div className="relative" ref={menuRef}>
       <button
@@ -88,12 +93,8 @@ export default function ProfileMenu() {
         </div>
 
         <div className="hidden sm:flex flex-col items-start leading-tight">
-          <span className="text-xs font-medium truncate max-w-[130px]">
-            {displayName}
-          </span>
-          <span className="text-[10px] opacity-80 truncate max-w-[130px]">
-            {jobTitle}
-          </span>
+          <span className="text-xs font-medium truncate max-w-[130px]">{displayName}</span>
+          <span className="text-[10px] opacity-80 truncate max-w-[130px]">{jobTitle}</span>
         </div>
 
         <ChevronDown className="w-4 h-4" />
@@ -104,7 +105,6 @@ export default function ProfileMenu() {
             <div className="w-9 h-9 rounded-full bg-[var(--pantone-7421)]/10 flex items-center justify-center">
               <User className="w-5 h-5 text-[var(--pantone-7421)]" />
             </div>
-
             <div className="flex flex-col">
               <span className="text-sm font-semibold truncate max-w-[150px]">
                 {displayName}
@@ -120,10 +120,7 @@ export default function ProfileMenu() {
             <button
               type="button"
               className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50"
-              onClick={() => {
-                setEditOpen(true);
-                setDropdownOpen(false);
-              }}
+              onClick={() => { setEditOpen(true); setDropdownOpen(false); }}
             >
               <User className="w-4 h-4 text-gray-500" />
               <span>Ver perfil</span>

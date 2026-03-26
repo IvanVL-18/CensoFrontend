@@ -17,11 +17,11 @@ export default function ChartsCard({
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="bg-[#7A0C2E] px-4 py-5.5">
+      <div className="bg-[#7A0C2E] px-4 py-4 sm:py-5.5">
         <h2 className="text-white font-semibold text-base">{title}</h2>
       </div>
 
-      <div className="p-5 space-y-6">
+      <div className="p-4 sm:p-5 space-y-6">
         <div>
           <div className="flex items-baseline justify-between mb-3">
             <h3 className="text-sm font-semibold text-slate-800">

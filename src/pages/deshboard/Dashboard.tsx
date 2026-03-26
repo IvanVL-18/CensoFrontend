@@ -9,7 +9,6 @@ import type {
   QuestionnaireItem,
   Meta,
   Links,
-  QuestionsByCensoItem,
 } from "./dashboard.types";
 
 import {
@@ -30,18 +29,38 @@ export default function Dashboard() {
   const [centralizedCount, setCentralizedCount] = useState(0);
   const [totalInstitutions, setTotalInstitutions] = useState(0);
 
-  const [qByCenso, setQByCenso] = useState<{ name: string; total: number }[]>([],);
+  const [qByCenso, setQByCenso] = useState<{ name: string; total: number }[]>(
+    []
+  );
 
   const [items, setItems] = useState<QuestionnaireItem[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [links, setLinks] = useState<Links | null>(null);
 
   const [search, setSearch] = useState("");
-  const [loadingTable, setLoadingTable] = useState(false);
+  const [loadingTable, setLoadingTable] = useState(true);
   const [errorTable, setErrorTable] = useState<string | null>(null);
 
   const [sortField, setSortField] = useState<SortField>("id");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const fetchCensos = async (page: number) => {
+    try {
+      setLoadingTable(true);
+      setErrorTable(null);
+
+      const res = await getAllCensos(page);
+
+      setItems(res.data ?? []);
+      setMeta(res.meta ?? null);
+      setLinks(res.links ?? null);
+    } catch (e: any) {
+      console.error("fetchCensos error:", e);
+      setErrorTable(e?.message || "Error al cargar censos");
+    } finally {
+      setLoadingTable(false);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -59,47 +78,38 @@ export default function Dashboard() {
         const inst = await getCentralizedInstitutions();
         setCentralizedCount(inst.total_centralized_institutions ?? 0);
         setTotalInstitutions(inst.total_institutions ?? 0);
-
-        const qb = await getQuestionsByCenso();
-        setQByCenso(
-          (qb.data ?? []).map((x: QuestionsByCensoItem) => ({
-            name: String(x.name ?? ""),
-            total: Number((x as any).total_preguntas ?? 0),
-          })),
-        );
-
-        await fetchCensos(1);
       } catch (e: any) {
-        console.error("Dashboard error:", e?.message || e);
+        console.error("Dashboard stats error:", e?.message || e);
       }
+
+      try {
+        const qb = await getQuestionsByCenso();
+
+        setQByCenso(
+          (qb.data ?? []).map((x: any) => ({
+            name: String(x.name ?? x.censo_name ?? x.census_name ?? ""),
+            total: Number(
+              x.total_preguntas ?? x.total_questions ?? x.total ?? 0
+            ),
+          }))
+        );
+      } catch (e: any) {
+        console.error("Questions by censo error:", e?.message || e);
+        setQByCenso([]);
+      }
+
+      await fetchCensos(1);
     })();
   }, []);
 
-  const fetchCensos = async (page: number) => {
-    try {
-      setLoadingTable(true);
-      setErrorTable(null);
-
-      const res = await getAllCensos(page);
-      setItems(res.data ?? []);
-      setMeta(res.meta ?? null);
-      setLinks(res.links ?? null);
-    } catch (e: any) {
-      setErrorTable(e?.message || "Error al cargar censos");
-    } finally {
-      setLoadingTable(false);
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
+      return;
     }
+    setSortField(field);
+    setSortDir("asc");
   };
-
-    const handleSort = (field: SortField) => {
-      if (field === sortField) {
-        setSortDir(sortDir === "asc" ? "desc" : "asc");
-        return;
-      }
-      setSortField(field);
-      setSortDir("asc");
-    };
-
 
   const filteredItems = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -134,12 +144,11 @@ export default function Dashboard() {
   const handlePageNumber = (page: number) => fetchCensos(page);
 
   const handleViewCenso = (id: string) => {
-    console.log("Ver cuestionario:", id);
   };
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         <StatCard
           title="USUARIOS"
           value={usersTotal.toLocaleString()}
@@ -170,7 +179,7 @@ export default function Dashboard() {
           error={errorTable}
           onPageClick={handlePageClick}
           onPageNumber={handlePageNumber}
-          baseUrl={"/dashboard/get-censos"}
+          baseUrl={"/dashboard/get-censuses"}
           onSort={handleSort}
         />
 
