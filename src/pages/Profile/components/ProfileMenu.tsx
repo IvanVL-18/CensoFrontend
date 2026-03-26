@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -6,69 +6,65 @@ import CompleteProfilePromptModal from "./CompleteProfilePromptModal";
 import CompleteProfileModal from "./CompleteProfileModal";
 import EditProfileModal from "./EditProfileModal";
 import type { AuthUser } from "../Profile.types";
-
-function isProfileIncomplete(u: AuthUser) {
-  const p = u.profile;
-  return !p.name || !p.lastname || !p.phone || !p.mobile || !p.address;
-}
+import { getProfile } from "../Profile.service";
 
 export default function ProfileMenu() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [promptOpen, setPromptOpen] = useState(false);
+  const [promptOpen, setPromptOpen]     = useState(false);
   const [completeOpen, setCompleteOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  const [editOpen, setEditOpen]         = useState(false);
+  const [user, setUser]                 = useState<AuthUser | null>(null);
 
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-  const user: AuthUser = useMemo(
-    () => ({
-      email: "usuario@hidalgo.gob.mx",
-      profile: {
-        name: "",
-        lastname: "",
-        phone: "",
-        mobile: "",
-        address: "",
-      },
-    }),
-    []
-  );
 
-  const jobTitle = "Usuario";
-  const displayName =
-    user.profile.name || user.profile.lastname
-      ? `${user.profile.name} ${user.profile.lastname}`.trim()
-      : "Usuario";
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    getProfile(controller.signal)
+      .then((profile) => {
+  
+        const email = localStorage.getItem("email") ?? "";
+
+        const authUser: AuthUser = { email, profile };
+        setUser(authUser);
+
+      
+        if (!profile.profile_completed_at) {
+          setCompleteOpen(true);
+        }
+      })
+      .catch(() => {});
+
+    return () => controller.abort();
+  }, []);
+
+  const displayName = user?.profile.name || user?.profile.lastname
+    ? `${user?.profile.name ?? ""} ${user?.profile.lastname ?? ""}`.trim()
+    : "Usuario";
 
   const initials =
-    (user.profile.name?.[0] || "") + (user.profile.lastname?.[0] || "");
+    (user?.profile.name?.[0] ?? "") + (user?.profile.lastname?.[0] ?? "");
+
+  const jobTitle = "Usuario";
+
 
   useEffect(() => {
-    const hasSeenModal = sessionStorage.getItem("hasSeenCompleteProfileModal");
-    if (isProfileIncomplete(user) && !hasSeenModal) {
-      setPromptOpen(true);
-      sessionStorage.setItem("hasSeenCompleteProfileModal", "true");
-    }
-  }, [user]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!menuRef.current) return;
-      if (!menuRef.current.contains(event.target as Node)) setDropdownOpen(false);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        setDropdownOpen(false);
     };
-
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
         setDropdownOpen(false);
         setPromptOpen(false);
         setCompleteOpen(false);
         setEditOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEsc);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEsc);
@@ -76,11 +72,17 @@ export default function ProfileMenu() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("hasSeenCompleteProfileModal");
+    localStorage.clear();
+    sessionStorage.clear();
     navigate("/login");
   };
+
+  const handleProfileCompleted = (updatedProfile: AuthUser) => {
+    setUser(updatedProfile);
+    setCompleteOpen(false);
+  };
+
+  if (!user) return null; 
 
   return (
     <div className="relative" ref={menuRef}>
@@ -94,12 +96,8 @@ export default function ProfileMenu() {
         </div>
 
         <div className="hidden sm:flex flex-col items-start leading-tight">
-          <span className="text-xs font-medium truncate max-w-[130px]">
-            {displayName}
-          </span>
-          <span className="text-[10px] opacity-80 truncate max-w-[130px]">
-            {jobTitle}
-          </span>
+          <span className="text-xs font-medium truncate max-w-[130px]">{displayName}</span>
+          <span className="text-[10px] opacity-80 truncate max-w-[130px]">{jobTitle}</span>
         </div>
 
         <ChevronDown className="w-4 h-4" />
@@ -111,14 +109,9 @@ export default function ProfileMenu() {
             <div className="w-9 h-9 rounded-full bg-[var(--pantone-7421)]/10 flex items-center justify-center">
               <User className="w-5 h-5 text-[var(--pantone-7421)]" />
             </div>
-
             <div className="flex flex-col">
-              <span className="text-sm font-semibold truncate max-w-[150px]">
-                {displayName}
-              </span>
-              <span className="text-xs text-gray-500 truncate max-w-[150px]">
-                {user.email}
-              </span>
+              <span className="text-sm font-semibold truncate max-w-[150px]">{displayName}</span>
+              <span className="text-xs text-gray-500 truncate max-w-[150px]">{user.email}</span>
             </div>
           </div>
 
@@ -126,10 +119,7 @@ export default function ProfileMenu() {
             <button
               type="button"
               className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50"
-              onClick={() => {
-                setEditOpen(true);
-                setDropdownOpen(false);
-              }}
+              onClick={() => { setEditOpen(true); setDropdownOpen(false); }}
             >
               <User className="w-4 h-4 text-gray-500" />
               <span>Ver perfil</span>
@@ -150,16 +140,14 @@ export default function ProfileMenu() {
       <CompleteProfilePromptModal
         open={promptOpen}
         onClose={() => setPromptOpen(false)}
-        onGoToComplete={() => {
-          setPromptOpen(false);
-          setCompleteOpen(true);
-        }}
+        onGoToComplete={() => { setPromptOpen(false); setCompleteOpen(true); }}
       />
 
       <CompleteProfileModal
         open={completeOpen}
         onClose={() => setCompleteOpen(false)}
         user={user}
+        onCompleted={handleProfileCompleted} 
       />
 
       <EditProfileModal
