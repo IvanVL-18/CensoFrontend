@@ -169,7 +169,6 @@ export function CatalogModal({
   if (!isOpen) return null;
 
   const getFieldStyles = (
-    value: string,
     maxLength: number,
     currentCharCount: number,
     hasFieldError: boolean,
@@ -209,13 +208,11 @@ export function CatalogModal({
   const hasModuleError = touchedFields.module && !!fieldErrors.Module;
 
   const nameStyles = getFieldStyles(
-    name,
     NAME_MAX_LENGTH,
     nameCharCount,
     hasNameError,
   );
   const slugStyles = getFieldStyles(
-    slug,
     SLUG_MAX_LENGTH,
     slugCharCount,
     hasSlugError,

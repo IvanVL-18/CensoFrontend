@@ -10,16 +10,27 @@ import type { ReactNode } from "react";
 import { loginRequest, logoutRequest, meRequest } from "../services/authService";
 import type { LoginCredentials } from "../services/authService";
 
-interface AuthUser {
+export interface AuthProfile {
+  name: string | null;
+  lastname: string | null;
+  phone: string | null;
+  mobile: string | null;
+  address: string | null;
+  profile_completed_at: string | null;
+}
+
+export interface AuthUser {
   name: string;
+  email: string;
   complete: boolean;
+  profile: AuthProfile;
 }
 
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
-  isLoading: boolean;       // login/logout en curso
-  isHydrating: boolean;     // carga inicial al montar la app
+  isLoading: boolean;
+  isHydrating: boolean;
   error: string | null;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
@@ -28,25 +39,43 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]           = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isHydrating, setIsHydrating] = useState(true); // true hasta que /me responda
-  const [error, setError]         = useState<string | null>(null);
+const EMPTY_PROFILE: AuthProfile = {
+  name: null,
+  lastname: null,
+  phone: null,
+  mobile: null,
+  address: null,
+  profile_completed_at: null,
+};
 
-  // ── Rehidratación en cada recarga de página ──────────────────────────────
-  // Si la cookie de 7 días sigue vigente, /api/me devuelve el usuario
-  // y el estado se restaura sin pedirle al usuario que vuelva a iniciar sesión.
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isHydrating, setIsHydrating] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     meRequest()
       .then((me) => {
-        if (me) setUser({ name: me.name, complete: me.complete });
+        if (!me) return;
+        setUser({
+          name: me.name ?? "Usuario",
+          email: me.email ?? "",
+          complete: Boolean(me.complete),
+          profile: {
+            name: me.profile?.name ?? null,
+            lastname: me.profile?.lastname ?? null,
+            phone: me.profile?.phone ?? null,
+            mobile: me.profile?.mobile ?? null,
+            address: me.profile?.address ?? null,
+            profile_completed_at: me.profile?.profile_completed_at ?? null,
+          },
+        });
       })
-      .catch(() => { /* sin cookie válida → usuario null, pantalla de login */ })
+      .catch(() => {})
       .finally(() => setIsHydrating(false));
   }, []);
 
-  // ── Login ────────────────────────────────────────────────────────────────
   const login = useCallback(async (credentials: LoginCredentials) => {
     setIsLoading(true);
     setError(null);
@@ -54,22 +83,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await loginRequest(credentials);
       setUser({
         name: data.name ?? "Usuario",
-        complete: data.complete,
+        email: data.email ?? credentials.email,
+        complete: Boolean(data.complete),
+        profile: { ...EMPTY_PROFILE },
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
-      throw err; // LoginCard lo captura para no navegar
+      throw err;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // ── Logout ───────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     try {
-      await logoutRequest(); // Laravel borra el token + cookie
+      await logoutRequest();
     } finally {
-      setUser(null); // Limpiamos estado aunque el request falle
+      setUser(null);
     }
   }, []);
 

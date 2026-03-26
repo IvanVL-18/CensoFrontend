@@ -40,15 +40,31 @@ export function CatalogsToolbar({
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-red-900">
-        <h1 className="text-xl md:text-2xl font-bold text-white">Catálogos</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-white">Catalogos</h1>
 
         <div className="flex items-center gap-2">
-          {/* Input de archivo oculto que solo acepta Excel/CSV */}
-          
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={isSubmitting}
+          />
+
           <AddButton
-            label="Agregar catálogo"
+            label="Importar"
+            onClick={() => fileInputRef.current?.click()}
+            variant="green"
+            disabled={isSubmitting}
+            icon={<FileDown size={22} strokeWidth={2.5} />}
+          />
+
+          <AddButton
+            label="Agregar catalogo"
             onClick={onAddClick}
             variant="gold"
+            disabled={isSubmitting}
             icon={<CirclePlus size={22} strokeWidth={2.5} />}
           />
         </div>

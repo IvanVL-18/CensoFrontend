@@ -98,6 +98,7 @@ export const CensoUploadDependency = forwardRef<CensoUploadDependencyRef, CensoU
             onChange={handleFileChange}
             accept=".xlsx,.xls,.csv"
             className="hidden"
+            disabled={isSubmitting}
           />
           
           {selectedFile ? (
@@ -113,6 +114,7 @@ export const CensoUploadDependency = forwardRef<CensoUploadDependencyRef, CensoU
                   setSelectedFile(null);
                   if (fileInputRef.current) fileInputRef.current.value = "";
                 }}
+                disabled={isSubmitting}
                 className="text-sm text-red-600 hover:text-red-800"
               >
                 Quitar archivo
@@ -120,8 +122,10 @@ export const CensoUploadDependency = forwardRef<CensoUploadDependencyRef, CensoU
             </div>
           ) : (
             <div
-              className="cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}
+              className={`cursor-pointer ${isSubmitting ? "opacity-60 cursor-not-allowed" : ""}`}
+              onClick={() => {
+                if (!isSubmitting) fileInputRef.current?.click();
+              }}
             >
               <Upload className="mx-auto text-gray-400 mb-2" size={48} />
               <p className="text-gray-600 mb-1">
@@ -150,6 +154,7 @@ export const CensoUploadDependency = forwardRef<CensoUploadDependencyRef, CensoU
         </div>
 
         {uploadErrors.length > 0 && <FormErrors errors={uploadErrors} />}
+        {error && <FormErrors errors={[error]} />}
       </div>
     );
   }

@@ -1,30 +1,47 @@
 import { X, UserRound, Phone, Smartphone, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+
 import type { ProfileData, CompleteProfileModalProps as Props } from "../Profile.types";
 import ProfileField from "./ProfileField";
 import { completeProfile } from "../Profile.service";
-import type { AuthUser } from "../Profile.types";
+
+const EMPTY_PROFILE: ProfileData = {
+  name: null,
+  lastname: null,
+  phone: null,
+  mobile: null,
+  address: null,
+  profile_completed_at: null,
+};
+
+const normalizeProfile = (profile: ProfileData | undefined): ProfileData => ({
+  ...EMPTY_PROFILE,
+  ...(profile ?? {}),
+});
 
 export default function CompleteProfileModal({
   open,
   onClose,
   user,
-}: Props) { // <--- Change this from CompleteProfileModalProps to Props
-  if (!open) return null;  const [draft, setDraft] = useState<ProfileData>(user.profile);
+  onCompleted,
+}: Props) {
+  const [draft, setDraft] = useState<ProfileData>(() => normalizeProfile(user?.profile));
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) return;
-    setDraft(user.profile);
+    if (!open || !user) return;
+    setDraft(normalizeProfile(user.profile));
     setError(null);
+    setLoading(false);
   }, [open, user]);
 
-  if (!open || !user) return null; // ← guarda aquí
+  if (!open || !user) return null;
 
   const handleSave = async () => {
-    
     if (!draft.name?.trim() || !draft.lastname?.trim() || !draft.address?.trim()) {
-      setError("Nombre, apellidos y dirección son obligatorios.");
+      setError("Nombre, apellidos y direccion son obligatorios.");
       return;
     }
 
@@ -35,13 +52,15 @@ export default function CompleteProfileModal({
       await completeProfile(draft);
       onCompleted({
         ...user,
+        complete: true,
         profile: {
           ...draft,
           profile_completed_at: new Date().toISOString(),
         },
       });
+      onClose();
     } catch {
-      setError("Ocurrió un error al guardar. Intenta de nuevo.");
+      setError("Ocurrio un error al guardar. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -52,7 +71,6 @@ export default function CompleteProfileModal({
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg transition-all">
           <div className="relative p-4 sm:p-6">
-
             <button
               onClick={onClose}
               aria-label="Cerrar"
@@ -61,17 +79,13 @@ export default function CompleteProfileModal({
               <X className="h-5 w-5" />
             </button>
 
-            
             <div className="pr-8">
-              <p className="text-lg font-semibold text-slate-900">
-                Ingresa tus datos
-              </p>
+              <p className="text-lg font-semibold text-slate-900">Ingresa tus datos</p>
               <p className="mt-0.5 text-sm text-slate-500">
-                Completa tu información para poder ingresar al sistema.
+                Completa tu informacion para poder ingresar al sistema.
               </p>
             </div>
 
-            
             <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                 <ProfileField
@@ -89,14 +103,14 @@ export default function CompleteProfileModal({
                   maxLength={50}
                 />
                 <ProfileField
-                  label="Teléfono fijo"
+                  label="Telefono fijo"
                   icon={Phone}
                   value={draft.phone ?? ""}
                   onChange={(v) => setDraft((s) => ({ ...s, phone: v }))}
                   maxLength={20}
                 />
                 <ProfileField
-                  label="Teléfono móvil"
+                  label="Telefono movil"
                   icon={Smartphone}
                   value={draft.mobile ?? ""}
                   onChange={(v) => setDraft((s) => ({ ...s, mobile: v }))}
@@ -104,7 +118,7 @@ export default function CompleteProfileModal({
                 />
                 <ProfileField
                   className="sm:col-span-2"
-                  label="Dirección"
+                  label="Direccion"
                   icon={MapPin}
                   value={draft.address ?? ""}
                   onChange={(v) => setDraft((s) => ({ ...s, address: v }))}
@@ -113,12 +127,8 @@ export default function CompleteProfileModal({
               </div>
             </div>
 
-      
-            {error && (
-              <p className="mt-3 text-sm text-red-500">{error}</p>
-            )}
+            {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
 
-            
             <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end">
               <button
                 type="button"
@@ -129,11 +139,10 @@ export default function CompleteProfileModal({
                 {loading ? "Guardando..." : "Guardar"}
               </button>
             </div>
-
           </div>
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

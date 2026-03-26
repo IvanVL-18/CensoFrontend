@@ -143,7 +143,7 @@ export default function Dashboard() {
 
   const handlePageNumber = (page: number) => fetchCensos(page);
 
-  const handleViewCenso = (id: string) => {
+  const handleViewCenso = (_id: string) => {
   };
 
   return (

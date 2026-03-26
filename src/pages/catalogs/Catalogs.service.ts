@@ -4,7 +4,6 @@ import type {
   PaginatedCatalogsResponse,
   CreateCatalogDTO,
   UpdateCatalogDTO,
-  Module,
 } from "./Catalogs.types";
 
 export type CatalogFilter = "all" | "active" | "inactive";

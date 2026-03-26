@@ -5,35 +5,32 @@ import { useNavigate } from "react-router-dom";
 import CompleteProfilePromptModal from "./CompleteProfilePromptModal";
 import CompleteProfileModal from "./CompleteProfileModal";
 import EditProfileModal from "./EditProfileModal";
-
-// 👇 1. Importamos el hook de tu contexto
 import { useAuthContext } from "../../../context/AuthContext";
+import type { AuthUser } from "../Profile.types";
 
 export default function ProfileMenu() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [promptOpen, setPromptOpen]     = useState(false);
+  const [promptOpen, setPromptOpen] = useState(false);
   const [completeOpen, setCompleteOpen] = useState(false);
-  const [editOpen, setEditOpen]         = useState(false);
-  const [user, setUser]                 = useState<AuthUser | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
-  // 👇 2. Obtenemos el usuario y la función logout desde la memoria
-  const { user, logout } = useAuthContext();
+  const { user: authUser, logout } = useAuthContext();
+  const [user, setUser] = useState<AuthUser | null>(authUser);
+
+  useEffect(() => {
+    setUser(authUser);
+  }, [authUser]);
 
   const jobTitle = "Usuario";
-
-  // 👇 3. Usamos el nombre que viene de Laravel
   const displayName = user?.name || "Usuario";
-
-  // Tomamos las primeras dos letras del nombre para el avatar
   const initials = displayName.substring(0, 2).toUpperCase();
 
   useEffect(() => {
     const hasSeenModal = sessionStorage.getItem("hasSeenCompleteProfileModal");
 
-    // 👇 4. Usamos la propiedad "complete" (booleano) que tu AuthController envía
     if (user && !user.complete && !hasSeenModal) {
       setPromptOpen(true);
       sessionStorage.setItem("hasSeenCompleteProfileModal", "true");
@@ -43,9 +40,11 @@ export default function ProfileMenu() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!menuRef.current) return;
-      if (!menuRef.current.contains(event.target as Node))
+      if (!menuRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
+      }
     };
+
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setDropdownOpen(false);
@@ -54,32 +53,33 @@ export default function ProfileMenu() {
         setEditOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEsc);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEsc);
     };
   }, []);
 
-  // 👇 5. Actualizamos el cierre de sesión
   const handleLogout = async () => {
     try {
-      // Llamamos al logout del contexto (invalida la cookie en el backend y borra el estado)
       await logout();
       sessionStorage.removeItem("hasSeenCompleteProfileModal");
       navigate("/login");
     } catch (error) {
-      console.error("Error al cerrar sesión", error);
+      console.error("Error al cerrar sesion", error);
     }
   };
 
   const handleProfileCompleted = (updatedProfile: AuthUser) => {
     setUser(updatedProfile);
     setCompleteOpen(false);
+    setPromptOpen(false);
   };
 
-  if (!user) return null; 
+  if (!user) return null;
 
   return (
     <div className="relative" ref={menuRef}>
@@ -99,6 +99,7 @@ export default function ProfileMenu() {
 
         <ChevronDown className="w-4 h-4" />
       </button>
+
       {dropdownOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 text-gray-700 z-40">
           <div className="px-3 py-3 border-b border-gray-100 flex items-center gap-3">
@@ -106,12 +107,9 @@ export default function ProfileMenu() {
               <User className="w-5 h-5 text-[var(--pantone-7421)]" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold truncate max-w-[150px]">
-                {displayName}
-              </span>
+              <span className="text-sm font-semibold truncate max-w-[150px]">{displayName}</span>
               <span className="text-xs text-gray-500 truncate max-w-[150px]">
-                {/* Nota: Tu backend no envía el email en el login actualmente. Si lo agregas en Laravel, puedes mostrarlo aquí como user.email */}
-                {user?.name ? "Usuario Activo" : "Sesión"}
+                {user.email || "Usuario Activo"}
               </span>
             </div>
           </div>
@@ -120,7 +118,10 @@ export default function ProfileMenu() {
             <button
               type="button"
               className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50"
-              onClick={() => { setEditOpen(true); setDropdownOpen(false); }}
+              onClick={() => {
+                setEditOpen(true);
+                setDropdownOpen(false);
+              }}
             >
               <User className="w-4 h-4 text-gray-500" />
               <span>Ver perfil</span>
@@ -132,33 +133,33 @@ export default function ProfileMenu() {
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-gray-50"
             >
               <LogOut className="w-4 h-4" />
-              <span>Cerrar sesión</span>
+              <span>Cerrar sesion</span>
             </button>
           </div>
         </div>
       )}
-      {user && (
-        <>
-          <CompleteProfilePromptModal
-            open={promptOpen}
-            onClose={() => setPromptOpen(false)}
-            onGoToComplete={() => {
-              setPromptOpen(false);
-              setCompleteOpen(true);
-            }}
-          />
-          <CompleteProfileModal
-            open={completeOpen}
-            onClose={() => setCompleteOpen(false)}
-            user={user as any}
-          />
-          <EditProfileModal
-            open={editOpen}
-            onClose={() => setEditOpen(false)}
-            user={user as any}
-          />
-        </>
-      )}
+
+      <CompleteProfilePromptModal
+        open={promptOpen}
+        onClose={() => setPromptOpen(false)}
+        onGoToComplete={() => {
+          setPromptOpen(false);
+          setCompleteOpen(true);
+        }}
+      />
+
+      <CompleteProfileModal
+        open={completeOpen}
+        onClose={() => setCompleteOpen(false)}
+        user={user}
+        onCompleted={handleProfileCompleted}
+      />
+
+      <EditProfileModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        user={user}
+      />
     </div>
   );
 }

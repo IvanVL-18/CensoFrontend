@@ -23,8 +23,9 @@ export const getModules = async (
   
   if (search) params.append("search", search);
   params.append("page", page.toString());
-    params.append("sort_by", sortBy);
+  params.append("sort_by", sortBy);
   params.append("direction", direction);
+  params.append("per_page", perPage.toString());
 
   const response = await api.get<PaginatedModulesResponse>(
     `/modules/${filter}/content`,
