@@ -19,6 +19,67 @@ interface UseUsersMutationsProps {
   patchUser?: (id: string | number, patch: Partial<User>) => void;
 }
 
+type RelationFieldKey =
+  | "role_id"
+  | "occupation_id"
+  | "dependency_id"
+  | "institution_id";
+type NullableRelationFieldKey =
+  | "occupation_id"
+  | "dependency_id"
+  | "institution_id";
+
+const RELATION_FIELDS: RelationFieldKey[] = [
+  "role_id",
+  "occupation_id",
+  "dependency_id",
+  "institution_id",
+];
+const NULLABLE_RELATION_FIELDS: NullableRelationFieldKey[] = [
+  "occupation_id",
+  "dependency_id",
+  "institution_id",
+];
+
+const normalize = (value: unknown) =>
+  value === null || value === undefined ? "" : String(value).trim();
+
+const buildUpdatePayload = (
+  userData: CreateUserDTO,
+  editingUser: User,
+): UpdateUserDTO => {
+  const payload: UpdateUserDTO = {};
+
+  if (normalize(userData.email) !== normalize(editingUser.email)) {
+    payload.email = normalize(userData.email);
+  }
+
+  if (normalize(userData.password) !== "") {
+    payload.password = userData.password;
+    payload.password_confirmation = userData.password_confirmation;
+  }
+
+  RELATION_FIELDS.forEach((field) => {
+    const next = (userData[field] ?? "") as string | number | null;
+    const current = (editingUser[field] ?? "") as string | number | null;
+
+    if (normalize(next) === normalize(current)) return;
+
+    if (field === "role_id") {
+      payload.role_id = next === null ? undefined : next;
+      return;
+    }
+
+    if (
+      NULLABLE_RELATION_FIELDS.includes(field as NullableRelationFieldKey)
+    ) {
+      payload[field] = normalize(next) === "" ? null : next;
+    }
+  });
+
+  return payload;
+};
+
 export function useUsersMutations({
   refreshUsers,
   closeForm,
@@ -42,15 +103,12 @@ export function useUsersMutations({
       try {
         let response;
         if (editingUser) {
-          const updateData: UpdateUserDTO = { ...userData };
-          if (updateData.email === editingUser.email) {
-            delete updateData.email;
+          const updateData = buildUpdatePayload(userData, editingUser);
+          if (Object.keys(updateData).length === 0) {
+            addToast("No hay cambios para guardar", "warning");
+            return;
           }
 
-          if (!updateData.password) {
-            delete updateData.password;
-            delete updateData.password_confirmation;
-          }
           response = await updateUser(editingUser.id, updateData);
         } else {
           response = await createUser(userData);
@@ -78,16 +136,13 @@ export function useUsersMutations({
       setExtraError(null);
 
       try {
-        const payload: UpdateUserDTO = {
-          ...extraData,
-          role_id: User.role_id,
-          occupation_id: User.occupation_id,
-          dependency_id: User.dependency_id,
-          institution_id: User.institution_id,
-        };
+        if (Object.keys(extraData).length === 0) {
+          addToast("No hay cambios para guardar", "warning");
+          return;
+        }
 
-        const response = await updateUser(User.id, payload);
-        patchUser?.(User.id, extraData as any);
+        const response = await updateUser(User.id, extraData);
+        patchUser?.(User.id, extraData as Partial<User>);
 
         addToast(response.message, "success");
         closeExtra();
@@ -103,7 +158,7 @@ export function useUsersMutations({
         setIsExtraSubmitting(false);
       }
     },
-    [addToast, closeExtra, refreshUsers],
+    [addToast, closeExtra, patchUser, refreshUsers],
   );
 
   const handleConfirmAction = useCallback(
