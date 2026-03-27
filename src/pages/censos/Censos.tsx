@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useCensosData } from "./hooks/useCensosData";
 import { useCensosModals } from "./hooks/useCensosModals";
 import { useCensosMutations } from "./hooks/useCensosMutations";
@@ -144,17 +144,6 @@ function CensosPageContent() {
   let confirmButtonText = "";
   let confirmButtonColor: "danger" | "primary" = "danger";
 
-  const filteredCensos = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
-    if (!query) return Censos;
-
-    return Censos.filter((censo) => {
-      const name = censo.name?.toLowerCase() ?? "";
-      const description = censo.description?.toLowerCase() ?? "";
-      return name.includes(query) || description.includes(query);
-    });
-  }, [Censos, searchTerm]);
-
   if (modals.actionType === "ban") {
     confirmTitle = "Desactivar censo";
     confirmMessage = `¿Estás seguro de que quieres desactivar el censo "${modals.actionCenso?.name}"?`;
@@ -188,7 +177,7 @@ function CensosPageContent() {
 
       <div className="p-4">
         <CensosCards
-          censos={filteredCensos}
+          censos={Censos}
           meta={meta}
           loading={loading}
           error={error}
