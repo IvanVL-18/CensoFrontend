@@ -24,18 +24,9 @@ type RelationFieldKey =
   | "occupation_id"
   | "dependency_id"
   | "institution_id";
-type NullableRelationFieldKey =
-  | "occupation_id"
-  | "dependency_id"
-  | "institution_id";
 
 const RELATION_FIELDS: RelationFieldKey[] = [
   "role_id",
-  "occupation_id",
-  "dependency_id",
-  "institution_id",
-];
-const NULLABLE_RELATION_FIELDS: NullableRelationFieldKey[] = [
   "occupation_id",
   "dependency_id",
   "institution_id",
@@ -65,19 +56,40 @@ const buildUpdatePayload = (
 
     if (normalize(next) === normalize(current)) return;
 
-    if (field === "role_id") {
-      payload.role_id = next === null ? undefined : next;
-      return;
-    }
+    payload[field] = normalize(next) === "" ? null : next;
+  });
 
-    if (
-      NULLABLE_RELATION_FIELDS.includes(field as NullableRelationFieldKey)
-    ) {
-      payload[field] = normalize(next) === "" ? null : next;
+  return payload;
+};
+
+const buildCreatePayload = (userData: CreateUserDTO): CreateUserDTO => {
+  const payload: CreateUserDTO = { ...userData };
+
+  RELATION_FIELDS.forEach((field) => {
+    if (normalize(payload[field]) === "") {
+      delete payload[field];
     }
   });
 
   return payload;
+};
+
+const getServerErrorMessage = (err: any, fallback: string) => {
+  const data = err?.response?.data;
+  const errors = data?.errors;
+
+  if (errors && typeof errors === "object") {
+    for (const value of Object.values(errors)) {
+      if (Array.isArray(value) && typeof value[0] === "string") {
+        return value[0];
+      }
+      if (typeof value === "string") {
+        return value;
+      }
+    }
+  }
+
+  return data?.message || err?.message || fallback;
 };
 
 export function useUsersMutations({
@@ -111,15 +123,15 @@ export function useUsersMutations({
 
           response = await updateUser(editingUser.id, updateData);
         } else {
-          response = await createUser(userData);
+          const createPayload = buildCreatePayload(userData);
+          response = await createUser(createPayload);
         }
 
         addToast(response.message, "success");
         closeForm();
         refreshUsers();
       } catch (err: any) {
-        const msg =
-          err.response?.data?.message || err.message || "Error al guardar";
+        const msg = getServerErrorMessage(err, "Error al guardar");
         setMutationError(msg);
         addToast(msg, "danger");
       } finally {
@@ -148,10 +160,7 @@ export function useUsersMutations({
         closeExtra();
         refreshUsers();
       } catch (err: any) {
-        const msg =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al guardar datos";
+        const msg = getServerErrorMessage(err, "Error al guardar datos");
         setExtraError(msg);
         addToast(msg, "danger");
       } finally {

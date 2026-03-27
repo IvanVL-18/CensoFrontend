@@ -7,7 +7,7 @@ export interface User {
   address: string | null;
   email: string;
   email_verified_at: string | null;
-  role_id: number;
+  role_id: number | null;
   occupation_id: number | null;
   dependency_id: number | null;
   institution_id: number | null;
@@ -113,7 +113,7 @@ export interface CreateUserDTO {
   email: string;
   password?: string;
   password_confirmation?: string;
-  role_id?: string | number;
+  role_id?: string | number | null;
   occupation_id?: string | number | null;
   dependency_id?: string | number | null;
   institution_id?: string | number | null;
