@@ -19,6 +19,7 @@ import Permissions from "./pages/Permissions/Permissions";
 import PermissionRoles from "./pages/PermissionRoles/PermissionRoles";
 import Categories from "./pages/categories/Categories";
 import Catalogs from "./pages/catalogs/Catalogs";
+import CatalogItems from "./pages/CatalogItems/CatalogItems";
 import Verification from "./pages/Verification/Verification";
 import ResetPassword from "./pages/ResetPassword/ResetPassword";
 import Censos from "./pages/censos/Censos";
@@ -91,6 +92,7 @@ export default function App() {
 
           <Route element={<ProtectedRoute permission="catalogs.view" />}>
             <Route path="/catalogos" element={<Catalogs />} />
+            <Route path="/items-catalogo" element={<CatalogItems />} />
           </Route>
 
           {/* ── Administración ───────────────────────────────────────────── */}

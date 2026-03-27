@@ -17,6 +17,7 @@ const names: Record<string, string> = {
   "preguntas": "Preguntas",
   "roles": "Roles",
   "catalogos": "Catálogos",
+  "items-catalogo": "Items de catalogo",
   "permisos": "Permisos",
   "permission-roles": "Asignar Permisos",
   "categorias": "Categorías",
