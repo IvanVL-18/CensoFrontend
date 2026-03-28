@@ -26,11 +26,18 @@ import { CensoDetail } from "./pages/censos/components/CensoDetail";
 import CensoModulesView from "./pages/censos/CensoModules/CensoModulesView";
 import CensoSectionsView from "./pages/censos/CensoSections/CensoSectionsView";
 import CensusQuestionsView from "./pages/censos/CensusQuestions/CensusQuestionsView";
-
 import CensusAssignmentsView from "./pages/censos/CensusAssignaments/CensusAssignmentsView";
-
 import Questions from "./pages/Questions/Questions";
 import Builder from "././pages/Designer/components/Builder";
+
+{/* Rutas de Census-Users*/}
+import CensusUser from "././pages/CensusUser/CensusUser";
+import CensusUserModulesView from "./pages/CensusUser/CensusUserModules/CensusUserModulesView";
+import CensusUserSectionsView from "./pages/CensusUser/CensusUserSections/CensusUserSectionsView";
+import CensusUserQuestionsView from "./pages/CensusUser/CensusUserQuestions/CensusUserQuestionsView";
+import CensusUserAssignmentsView from "./pages/CensusUser/CensusUserAssignaments/CensusUserAssignmentsView";
+
+
 import "./App.css";
 export default function App() {
   return (
@@ -65,13 +72,22 @@ export default function App() {
         <Route path="/catalogos" element={<Catalogs />} />
         <Route path="/usuarios" element={<Users />} />
         <Route path="/Dependency" element={<Dependencies />} />
+
         <Route path="/censos" element={<Censos />} />
         <Route path="/censos/:id" element={<CensoDetail />} />
         <Route path="/censos/:id/modulos" element={<CensoModulesView />} />
         <Route path="/censos/secciones/:id" element={<CensoSectionsView />} />
         <Route path="/censos/preguntas/:id" element={<CensusQuestionsView />} />
-             <Route path="/censos/instituciones/:id" element={<CensusAssignmentsView />} />
+        <Route path="/censos/instituciones/:id" element={<CensusAssignmentsView />} />
         <Route path="/builder/:id" element={<Builder />} />
+
+        {/* Rutas de Census-Users*/}
+        <Route path="/census-user" element={<CensusUser />} />
+        <Route path="/census-user/:id/modulos" element={<CensusUserModulesView />} />
+        <Route path="/census-user/secciones/:id" element={<CensusUserSectionsView />} />
+        <Route path="/census-user/preguntas/:id" element={<CensusUserQuestionsView />} />
+        <Route path="/census-user/instituciones/:id" element={<CensusUserAssignmentsView />} />
+
       </Route>
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />

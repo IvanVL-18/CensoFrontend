@@ -6,6 +6,7 @@ const names: Record<string, string> = {
   "usuarios": "Usuarios",
   "instituciones": "Instituciones",
   "censos": "Censos",
+  "census-user": "Censos",
   "graficador": "Graficador",
   "reportes": "Reportes",
   "configuracion": "Configuración",
