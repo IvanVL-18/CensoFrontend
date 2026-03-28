@@ -9,6 +9,7 @@ import {
   BarChart3,
   CalendarRange,
   Settings,
+  NotebookPen,
 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
@@ -28,6 +29,7 @@ const ALL_ITEMS = [
   { to: "/graficador",    icon: BarChart3,       label: "Graficador",     permission: "graficador.view", roles: null },
   { to: "/reportes",      icon: CalendarRange,   label: "Reportes",       permission: "reports.view",   roles: null },
   { to: "/configuracion", icon: Settings,        label: "Configuración",  permission: null,             roles: ["Admin", "Super Admin"] },
+  { to: "/mis-censos",    icon: NotebookPen,     label: "Mis Censos",     permission: null,             roles: ["Surveyed"] },
 ];
 
 export default function Sidebar({ open, onToggle }: Props) {
