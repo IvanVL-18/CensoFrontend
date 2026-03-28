@@ -206,8 +206,8 @@ function PermissionRolesContent() {
   const [saving, setSaving] = useState(false);
 
   const [allPerms, setAllPerms] = useState<Permission[]>([]);
-  const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [initialSelected, setInitialSelected] = useState<Set<number>>(new Set());
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [initialSelected, setInitialSelected] = useState<Set<string>>(new Set());
   const [apiRoleName, setApiRoleName] = useState("");
 
   useEffect(() => {
@@ -238,9 +238,15 @@ function PermissionRolesContent() {
 
     getPermissionRole(roleId, ac.signal)
       .then((data) => {
-        setAllPerms(data.permissionsCollection ?? []);
-        const ids = (data.role?.permissions ?? []).map((p) => p.id);
-        const initialIdSet = new Set(ids);
+        const collection = data.permissionsCollection ?? [];
+        setAllPerms(collection);
+
+        // Comparamos por name (estable) para saber qué permisos ya están asignados,
+        // pero guardamos el id encriptado para poder enviarlo al backend al guardar.
+        const assignedNames = new Set(data.role?.permissions_names ?? []);
+        const initialIdSet = new Set(
+          collection.filter((p) => assignedNames.has(p.name)).map((p) => p.id)
+        );
         setSelected(initialIdSet);
         setInitialSelected(initialIdSet);
         localStorage.setItem("permissionRoles:lastRoleId", roleId);
@@ -337,7 +343,7 @@ function PermissionRolesContent() {
   const allowAll = () => setSelected(new Set(allPerms.map((p) => p.id)));
   const clearAll = () => setSelected(new Set());
 
-  const togglePermission = (permissionId: number, next: boolean) => {
+  const togglePermission = (permissionId: string, next: boolean) => {
     setSelected((prev) => {
       const n = new Set(prev);
       if (next) n.add(permissionId);

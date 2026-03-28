@@ -157,22 +157,25 @@ export function InstitutionsTable({
                       </button>
 
                       
-                      <button
-                        title="Editar Institución"
-                        onClick={() => onEdit(institution)} 
-                        className="bg-white text-[#691b31] hover:bg-[#1b2469] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
-                      >
-                        <IconEdit />
-                      </button>
+                      {onEdit && (
+                        <button
+                          title="Editar Institución"
+                          onClick={() => onEdit(institution)}
+                          className="bg-white text-[#691b31] hover:bg-[#1b2469] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
+                        >
+                          <IconEdit />
+                        </button>
+                      )}
 
-                   
-                      <button
-                        title="Desactivar Institución"
-                        onClick={() => onBan(institution)} 
-                        className="bg-white text-[#691b31] hover:bg-[#691b31] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
-                      >
-                        <IconBan />
-                      </button>
+                      {onBan && (
+                        <button
+                          title="Desactivar Institución"
+                          onClick={() => onBan(institution)}
+                          className="bg-white text-[#691b31] hover:bg-[#691b31] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
+                        >
+                          <IconBan />
+                        </button>
+                      )}
                     </>
                   ) : (
                     <>
@@ -185,23 +188,25 @@ export function InstitutionsTable({
                         <IconView />
                       </button>
 
-                     
-                      <button
-                        title="Restaurar Institución"
-                        onClick={() => onRestore(institution)} 
-                        className="bg-white text-[#691b31] hover:bg-[#1b6939] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
-                      >
-                        <IconCircleArrowUp />
-                      </button>
+                      {onRestore && (
+                        <button
+                          title="Restaurar Institución"
+                          onClick={() => onRestore(institution)}
+                          className="bg-white text-[#691b31] hover:bg-[#1b6939] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
+                        >
+                          <IconCircleArrowUp />
+                        </button>
+                      )}
 
- 
-                      <button
-                        title="Eliminar Permanentemente"
-                        onClick={() => onDelete(institution)} 
-                        className="bg-white text-[#691b31] hover:bg-[#691b31] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
-                      >
-                        <IconDelete />
-                      </button>
+                      {onDelete && (
+                        <button
+                          title="Eliminar Permanentemente"
+                          onClick={() => onDelete(institution)}
+                          className="bg-white text-[#691b31] hover:bg-[#691b31] hover:text-white active:bg-[#691b31] active:text-white p-2 rounded-lg leading-none transition-colors"
+                        >
+                          <IconDelete />
+                        </button>
+                      )}
                     </>
                   )}
                 </td>

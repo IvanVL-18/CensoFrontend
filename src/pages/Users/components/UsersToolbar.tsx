@@ -7,9 +7,10 @@ import AddButton from "../../../components/AddButton";
 import StatusFilterSelect from "../../../components/StatusFilterSelect";
 
 interface UsersToolbarProps {
-  filter: UserFilter; 
+  filter: UserFilter;
   searchTerm: string;
   isSubmitting: boolean;
+  canCreate?: boolean;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void;
@@ -23,6 +24,7 @@ export function UsersToolbar({
   onSearchChange,
   onAddClick,
   onBulkUpload,
+  canCreate = true,
 }: UsersToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,12 +53,14 @@ export function UsersToolbar({
           />
 
 
-          <AddButton
-            label="Agregar Usuario"
-            onClick={onAddClick}
-            variant="gold"
-            icon={<CirclePlus size={22} strokeWidth={2.5} />}
-          />
+          {canCreate && (
+            <AddButton
+              label="Agregar Usuario"
+              onClick={onAddClick}
+              variant="gold"
+              icon={<CirclePlus size={22} strokeWidth={2.5} />}
+            />
+          )}
         </div>
       </div>
 

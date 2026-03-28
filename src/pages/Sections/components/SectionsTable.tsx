@@ -145,32 +145,32 @@ export function SectionsTable({
                       </button>
 
                       {/* --- Botón EDITAR (Activo) --- */}
-                      <button
+                      {onEdit && <button
                         title="Editar Sección"
-                        onClick={() => onEdit(Section)} 
+                        onClick={() => onEdit(Section)}
                         className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#1b2469] hover:text-white 
+                          bg-white text-[#691b31]
+                          hover:bg-[#1b2469] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
                       >
                         <IconEdit />
-                      </button>
+                      </button>}
 
                       {/* --- Botón DESACTIVAR (Ban) --- */}
-                      <button
+                      {onBan && <button
                         title="Desactivar Sección"
-                        onClick={() => onBan(Section)} 
+                        onClick={() => onBan(Section)}
                         className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#691b31] hover:text-white 
+                          bg-white text-[#691b31]
+                          hover:bg-[#691b31] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
                       >
                         <IconBan />
-                      </button>
+                      </button>}
                     </>
                   ) : (
                     <>
@@ -189,32 +189,32 @@ export function SectionsTable({
                       </button>
 
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
-                      <button
+                      {onRestore && <button
                         title="Restaurar Sección"
-                        onClick={() => onRestore(Section)} 
+                        onClick={() => onRestore(Section)}
                         className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#1b6939] hover:text-white 
+                           bg-white text-[#691b31]
+                          hover:bg-[#1b6939] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
                       >
                         <IconCircleArrowUp />
-                      </button>
+                      </button>}
 
                       {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
-                      <button
+                      {onDelete && <button
                         title="Eliminar Permanentemente"
-                        onClick={() => onDelete(Section)} 
+                        onClick={() => onDelete(Section)}
                         className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#691b31] hover:text-white 
+                           bg-white text-[#691b31]
+                          hover:bg-[#691b31] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
                       >
                         <IconDelete />
-                      </button>
+                      </button>}
                     </>
                   )}
                 </td>

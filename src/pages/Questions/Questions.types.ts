@@ -71,10 +71,10 @@ export interface QuestionsTableProps {
   error: string | null;
   onSort: (key: keyof Question) => void;
   onView: (Question: Question) => void;
-  onEdit: (Question: Question) => void;
-  onBan: (Question: Question) => void;
-  onRestore: (Question: Question) => void;
-  onDelete: (Question: Question) => void;
+  onEdit?: (Question: Question) => void;
+  onBan?: (Question: Question) => void;
+  onRestore?: (Question: Question) => void;
+  onDelete?: (Question: Question) => void;
 }
 
 export interface ViewQuestionModalProps {

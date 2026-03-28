@@ -85,10 +85,10 @@ export interface DependenciesTableProps {
   error: string | null;
   onSort: (key: keyof Dependency) => void;
   onView: (Dependency: Dependency) => void;
-  onEdit: (Dependency: Dependency) => void;
-  onBan: (Dependency: Dependency) => void;
-  onRestore: (Dependency: Dependency) => void;
-  onDelete: (Dependency: Dependency) => void;
+  onEdit?: (Dependency: Dependency) => void;
+  onBan?: (Dependency: Dependency) => void;
+  onRestore?: (Dependency: Dependency) => void;
+  onDelete?: (Dependency: Dependency) => void;
 }
 
 export interface ViewDependencyModalProps {

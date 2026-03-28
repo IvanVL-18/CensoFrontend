@@ -10,6 +10,7 @@ interface RolesToolbarProps {
   filter: RolFilter;
   searchTerm: string;
   isSubmitting: boolean;
+  canCreate?: boolean;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void;
@@ -22,6 +23,7 @@ export function RolesToolbar({
   onFilterChange,
   onSearchChange,
   onAddClick,
+  canCreate = true,
 }: RolesToolbarProps) {
   return (
     <>
@@ -29,12 +31,14 @@ export function RolesToolbar({
         <h1 className="text-xl md:text-2xl font-bold text-white">Roles</h1>
 
         <div className="flex items-center gap-2">
-          <AddButton
-            label="Agregar Rol"
-            onClick={onAddClick}
-            variant="gold"
-            icon={<CirclePlus size={22} strokeWidth={2.5} />}
-          />
+          {canCreate && (
+            <AddButton
+              label="Agregar Rol"
+              onClick={onAddClick}
+              variant="gold"
+              icon={<CirclePlus size={22} strokeWidth={2.5} />}
+            />
+          )}
         </div>
       </div>
 

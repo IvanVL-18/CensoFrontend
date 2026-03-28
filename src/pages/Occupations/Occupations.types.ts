@@ -81,10 +81,10 @@ export interface OccupationsTableProps {
   error: string | null;
   onSort: (key: keyof Occupation) => void;
   onView: (Occupation: Occupation) => void;
-  onEdit: (Occupation: Occupation) => void;
-  onBan: (Occupation: Occupation) => void;
-  onRestore: (Occupation: Occupation) => void;
-  onDelete: (Occupation: Occupation) => void;
+  onEdit?: (Occupation: Occupation) => void;
+  onBan?: (Occupation: Occupation) => void;
+  onRestore?: (Occupation: Occupation) => void;
+  onDelete?: (Occupation: Occupation) => void;
 }
 
 export interface ViewOccupationModalProps {

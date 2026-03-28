@@ -94,10 +94,10 @@ export interface UsersTableProps {
   error: string | null;
   onSort: (key: keyof User) => void;
   onView: (User: User) => void;
-  onEdit: (User: User) => void;
-  onBan: (User: User) => void;
-  onRestore: (User: User) => void;
-  onDelete: (User: User) => void;
+  onEdit?: (User: User) => void;
+  onBan?: (User: User) => void;
+  onRestore?: (User: User) => void;
+  onDelete?: (User: User) => void;
 }
 export interface ViewUserModalProps {
   isOpen: boolean;

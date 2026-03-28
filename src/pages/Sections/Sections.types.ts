@@ -81,10 +81,10 @@ export interface SectionsTableProps {
   error: string | null;
   onSort: (key: keyof Section) => void;
   onView: (Section: Section) => void;
-  onEdit: (Section: Section) => void;
-  onBan: (Section: Section) => void;
-  onRestore: (Section: Section) => void;
-  onDelete: (Section: Section) => void;
+  onEdit?: (Section: Section) => void;
+  onBan?: (Section: Section) => void;
+  onRestore?: (Section: Section) => void;
+  onDelete?: (Section: Section) => void;
 }
 export interface ViewSectionModalProps {
   isOpen: boolean;

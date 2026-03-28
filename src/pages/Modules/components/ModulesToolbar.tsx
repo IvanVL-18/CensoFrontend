@@ -14,6 +14,7 @@ interface ModulesToolbarProps {
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void;
   onBulkUpload: (file: File) => void;
+  canCreate?: boolean;
 }
 
 export function ModulesToolbar({
@@ -24,6 +25,7 @@ export function ModulesToolbar({
   onSearchChange,
   onAddClick,
   onBulkUpload,
+  canCreate = true,
 }: ModulesToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -60,12 +62,12 @@ export function ModulesToolbar({
             icon={<FileDown size={22} strokeWidth={2.5} />}
           /> 
 
-          <AddButton
+          {canCreate && <AddButton
             label="Agregar Módulo"
             onClick={onAddClick}
             variant="gold"
             icon={<CirclePlus size={22} strokeWidth={2.5} />}
-          />
+          />}
         </div>
       </div>
 

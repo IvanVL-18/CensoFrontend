@@ -119,10 +119,10 @@ export function UsersTable({
                     <>
                       <button
                         title="Ver Usuario"
-                        onClick={() => onView(User)} 
+                        onClick={() => onView(User)}
                         className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#9d7e43] hover:text-white 
+                          bg-white text-[#691b31]
+                          hover:bg-[#9d7e43] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
@@ -130,40 +130,44 @@ export function UsersTable({
                         <IconView />
                       </button>
 
-                      <button
-                        title="Editar Usuario"
-                        onClick={() => onEdit(User)} 
-                        className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#1b2469] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
-                      >
-                        <IconEdit />
-                      </button>
+                      {onEdit && (
+                        <button
+                          title="Editar Usuario"
+                          onClick={() => onEdit(User)}
+                          className="
+                            bg-white text-[#691b31]
+                            hover:bg-[#1b2469] hover:text-white
+                            active:bg-[#691b31] active:text-white
+                            p-2 rounded-lg leading-none transition-colors
+                          "
+                        >
+                          <IconEdit />
+                        </button>
+                      )}
 
-                      <button
-                        title="Desactivar Usuario"
-                        onClick={() => onBan(User)} 
-                        className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#691b31] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
-                      >
-                        <IconBan />
-                      </button>
+                      {onBan && (
+                        <button
+                          title="Desactivar Usuario"
+                          onClick={() => onBan(User)}
+                          className="
+                            bg-white text-[#691b31]
+                            hover:bg-[#691b31] hover:text-white
+                            active:bg-[#691b31] active:text-white
+                            p-2 rounded-lg leading-none transition-colors
+                          "
+                        >
+                          <IconBan />
+                        </button>
+                      )}
                     </>
                   ) : (
                     <>
                       <button
                         title="Ver Usuario"
-                        onClick={() => onView(User)} 
+                        onClick={() => onView(User)}
                         className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#9d7e43] hover:text-white 
+                           bg-white text-[#691b31]
+                          hover:bg-[#9d7e43] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
@@ -171,31 +175,35 @@ export function UsersTable({
                         <IconView />
                       </button>
 
-                      <button
-                        title="Restaurar Usuario"
-                        onClick={() => onRestore(User)} 
-                        className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#1b6939] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
-                      >
-                        <IconCircleArrowUp />
-                      </button>
+                      {onRestore && (
+                        <button
+                          title="Restaurar Usuario"
+                          onClick={() => onRestore(User)}
+                          className="
+                             bg-white text-[#691b31]
+                            hover:bg-[#1b6939] hover:text-white
+                            active:bg-[#691b31] active:text-white
+                            p-2 rounded-lg leading-none transition-colors
+                          "
+                        >
+                          <IconCircleArrowUp />
+                        </button>
+                      )}
 
-                      <button
-                        title="Eliminar Permanentemente"
-                        onClick={() => onDelete(User)} 
-                        className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#691b31] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
-                      >
-                        <IconDelete />
-                      </button>
+                      {onDelete && (
+                        <button
+                          title="Eliminar Permanentemente"
+                          onClick={() => onDelete(User)}
+                          className="
+                             bg-white text-[#691b31]
+                            hover:bg-[#691b31] hover:text-white
+                            active:bg-[#691b31] active:text-white
+                            p-2 rounded-lg leading-none transition-colors
+                          "
+                        >
+                          <IconDelete />
+                        </button>
+                      )}
                     </>
                   )}
                 </td> 

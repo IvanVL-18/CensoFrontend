@@ -133,10 +133,10 @@ export function RolesTable({
                       {/* --- Botón VER (Activo) --- */}
                       <button
                         title="Ver Rol"
-                        onClick={() => onView(Rol)} 
+                        onClick={() => onView(Rol)}
                         className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#9d7e43] hover:text-white 
+                          bg-white text-[#691b31]
+                          hover:bg-[#9d7e43] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
@@ -145,42 +145,46 @@ export function RolesTable({
                       </button>
 
                       {/* --- Botón EDITAR (Activo) --- */}
-                      <button
-                        title="Editar Rol"
-                        onClick={() => onEdit(Rol)} 
-                        className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#1b2469] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
-                      >
-                        <IconEdit />
-                      </button>
+                      {onEdit && (
+                        <button
+                          title="Editar Rol"
+                          onClick={() => onEdit(Rol)}
+                          className="
+                            bg-white text-[#691b31]
+                            hover:bg-[#1b2469] hover:text-white
+                            active:bg-[#691b31] active:text-white
+                            p-2 rounded-lg leading-none transition-colors
+                          "
+                        >
+                          <IconEdit />
+                        </button>
+                      )}
 
                       {/* --- Botón DESACTIVAR (Ban) --- */}
-                      <button
-                        title="Desactivar Rol"
-                        onClick={() => onBan(Rol)} 
-                        className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#691b31] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
-                      >
-                        <IconBan />
-                      </button>
+                      {onBan && (
+                        <button
+                          title="Desactivar Rol"
+                          onClick={() => onBan(Rol)}
+                          className="
+                            bg-white text-[#691b31]
+                            hover:bg-[#691b31] hover:text-white
+                            active:bg-[#691b31] active:text-white
+                            p-2 rounded-lg leading-none transition-colors
+                          "
+                        >
+                          <IconBan />
+                        </button>
+                      )}
                     </>
                   ) : (
                     <>
                       {/* --- Botón VER (Inactivo) --- */}
                       <button
                         title="Ver Rol"
-                        onClick={() => onView(Rol)} 
+                        onClick={() => onView(Rol)}
                         className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#9d7e43] hover:text-white 
+                           bg-white text-[#691b31]
+                          hover:bg-[#9d7e43] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
@@ -189,32 +193,36 @@ export function RolesTable({
                       </button>
 
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
-                      <button
-                        title="Restaurar Rol"
-                        onClick={() => onRestore(Rol)} 
-                        className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#1b6939] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
-                      >
-                        <IconCircleArrowUp />
-                      </button>
+                      {onRestore && (
+                        <button
+                          title="Restaurar Rol"
+                          onClick={() => onRestore(Rol)}
+                          className="
+                             bg-white text-[#691b31]
+                            hover:bg-[#1b6939] hover:text-white
+                            active:bg-[#691b31] active:text-white
+                            p-2 rounded-lg leading-none transition-colors
+                          "
+                        >
+                          <IconCircleArrowUp />
+                        </button>
+                      )}
 
                       {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
-                      <button
-                        title="Eliminar Permanentemente"
-                        onClick={() => onDelete(Rol)} 
-                        className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#691b31] hover:text-white 
-                          active:bg-[#691b31] active:text-white
-                          p-2 rounded-lg leading-none transition-colors
-                        "
-                      >
-                        <IconDelete />
-                      </button>
+                      {onDelete && (
+                        <button
+                          title="Eliminar Permanentemente"
+                          onClick={() => onDelete(Rol)}
+                          className="
+                             bg-white text-[#691b31]
+                            hover:bg-[#691b31] hover:text-white
+                            active:bg-[#691b31] active:text-white
+                            p-2 rounded-lg leading-none transition-colors
+                          "
+                        >
+                          <IconDelete />
+                        </button>
+                      )}
                     </>
                   )}
                 </td>

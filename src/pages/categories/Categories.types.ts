@@ -80,10 +80,10 @@ export interface CategoriesTableProps {
   error: string | null;
   onSort: (key: keyof Category) => void;
   onView: (Category: Category) => void;
-  onEdit: (Category: Category) => void;
-  onBan: (Category: Category) => void;
-  onRestore: (Category: Category) => void;
-  onDelete: (Category: Category) => void;
+  onEdit?: (Category: Category) => void;
+  onBan?: (Category: Category) => void;
+  onRestore?: (Category: Category) => void;
+  onDelete?: (Category: Category) => void;
 }
 export interface ViewCategoryModalProps {
   isOpen: boolean;

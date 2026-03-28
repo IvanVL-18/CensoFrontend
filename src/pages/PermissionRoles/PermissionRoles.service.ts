@@ -1,17 +1,16 @@
 import api from "../../lib/Axios";
 
 export interface Permission {
-  id: number;
-  name: string;
+  id: string;   // ID encriptado — usar para enviar al backend
+  name: string; // Nombre estable — usar para comparar si está asignado
   guard_name?: string;
 }
 
 export interface PermissionRoleResponse {
-  encrypted_role_id: string;
   role: {
-    id: number; 
+    id: string;               // encriptado, para la URL del update
     name: string;
-    permissions: Permission[];
+    permissions_names: string[]; // ["roles.view", "users.create", ...] — comparar por name
   };
   permissionsCollection: Permission[];
 }
@@ -89,7 +88,7 @@ export const getPermissionRole = async (
 
 export const updatePermissionRole = async (
   encryptedRoleId: string,
-  permissionIds: number[]
+  permissionIds: string[]   // IDs encriptados de los permisos seleccionados
 ): Promise<{ message: string }> => {
   const res = await api.put(`/permission-role/${encryptedRoleId}`, {
     permissions_ids: permissionIds,

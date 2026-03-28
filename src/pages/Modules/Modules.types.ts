@@ -82,10 +82,10 @@ export interface ModulesTableProps {
   error: string | null;
   onSort: (key: keyof Module) => void;
   onView: (Module: Module) => void;
-  onEdit: (Module: Module) => void;
-  onBan: (Module: Module) => void;
-  onRestore: (Module: Module) => void;
-  onDelete: (Module: Module) => void;
+  onEdit?: (Module: Module) => void;
+  onBan?: (Module: Module) => void;
+  onRestore?: (Module: Module) => void;
+  onDelete?: (Module: Module) => void;
 }
 
 export interface ViewModuleModalProps {

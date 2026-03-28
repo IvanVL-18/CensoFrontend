@@ -16,10 +16,10 @@ export interface CensosCardsProps {
   loading: boolean;
   error: string | null;
   onView: (censo: Censo) => void;
-  onEdit: (censo: Censo) => void;
-  onBan: (censo: Censo) => void;
-  onRestore: (censo: Censo) => void;
-  onDelete: (censo: Censo) => void;
+  onEdit?: (censo: Censo) => void;
+  onBan?: (censo: Censo) => void;
+  onRestore?: (censo: Censo) => void;
+  onDelete?: (censo: Censo) => void;
 }
 
 export function CensosCards({
@@ -111,45 +111,53 @@ export function CensosCards({
                   <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10 py-1">
                     {!censo.deleted_at ? (
                       <>
-                        <button
-                          onClick={() => {
-                            onEdit(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                        >
-                          <Edit size={16} className="mr-2" /> Editar
-                        </button>
-                        <button
-                          onClick={() => {
-                            onBan(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
-                        >
-                          <Ban size={16} className="mr-2" /> Desactivar
-                        </button>
+                        {onEdit && (
+                          <button
+                            onClick={() => {
+                              onEdit(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            <Edit size={16} className="mr-2" /> Editar
+                          </button>
+                        )}
+                        {onBan && (
+                          <button
+                            onClick={() => {
+                              onBan(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                          >
+                            <Ban size={16} className="mr-2" /> Desactivar
+                          </button>
+                        )}
                       </>
                     ) : (
                       <>
-                        <button
-                          onClick={() => {
-                            onRestore(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-green-600 hover:bg-gray-100 transition-colors"
-                        >
-                          <CircleArrowUp size={16} className="mr-2" /> Restaurar
-                        </button>
-                        <button
-                          onClick={() => {
-                            onDelete(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
-                        >
-                          <Trash2 size={16} className="mr-2" /> Eliminar
-                        </button>
+                        {onRestore && (
+                          <button
+                            onClick={() => {
+                              onRestore(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-green-600 hover:bg-gray-100 transition-colors"
+                          >
+                            <CircleArrowUp size={16} className="mr-2" /> Restaurar
+                          </button>
+                        )}
+                        {onDelete && (
+                          <button
+                            onClick={() => {
+                              onDelete(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                          >
+                            <Trash2 size={16} className="mr-2" /> Eliminar
+                          </button>
+                        )}
                       </>
                     )}
                   </div>
