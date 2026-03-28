@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Censo, Meta } from "../Censos.types";
+import Loading from "../../../components/Loading";
 
 export interface CensosCardsProps {
   censos: Censo[];
@@ -60,7 +61,9 @@ export function CensosCards({
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[var(--pantone-7421)]" />
+        <td colSpan={3} className="text-center p-6 text-gray-500">
+                <Loading />
+              </td>
       </div>
     );
   }
