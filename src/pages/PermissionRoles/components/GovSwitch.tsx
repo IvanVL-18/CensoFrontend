@@ -1,5 +1,6 @@
 import React from "react";
 import "/src/assets/global-variables.css";
+import EstrellaHeader from "../../../Estrella_header.svg"
 
 type Props = {
   label: string;
@@ -12,7 +13,7 @@ type Props = {
 
 const GovSwitch: React.FC<Props> = ({ 
   label,
-  logoSrc = "/Estrella_header.svg",
+  logoSrc = EstrellaHeader,
   checked,
   onCheckedChange,
   size = "md",
