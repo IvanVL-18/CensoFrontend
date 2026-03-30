@@ -23,13 +23,12 @@ export function CensosToolbar({
   onFilterChange,
   onSearchChange,
   onAddClick,
-  onBulkUpload,
   canCreate = true,
 }: CensosToolbarProps) {
   return (
     <>
-      <div className="flex items-center justify-between bg-[var(--pantone-7421)] p-4">
-        <h1 className="text-xl font-bold text-white md:text-2xl">Censos</h1>
+      <div className="flex justify-between items-center p-4 bg-red-900">
+        <h1 className="text-xl md:text-2xl font-bold text-white">Censos</h1>
 
         <div className="flex items-center gap-2">
           {/* Input de archivo oculto que solo acepta Excel/CSV */}

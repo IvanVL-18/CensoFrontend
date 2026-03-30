@@ -13,7 +13,7 @@ const names: Record<string, string> = {
   "secciones": "Secciones",
   "ocupaciones": "Ocupaciones",
   "indices": "Índices",
-  "dependencies": "Dependencias",
+  "dependency": "Dependencias",
   "preguntas": "Preguntas",
   "roles": "Roles",
   "catalogos": "Catálogos",
@@ -48,7 +48,7 @@ export default function Breadcrumbs({ pathname }: { pathname: string }) {
             <li key={index} className="flex items-center gap-2">
               {index > 0 && <span className="text-neutral-400 select-none">/</span>}
               {isLast ? (
-                <span className="text-[#7C1227] font-semibold">{label}</span>
+                <span className="text-[var(--pantone-7421)] font-semibold">{label}</span>
               ) : (
                 <Link to={buildPath(index)} className="hover:text-neutral-700 transition-colors">
                   {label}
