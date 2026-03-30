@@ -6,9 +6,9 @@ import ProfileField from "./ProfileField";
 import { completeProfile } from "../Profile.service";
 import { useAuthContext } from "../../../context/AuthContext";
 
-const EMPTY: ProfileData = { name: null, lastname: null, phone: null, mobile: null, address: null };
+const EMPTY: ProfileData = { name: null, lastname: null, phone: null, mobile: null, address: null, profile_completed_at: null };
 
-export default function CompleteProfileModal({ open, onClose, user }: Props) {
+export default function CompleteProfileModal({ open, onClose, onCompleted, user }: Props) {
   const { markProfileComplete } = useAuthContext();
 
   const [draft,      setDraft]      = useState<ProfileData>(user?.profile ?? EMPTY);
@@ -24,42 +24,23 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
   if (!open || !user) return null;
 
   const handleSave = async () => {
-    setSubmitting(true);
-    setError(null);
-    try {
-      await completeProfile(draft);
-      markProfileComplete();
-      onClose();
-    } catch (err: any) {
-      setError(err?.message ?? "Error al guardar el perfil");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleSave = async () => {
-    
     if (!draft.name?.trim() || !draft.lastname?.trim() || !draft.address?.trim()) {
       setError("Nombre, apellidos y dirección son obligatorios.");
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     setError(null);
 
     try {
       await completeProfile(draft);
-      onCompleted({
-        ...user,
-        profile: {
-          ...draft,
-          profile_completed_at: new Date().toISOString(),
-        },
-      });
-    } catch {
-      setError("Ocurrió un error al guardar. Intenta de nuevo.");
+      markProfileComplete();
+      onCompleted({ ...user, profile: { ...draft, profile_completed_at: new Date().toISOString() } });
+      onClose();
+    } catch (err: any) {
+      setError(err?.message ?? "Ocurrió un error al guardar. Intenta de nuevo.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
