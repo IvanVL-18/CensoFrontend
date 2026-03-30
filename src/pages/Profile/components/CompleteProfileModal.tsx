@@ -37,11 +37,38 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
     }
   };
 
+  const handleSave = async () => {
+    
+    if (!draft.name?.trim() || !draft.lastname?.trim() || !draft.address?.trim()) {
+      setError("Nombre, apellidos y dirección son obligatorios.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await completeProfile(draft);
+      onCompleted({
+        ...user,
+        profile: {
+          ...draft,
+          profile_completed_at: new Date().toISOString(),
+        },
+      });
+    } catch {
+      setError("Ocurrió un error al guardar. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return createPortal(
     <div className="fixed inset-0 z-[9999] overflow-y-auto bg-black/35 backdrop-blur-[2px]">
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg transition-all">
           <div className="relative p-4 sm:p-6">
+
             <button
               onClick={onClose}
               aria-label="Cerrar"
@@ -60,6 +87,7 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
               </div>
             </div>
 
+            
             <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                 <ProfileField
@@ -91,7 +119,7 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
                   maxLength={20}
                 />
                 <ProfileField
-                  className="md:col-span-2"
+                  className="sm:col-span-2"
                   label="Dirección"
                   icon={MapPin}
                   value={draft.address ?? ""}
@@ -115,6 +143,7 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
                 {submitting ? "Guardando..." : "Guardar"}
               </button>
             </div>
+
           </div>
         </div>
       </div>

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { QuestionsTableProps } from "../Questions.types";
+import Loading from "../../../components/Loading";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -91,8 +92,8 @@ export function QuestionsTable({
           {/* --- Estados de Carga y Error --- */}
           {loading && (
             <tr>
-              <td colSpan={4} className="text-center p-6 text-gray-500">
-                Cargando...
+              <td colSpan={3} className="text-center p-6 text-gray-500">
+                <Loading />
               </td>
             </tr>
           )}
