@@ -5,9 +5,11 @@ import {
   Ban,
   MoreVertical,
   Calendar,
+  Users,
   Eye,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Censo, Meta } from "../Censos.types";
 import Loading from "../../../components/Loading";
 
@@ -21,6 +23,8 @@ export interface CensosCardsProps {
   onBan?: (censo: Censo) => void;
   onRestore?: (censo: Censo) => void;
   onDelete?: (censo: Censo) => void;
+  onModules?: (censo: Censo) => void;
+  onClone?: (censo: Censo) => void;
 }
 
 export function CensosCards({
@@ -35,6 +39,7 @@ export function CensosCards({
   onModules,
   onClone,
 }: CensosCardsProps) {
+  const navigate = useNavigate();
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const menuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -57,9 +62,7 @@ export function CensosCards({
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <td colSpan={3} className="text-center p-6 text-gray-500">
-                <Loading />
-              </td>
+        <Loading />
       </div>
     );
   }
@@ -368,38 +371,64 @@ export function CensosCards({
                 </div>
               </div>
 
-              <div className="mt-auto flex gap-2">
+              <div className="mt-auto flex flex-col gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    if (isInactive) return;
-                    onModules(censo);
-                  }}
-                  disabled={isInactive}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 font-medium shadow-md transition-all duration-300 ${
-                    isInactive
-                      ? "cursor-not-allowed bg-[#eef1f5] text-[#9aa3b2] shadow-none"
-                      : "bg-[var(--pantone-465)] text-white hover:bg-[#a8844f] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
-                  }`}
+                  onClick={() => onView(censo)}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2.5 font-medium shadow-md transition-all duration-300 bg-[var(--pantone-7421)] text-white hover:bg-[#691b31] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-7421)] focus:ring-offset-2"
                 >
-                  Asignaciones
+                  <Eye size={15} />
+                  Ver detalles
                 </button>
+
+                <div className="flex gap-2">
+                {onModules && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isInactive) return;
+                      onModules(censo);
+                    }}
+                    disabled={isInactive}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 font-medium shadow-md transition-all duration-300 ${
+                      isInactive
+                        ? "cursor-not-allowed bg-[#eef1f5] text-[#9aa3b2] shadow-none"
+                        : "bg-[var(--pantone-465)] text-white hover:bg-[#a8844f] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
+                    }`}
+                  >
+                    Asignaciones
+                  </button>
+                )}
+
+                {onClone && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isInactive) return;
+                      onClone(censo);
+                    }}
+                    disabled={isInactive}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 font-medium shadow-md transition-all duration-300 ${
+                      isInactive
+                        ? "cursor-not-allowed bg-[#eef1f5] text-[#9aa3b2] shadow-none"
+                        : "bg-[var(--pantone-465)] text-white hover:bg-[#a8844f] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
+                    }`}
+                  >
+                    Clonar
+                  </button>
+                )}
 
                 <button
                   type="button"
-                  onClick={() => {
-                    if (isInactive) return;
-                    onClone(censo);
-                  }}
-                  disabled={isInactive}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 font-medium shadow-md transition-all duration-300 ${
-                    isInactive
-                      ? "cursor-not-allowed bg-[#eef1f5] text-[#9aa3b2] shadow-none"
-                      : "bg-[var(--pantone-465)] text-white hover:bg-[#a8844f] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--pantone-465)] focus:ring-offset-2"
-                  }`}
+                  onClick={() =>
+                    navigate(`/admin/censos/${encodeURIComponent(String(censo.id))}/instituciones?from=/censos`)
+                  }
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 font-medium shadow-md transition-all duration-300 bg-slate-700 text-white hover:bg-slate-800 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-700 focus:ring-offset-2"
                 >
-                  Clonar
+                  <Users size={15} />
+                  Respuestas
                 </button>
+                </div>
               </div>
             </div>
           </div>
