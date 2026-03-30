@@ -29,6 +29,9 @@ import CensusQuestionsView from "./pages/censos/CensusQuestions/CensusQuestionsV
 import Questions from "./pages/Questions/Questions";
 import Builder from "././pages/Designer/components/Builder";
 import Answers from "./pages/Answers/Answers";
+import CensusInstitutionsPage from "./pages/AdminAnswers/CensusInstitutionsPage";
+import InstitutionUsersPage   from "./pages/AdminAnswers/InstitutionUsersPage";
+import UserAnswersPage        from "./pages/AdminAnswers/UserAnswersPage";
 import "./App.css";
 
 
@@ -55,6 +58,9 @@ export default function App() {
           {/* Dashboard */}
           <Route element={<ProtectedRoute permission="dashboard.view" />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/admin/censos/:censusId/instituciones"                                                                    element={<CensusInstitutionsPage />} />
+            <Route path="/admin/censos/:censusId/instituciones/:institutionId/usuarios"                                            element={<InstitutionUsersPage />} />
+            <Route path="/admin/censos/:censusId/instituciones/:institutionId/usuarios/:userId/respuestas"                         element={<UserAnswersPage />} />
           </Route>
 
           {/* ── Censos ───────────────────────────────────────────────────── */}

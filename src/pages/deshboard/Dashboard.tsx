@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Users, Building2, ClipboardList } from "lucide-react";
 
 import StatCard from "./components/StatCard";
@@ -22,6 +23,7 @@ type SortField = "id" | "name";
 type SortDir = "asc" | "desc";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [usersTotal, setUsersTotal] = useState(0);
   const [instTotal, setInstTotal] = useState(0);
   const [censosTotal, setCensosTotal] = useState(0);
@@ -144,6 +146,7 @@ export default function Dashboard() {
   const handlePageNumber = (page: number) => fetchCensos(page);
 
   const handleViewCenso = (id: string) => {
+    navigate(`/admin/censos/${encodeURIComponent(id)}/instituciones`);
   };
 
   return (
