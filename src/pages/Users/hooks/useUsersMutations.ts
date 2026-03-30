@@ -53,15 +53,29 @@ export function useUsersMutations({
           }
           response = await updateUser(editingUser.id, updateData);
         } else {
-          response = await createUser(userData);
+          const createData: CreateUserDTO = {
+            email: userData.email,
+            password: userData.password,
+            password_confirmation: userData.password_confirmation,
+          };
+          if (userData.role_id) createData.role_id = userData.role_id;
+          if (userData.occupation_id) createData.occupation_id = userData.occupation_id;
+          if (userData.dependency_id) createData.dependency_id = userData.dependency_id;
+          if (userData.institution_id) createData.institution_id = userData.institution_id;
+          response = await createUser(createData);
         }
 
         addToast(response.message, "success");
         closeForm();
         refreshUsers();
       } catch (err: any) {
-        const msg =
-          err.response?.data?.message || err.message || "Error al guardar";
+        let msg = err.message || "Error al guardar";
+        if (err.status === 422 && err.data?.errors) {
+          const details = Object.values(err.data.errors as Record<string, string[]>)
+            .flat()
+            .join(" ");
+          if (details) msg = details;
+        }
         setMutationError(msg);
         addToast(msg, "danger");
       } finally {

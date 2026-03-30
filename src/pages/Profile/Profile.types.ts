@@ -40,7 +40,7 @@ export type CompleteProfileModalProps = Pick<
   onCompleted: (user: AuthUser) => void;
 };
 
-export type EditProfileModalProps = Pick<Props, "open" | "onClose" | "user">;
+export type EditProfileModalProps = Pick<Props, "open" | "onClose"> & { user?: AuthUser };
 
 export type ProfileFieldProps = Pick<
   Props,

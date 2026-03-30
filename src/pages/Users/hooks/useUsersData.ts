@@ -62,10 +62,10 @@ export function useUsersData() {
       try {
         const [rolesData, occupationsData, dependenciesData, institutionsData] =
           await Promise.all([
-            getRelatedData("roles", signal),
-            getRelatedData("occupations", signal),
-            getRelatedData("dependency", signal),
-            getRelatedData("institutions", signal),
+            getRelatedData("roles/active/content", signal),
+            getRelatedData("occupations/active/content", signal),
+            getRelatedData("dependency/active/content", signal),
+            getRelatedData("institutions/active/content", signal),
           ]);
         setRoles(rolesData);
         setOccupations(occupationsData);

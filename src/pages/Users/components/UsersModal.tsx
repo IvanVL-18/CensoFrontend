@@ -125,6 +125,11 @@ export function UserModal({
       delete dataForValidation.password;
       delete dataForValidation.password_confirmation;
     }
+    // Strip empty optional relation fields so Zod treats them as undefined
+    if (!dataForValidation.role_id) delete dataForValidation.role_id;
+    if (!dataForValidation.occupation_id) delete dataForValidation.occupation_id;
+    if (!dataForValidation.dependency_id) delete dataForValidation.dependency_id;
+    if (!dataForValidation.institution_id) delete dataForValidation.institution_id;
 
     const result = UserSchema.safeParse(dataForValidation);
 
@@ -201,6 +206,7 @@ export function UserModal({
         ),
       });
       setFormErrors([]);
+      setFieldErrors({});
     }
   }, [isOpen, initialData, roles, occupations, dependencies, institutions]);
 
