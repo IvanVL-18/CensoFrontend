@@ -11,6 +11,7 @@ import { ConfirmModal } from "./components/ConfirmModal";
 import { ViewCatalogModal } from "./components/ViewCatalogsModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
+import { useAuthContext } from "../../context/AuthContext";
 import { Toast } from "../../components/Toast";
 import type { Module } from "./Catalogs.types";
 
@@ -155,6 +156,8 @@ function CatalogsPageContent() {
     openBulkError: modals.openBulkError,
   });
 
+  const { hasPermission } = useAuthContext();
+
   const handleViewClick = async (partialCatalog: any) => {
     try {
       const fullCatalog = await getCatalog(partialCatalog.id);
@@ -188,6 +191,7 @@ function CatalogsPageContent() {
         onSearchChange={handleSearch}
         onAddClick={modals.openCreate}
         onBulkUpload={handleBulkUpload}
+        canCreate={hasPermission("catalogs.create")}
       />
 
       <div className="p-4">
@@ -198,10 +202,10 @@ function CatalogsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={modals.openEdit}
-          onBan={c => modals.openConfirm(c, "ban")}
-          onRestore={c => modals.openConfirm(c, "restore")}
-          onDelete={c => modals.openConfirm(c, "delete")}
+          onEdit={hasPermission("catalogs.edit") ? modals.openEdit : undefined}
+          onBan={hasPermission("catalogs.deactivate") ? (c) => modals.openConfirm(c, "ban") : undefined}
+          onRestore={hasPermission("catalogs.restore") ? (c) => modals.openConfirm(c, "restore") : undefined}
+          onDelete={hasPermission("catalogs.delete") ? (c) => modals.openConfirm(c, "delete") : undefined}
         />
 
         <div className="border-t border-gray-200 bg-gray-50">

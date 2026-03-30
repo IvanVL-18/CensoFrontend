@@ -5,6 +5,9 @@ import type {
   UpdateCensoSectionsPayload,
   ApiMessageResponse,
   EncryptedCensusModuleId,
+  GetAssignmentResponse,
+  StoreAssignmentPayload,
+  UpdateAssignmentPayload,
 } from "./CensoSections.types";
 
 export const getCensoSections = async (
@@ -43,5 +46,39 @@ export const updateCensoSections = async (
     payload,
   );
 
+  return response.data;
+};
+
+// ── Asignación de instituciones ───────────────────────────────────────────────
+
+export const getAssignmentForCensus = async (
+  censusSectionId: string,
+  signal?: AbortSignal,
+): Promise<GetAssignmentResponse> => {
+  const response = await api.get<GetAssignmentResponse>(
+    `/assignment-for-census/${censusSectionId}`,
+    { signal },
+  );
+  return response.data;
+};
+
+export const storeAssignmentForCensus = async (
+  payload: StoreAssignmentPayload,
+): Promise<ApiMessageResponse> => {
+  const response = await api.post<ApiMessageResponse>(
+    `/assignment-for-census`,
+    payload,
+  );
+  return response.data;
+};
+
+export const updateAssignmentForCensus = async (
+  censusSectionId: string,
+  payload: UpdateAssignmentPayload,
+): Promise<ApiMessageResponse> => {
+  const response = await api.patch<ApiMessageResponse>(
+    `/assignment-for-census/${censusSectionId}`,
+    payload,
+  );
   return response.data;
 };

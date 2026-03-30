@@ -95,3 +95,35 @@ export interface ApiMessageResponse {
 }
 
 export type EncryptedCensusModuleId = string;
+
+// ── Assignment for census (instituciones) ─────────────────────────────────────
+
+export interface AssignmentInstitution {
+  id: string;
+  name: string;
+}
+
+export interface AssignmentItem {
+  id: string;
+  institution_id: string;
+  name: string;
+}
+
+export interface GetAssignmentResponse {
+  section: {
+    section_id: string;
+    index: string;
+    name: string;
+  };
+  institutions: AssignmentInstitution[];
+  assignments: AssignmentItem[];
+}
+
+export interface StoreAssignmentPayload {
+  census_section_id: string;
+  items: { institution_id: string }[];
+}
+
+export interface UpdateAssignmentPayload {
+  items: { institution_id: string }[];
+}

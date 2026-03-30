@@ -14,6 +14,7 @@ interface QuestionsToolbarProps {
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void;
   onBulkUpload: (file: File) => void;
+  canCreate?: boolean;
 }
 
 export function QuestionsToolbar({
@@ -24,6 +25,7 @@ export function QuestionsToolbar({
   onSearchChange,
   onAddClick,
   onBulkUpload,
+  canCreate = true,
 }: QuestionsToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -60,12 +62,12 @@ export function QuestionsToolbar({
             icon={<FileDown size={22} strokeWidth={2.5} />}
           />
 
-          <AddButton
+          {canCreate && <AddButton
             label="Agregar Pregunta"
             onClick={onAddClick}
             variant="gold"
             icon={<CirclePlus size={22} strokeWidth={2.5} />}
-          />
+          />}
         </div>
       </div>
 

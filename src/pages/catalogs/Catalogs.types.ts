@@ -107,10 +107,10 @@ export interface CatalogsTableProps {
   error: string | null;
   onSort: (key: keyof Catalog) => void;
   onView: (Catalog: Catalog) => void;
-  onEdit: (Catalog: Catalog) => void;
-  onBan: (Catalog: Catalog) => void;
-  onRestore: (Catalog: Catalog) => void;
-  onDelete: (Catalog: Catalog) => void; 
+  onEdit?: (Catalog: Catalog) => void;
+  onBan?: (Catalog: Catalog) => void;
+  onRestore?: (Catalog: Catalog) => void;
+  onDelete?: (Catalog: Catalog) => void;
 }
 
 export interface ViewCatalogModalProps {

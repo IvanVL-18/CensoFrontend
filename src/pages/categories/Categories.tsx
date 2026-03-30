@@ -11,6 +11,7 @@ import { ViewCategoryModal } from "./components/ViewCategoriesModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 
 import { ToastProvider, useToast } from "../../context/ToastContext";
+import { useAuthContext } from "../../context/AuthContext";
 import { Toast } from "../../components/Toast";
 
 function ToastContainer() {
@@ -44,6 +45,8 @@ function CategoriesPageContent() {
     handleSearch,
     handlePageChange,
   } = useCategoriesData();
+
+  const { hasPermission } = useAuthContext();
 
   const handleViewClick = async (partialCategory: any) => {
     try {
@@ -106,6 +109,7 @@ function CategoriesPageContent() {
         onSearchChange={handleSearch}
         onAddClick={modals.openCreate}
         onBulkUpload={handleBulkUpload}
+        canCreate={hasPermission("categories.create")}
       />
 
       {/* Tabla de Resultados */}
@@ -117,10 +121,10 @@ function CategoriesPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={modals.openEdit}
-          onBan={(u) => modals.openConfirm(u, "ban")}
-          onRestore={(u) => modals.openConfirm(u, "restore")}
-          onDelete={(u) => modals.openConfirm(u, "delete")}
+          onEdit={hasPermission("categories.edit") ? modals.openEdit : undefined}
+          onBan={hasPermission("categories.deactivate") ? (u) => modals.openConfirm(u, "ban") : undefined}
+          onRestore={hasPermission("categories.restore") ? (u) => modals.openConfirm(u, "restore") : undefined}
+          onDelete={hasPermission("categories.delete") ? (u) => modals.openConfirm(u, "delete") : undefined}
         />
 
         {/* Paginación */}

@@ -10,6 +10,7 @@ interface CensosToolbarProps {
   filter: CensoFilter;
   searchTerm: string;
   isSubmitting: boolean;
+  canCreate?: boolean;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void;
@@ -22,6 +23,8 @@ export function CensosToolbar({
   onFilterChange,
   onSearchChange,
   onAddClick,
+  onBulkUpload,
+  canCreate = true,
 }: CensosToolbarProps) {
   return (
     <>
@@ -29,12 +32,16 @@ export function CensosToolbar({
         <h1 className="text-xl font-bold text-white md:text-2xl">Censos</h1>
 
         <div className="flex items-center gap-2">
-          <AddButton
-            label="Agregar censo"
-            onClick={onAddClick}
-            variant="gold"
-            icon={<CirclePlus size={22} strokeWidth={2.5} />}
-          />
+          {/* Input de archivo oculto que solo acepta Excel/CSV */}
+          
+          {canCreate && (
+            <AddButton
+              label="Agregar censo"
+              onClick={onAddClick}
+              variant="gold"
+              icon={<CirclePlus size={22} strokeWidth={2.5} />}
+            />
+          )}
         </div>
       </div>
 

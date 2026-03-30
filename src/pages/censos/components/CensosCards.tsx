@@ -16,12 +16,10 @@ export interface CensosCardsProps {
   loading: boolean;
   error: string | null;
   onView: (censo: Censo) => void;
-  onEdit: (censo: Censo) => void;
-  onBan: (censo: Censo) => void;
-  onRestore: (censo: Censo) => void;
-  onDelete: (censo: Censo) => void;
-  onModules: (censo: Censo) => void;
-  onClone: (censo: Censo) => void;
+  onEdit?: (censo: Censo) => void;
+  onBan?: (censo: Censo) => void;
+  onRestore?: (censo: Censo) => void;
+  onDelete?: (censo: Censo) => void;
 }
 
 export function CensosCards({
@@ -265,73 +263,53 @@ export function CensosCards({
                   <div className="absolute right-0 z-20 mt-2 min-w-fit whitespace-nowrap rounded-xl border border-gray-200 bg-white py-1.5 shadow-xl">
                     {isActive ? (
                       <>
-                        <button
-                          onClick={() => {
-                            onView(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-sky-100 hover:text-sky-800"
-                        >
-                          <Eye size={16} className="shrink-0" />
-                          <span>Detalles</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            onEdit(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-amber-50 hover:text-amber-800"
-                        >
-                          <Edit size={16} className="shrink-0" />
-                          <span>Editar</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            onBan(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-[var(--pantone-7421)] transition-colors hover:bg-rose-100 hover:text-rose-800"
-                        >
-                          <Ban size={16} className="shrink-0" />
-                          <span>Desactivar</span>
-                        </button>
+                        {onEdit && (
+                          <button
+                            onClick={() => {
+                              onEdit(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            <Edit size={16} className="mr-2" /> Editar
+                          </button>
+                        )}
+                        {onBan && (
+                          <button
+                            onClick={() => {
+                              onBan(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                          >
+                            <Ban size={16} className="mr-2" /> Desactivar
+                          </button>
+                        )}
                       </>
                     ) : (
                       <>
-                        <button
-                          onClick={() => {
-                            onView(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100"
-                        >
-                          <Eye size={16} className="shrink-0" />
-                          <span>Detalles</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            onRestore(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-green-600 transition-colors hover:bg-gray-100"
-                        >
-                          <CircleArrowUp size={16} className="shrink-0" />
-                          <span>Restaurar</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            onDelete(censo);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-[var(--pantone-7421)] transition-colors hover:bg-gray-100"
-                        >
-                          <Trash2 size={16} className="shrink-0" />
-                          <span>Eliminar</span>
-                        </button>
+                        {onRestore && (
+                          <button
+                            onClick={() => {
+                              onRestore(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-green-600 hover:bg-gray-100 transition-colors"
+                          >
+                            <CircleArrowUp size={16} className="mr-2" /> Restaurar
+                          </button>
+                        )}
+                        {onDelete && (
+                          <button
+                            onClick={() => {
+                              onDelete(censo);
+                              setMenuOpenId(null);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                          >
+                            <Trash2 size={16} className="mr-2" /> Eliminar
+                          </button>
+                        )}
                       </>
                     )}
                   </div>

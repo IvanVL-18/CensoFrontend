@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useCensosData } from "./hooks/useCensosData";
 import { useCensosModals } from "./hooks/useCensosModals";
 import { useCensosMutations } from "./hooks/useCensosMutations";
+import { useAuthContext } from "../../context/AuthContext";
 import { CensosToolbar } from "./components/CensosToolbar";
 import { CensosCards } from "./components/CensosCards";
 import Pagination from "../../components/Pagination";
@@ -34,6 +35,7 @@ function ToastContainer() {
 }
 
 function CensosPageContent() {
+  const { hasPermission } = useAuthContext();
   const {
     Censos,
     loading,
@@ -169,6 +171,7 @@ function CensosPageContent() {
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
+        canCreate={hasPermission("censos.create")}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
         onAddClick={handleAddClick}
@@ -181,13 +184,11 @@ function CensosPageContent() {
           meta={meta}
           loading={loading}
           error={error}
-          onEdit={handleOpenEdit}
           onView={(censo) => modals.openView(censo)}
-          onBan={(u) => modals.openConfirm(u, "ban")}
-          onRestore={(u) => modals.openConfirm(u, "restore")}
-          onDelete={(u) => modals.openConfirm(u, "delete")}
-          onModules={(censo) => navigate(`/censos/${censo.id}/modulos`)}
-          onClone={(censo) => modals.openClone(censo)}
+          onEdit={hasPermission("censos.edit") ? handleOpenEdit : undefined}
+          onBan={hasPermission("censos.deactivate") ? (u) => modals.openConfirm(u, "ban") : undefined}
+          onRestore={hasPermission("censos.restore") ? (u) => modals.openConfirm(u, "restore") : undefined}
+          onDelete={hasPermission("censos.delete") ? (u) => modals.openConfirm(u, "delete") : undefined}
         />
 
         <div className="border-t border-gray-200 bg-gray-50 mt-6">

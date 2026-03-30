@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Eye, ArrowRight, Landmark } from "lucide-react";
 import { useCensoSections } from "./useCensoSections";
 import Pagination from "../../../components/Pagination";
 import { ViewSectionModal } from "./ViewSectionsModal";
+import { AssignInstitutionsModal } from "./AssignInstitutionsModal";
 
 const CensoSectionsView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,9 +30,7 @@ const CensoSectionsView: React.FC = () => {
   } = useCensoSections(id ?? "");
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
-    null,
-  );
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
 
   const openSectionModal = (sectionId: string) => {
     setSelectedSectionId(sectionId);
@@ -41,6 +40,22 @@ const CensoSectionsView: React.FC = () => {
   const closeSectionModal = () => {
     setModalOpen(false);
     setSelectedSectionId(null);
+  };
+
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignSectionId, setAssignSectionId] = useState<string | null>(null);
+  const [assignSectionName, setAssignSectionName] = useState("");
+
+  const openAssignModal = (censusSectionId: string, name: string) => {
+    setAssignSectionId(censusSectionId);
+    setAssignSectionName(name);
+    setAssignModalOpen(true);
+  };
+
+  const closeAssignModal = () => {
+    setAssignModalOpen(false);
+    setAssignSectionId(null);
+    setAssignSectionName("");
   };
 
   if (loading) {
@@ -202,21 +217,20 @@ const CensoSectionsView: React.FC = () => {
                               </button>
                               <button
                                 type="button"
-                                disabled={
-                                  !row.checked || !row.census_section_id
-                                }
+                                disabled={!row.census_section_id}
                                 onClick={() => {
                                   if (row.census_section_id) {
-                                    navigate(
-                                      `/censos/instituciones/${row.census_section_id}`,
+                                    openAssignModal(
+                                      row.census_section_id,
+                                      row.section_name,
                                     );
                                   }
                                 }}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:bg-gray-300"
                                 title={
-                                  row.checked && row.census_section_id
+                                  row.census_section_id
                                     ? "Asignar institución"
-                                    : "Selecciona la sección primero"
+                                    : "Guarda primero la sección para asignar instituciones"
                                 }
                               >
                                 <Landmark size={18} />
@@ -286,6 +300,13 @@ const CensoSectionsView: React.FC = () => {
         isOpen={modalOpen}
         onClose={closeSectionModal}
         sectionId={selectedSectionId}
+      />
+
+      <AssignInstitutionsModal
+        isOpen={assignModalOpen}
+        censusSectionId={assignSectionId}
+        sectionName={assignSectionName}
+        onClose={closeAssignModal}
       />
     </>
   );

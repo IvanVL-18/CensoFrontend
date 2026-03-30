@@ -4,22 +4,38 @@ import { createPortal } from "react-dom";
 import type { ProfileData, CompleteProfileModalProps as Props } from "../Profile.types";
 import ProfileField from "./ProfileField";
 import { completeProfile } from "../Profile.service";
-import type { AuthUser } from "../Profile.types";
+import { useAuthContext } from "../../../context/AuthContext";
 
-export default function CompleteProfileModal({
-  open,
-  onClose,
-  user,
-}: Props) { // <--- Change this from CompleteProfileModalProps to Props
-  if (!open) return null;  const [draft, setDraft] = useState<ProfileData>(user.profile);
+const EMPTY: ProfileData = { name: null, lastname: null, phone: null, mobile: null, address: null };
+
+export default function CompleteProfileModal({ open, onClose, user }: Props) {
+  const { markProfileComplete } = useAuthContext();
+
+  const [draft,      setDraft]      = useState<ProfileData>(user?.profile ?? EMPTY);
+  const [submitting, setSubmitting] = useState(false);
+  const [error,      setError]      = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
-    setDraft(user.profile);
+    setDraft(user?.profile ?? EMPTY);
     setError(null);
   }, [open, user]);
 
-  if (!open || !user) return null; // ← guarda aquí
+  if (!open || !user) return null;
+
+  const handleSave = async () => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await completeProfile(draft);
+      markProfileComplete();
+      onClose();
+    } catch (err: any) {
+      setError(err?.message ?? "Error al guardar el perfil");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleSave = async () => {
     
@@ -56,19 +72,19 @@ export default function CompleteProfileModal({
             <button
               onClick={onClose}
               aria-label="Cerrar"
-              className="absolute right-4 top-4 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+              disabled={submitting}
+              className="absolute right-4 top-4 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition disabled:opacity-50"
             >
               <X className="h-5 w-5" />
             </button>
 
-            
-            <div className="pr-8">
-              <p className="text-lg font-semibold text-slate-900">
-                Ingresa tus datos
-              </p>
-              <p className="mt-0.5 text-sm text-slate-500">
-                Completa tu información para poder ingresar al sistema.
-              </p>
+            <div className="flex items-start gap-3">
+              <div className="min-w-0">
+                <p className="text-lg font-semibold text-slate-900">Ingresa tus datos</p>
+                <p className="mt-0.5 text-sm text-slate-500">
+                  Completa tu información para poder ingresar al sistema.
+                </p>
+              </div>
             </div>
 
             
@@ -113,20 +129,18 @@ export default function CompleteProfileModal({
               </div>
             </div>
 
-      
             {error && (
-              <p className="mt-3 text-sm text-red-500">{error}</p>
+              <p className="mt-3 text-sm text-red-600">{error}</p>
             )}
 
-            
             <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={handleSave}
-                disabled={loading}
-                className="w-full rounded-lg bg-[var(--pantone-7421)] px-4 py-2 text-sm font-semibold text-white hover:opacity-95 active:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed sm:w-auto"
+                disabled={submitting}
+                className="w-full rounded-lg bg-[var(--pantone-7421)] px-4 py-2 text-sm font-semibold text-white hover:opacity-95 active:opacity-90 transition disabled:opacity-60 sm:w-auto"
               >
-                {loading ? "Guardando..." : "Guardar"}
+                {submitting ? "Guardando..." : "Guardar"}
               </button>
             </div>
 

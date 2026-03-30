@@ -2,6 +2,7 @@ import { useRolesData } from "./hooks/useRolesData";
 import { useRolesModals } from "./hooks/useRolesModals";
 import { useRolesMutations } from "./hooks/useRolesMutations";
 import { getRol } from "./Roles.service";
+import { useAuthContext } from "../../context/AuthContext";
 import { RolesToolbar } from "./components/RolesToolbar";
 import { RolesTable } from "./components/RolesTable";
 import Pagination from "../../components/Pagination";
@@ -30,6 +31,7 @@ function ToastContainer() {
 }
 
 function RolesPageContent() {
+  const { hasPermission } = useAuthContext();
   const {
     Roles,
     loading,
@@ -103,6 +105,7 @@ function RolesPageContent() {
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
+        canCreate={hasPermission("roles.create")}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
         onAddClick={() => {
@@ -120,22 +123,10 @@ function RolesPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={(r) => {
-            clearMutationError();
-            modals.openEdit(r);
-          }}
-          onBan={(r) => {
-            clearMutationError();
-            modals.openConfirm(r, "ban");
-          }}
-          onRestore={(r) => {
-            clearMutationError();
-            modals.openConfirm(r, "restore");
-          }}
-          onDelete={(r) => {
-            clearMutationError();
-            modals.openConfirm(r, "delete");
-          }}
+          onEdit={hasPermission("roles.edit") ? (r) => { clearMutationError(); modals.openEdit(r); } : undefined}
+          onBan={hasPermission("roles.deactivate") ? (r) => { clearMutationError(); modals.openConfirm(r, "ban"); } : undefined}
+          onRestore={hasPermission("roles.restore") ? (r) => { clearMutationError(); modals.openConfirm(r, "restore"); } : undefined}
+          onDelete={hasPermission("roles.delete") ? (r) => { clearMutationError(); modals.openConfirm(r, "delete"); } : undefined}
         />
         <div className="border-t border-gray-200 bg-gray-50">
           <Pagination meta={meta} links={links} onPageClick={handlePageChange} />

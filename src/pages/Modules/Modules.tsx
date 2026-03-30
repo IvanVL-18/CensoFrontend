@@ -11,6 +11,7 @@ import { ViewModuleModal } from "./components/ViewModulesModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 
 import { ToastProvider, useToast } from "../../context/ToastContext";
+import { useAuthContext } from "../../context/AuthContext";
 import { Toast } from "../../components/Toast";
 
 function ToastContainer() {
@@ -61,6 +62,8 @@ function ModulesPageContent() {
     openBulkError: modals.openBulkError,
   });
 
+  const { hasPermission } = useAuthContext();
+
   const handleViewClick = async (partialModule: any) => {
     try {
       const fullModule = await getModule(partialModule.id);
@@ -110,6 +113,7 @@ function ModulesPageContent() {
           modals.openCreate();
         }}
         onBulkUpload={handleBulkUpload}
+        canCreate={hasPermission("modules.create")}
       />
 
       <div className="p-4">
@@ -120,22 +124,22 @@ function ModulesPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={(u) => {
+          onEdit={hasPermission("modules.edit") ? (u) => {
             clearMutationError();
             modals.openEdit(u);
-          }}
-          onBan={(u) => {
+          } : undefined}
+          onBan={hasPermission("modules.deactivate") ? (u) => {
             clearMutationError();
             modals.openConfirm(u, "ban");
-          }}
-          onRestore={(u) => {
+          } : undefined}
+          onRestore={hasPermission("modules.restore") ? (u) => {
             clearMutationError();
             modals.openConfirm(u, "restore");
-          }}
-          onDelete={(u) => {
+          } : undefined}
+          onDelete={hasPermission("modules.delete") ? (u) => {
             clearMutationError();
             modals.openConfirm(u, "delete");
-          }}
+          } : undefined}
         />
 
         <div className="border-t border-gray-200 bg-gray-50">

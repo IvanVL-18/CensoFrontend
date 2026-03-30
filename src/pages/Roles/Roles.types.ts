@@ -82,10 +82,10 @@ export interface RolesTableProps {
   error: string | null;
   onSort: (key: keyof Rol) => void;
   onView: (Rol: Rol) => void;
-  onEdit: (Rol: Rol) => void;
-  onBan: (Rol: Rol) => void;
-  onRestore: (Rol: Rol) => void;
-  onDelete: (Rol: Rol) => void;
+  onEdit?: (Rol: Rol) => void;
+  onBan?: (Rol: Rol) => void;
+  onRestore?: (Rol: Rol) => void;
+  onDelete?: (Rol: Rol) => void;
 }
 
 export interface ViewRolModalProps {

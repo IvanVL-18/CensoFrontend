@@ -1,15 +1,12 @@
-import api from "../../lib/Axios";
-import type { ProfileSchema } from "./schemas/Profile.schema";
-import type { ProfileData } from "./Profile.types";
+import api from '../../lib/Axios';
+import type { ProfileData } from './Profile.types';
 
-export const getProfile = async (signal?: AbortSignal): Promise<ProfileData> => {
-  const response = await api.get<{ data: ProfileData }>("/profile", { signal });
-  return (response.data as any).data ?? response.data;
-};
+export interface CompleteProfileResponse {
+  message: string;
+  complete: boolean;
+}
 
-export const completeProfile = async (
-  data: ProfileSchema,
-): Promise<{ message: string }> => {
-  const response = await api.post("/profile/complete", data);
-  return response.data;
-};
+export async function completeProfile(data: ProfileData): Promise<CompleteProfileResponse> {
+  const { data: response } = await api.post<CompleteProfileResponse>('/profile/complete', data);
+  return response;
+}

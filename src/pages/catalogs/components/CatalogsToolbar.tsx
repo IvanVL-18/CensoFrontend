@@ -14,6 +14,7 @@ interface CatalogsToolbarProps {
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void;
   onBulkUpload: (file: File) => void;
+  canCreate?: boolean;
 }
 
 export function CatalogsToolbar({
@@ -24,6 +25,7 @@ export function CatalogsToolbar({
   onSearchChange,
   onAddClick,
   onBulkUpload,
+  canCreate = true,
 }: CatalogsToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,13 +46,13 @@ export function CatalogsToolbar({
 
         <div className="flex items-center gap-2">
           {/* Input de archivo oculto que solo acepta Excel/CSV */}
-          
-          <AddButton
+
+          {canCreate && <AddButton
             label="Agregar catálogo"
             onClick={onAddClick}
             variant="gold"
             icon={<CirclePlus size={22} strokeWidth={2.5} />}
-          />
+          />}
         </div>
       </div>
 
