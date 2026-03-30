@@ -5,11 +5,7 @@ import StatCard from "./components/StatCard";
 import QuestionnairesCard from "./components/QuestionnairesCard";
 import ChartsCard from "./components/ChartsCard";
 
-import type {
-  QuestionnaireItem,
-  Meta,
-  Links,
-} from "./dashboard.types";
+import type { QuestionnaireItem, Meta, Links } from "./dashboard.types";
 
 import {
   getDashboardCount,
@@ -57,6 +53,9 @@ export default function Dashboard() {
     } catch (e: any) {
       console.error("fetchCensos error:", e);
       setErrorTable(e?.message || "Error al cargar censos");
+      setItems([]);
+      setMeta(null);
+      setLinks(null);
     } finally {
       setLoadingTable(false);
     }
@@ -64,22 +63,36 @@ export default function Dashboard() {
 
   useEffect(() => {
     (async () => {
+      const [usersRes, instRes, censosRes] = await Promise.allSettled([
+        getDashboardCount("users"),
+        getDashboardCount("institutions"),
+        getDashboardCount("censos"),
+      ]);
+
+      if (usersRes.status === "fulfilled") {
+        setUsersTotal(usersRes.value.total ?? 0);
+      } else {
+        console.error("Users count error:", usersRes.reason);
+      }
+
+      if (instRes.status === "fulfilled") {
+        setInstTotal(instRes.value.total ?? 0);
+      } else {
+        console.error("Institutions count error:", instRes.reason);
+      }
+
+      if (censosRes.status === "fulfilled") {
+        setCensosTotal(censosRes.value.total ?? 0);
+      } else {
+        console.error("Censos count error:", censosRes.reason);
+      }
+
       try {
-        const [u, i, c] = await Promise.all([
-          getDashboardCount("users"),
-          getDashboardCount("institutions"),
-          getDashboardCount("censos"),
-        ]);
-
-        setUsersTotal(u.total ?? 0);
-        setInstTotal(i.total ?? 0);
-        setCensosTotal(c.total ?? 0);
-
         const inst = await getCentralizedInstitutions();
         setCentralizedCount(inst.total_centralized_institutions ?? 0);
         setTotalInstitutions(inst.total_institutions ?? 0);
       } catch (e: any) {
-        console.error("Dashboard stats error:", e?.message || e);
+        console.error("Centralized institutions error:", e?.message || e);
       }
 
       try {
@@ -104,9 +117,10 @@ export default function Dashboard() {
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
       return;
     }
+
     setSortField(field);
     setSortDir("asc");
   };
@@ -115,6 +129,7 @@ export default function Dashboard() {
     const s = search.trim().toLowerCase();
 
     let arr = items;
+
     if (s) {
       arr = arr.filter((x) => (x.name || "").toLowerCase().includes(s));
     }
@@ -141,24 +156,29 @@ export default function Dashboard() {
     }
   };
 
-  const handlePageNumber = (page: number) => fetchCensos(page);
+  const handlePageNumber = (page: number) => {
+    fetchCensos(page);
+  };
 
   const handleViewCenso = (id: string) => {
+    console.log("Ver censo:", id);
   };
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 sm:gap-6">
         <StatCard
           title="USUARIOS"
           value={usersTotal.toLocaleString()}
           icon={<Users className="h-5 w-5 text-blue-600" />}
         />
+
         <StatCard
           title="INSTITUCIONES"
           value={instTotal.toLocaleString()}
           icon={<Building2 className="h-5 w-5 text-green-600" />}
         />
+
         <StatCard
           title="CENSOS"
           value={censosTotal.toLocaleString()}
@@ -166,7 +186,7 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <QuestionnairesCard
           title="Censos"
           searchValue={search}
@@ -179,7 +199,7 @@ export default function Dashboard() {
           error={errorTable}
           onPageClick={handlePageClick}
           onPageNumber={handlePageNumber}
-          baseUrl={"/dashboard/get-censuses"}
+          baseUrl="/dashboard/get-censos"
           onSort={handleSort}
         />
 
