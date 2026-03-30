@@ -28,7 +28,7 @@ export const getQuestionsByCenso = async () => {
 
 export const getAllCensos = async (page: number = 1) => {
   const res = await api.get<PaginatedCensosResponse>(
-    `/dashboard/get-censos`,
+    `/dashboard/get-censuses`,
     {
       params: { page },
     }

@@ -1,4 +1,4 @@
-import { ArrowUpDown, Eye, type LucideProps } from "lucide-react";
+import { ArrowUpDown, type LucideProps } from "lucide-react";
 import { SearchInput } from "../../../components/SearchInput";
 import Pagination from "../../../components/Pagination";
 import type { QuestionnaireItem, Links, Meta } from "../dashboard.types";
@@ -12,7 +12,6 @@ const defaultProps = {
 const IconSort = (props: LucideProps) => (
   <ArrowUpDown {...defaultProps} {...props} />
 );
-const IconView = (props: LucideProps) => <Eye {...defaultProps} {...props} />;
 
 type Props = {
   title: string;
@@ -38,7 +37,6 @@ export default function QuestionnairesCard({
   searchValue,
   onSearchChange,
   items,
-  onView,
 
   meta = null,
   links = null,
@@ -52,7 +50,7 @@ export default function QuestionnairesCard({
 }: Props) {
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="bg-[#7A0C2E] px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="bg-red-900 px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-white font-semibold text-base">{title}</h2>
 
         <div className="w-full sm:w-[260px]">
@@ -81,10 +79,6 @@ export default function QuestionnairesCard({
                   <span>Nombre</span>
                   <IconSort size={16} strokeWidth={2.5} />
                 </button>
-              </th>
-
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
-                Opciones
               </th>
             </tr>
           </thead>
@@ -126,18 +120,6 @@ export default function QuestionnairesCard({
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
-                    <button
-                      title="Ver"
-                      onClick={() => onView(String(it.id))}
-                      className="
-                        bg-white text-[#691b31]
-                        hover:bg-[#9d7e43] hover:text-white
-                        active:bg-[#691b31] active:text-white
-                        p-2 rounded-lg leading-none transition-colors
-                      "
-                    >
-                      <IconView />
-                    </button>
                   </td>
                 </tr>
               ))
