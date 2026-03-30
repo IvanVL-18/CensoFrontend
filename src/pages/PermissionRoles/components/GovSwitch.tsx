@@ -1,4 +1,7 @@
 import React from "react";
+import {
+  ShieldCheck,
+} from "lucide-react";
 import "/src/assets/global-variables.css";
 
 type Props = {
@@ -54,15 +57,10 @@ const GovSwitch: React.FC<Props> = ({
         <span
           className={`${translateClass} inline-grid place-items-center transform rounded-full bg-white transition-transform duration-300 ease-in-out overflow-hidden ${thumbClass}`}
         >
-          <img
-            src={logoSrc}
-            alt="Logo"
-            className={`${imgClass} w-auto object-contain transition-opacity ${
-              checked ? "opacity-100" : "opacity-40"
-            }`}
-            style={{ filter: checked ? "none" : "grayscale(100%)" }}
-            draggable={false}
-          />
+<ShieldCheck 
+  className="h-4 w-4 text-[#611232] transition-opacity opacity-100" 
+  strokeWidth={2.5}
+/>
         </span>
       </button>
 

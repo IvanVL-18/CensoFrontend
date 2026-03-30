@@ -294,7 +294,7 @@ function PermissionRolesContent() {
       moduleKey: string;
       label: string;
       icon: any;
-      actions: Record<string, number>;
+      actions: Record<string, string>
     };
 
     const map = new Map<string, ModuleCard>();
