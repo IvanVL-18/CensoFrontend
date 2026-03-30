@@ -25,8 +25,8 @@ export default function ChartPlaceholder(props: Props) {
     };
 
     return (
-      <div className="flex items-start gap-4">
-        <div className="min-w-[170px]">
+      <div className="flex flex-col-reverse sm:flex-row items-center sm:items-start gap-6 sm:gap-4">
+        <div className="w-full sm:w-auto min-w-[170px]">
           {props.donutData.map((d, idx) => {
             const isActive = activeIndex === idx;
             const isDimmed = activeIndex !== null && !isActive;

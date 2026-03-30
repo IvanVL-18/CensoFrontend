@@ -1,4 +1,5 @@
 import { useInstitutions } from "../Institutions/hooks/useInstitutions";
+import { useAuthContext } from "../../context/AuthContext";
 import { InstitutionsToolbar } from "../Institutions/components/InstitutionsToolbar"
 ;
 import { InstitutionsTable } from "../Institutions/components/InstitutionsTable";
@@ -30,6 +31,7 @@ function ToastContainer() {
 
 
 function InstitutionsPageContent() {
+  const { hasPermission } = useAuthContext();
   const {
     loading,
     error,
@@ -113,12 +115,12 @@ function InstitutionsPageContent() {
       <InstitutionsToolbar
         filter={filter}
         searchTerm={searchTerm}
+        canCreate={hasPermission("institutions.create")}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
         onAddClick={handleAddClick}
       />
 
-   
       <div className="p-4">
         <InstitutionsTable
           loading={loading}
@@ -128,10 +130,10 @@ function InstitutionsPageContent() {
           onSort={handleSort}
           onShowMap={onShowMap}
           onView={onView}
-          onEdit={onEdit}
-          onBan={onBan}
-          onRestore={onRestore}
-          onDelete={onDelete}
+          onEdit={hasPermission("institutions.edit") ? onEdit : undefined}
+          onBan={hasPermission("institutions.deactivate") ? onBan : undefined}
+          onRestore={hasPermission("institutions.restore") ? onRestore : undefined}
+          onDelete={hasPermission("institutions.delete") ? onDelete : undefined}
         />
   
         <div className="mt-4 flex justify-center">

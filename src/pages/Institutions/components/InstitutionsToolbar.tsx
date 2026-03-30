@@ -11,9 +11,10 @@ import StatusFilterSelect from "../../../components/StatusFilterSelect";
 interface InstitutionsToolbarProps {
   filter: InstitutionFilter;
   searchTerm: string;
+  canCreate?: boolean;
   onFilterChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onAddClick: () => void; 
+  onAddClick: () => void;
 }
 
 export function InstitutionsToolbar({
@@ -22,6 +23,7 @@ export function InstitutionsToolbar({
   onFilterChange,
   onSearchChange,
   onAddClick,
+  canCreate = true,
 }: InstitutionsToolbarProps) {
   return (
     <>
@@ -30,11 +32,13 @@ export function InstitutionsToolbar({
           Instituciones
         </h1>
 
-        <AddButton
-          label="Agregar Institución"
-          onClick={onAddClick}
-          icon={<CirclePlus size={22} strokeWidth={2.5} />}
-        />
+        {canCreate && (
+          <AddButton
+            label="Agregar Institución"
+            onClick={onAddClick}
+            icon={<CirclePlus size={22} strokeWidth={2.5} />}
+          />
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 px-4 pt-4">

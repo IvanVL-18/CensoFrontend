@@ -14,6 +14,7 @@ interface CategoriesToolbarProps {
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void;
   onBulkUpload: (file: File) => void;
+  canCreate?: boolean;
 }
 
 export function CategoriesToolbar({
@@ -22,6 +23,7 @@ export function CategoriesToolbar({
   onFilterChange,
   onSearchChange,
   onAddClick,
+  canCreate = true,
 }: CategoriesToolbarProps) {
   return (
     <>
@@ -29,13 +31,12 @@ export function CategoriesToolbar({
         <h1 className="text-xl md:text-2xl font-bold text-white">Categorías</h1>
 
         <div className="flex items-center gap-2">
-          
-          <AddButton
+          {canCreate && <AddButton
             label="Agregar categoría"
             onClick={onAddClick}
             variant="gold"
             icon={<CirclePlus size={22} strokeWidth={2.5} />}
-          />
+          />}
         </div>
       </div>
 

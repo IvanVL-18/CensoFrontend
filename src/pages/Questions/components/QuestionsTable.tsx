@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { QuestionsTableProps } from "../Questions.types";
+import Loading from "../../../components/Loading";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -91,8 +92,8 @@ export function QuestionsTable({
           {/* --- Estados de Carga y Error --- */}
           {loading && (
             <tr>
-              <td colSpan={4} className="text-center p-6 text-gray-500">
-                Cargando...
+              <td colSpan={3} className="text-center p-6 text-gray-500">
+                <Loading />
               </td>
             </tr>
           )}
@@ -163,32 +164,32 @@ export function QuestionsTable({
                       </button>
 
                       {/* --- Botón EDITAR (Activo) --- */}
-                      <button
+                      {onEdit && <button
                         title="Editar Modulo"
                         onClick={() => onEdit(Question)}
                         className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#1b2469] hover:text-white 
+                          bg-white text-[#691b31]
+                          hover:bg-[#1b2469] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
                       >
                         <IconEdit />
-                      </button>
+                      </button>}
 
                       {/* --- Botón DESACTIVAR (Ban) --- */}
-                      <button
+                      {onBan && <button
                         title="Desactivar Modulo"
                         onClick={() => onBan(Question)}
                         className="
-                          bg-white text-[#691b31] 
-                          hover:bg-[#691b31] hover:text-white 
+                          bg-white text-[#691b31]
+                          hover:bg-[#691b31] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
                       >
                         <IconBan />
-                      </button>
+                      </button>}
 
                       {/* --- Botón BUILDER --- */}
                       <button
@@ -221,32 +222,32 @@ export function QuestionsTable({
                       </button>
 
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
-                      <button
+                      {onRestore && <button
                         title="Restaurar Modulo"
                         onClick={() => onRestore(Question)}
                         className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#1b6939] hover:text-white 
+                           bg-white text-[#691b31]
+                          hover:bg-[#1b6939] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
                       >
                         <IconCircleArrowUp />
-                      </button>
+                      </button>}
 
                       {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
-                      <button
+                      {onDelete && <button
                         title="Eliminar Permanentemente"
                         onClick={() => onDelete(Question)}
                         className="
-                           bg-white text-[#691b31] 
-                          hover:bg-[#691b31] hover:text-white 
+                           bg-white text-[#691b31]
+                          hover:bg-[#691b31] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
                       >
                         <IconDelete />
-                      </button>
+                      </button>}
 
                       {/* --- Botón BUILDER --- */}
                       <button

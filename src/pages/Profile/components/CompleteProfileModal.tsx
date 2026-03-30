@@ -6,9 +6,9 @@ import ProfileField from "./ProfileField";
 import { completeProfile } from "../Profile.service";
 import { useAuthContext } from "../../../context/AuthContext";
 
-const EMPTY: ProfileData = { name: null, lastname: null, phone: null, mobile: null, address: null };
+const EMPTY: ProfileData = { name: null, lastname: null, phone: null, mobile: null, address: null, profile_completed_at: null };
 
-export default function CompleteProfileModal({ open, onClose, user }: Props) {
+export default function CompleteProfileModal({ open, onClose, onCompleted, user }: Props) {
   const { markProfileComplete } = useAuthContext();
 
   const [draft,      setDraft]      = useState<ProfileData>(user?.profile ?? EMPTY);
@@ -24,14 +24,21 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
   if (!open || !user) return null;
 
   const handleSave = async () => {
+    if (!draft.name?.trim() || !draft.lastname?.trim() || !draft.address?.trim()) {
+      setError("Nombre, apellidos y dirección son obligatorios.");
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
+
     try {
       await completeProfile(draft);
       markProfileComplete();
+      onCompleted({ ...user, profile: { ...draft, profile_completed_at: new Date().toISOString() } });
       onClose();
     } catch (err: any) {
-      setError(err?.message ?? "Error al guardar el perfil");
+      setError(err?.message ?? "Ocurrió un error al guardar. Intenta de nuevo.");
     } finally {
       setSubmitting(false);
     }
@@ -42,6 +49,7 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg transition-all">
           <div className="relative p-4 sm:p-6">
+
             <button
               onClick={onClose}
               aria-label="Cerrar"
@@ -60,6 +68,7 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
               </div>
             </div>
 
+            
             <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                 <ProfileField
@@ -91,7 +100,7 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
                   maxLength={20}
                 />
                 <ProfileField
-                  className="md:col-span-2"
+                  className="sm:col-span-2"
                   label="Dirección"
                   icon={MapPin}
                   value={draft.address ?? ""}
@@ -115,6 +124,7 @@ export default function CompleteProfileModal({ open, onClose, user }: Props) {
                 {submitting ? "Guardando..." : "Guardar"}
               </button>
             </div>
+
           </div>
         </div>
       </div>

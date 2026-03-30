@@ -88,12 +88,11 @@ export function QuestionModal({
   const hasClientErrors = formErrors.length > 0;
   const hasServerError = !!serverError;
 
-  const isUnchanged = initialData
-    ? formData.name.trim() === initialData.name.trim() &&
-      (formData.instructions ?? "").trim() ===
-        (initialData.instructions ?? "").trim() &&
-      formData.commentaries === Boolean(initialData.commentaries)
-    : false;
+  const isUnchanged =
+    formData.name.trim() === (initialData?.name ?? "").trim() &&
+    (formData.instructions ?? "").trim() ===
+      (initialData?.instructions ?? "").trim() &&
+    formData.commentaries === Boolean(initialData?.commentaries);
 
   return (
     <>
@@ -199,15 +198,12 @@ export function QuestionModal({
               </button>
               <button
                 type="submit"
-                disabled={
-                  isSubmitting ||
-                  hasClientErrors ||
-                  (isUnchanged && !hasServerError)
-                }
+                disabled={isSubmitting || hasClientErrors || isUnchanged}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
               </button>
+
             </div>
           </form>
         </div>

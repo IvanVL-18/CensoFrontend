@@ -2,6 +2,7 @@ import { useDependenciesData } from "./hooks/useDependenciesData";
 import { useDependenciesModals } from "./hooks/useDependenciesModals";
 import { useDependenciesMutations } from "./hooks/useDependenciesMutations";
 import { getDependency } from "./Dependencies.service";
+import { useAuthContext } from "../../context/AuthContext";
 import { DependenciesToolbar } from "./components/DependenciesToolbar";
 import { DependenciesTable } from "./components/DependenciesTable";
 import Pagination from "../../components/Pagination";
@@ -30,6 +31,7 @@ function ToastContainer() {
 }
 
 function DependenciesPageContent() {
+  const { hasPermission } = useAuthContext();
   const {
     Dependencies,
     loading,
@@ -103,10 +105,11 @@ function DependenciesPageContent() {
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
+        canCreate={hasPermission("dependencie.create")}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
         onAddClick={() => {
-          clearMutationError(); // ✅
+          clearMutationError();
           modals.openCreate();
         }}
         onBulkUpload={handleBulkUpload}
@@ -120,22 +123,10 @@ function DependenciesPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={(a) => {
-            clearMutationError(); 
-            modals.openEdit(a);
-          }}
-          onBan={(a) => {
-            clearMutationError(); 
-            modals.openConfirm(a, "ban");
-          }}
-          onRestore={(a) => {
-            clearMutationError(); 
-            modals.openConfirm(a, "restore");
-          }}
-          onDelete={(a) => {
-            clearMutationError();
-            modals.openConfirm(a, "delete");
-          }}
+          onEdit={hasPermission("dependencie.edit") ? (a) => { clearMutationError(); modals.openEdit(a); } : undefined}
+          onBan={hasPermission("dependencie.deactivate") ? (a) => { clearMutationError(); modals.openConfirm(a, "ban"); } : undefined}
+          onRestore={hasPermission("dependencie.restore") ? (a) => { clearMutationError(); modals.openConfirm(a, "restore"); } : undefined}
+          onDelete={hasPermission("dependencie.delete") ? (a) => { clearMutationError(); modals.openConfirm(a, "delete"); } : undefined}
         />
 
         <div className="border-t border-gray-200 bg-gray-50">

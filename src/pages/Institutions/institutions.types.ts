@@ -57,17 +57,17 @@ export interface InstitutionModalProps {
 }
 
 export interface InstitutionTableProps {
-  institutions: Institution[]; 
+  institutions: Institution[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
   onSort: (key: keyof Institution) => void;
-  onShowMap: (institution: Institution) => void; 
+  onShowMap: (institution: Institution) => void;
   onView: (institution: Institution) => void;
-  onEdit: (institution: Institution) => void;
-  onBan: (institution: Institution) => void;
-  onRestore: (institution: Institution) => void;
-  onDelete: (institution: Institution) => void;
+  onEdit?: (institution: Institution) => void;
+  onBan?: (institution: Institution) => void;
+  onRestore?: (institution: Institution) => void;
+  onDelete?: (institution: Institution) => void;
 }
 
 export interface ViewInstitutionModalProps {

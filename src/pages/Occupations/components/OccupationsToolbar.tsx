@@ -14,16 +14,18 @@ interface OccupationsToolbarProps {
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void;
   onBulkUpload: (file: File) => void;
+  canCreate?: boolean;
 }
 
 export function OccupationsToolbar({
   filter,
   searchTerm,
- 
+
   onFilterChange,
   onSearchChange,
   onAddClick,
- 
+  canCreate = true,
+
 }: OccupationsToolbarProps) {
 
 
@@ -33,12 +35,12 @@ export function OccupationsToolbar({
         <h1 className="text-xl md:text-2xl font-bold text-white">Ocupaciones</h1>
 
         <div className="flex items-center gap-2">
-          <AddButton
+          {canCreate && <AddButton
             label="Agregar Ocupación"
             onClick={onAddClick}
             variant="gold"
             icon={<CirclePlus size={22} strokeWidth={2.5} />}
-          />
+          />}
         </div>
       </div>
 

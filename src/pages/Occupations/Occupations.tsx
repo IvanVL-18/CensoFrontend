@@ -11,6 +11,7 @@ import { ViewOccupationModal } from "./components/ViewOccupationsModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 
 import { ToastProvider, useToast } from "../../context/ToastContext";
+import { useAuthContext } from "../../context/AuthContext";
 import { Toast } from "../../components/Toast";
 
 function ToastContainer() {
@@ -61,6 +62,8 @@ function OccupationsPageContent() {
     openBulkError: modals.openBulkError,
     currentOccupations: Occupations, 
   });
+
+  const { hasPermission } = useAuthContext();
 
   const handleViewClick = async (partialOccupation: any) => {
     try {
@@ -115,6 +118,7 @@ function OccupationsPageContent() {
           modals.openCreate();
         }}
         onBulkUpload={handleBulkUpload}
+        canCreate={hasPermission("occupations.create")}
       />
 
       {/* Tabla */}
@@ -126,22 +130,22 @@ function OccupationsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={(o) => {
+          onEdit={hasPermission("occupations.edit") ? (o) => {
             clearMutationError();
             modals.openEdit(o);
-          }}
-          onBan={(o) => {
+          } : undefined}
+          onBan={hasPermission("occupations.deactivate") ? (o) => {
             clearMutationError();
             modals.openConfirm(o, "ban");
-          }}
-          onRestore={(o) => {
+          } : undefined}
+          onRestore={hasPermission("occupations.restore") ? (o) => {
             clearMutationError();
             modals.openConfirm(o, "restore");
-          }}
-          onDelete={(o) => {
+          } : undefined}
+          onDelete={hasPermission("occupations.delete") ? (o) => {
             clearMutationError();
             modals.openConfirm(o, "delete");
-          }}
+          } : undefined}
         />
 
         {/* Paginación */}

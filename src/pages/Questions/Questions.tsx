@@ -11,6 +11,7 @@ import { ConfirmModal } from "./components/ConfirmModal";
 import { ViewQuestionModal } from "./components/ViewQuestionsModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
+import { useAuthContext } from "../../context/AuthContext";
 import { Toast } from "../../components/Toast";
 
 function ToastContainer() {
@@ -60,6 +61,8 @@ function QuestionsPageContent() {
     closeConfirm: modals.closeConfirm,
     openBulkError: modals.openBulkError,
   });
+
+  const { hasPermission } = useAuthContext();
 
   const handleEditClick = async (partialQuestion: any) => {
     modals.openEdit(partialQuestion); 
@@ -117,6 +120,7 @@ function QuestionsPageContent() {
         onSearchChange={handleSearch}
         onAddClick={modals.openCreate}
         onBulkUpload={handleBulkUpload}
+        canCreate={hasPermission("questions.create")}
       />
 
       <div className="p-4">
@@ -127,10 +131,10 @@ function QuestionsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={handleEditClick} 
-          onBan={(u) => modals.openConfirm(u, "ban")}
-          onRestore={(u) => modals.openConfirm(u, "restore")}
-          onDelete={(u) => modals.openConfirm(u, "delete")}
+          onEdit={hasPermission("questions.edit") ? handleEditClick : undefined}
+          onBan={hasPermission("questions.deactivate") ? (u) => modals.openConfirm(u, "ban") : undefined}
+          onRestore={hasPermission("questions.restore") ? (u) => modals.openConfirm(u, "restore") : undefined}
+          onDelete={hasPermission("questions.delete") ? (u) => modals.openConfirm(u, "delete") : undefined}
         />
 
         <div className="border-t border-gray-200 bg-gray-50">

@@ -14,6 +14,7 @@ interface SectionsToolbarProps {
   onSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onAddClick: () => void;
   onBulkUpload: (file: File) => void;
+  canCreate?: boolean;
 }
 
 export function SectionsToolbar({
@@ -24,6 +25,7 @@ export function SectionsToolbar({
   onSearchChange,
   onAddClick,
   onBulkUpload,
+  canCreate = true,
 }: SectionsToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,12 +61,12 @@ export function SectionsToolbar({
             icon={<FileDown size={22} strokeWidth={2.5} />}
           />
 
-          <AddButton
+          {canCreate && <AddButton
             label="Agregar Sección"
             onClick={onAddClick}
             variant="gold"
             icon={<CirclePlus size={22} strokeWidth={2.5} />}
-          />
+          />}
         </div>
       </div>
 

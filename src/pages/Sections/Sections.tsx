@@ -11,6 +11,7 @@ import { ViewSectionModal } from "./components/ViewSectionsModal";
 import { BulkErrorModal } from "./components/BulkErrorModal";
 
 import { ToastProvider, useToast } from "../../context/ToastContext";
+import { useAuthContext } from "../../context/AuthContext";
 import { Toast } from "../../components/Toast";
 
 function ToastContainer() {
@@ -46,6 +47,8 @@ function SectionsPageContent() {
   } = useSectionsData();
 
   const modals = useSectionsModals();
+
+  const { hasPermission } = useAuthContext();
 
   const handleViewClick = async (partialSection: any) => {
     try {
@@ -116,6 +119,7 @@ function SectionsPageContent() {
         onSearchChange={handleSearch}
         onAddClick={modals.openCreate}
         onBulkUpload={handleBulkUpload}
+        canCreate={hasPermission("sections.create")}
       />
 
       {/* Tabla de Resultados */}
@@ -127,10 +131,10 @@ function SectionsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={handleEditClick}
-          onBan={(u) => modals.openConfirm(u, "ban")}
-          onRestore={(u) => modals.openConfirm(u, "restore")}
-          onDelete={(u) => modals.openConfirm(u, "delete")}
+          onEdit={hasPermission("sections.edit") ? handleEditClick : undefined}
+          onBan={hasPermission("sections.deactivate") ? (u) => modals.openConfirm(u, "ban") : undefined}
+          onRestore={hasPermission("sections.restore") ? (u) => modals.openConfirm(u, "restore") : undefined}
+          onDelete={hasPermission("sections.delete") ? (u) => modals.openConfirm(u, "delete") : undefined}
         />
 
         {/* Paginación */}

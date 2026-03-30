@@ -94,6 +94,13 @@ export default function ProfileMenu() {
     }
   };
 
+  const handleProfileCompleted = (updatedProfile: AuthUser) => {
+    setUser(updatedProfile);
+    setCompleteOpen(false);
+  };
+
+  if (!user) return null; 
+
   return (
     <div className="relative" ref={menuRef}>
       {/* ── Botón del topbar ─────────────────────────────────────────────── */}

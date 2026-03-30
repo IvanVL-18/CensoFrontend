@@ -9,6 +9,7 @@ import type { Censo } from "../Censos.types";
 interface CensoCreateModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
+  isPreparingEdit?: boolean;
   error: string | null;
   onClose: () => void;
   onSave: (data: any) => void;
@@ -24,6 +25,7 @@ interface CensoCreateModalProps {
 export function CensoCreateModal({
   isOpen,
   isSubmitting,
+  isPreparingEdit = false,
   error,
   onClose,
   onSave,
@@ -40,16 +42,25 @@ export function CensoCreateModal({
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return undefined;
-    return dateStr.split('T')[0].split(' ')[0];
+    return dateStr.split("T")[0].split(" ")[0];
   };
 
   const initialData = useMemo(() => {
     if (!editingCenso) return undefined;
+    const rawEditingCenso = editingCenso as Censo & {
+      descripcion?: string;
+      init_date?: string;
+      deadline?: string;
+    };
+
     return {
-      name: editingCenso.name,
-      description: editingCenso.description,
-      init_date: formatDate(editingCenso.start_date),
-      deadline: formatDate(editingCenso.end_date),
+      name: rawEditingCenso.name,
+      description:
+        rawEditingCenso.description ?? rawEditingCenso.descripcion ?? "",
+      init_date: formatDate(
+        rawEditingCenso.start_date ?? rawEditingCenso.init_date,
+      ),
+      deadline: formatDate(rawEditingCenso.end_date ?? rawEditingCenso.deadline),
     };
   }, [editingCenso]);
 
@@ -73,7 +84,7 @@ export function CensoCreateModal({
     mode === "create"
       ? editingCenso
         ? "Editar censo"
-        : "Crear censo manual"
+        : "Crear censo"
       : "Subir censo por plantilla";
 
   return (
@@ -87,22 +98,33 @@ export function CensoCreateModal({
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button onClick={handleClose} className="text-white hover:text-gray-300">
+            <button
+              onClick={handleClose}
+              className="text-white hover:text-gray-300"
+            >
               <X size={24} />
             </button>
           </div>
 
           <div className="p-6">
             {mode === "create" ? (
-              <CensoManualForm
-                ref={manualFormRef}
-                isSubmitting={isSubmitting}
-                onSubmit={onSave}
-                error={error}
-                initialData={initialData}
-                onFullValidityChange={handleFormValidityChange}
-                onDirtyChange={onDirtyChange}
-              />
+              <>
+                {editingCenso && isPreparingEdit && (
+                  <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                    Cargando detalle del censo...
+                  </div>
+                )}
+                <CensoManualForm
+                  ref={manualFormRef}
+                  isSubmitting={isSubmitting}
+                  isPreparingEdit={isPreparingEdit}
+                  onSubmit={onSave}
+                  error={error}
+                  initialData={initialData}
+                  onFullValidityChange={handleFormValidityChange}
+                  onDirtyChange={onDirtyChange}
+                />
+              </>
             ) : (
               <CensoUploadDependency
                 ref={uploadDependencyRef}
@@ -126,7 +148,9 @@ export function CensoCreateModal({
               <button
                 type="button"
                 onClick={() => manualFormRef.current?.submit()}
-                disabled={isSubmitting || !isFormValid || (!!editingCenso && !isDirty)}
+                disabled={
+                  isSubmitting || !isFormValid || (!!editingCenso && !isDirty)
+                }
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50 flex items-center gap-2"
               >
                 {isSubmitting ? (

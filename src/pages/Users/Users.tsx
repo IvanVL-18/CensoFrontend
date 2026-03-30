@@ -2,6 +2,7 @@ import { useUsersData } from "./hooks/useUsersData";
 import { useUsersModals } from "./hooks/useUsersModals";
 import { useUsersMutations } from "./hooks/useUsersMutations";
 import { getUser } from "./Users.service";
+import { useAuthContext } from "../../context/AuthContext";
 import { UsersToolbar } from "./components/UsersToolbar";
 import { UsersTable } from "./components/UsersTable";
 import Pagination from "../../components/Pagination";
@@ -31,6 +32,7 @@ function ToastContainer() {
 }
 
 function UsersPageContent() {
+  const { hasPermission } = useAuthContext();
   const {
     Users,
     loading,
@@ -122,6 +124,7 @@ function UsersPageContent() {
         filter={filter}
         searchTerm={searchTerm}
         isSubmitting={isSubmitting}
+        canCreate={hasPermission("users.create")}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
         onAddClick={() => {
@@ -139,10 +142,10 @@ function UsersPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={handleEditClick}
-          onBan={(u) => modals.openConfirm(u, "ban")}
-          onRestore={(u) => modals.openConfirm(u, "restore")}
-          onDelete={(u) => modals.openConfirm(u, "delete")}
+          onEdit={hasPermission("users.edit") ? handleEditClick : undefined}
+          onBan={hasPermission("users.deactivate") ? (u) => modals.openConfirm(u, "ban") : undefined}
+          onRestore={hasPermission("users.restore") ? (u) => modals.openConfirm(u, "restore") : undefined}
+          onDelete={hasPermission("users.delete") ? (u) => modals.openConfirm(u, "delete") : undefined}
         />
 
         <div className="border-t border-gray-200 bg-gray-50">

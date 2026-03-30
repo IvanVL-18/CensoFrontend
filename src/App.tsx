@@ -28,6 +28,7 @@ import CensoSectionsView from "./pages/censos/CensoSections/CensoSectionsView";
 import CensusQuestionsView from "./pages/censos/CensusQuestions/CensusQuestionsView";
 import Questions from "./pages/Questions/Questions";
 import Builder from "././pages/Designer/components/Builder";
+import Answers from "./pages/Answers/Answers";
 import "./App.css";
 
 
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="/verification"  element={<Verification />} />
           <Route path="/ResetPassword" element={<ResetPassword />} />
           <Route path="/configuracion" element={<ConfigurationsPage />} />
+          <Route path="/mis-censos"    element={<Answers />} />
 
           {/* Dashboard */}
           <Route element={<ProtectedRoute permission="dashboard.view" />}>

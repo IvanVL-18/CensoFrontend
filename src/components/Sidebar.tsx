@@ -9,34 +9,38 @@ import {
   BarChart3,
   CalendarRange,
   Settings,
-
+  NotebookPen,
 } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 import ChartTypePopover from "../pages/grapher/components/ChartTypePopover";
+import { useAuthContext } from "../context/AuthContext";
 
 type Props = { open: boolean; onToggle: () => void };
 
-const items = [
-  { to: "/inicio", icon: Home, label: "Inicio" },
-  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/usuarios", icon: Users, label: "Usuarios" },
-  { to: "/instituciones", icon: Landmark, label: "Instituciones" },
-  { to: "/censos", icon: ClipboardList, label: "Censos" },
-  { to: "/graficador", icon: BarChart3, label: "Graficador" },
-
-  
-  {
-    to: "/reportes",
-    icon: CalendarRange,
-    label: "Reportes",
-  },
-  { to: "/configuracion", icon: Settings, label: "Configuración" },
+// permission: null → visible para cualquier usuario autenticado
+// roles: null      → visible para cualquier rol; si se especifica, solo esos roles lo ven
+const ALL_ITEMS = [
+  { to: "/inicio",        icon: Home,            label: "Inicio",         permission: null,             roles: null },
+  { to: "/dashboard",     icon: LayoutDashboard, label: "Dashboard",      permission: "dashboard.view", roles: null },
+  { to: "/usuarios",      icon: Users,           label: "Usuarios",       permission: "users.view",     roles: null },
+  { to: "/instituciones", icon: Landmark,        label: "Instituciones",  permission: "institutions.view", roles: null },
+  { to: "/censos",        icon: ClipboardList,   label: "Censos",         permission: "censos.view",    roles: null },
+  { to: "/graficador",    icon: BarChart3,       label: "Graficador",     permission: "graficador.view", roles: null },
+  { to: "/reportes",      icon: CalendarRange,   label: "Reportes",       permission: "reports.view",   roles: null },
+  { to: "/configuracion", icon: Settings,        label: "Configuración",  permission: null,             roles: ["Admin", "Super Admin"] },
+  { to: "/mis-censos",    icon: NotebookPen,     label: "Mis Censos",     permission: null,             roles: ["Surveyed"] },
 ];
 
 export default function Sidebar({ open, onToggle }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { hasPermission, user } = useAuthContext();
+
+  const items = ALL_ITEMS.filter((item) => {
+    if (item.roles && !item.roles.includes(user?.role ?? "")) return false;
+    return item.permission === null || hasPermission(item.permission);
+  });
 
   const [chartsMenuOpen, setChartsMenuOpen] = useState(false);
   const chartsItemRef = useRef<HTMLDivElement | null>(null);
