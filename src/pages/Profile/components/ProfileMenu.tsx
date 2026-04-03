@@ -94,12 +94,7 @@ export default function ProfileMenu() {
     }
   };
 
-  const handleProfileCompleted = (updatedProfile: AuthUser) => {
-    setUser(updatedProfile);
-    setCompleteOpen(false);
-  };
-
-  if (!user) return null; 
+  if (!user) return null;
 
   return (
     <div className="relative" ref={menuRef}>
@@ -188,6 +183,7 @@ export default function ProfileMenu() {
           <CompleteProfileModal
             open={completeOpen}
             onClose={() => setCompleteOpen(false)}
+            onCompleted={() => setCompleteOpen(false)}
             user={modalUser}
           />
           <EditProfileModal

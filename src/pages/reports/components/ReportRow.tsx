@@ -7,7 +7,7 @@ type Props = {
 
 export default function ReportRow({ item }: Props) {
   const handleDownload = () => {
-    console.log("Descargando reporte:", item.id);
+   
   };
 
   return (

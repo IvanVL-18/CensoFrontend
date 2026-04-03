@@ -26,7 +26,7 @@ export function SectionModal({
 
   useEffect(() => {
     if (isOpen) {
-      console.log("initialData en modal:", initialData);
+      
       setName(initialData?.name || "");
       setInstructions(initialData?.instructions || "");
       setNameCharCount(initialData?.name?.length || 0);

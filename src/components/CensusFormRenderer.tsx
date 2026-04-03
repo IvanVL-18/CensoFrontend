@@ -16,7 +16,6 @@ interface CensusFormRendererProps {
 const CensusFormRenderer: React.FC<CensusFormRendererProps> = ({ formJson, onSubmit, readOnly = false }) => {
   
   const handleSubmit = (submission: any) => {
-    console.log('Datos capturados:', submission.data);
     if (onSubmit) {
       onSubmit(submission);
     }
