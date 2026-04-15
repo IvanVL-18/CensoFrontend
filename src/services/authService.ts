@@ -8,6 +8,7 @@ export interface LoginCredentials {
 export interface LoginResponse {
   name?: string;
   token_type: string;
+  access_token: string;
   complete: boolean;
 }
 

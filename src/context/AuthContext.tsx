@@ -61,7 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      await loginRequest(credentials);
+      const { access_token } = await loginRequest(credentials);
+      sessionStorage.setItem('access_token', access_token);
       const me = await meRequest();
       if (me) setUser(toAuthUser(me));
     } catch (err) {
@@ -77,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await logoutRequest(); // Laravel borra el token + cookie
     } finally {
+      sessionStorage.removeItem('access_token');
       setUser(null); // Limpiamos estado aunque el request falle
     }
   }, []);
