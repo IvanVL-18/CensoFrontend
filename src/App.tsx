@@ -11,7 +11,7 @@ import Modules from "./pages/Modules/Modules";
 import Users from "./pages/Users/Users";
 import Dependencies from "./pages/Dependencies/Dependencies";
 import Sections from "./pages/Sections/Sections";
-import Insitutions from "./pages/Institutions/Institutions";
+import Institutions from "./pages/Institutions/Institutions";
 import Occupations from "./pages/Occupations/Occupations";
 import Index from "./pages/Indexs/Indexs";
 import Roles from "./pages/Roles/Roles";
@@ -107,7 +107,7 @@ export default function App() {
           </Route>
 
           <Route element={<ProtectedRoute permission="institutions.view" />}>
-            <Route path="/instituciones" element={<Insitutions />} />
+            <Route path="/instituciones" element={<Institutions />} />
           </Route>
 
           <Route element={<ProtectedRoute permission="dependencie.view" />}>
