@@ -421,49 +421,53 @@ export const CensoManualForm = forwardRef<
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="startDate"
-              className="flex items-center text-sm font-semibold text-gray-700 mb-2"
-            >
-              <Calendar size={16} className="mr-2 text-gray-400" />
-              Inicio
-            </label>
-            <div className="relative">
-              <input
-                type="date"
-                id="startDate"
-                value={startDate}
-                onChange={handleStartDateChange}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 appearance-none"
-              />
-              <Calendar
-                size={18}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-              />
+        <div className="space-y-2">
+          <label className="flex items-center text-sm font-semibold text-gray-700">
+            <Calendar size={20} className="mr-2 text-gray-400" />
+            Período del censo
+          </label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="startDate"
+                className="block text-xs font-medium text-gray-500 mb-1.5"
+              >
+                Inicio
+              </label>
+              <div className="relative">
+                <input
+                  type="date"
+                  id="startDate"
+                  value={startDate}
+                  onChange={handleStartDateChange}
+                  className="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-10 [&::-webkit-calendar-picker-indicator]:h-full"
+                />
+                <Calendar
+                  size={16}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                />
+              </div>
             </div>
-          </div>
-          <div>
-            <label
-              htmlFor="endDate"
-              className="flex items-center text-sm font-semibold text-gray-700 mb-2"
-            >
-              <Calendar size={16} className="mr-2 text-gray-400" />
-              Fin
-            </label>
-            <div className="relative">
-              <input
-                type="date"
-                id="endDate"
-                value={endDate}
-                onChange={handleEndDateChange}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 appearance-none"
-              />
-              <Calendar
-                size={18}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-              />
+            <div>
+              <label
+                htmlFor="endDate"
+                className="block text-xs font-medium text-gray-500 mb-1.5"
+              >
+                Fin
+              </label>
+              <div className="relative">
+                <input
+                  type="date"
+                  id="endDate"
+                  value={endDate}
+                  onChange={handleEndDateChange}
+                  className="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-10 [&::-webkit-calendar-picker-indicator]:h-full"
+                />
+                <Calendar
+                  size={16}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -474,7 +478,7 @@ export const CensoManualForm = forwardRef<
               htmlFor="description"
               className="flex items-center text-sm font-semibold text-gray-700"
             >
-              <FileText size={16} className="mr-2 text-gray-400" />
+              <FileText size={20} className="mr-2 text-gray-400" />
               Descripción breve (opcional)
             </label>
             <span className={`text-xs font-medium ${descCharCountColor}`}>
