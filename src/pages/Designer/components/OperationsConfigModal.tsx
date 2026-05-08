@@ -104,7 +104,7 @@ const OperationsConfigModal = ({ show, handleClose, schema, onSchemaChange }: Op
     };
 
     return (
-        <Modal show={show} onHide={handleClose} size="lg">
+        <Modal show={show} onHide={handleClose} size="lg" container={document.getElementById('bs-portal') ?? document.body}>
             <Modal.Header closeButton>
                 <Modal.Title>Configuración de Operaciones</Modal.Title>
             </Modal.Header>
