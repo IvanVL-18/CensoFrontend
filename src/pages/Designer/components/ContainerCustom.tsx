@@ -75,7 +75,7 @@ const ContainerCustom = ({ show, handleClose, schema, onSchemaChange }: Containe
     };
 
     return (
-        <Modal show={show} onHide={handleClose}>
+        <Modal show={show} onHide={handleClose} container={document.getElementById('bs-portal') ?? document.body}>
             <Modal.Header closeButton>
                 <Modal.Title>Configuración de Repeticiones</Modal.Title>
             </Modal.Header>
