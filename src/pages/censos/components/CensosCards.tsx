@@ -151,7 +151,7 @@ export function CensosCards({
     if (daysLeft > 90) {
       return {
         row: "bg-white border border-[#e5e7eb]",
-        icon: "text-emerald-600",
+        icon: "text-red-600",
         label: "text-[#111827]",
         value: "text-[#111827]",
       };
