@@ -26,6 +26,7 @@ export function AssignInstitutionsModal({
   const [institutions, setInstitutions] = useState<AssignmentInstitution[]>([]);
   const [existingAssignments, setExistingAssignments] = useState<AssignmentItem[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [originallyAssigned, setOriginallyAssigned] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -45,9 +46,19 @@ export function AssignInstitutionsModal({
 
     getAssignmentForCensus(censusSectionId, controller.signal)
       .then((res) => {
-        setInstitutions(res.institutions);
+        // Las instituciones ya asignadas pueden no venir en res.institutions.
+        // Las reconstruimos desde res.assignments y las fusionamos al inicio de la lista.
+        const assignedIds = new Set(res.assignments.map((a) => a.institution_id));
+        const assignedAsInstitutions: AssignmentInstitution[] = res.assignments.map((a) => ({
+          id: a.institution_id,
+          name: a.name,
+        }));
+        const unassignedNotDuplicated = res.institutions.filter((i) => !assignedIds.has(i.id));
+        // Asignadas primero, luego las disponibles
+        setInstitutions([...assignedAsInstitutions, ...unassignedNotDuplicated]);
         setExistingAssignments(res.assignments);
-        setSelected(new Set(res.assignments.map((a) => a.institution_id)));
+        setSelected(new Set(assignedIds));
+        setOriginallyAssigned(new Set(assignedIds));
       })
       .catch((err) => {
         if (err.name === "CanceledError" || err.name === "AbortError") return;
@@ -63,6 +74,7 @@ export function AssignInstitutionsModal({
     setInstitutions([]);
     setExistingAssignments([]);
     setSelected(new Set());
+    setOriginallyAssigned(new Set());
     setSearch("");
     setError(null);
     setSuccessMsg(null);
@@ -191,18 +203,24 @@ export function AssignInstitutionsModal({
               <ul className="divide-y divide-gray-100">
                 {filtered.map((inst) => {
                   const isChecked = selected.has(inst.id);
+                  const wasAssigned = originallyAssigned.has(inst.id);
                   return (
                     <li key={inst.id}>
-                      <label className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors">
+                      <label className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${wasAssigned ? "bg-[var(--pantone-7421)]/5 hover:bg-[var(--pantone-7421)]/10" : "hover:bg-gray-50"}`}>
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleInstitution(inst.id)}
                           className="h-4 w-4 rounded border-gray-300 text-[var(--pantone-7421)] focus:ring-[var(--pantone-7421)]/30"
                         />
-                        <span className="text-sm text-gray-800 select-none">
+                        <span className="text-sm text-gray-800 select-none flex-1">
                           {inst.name}
                         </span>
+                        {wasAssigned && (
+                          <span className="text-xs font-medium text-[var(--pantone-7421)] bg-[var(--pantone-7421)]/10 px-2 py-0.5 rounded-full shrink-0">
+                            Asignada
+                          </span>
+                        )}
                       </label>
                     </li>
                   );
