@@ -7,6 +7,7 @@ import {
   Calendar,
   Users,
   Eye,
+  LayoutList,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -379,6 +380,17 @@ export function CensosCards({
                 >
                   <Eye size={15} />
                   Ver detalles
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(`/censos/${encodeURIComponent(String(censo.id))}/ver-censo`)
+                  }
+                  className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2.5 font-medium shadow-md transition-all duration-300 bg-[#9d7e43] text-white hover:shadow-[0_4px_12px_rgba(157,126,67,0.5)] focus:outline-none focus:ring-2 focus:ring-[#9d7e43] focus:ring-offset-2"
+                >
+                  <LayoutList size={15} />
+                  Ver censo
                 </button>
 
                 <div className="flex gap-2">
