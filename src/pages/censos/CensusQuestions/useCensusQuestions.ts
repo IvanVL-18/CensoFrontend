@@ -42,13 +42,9 @@ type UseCensusQuestionsReturn = {
   currentPage: number;
   lastPage: number;
   paginationLinks: PaginationLinksObj | null;
-  toggleQuestionRow: (
-    questionName: string,
-    questionId: string,
-    checked: boolean,
-  ) => void;
+  toggleQuestionRow: (questionId: string, checked: boolean) => void;
   toggleAllQuestionRows: (checked: boolean) => void;
-  changeIndex: (questionName: string, indexId: string) => void;
+  changeIndex: (questionId: string, indexId: string) => void;
   saveChanges: () => Promise<boolean>;
   reload: () => Promise<void>;
   goToPage: (page: number) => void;
@@ -96,10 +92,8 @@ export const useCensusQuestions = (
       const map: SelectedQuestionsMap = {};
 
       selectedQuestions.forEach((item) => {
-        const questionName = (item.question?.name ?? "")
-          .replace(/\s+/g, " ")
-          .trim();
-        if (!questionName) return;
+        const questionId = item.question?.id ?? "";
+        if (!questionId) return;
 
         const matchedIndex = availableIndexes.find(
           (idx) =>
@@ -107,8 +101,8 @@ export const useCensusQuestions = (
             item.index?.name?.trim().toLowerCase(),
         );
 
-        map[questionName] = {
-          question_id: item.question?.id ?? "",
+        map[questionId] = {
+          question_id: questionId,
           index_id: matchedIndex
             ? String(matchedIndex.id)
             : (item.index?.id ?? ""),
@@ -149,20 +143,20 @@ export const useCensusQuestions = (
           const currentMap = mapRef.current;
           const merged = { ...currentMap };
 
-          Object.entries(freshMap).forEach(([name, backendEntry]) => {
-            if (!currentMap[name]) {
-              merged[name] = backendEntry;
+          Object.entries(freshMap).forEach(([id, backendEntry]) => {
+            if (!currentMap[id]) {
+              merged[id] = backendEntry;
             } else {
-              merged[name] = {
-                ...currentMap[name],
+              merged[id] = {
+                ...currentMap[id],
                 question_id: backendEntry.question_id,
                 index_id: backendEntry.index_id,
                 census_question_id:
                   backendEntry.census_question_id ??
-                  currentMap[name].census_question_id,
+                  currentMap[id].census_question_id,
                 stored_index_name:
                   backendEntry.stored_index_name ??
-                  currentMap[name].stored_index_name,
+                  currentMap[id].stored_index_name,
               };
             }
           });
@@ -212,8 +206,7 @@ export const useCensusQuestions = (
     const map = mapRef.current;
 
     return questions.map((question) => {
-      const key = question.name.replace(/\s+/g, " ").trim();
-      const sel = map[key] ?? map[question.name];
+      const sel = map[question.id];
       const isChecked = sel?.checked ?? false;
       const currentIndexId = isChecked ? (sel?.index_id ?? "") : "";
 
@@ -238,14 +231,13 @@ export const useCensusQuestions = (
  
 
   const toggleQuestionRow = useCallback(
-    (questionName: string, questionId: string, checked: boolean) => {
+    (questionId: string, checked: boolean) => {
       updateMap((prev) => {
-        const key = questionName.replace(/\s+/g, " ").trim();
-        const existing = prev[key];
+        const existing = prev[questionId];
         return {
           ...prev,
-          [key]: {
-            question_id: existing?.question_id ?? questionId,
+          [questionId]: {
+            question_id: questionId,
             index_id: existing?.index_id ?? "",
             index_name: existing?.index_name ?? "",
             stored_index_name: existing?.stored_index_name ?? null,
@@ -263,10 +255,9 @@ export const useCensusQuestions = (
       updateMap((prev) => {
         const next = { ...prev };
         questions.forEach((question) => {
-          const key = question.name.replace(/\s+/g, " ").trim();
-          const existing = next[key];
-          next[key] = {
-            question_id: existing?.question_id ?? question.id,
+          const existing = next[question.id];
+          next[question.id] = {
+            question_id: question.id,
             index_id: existing?.index_id ?? "",
             index_name: existing?.index_name ?? "",
             stored_index_name: existing?.stored_index_name ?? null,
@@ -281,16 +272,15 @@ export const useCensusQuestions = (
   );
 
   const changeIndex = useCallback(
-    (questionName: string, indexId: string) => {
+    (questionId: string, indexId: string) => {
       updateMap((prev) => {
-        const key = questionName.replace(/\s+/g, " ").trim();
-        if (!prev[key]) return prev;
+        if (!prev[questionId]) return prev;
         const idxName =
           indexes.find((idx) => String(idx.id) === String(indexId))?.name ??
           "";
         return {
           ...prev,
-          [key]: { ...prev[key], index_id: indexId, index_name: idxName },
+          [questionId]: { ...prev[questionId], index_id: indexId, index_name: idxName },
         };
       });
     },
