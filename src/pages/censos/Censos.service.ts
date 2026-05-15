@@ -7,6 +7,7 @@ import type {
   Index,
   ModuleForCensoShowResponse,
   ModuleForCensoRequest,
+  GetCensusResponse,
 } from "./Censos.types";
 
 export type CensoFilter = "all" | "active" | "inactive";
@@ -167,4 +168,15 @@ export const cloneCenso = async (
     target_census_id: targetCensusId,
   });
   return response.data;
+};
+
+export const getCensusStructure = async (
+  censusId: string,
+  mode: "full" | "personalized",
+  moduleId?: string,
+): Promise<GetCensusResponse> => {
+  const body: Record<string, string> = { census_id: censusId, mode };
+  if (mode === "personalized" && moduleId) body.module_id = moduleId;
+  const { data } = await api.post("/censuses/get-census", body);
+  return data;
 };

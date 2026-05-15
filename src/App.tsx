@@ -26,6 +26,7 @@ import { CensoDetail } from "./pages/censos/components/CensoDetail";
 import CensoModulesView from "./pages/censos/CensoModules/CensoModulesView";
 import CensoSectionsView from "./pages/censos/CensoSections/CensoSectionsView";
 import CensusQuestionsView from "./pages/censos/CensusQuestions/CensusQuestionsView";
+import CensusViewPage from "./pages/censos/CensusViewPage";
 import Questions from "./pages/Questions/Questions";
 import Builder from "././pages/Designer/components/Builder";
 import Answers from "./pages/Answers/Answers";
@@ -65,11 +66,12 @@ export default function App() {
 
           {/* ── Censos ───────────────────────────────────────────────────── */}
           <Route element={<ProtectedRoute permission="censos.view" />}>
-            <Route path="/censos"               element={<Censos />} />
-            <Route path="/censos/:id"           element={<CensoDetail />} />
-            <Route path="/censos/:id/modulos"   element={<CensoModulesView />} />
-            <Route path="/censos/secciones/:id" element={<CensoSectionsView />} />
-            <Route path="/censos/preguntas/:id" element={<CensusQuestionsView />} />
+            <Route path="/censos"                        element={<Censos />} />
+            <Route path="/censos/:id"                    element={<CensoDetail />} />
+            <Route path="/censos/:id/modulos"            element={<CensoModulesView />} />
+            <Route path="/censos/secciones/:id"          element={<CensoSectionsView />} />
+            <Route path="/censos/preguntas/:id"          element={<CensusQuestionsView />} />
+            <Route path="/censos/:censusId/ver-censo"    element={<CensusViewPage />} />
           </Route>
 
           <Route element={<ProtectedRoute permission="censos.edit" />}>

@@ -145,3 +145,32 @@ export interface ModuleForCensoRequest {
     index_id: string;
   }>;
 }
+
+/* =========================
+   CENSUS VIEW (getCensus endpoint)
+========================= */
+
+export interface CensusViewModuleRef {
+  id: string;
+  index: string;
+  name: string;
+}
+
+export interface CensusViewSectionRef {
+  id: string;
+  index: string;
+  name: string;
+}
+
+export interface CensusViewSectionItem {
+  section: CensusViewSectionRef;
+}
+
+export interface CensusViewModuleItem {
+  module: CensusViewModuleRef;
+  census_sections: CensusViewSectionItem[];
+}
+
+export interface GetCensusResponse {
+  census_modules: CensusViewModuleItem[];
+}
