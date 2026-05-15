@@ -1,4 +1,4 @@
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import {
   Home,
   LayoutDashboard,
@@ -12,8 +12,6 @@ import {
   NotebookPen,
 } from "lucide-react";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "react";
-import ChartTypePopover from "../pages/grapher/components/ChartTypePopover";
 import { useAuthContext } from "../context/AuthContext";
 
 type Props = { open: boolean; onToggle: () => void };
@@ -33,43 +31,12 @@ const ALL_ITEMS = [
 ];
 
 export default function Sidebar({ open, onToggle }: Props) {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { hasPermission, user } = useAuthContext();
 
   const items = ALL_ITEMS.filter((item) => {
     if (item.roles && !item.roles.includes(user?.role ?? "")) return false;
     return item.permission === null || hasPermission(item.permission);
   });
-
-  const [chartsMenuOpen, setChartsMenuOpen] = useState(false);
-  const chartsItemRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
-      if (!chartsItemRef.current) return;
-      if (!chartsItemRef.current.contains(e.target as Node)) {
-        setChartsMenuOpen(false);
-      }
-    };
-
-    const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setChartsMenuOpen(false);
-    };
-
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onEsc);
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onEsc);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!location.pathname.startsWith("/graficador")) {
-      setChartsMenuOpen(false);
-    }
-  }, [location.pathname, location.search]);
 
   return (
     <aside
@@ -102,76 +69,31 @@ export default function Sidebar({ open, onToggle }: Props) {
       </div>
 
       <nav className="py-2">
-        {items.map(({ to, icon: Icon, label }) => {
-          if (label !== "Graficador") {
-            return (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  clsx(
-                    "group flex items-center gap-3 px-3 py-2.5 mx-4 my-1 rounded-lg transition",
-                    isActive
-                      ? "bg-white/10 text-white"
-                      : "text-white/80 hover:bg-white/5 hover:text-white"
-                  )
-                }
-                title={!open ? label : undefined}
-              >
-                <Icon size={20} className="shrink-0" />
-                <span
-                  className={clsx(
-                    "text-sm",
-                    open ? "opacity-100" : "opacity-0 hidden"
-                  )}
-                >
-                  {label}
-                </span>
-              </NavLink>
-            );
-          }
-
-          const isActive = location.pathname.startsWith("/graficador");
-
-          return (
-            <div key={to} ref={chartsItemRef} className="relative">
-              <button
-                type="button"
-                onClick={() => {
-                  if (!isActive) navigate("/graficador");
-                  setChartsMenuOpen((o) => !o);
-                }}
-                className={clsx(
-                  "w-[calc(100%-2rem)] mx-4 my-1 flex items-center gap-3 px-3 py-2.5 rounded-lg transition",
-                  isActive
-                    ? "bg-white/10 text-white"
-                    : "text-white/80 hover:bg-white/5 hover:text-white"
-                )}
-                title={!open ? label : undefined}
-                aria-haspopup="menu"
-                aria-expanded={chartsMenuOpen}
-              >
-                <Icon size={20} className="shrink-0" />
-                <span
-                  className={clsx(
-                    "text-sm",
-                    open ? "opacity-100" : "opacity-0 hidden"
-                  )}
-                >
-                  {label}
-                </span>
-              </button>
-
-              {chartsMenuOpen && (
-                <div className="absolute top-0 left-full ml-3 z-50">
-                  <ChartTypePopover
-                    onNavigate={() => setChartsMenuOpen(false)}
-                  />
-                </div>
+        {items.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) =>
+              clsx(
+                "group flex items-center gap-3 px-3 py-2.5 mx-4 my-1 rounded-lg transition",
+                isActive
+                  ? "bg-white/10 text-white"
+                  : "text-white/80 hover:bg-white/5 hover:text-white"
+              )
+            }
+            title={!open ? label : undefined}
+          >
+            <Icon size={20} className="shrink-0" />
+            <span
+              className={clsx(
+                "text-sm",
+                open ? "opacity-100" : "opacity-0 hidden"
               )}
-            </div>
-          );
-        })}
+            >
+              {label}
+            </span>
+          </NavLink>
+        ))}
       </nav>
     </aside>
   );

@@ -1,12 +1,13 @@
-// src/types/charts.ts
-export type ChartKind = "general" | "cuestionario";
+export type ChartKind = "modulos" | "censos";
 
-export type GeneralSummary = {
-  totalQuestions: number;
-  mappedQuestions: number;
+export type CensusModuleItem = {
+  id: number;
+  module_id: number;
+  module_name: string;
+  questions_count: number;
 };
 
-export type InstitutionStat = {
-  name: string;
-  value: number; // número de preguntas
+export type ChartApiData = {
+  census_id: number;
+  modules: CensusModuleItem[];
 };
