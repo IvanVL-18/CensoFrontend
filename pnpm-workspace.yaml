@@ -1,0 +1,8 @@
+allowBuilds:
+  '@parcel/watcher': true
+  '@swc/core': true
+  core-js: true
+  esbuild: true
+overrides:
+  "@formio/react>react": "^19.1.0"
+  "@formio/react>react-dom": "^19.1.0"
