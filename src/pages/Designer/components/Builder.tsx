@@ -11,7 +11,7 @@ import {
 } from "react-bootstrap";
 import ReactJson from "@microlink/react-json-view";
 import { useParams } from "react-router-dom";
-import apiClient from "../services/axiosConfig";
+import apiClient from "../../../lib/Axios";
 import "../styles/Builder.css";
 // ─── Bootstrap scoped: PostCSS prefixa todos los selectores con ".bs" ─────────
 // Solo aplica dentro de <div className="bs">, no afecta al resto de la app.

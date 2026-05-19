@@ -82,10 +82,8 @@ export function IndexModal({
   const hasErrors = formErrors.length > 0 || !!serverError;
   const isNearLimit = charCount >= MAX_LENGTH - 10 && charCount <= MAX_LENGTH;
   const isAtLimit = charCount >= MAX_LENGTH;
-  const endsWithZero = name.trim().endsWith("0");
-
   const getInputBorderColor = () => {
-    if (hasErrors || endsWithZero) return "border-red-500 focus:ring-red-400";
+    if (hasErrors) return "border-red-500 focus:ring-red-400";
     if (isAtLimit) return "border-red-300 focus:ring-red-400";
     if (isNearLimit) return "border-amber-300 focus:ring-amber-400";
     return "border-gray-300 focus:ring-[#DDC9A3]";
@@ -164,7 +162,7 @@ export function IndexModal({
 
               <button
                 type="submit"
-                disabled={isSubmitting || formErrors.length > 0 || endsWithZero || name.trim() === initialName.trim()}
+                disabled={isSubmitting || formErrors.length > 0 || name.trim() === initialName.trim()}
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
