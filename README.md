@@ -2,7 +2,7 @@
 
 # CensoCitnova — Frontend
 
-**Sistema de Gestión Censal Institucional**
+
 
 Plataforma web para la creación, administración y levantamiento de censos institucionales con constructor visual de formularios, mapas interactivos y generación de reportes estadísticos.
 
