@@ -86,7 +86,7 @@ CensoCitnova Frontend es una **Single Page Application (SPA)** construida con Re
 ## Requisitos Previos
 
 - **Node.js** >= 18.x
-- **npm** >= 9.x (o pnpm >= 8.x)
+- **pnpm** >= 8.x
 - Backend **CensoCitnova API** corriendo localmente (Laravel / Sanctum)
 
 ---
@@ -99,14 +99,14 @@ git clone <url-del-repositorio>
 cd CensoFrontend
 
 # 2. Instalar dependencias
-npm install
+pnpm install
 
 # 3. Configurar variables de entorno
 cp .env.example .env
 # Editar .env con los valores correspondientes
 
 # 4. Iniciar el servidor de desarrollo
-npm run dev
+pnpm dev
 ```
 
 La aplicación estará disponible en `http://localhost:5173`.
@@ -133,16 +133,16 @@ VITE_GEOAPIFY_KEY=tu_clave_aqui
 
 ```bash
 # Servidor de desarrollo con HMR
-npm run dev
+pnpm dev
 
 # Compilación de producción (TypeScript + Vite)
-npm run build
+pnpm build
 
 # Vista previa del build de producción
-npm run preview
+pnpm preview
 
 # Linting con ESLint
-npm run lint
+pnpm lint
 ```
 
 ---
@@ -290,6 +290,6 @@ El cliente HTTP ([src/lib/Axios.ts](src/lib/Axios.ts)) apunta a `VITE_API_BASE_U
 
 <div align="center">
 
-Desarrollado para **CITNOVA** — Sistema de Información para la Gestión del Conocimiento e Innovación
+Desarrollado para **GOBIERNO DE HIDALGO** — 
 
 </div>
