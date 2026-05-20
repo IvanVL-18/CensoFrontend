@@ -136,47 +136,12 @@ export function UserModal({
   const result = UserSchema.safeParse(dataForValidation);
 
   if (!result.success) {
-    // tu código actual para mostrar errores
+    
   }
 
   return true;
 };
-  // const validateForm = (data: typeof formData) => {
-  //   const dataForValidation: any = { ...data };
-  //   if (initialData && !dataForValidation.password) {
-  //     delete dataForValidation.password;
-  //     delete dataForValidation.password_confirmation;
-  //   }
-  //   // Strip empty optional relation fields so Zod treats them as undefined
-  //   if (!dataForValidation.role_id) delete dataForValidation.role_id;
-  //   if (!dataForValidation.occupation_id) delete dataForValidation.occupation_id;
-  //   if (!dataForValidation.dependency_id) delete dataForValidation.dependency_id;
-  //   if (!dataForValidation.institution_id) delete dataForValidation.institution_id;
 
-  //   const result = UserSchema.safeParse(dataForValidation);
-
-  //   if (!result.success) {
-  //     const listIssues = result.error.issues.filter((issue) => {
-  //       const field = String(issue.path?.[0] ?? "");
-  //       return field !== "password" && field !== "password_confirmation";
-  //     });
-
-  //     setFormErrors(listIssues.map((i) => i.message));
-
-  //     const fe: Record<string, string> = {};
-  //     result.error.issues.forEach((issue) => {
-  //       const key = String(issue.path?.[0] ?? "form");
-  //       if (!fe[key]) fe[key] = issue.message;
-  //     });
-  //     setFieldErrors(fe);
-
-  //     return false;
-  //   }
-
-  //   setFormErrors([]);
-  //   setFieldErrors({});
-  //   return true;
-  // };
 
   useEffect(() => {
     if (isOpen) {
