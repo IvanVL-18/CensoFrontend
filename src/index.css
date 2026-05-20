@@ -1,4 +1,14 @@
 @import "tailwindcss";
+@import "./assets/global-variables.css";
+
+@theme {
+  --font-gmx: 'GMX', sans-serif;
+  --font-montserrat: 'Montserrat', sans-serif;
+}
+
+body {
+  font-family: var(--font-gmx); 
+}
 
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -31,10 +41,6 @@
   }
 }
 
-
-
-
-
-
-
-
+html, body, #root {
+  font-family: var(--font-gmx) !important;
+}
