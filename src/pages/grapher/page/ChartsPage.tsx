@@ -62,7 +62,7 @@ export default function ChartsPage() {
             {!loading && !error && chartData && (
               <GeneralCharts
                 modules={chartData.modules}
-                censusId={chartData.census_id}
+                censusName={chartData.census.name}
               />
             )}
             {!loading && !error && !chartData && (

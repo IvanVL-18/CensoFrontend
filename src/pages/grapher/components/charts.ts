@@ -1,13 +1,21 @@
 export type ChartKind = "modulos" | "censos";
 
 export type CensusModuleItem = {
-  id: number;
-  module_id: number;
   module_name: string;
   questions_count: number;
 };
 
+export type CensusInfo = {
+  id: string;
+  name: string;
+  description: string;
+  init_date: string;
+  deadline: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type ChartApiData = {
-  census_id: number;
+  census: CensusInfo;
   modules: CensusModuleItem[];
 };
