@@ -120,41 +120,63 @@ export function UserModal({
   }, [formData, initialData, roles, occupations, dependencies, institutions]);
 
   const validateForm = (data: typeof formData) => {
-    const dataForValidation: any = { ...data };
-    if (initialData && !dataForValidation.password) {
-      delete dataForValidation.password;
-      delete dataForValidation.password_confirmation;
-    }
-    // Strip empty optional relation fields so Zod treats them as undefined
-    if (!dataForValidation.role_id) delete dataForValidation.role_id;
-    if (!dataForValidation.occupation_id) delete dataForValidation.occupation_id;
-    if (!dataForValidation.dependency_id) delete dataForValidation.dependency_id;
-    if (!dataForValidation.institution_id) delete dataForValidation.institution_id;
+  const dataForValidation: any = { ...data };
 
-    const result = UserSchema.safeParse(dataForValidation);
+  // Si es creación, siempre enviar strings
+  if (!initialData) {
+    dataForValidation.password = data.password ?? "";
+    dataForValidation.password_confirmation = data.password_confirmation ?? "";
+  }
+  // Si es edición, enviar solo si se llenó
+  else if (data.password || data.password_confirmation) {
+    dataForValidation.password = data.password ?? "";
+    dataForValidation.password_confirmation = data.password_confirmation ?? "";
+  }
 
-    if (!result.success) {
-      const listIssues = result.error.issues.filter((issue) => {
-        const field = String(issue.path?.[0] ?? "");
-        return field !== "password" && field !== "password_confirmation";
-      });
+  const result = UserSchema.safeParse(dataForValidation);
 
-      setFormErrors(listIssues.map((i) => i.message));
+  if (!result.success) {
+    // tu código actual para mostrar errores
+  }
 
-      const fe: Record<string, string> = {};
-      result.error.issues.forEach((issue) => {
-        const key = String(issue.path?.[0] ?? "form");
-        if (!fe[key]) fe[key] = issue.message;
-      });
-      setFieldErrors(fe);
+  return true;
+};
+  // const validateForm = (data: typeof formData) => {
+  //   const dataForValidation: any = { ...data };
+  //   if (initialData && !dataForValidation.password) {
+  //     delete dataForValidation.password;
+  //     delete dataForValidation.password_confirmation;
+  //   }
+  //   // Strip empty optional relation fields so Zod treats them as undefined
+  //   if (!dataForValidation.role_id) delete dataForValidation.role_id;
+  //   if (!dataForValidation.occupation_id) delete dataForValidation.occupation_id;
+  //   if (!dataForValidation.dependency_id) delete dataForValidation.dependency_id;
+  //   if (!dataForValidation.institution_id) delete dataForValidation.institution_id;
 
-      return false;
-    }
+  //   const result = UserSchema.safeParse(dataForValidation);
 
-    setFormErrors([]);
-    setFieldErrors({});
-    return true;
-  };
+  //   if (!result.success) {
+  //     const listIssues = result.error.issues.filter((issue) => {
+  //       const field = String(issue.path?.[0] ?? "");
+  //       return field !== "password" && field !== "password_confirmation";
+  //     });
+
+  //     setFormErrors(listIssues.map((i) => i.message));
+
+  //     const fe: Record<string, string> = {};
+  //     result.error.issues.forEach((issue) => {
+  //       const key = String(issue.path?.[0] ?? "form");
+  //       if (!fe[key]) fe[key] = issue.message;
+  //     });
+  //     setFieldErrors(fe);
+
+  //     return false;
+  //   }
+
+  //   setFormErrors([]);
+  //   setFieldErrors({});
+  //   return true;
+  // };
 
   useEffect(() => {
     if (isOpen) {
@@ -325,7 +347,7 @@ export function UserModal({
                     id="password"
                     name="password"
                     autoComplete="new-password"
-                    value={formData.password}
+                    value={formData.password ?? ""}
                     onChange={handleChange}
                     onFocus={() => setPwdFocus(true)}
                     onBlur={() => setPwdFocus(false)}
@@ -366,7 +388,7 @@ export function UserModal({
                     type={showConfirmPassword ? "text" : "password"}
                     id="password_confirmation"
                     name="password_confirmation"
-                    value={formData.password_confirmation}
+                    value={formData.password_confirmation ?? ""} 
                     onChange={handleChange}
                     className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
                   />
