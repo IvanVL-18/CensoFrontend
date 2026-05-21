@@ -26,8 +26,15 @@ export default function LoginCard() {
 
   return (
     <div className="bg-[#FFFFFF]/80 p-8 rounded-2xl shadow-lg w-[90%] max-w-md border border-[#691B31]/40">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 text-[#691B31]">
-
+      <div className="mb-6 text-center">
+        <h2 className="text-2xl font-bold text-[#691B31] mb-2">
+          Iniciar Sesión
+        </h2>
+      </div>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-6 text-[#691B31]"
+      >
         {/* Usuario */}
         <div>
           <label className="block text-sm font-semibold mb-2">Usuario</label>
@@ -72,6 +79,7 @@ export default function LoginCard() {
         <div className="flex flex-col md:flex-row items-center justify-between text-sm">
           <button
             type="button"
+            onClick={() => navigate("/recuperar-password")}
             className="text-[#691B31] hover:text-[#5b132b]/50 transition-colors"
           >
             ¿Olvidó su contraseña?
