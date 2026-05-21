@@ -20,7 +20,7 @@ function maskEmail(email?: string) {
   return `${maskedUser}@${domain}`;
 }
 
-const MAX_PASSWORD_LENGTH = 128;
+const MAX_PASSWORD_LENGTH = 30;
 
 export default function ResetPasswordCard({
   title = "Actualizar Contraseña",
