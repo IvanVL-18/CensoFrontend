@@ -1,55 +1,13 @@
-import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import api from "../../lib/Axios";
+import { useResetPassword } from "./hooks/useResetPassword";
 import TopBar from "../login/components/TopBar";
 import Footer from "../login/components/Footer";
 import FallingEmblems from "../login/components/FallingEmblems";
 import ResetPasswordCard from "./components/ResetPasswordCard";
-import { useAuthContext } from "../../context/AuthContext";
-
-type TokenStatus = "validating" | "valid" | "invalid";
+import { useNavigate } from "react-router-dom";
 
 export default function ResetPassword() {
-  const [searchParams] = useSearchParams();
+  const { tokenStatus, handlePasswordReset } = useResetPassword();
   const navigate = useNavigate();
-  const [tokenStatus, setTokenStatus] = useState<TokenStatus>("validating");
-
-  const token = searchParams.get("token") || "";
-
-  const { loginWithToken } = useAuthContext();
-
-  useEffect(() => {
-    if (!token) {
-      setTokenStatus("invalid");
-      return;
-    }
-
-    window.history.replaceState({}, "", "/reset-password");
-
-    api
-      .get(`/password/${token}/verify-token`)
-      .then(() => setTokenStatus("valid"))
-      .catch(() => setTokenStatus("invalid"));
-  }, []);
-
-  const handlePasswordReset = async ({ password }: { password: string }) => {
-    try {
-      const response = await api.post("/password/reset", {
-        token,
-        password,
-        password_confirmation: password,
-      });
-
-      await loginWithToken(response.data.access_token);
-
-      setTimeout(() => navigate("/inicio"), 3000);
-    } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message ||
-          "El enlace podría ser inválido o haber caducado.",
-      );
-    }
-  };
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#691B31] text-white">
@@ -72,7 +30,7 @@ export default function ResetPassword() {
                 Este enlace ya fue usado o ha caducado. Solicita uno nuevo.
               </p>
               <button
-                onClick={() => navigate("/Recuperar-password")}
+                onClick={() => navigate("/recuperar-password")}
                 className="bg-[#691B31] text-white rounded-xl px-4 py-2 font-bold hover:bg-[#DDC9A3] hover:text-[#691B31] transition-colors"
               >
                 Solicitar nuevo enlace

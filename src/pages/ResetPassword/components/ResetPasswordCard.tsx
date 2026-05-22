@@ -7,7 +7,7 @@ import {
   BadgeCheck,
   AlertCircle,
 } from "lucide-react";
-
+import { resetPasswordSchema } from "../schemas/ResetPassword.schema";
 import PasswordStrength from "./PasswordStrength";
 import type { ResetPasswordCardProps } from "../ResetPassword.types";
 
@@ -44,8 +44,7 @@ export default function ResetPasswordCard({
     password === confirmPassword;
 
   const canSubmit =
-    password.length >= 8 &&
-    confirmPassword.length >= 8 &&
+    resetPasswordSchema.safeParse({ password }).success &&
     passwordsMatch &&
     !loading;
 

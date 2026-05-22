@@ -17,6 +17,8 @@
     "axios": "^1.13.2",
     "bootstrap": "^5.3.8",
     "clsx": "^2.1.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.546.0",
     "react": "^19.1.0",
