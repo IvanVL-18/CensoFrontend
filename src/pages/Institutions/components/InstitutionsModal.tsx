@@ -93,6 +93,7 @@ export function InstitutionModal({
           return touched[path as string];
         })
         .map((err) => err.message);
+
       setFormErrors(errorMessages);
       return false;
     }
@@ -169,23 +170,27 @@ export function InstitutionModal({
     await onSave(createPayload);
   };
 
-  const getInputBorderColor = (fieldError: boolean, charCount: number, maxLength: number) => {
-    if (fieldError) return 'border-red-500 focus:ring-red-400';
-    if (charCount >= maxLength) return 'border-red-300 focus:ring-red-400';
-    if (charCount >= maxLength - 10) return 'border-amber-300 focus:ring-amber-400';
-    return 'border-gray-300 focus:ring-[#DDC9A3]';
+  const getInputBorderColor = (
+    fieldError: boolean,
+    charCount: number,
+    maxLength: number
+  ) => {
+    if (fieldError) return "border-red-500 focus:ring-red-400";
+    if (charCount >= maxLength) return "border-red-300 focus:ring-red-400";
+    if (charCount >= maxLength - 10) return "border-amber-300 focus:ring-amber-400";
+    return "border-gray-300 focus:ring-[#DDC9A3]";
   };
 
   const getProgressBarColor = (charCount: number, maxLength: number) => {
-    if (charCount >= maxLength) return 'bg-red-600';
-    if (charCount >= maxLength - 10) return 'bg-amber-500';
-    return 'bg-[#DDC9A3]';
+    if (charCount >= maxLength) return "bg-red-600";
+    if (charCount >= maxLength - 10) return "bg-amber-500";
+    return "bg-[#DDC9A3]";
   };
 
   const getCharCountColor = (charCount: number, maxLength: number) => {
-    if (charCount >= maxLength) return 'text-red-600';
-    if (charCount >= maxLength - 10) return 'text-amber-600';
-    return 'text-gray-500';
+    if (charCount >= maxLength) return "text-red-600";
+    if (charCount >= maxLength - 10) return "text-amber-600";
+    return "text-gray-500";
   };
 
   const hasFieldError = (fieldKeyword: string) =>
@@ -200,33 +205,33 @@ export function InstitutionModal({
       geocode: "geocode",
       typeinst: "typeinst",
     };
+
     if (fieldMap[id]) {
       setTouched((prev) => ({ ...prev, [fieldMap[id]]: true }));
     }
 
     if (id === "institutionName") {
-      if (value.length <= MAX_LENGTH_NAME) {
-        setName(value);
-        setNameCharCount(value.length);
-      }
+      const newValue = value.slice(0, MAX_LENGTH_NAME);
+      setName(newValue);
+      setNameCharCount(newValue.length);
     }
+
     if (id === "municipality") {
-      if (value.length <= MAX_LENGTH_MUNICIPALITY) {
-        setMunicipality(value);
-        setMunicipalityCharCount(value.length);
-      }
+      const newValue = value.slice(0, MAX_LENGTH_MUNICIPALITY);
+      setMunicipality(newValue);
+      setMunicipalityCharCount(newValue.length);
     }
+
     if (id === "geocode") {
-      if (value.length <= MAX_LENGTH_GEOCODE) {
-        setGeocode(value);
-        setGeocodeCharCount(value.length);
-      }
+      const newValue = value.slice(0, MAX_LENGTH_GEOCODE);
+      setGeocode(newValue);
+      setGeocodeCharCount(newValue.length);
     }
+
     if (id === "typeinst") {
-      if (value.length <= MAX_LENGTH_TYPE) {
-        setTypeinst(value);
-        setTypeCharCount(value.length);
-      }
+      const newValue = value.slice(0, MAX_LENGTH_TYPE);
+      setTypeinst(newValue);
+      setTypeCharCount(newValue.length);
     }
   };
 
@@ -237,13 +242,15 @@ export function InstitutionModal({
       <div
         className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-40 transition-opacity"
         onClick={onClose}
-      ></div>
+      />
 
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
+
             <button
+              type="button"
               onClick={onClose}
               className="text-white hover:text-gray-300"
               aria-label="Cerrar modal"
@@ -256,18 +263,29 @@ export function InstitutionModal({
             <div className="p-6">
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-1">
-                  <label htmlFor="institutionName" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="institutionName"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Nombre de la Institución:
                   </label>
-                  <span className={`text-xs font-medium ${getCharCountColor(nameCharCount, MAX_LENGTH_NAME)}`}>
+
+                  <span
+                    className={`text-xs font-medium ${getCharCountColor(
+                      nameCharCount,
+                      MAX_LENGTH_NAME
+                    )}`}
+                  >
                     {nameCharCount}/{MAX_LENGTH_NAME} caracteres
                   </span>
                 </div>
+
                 <input
                   type="text"
                   id="institutionName"
                   value={name}
                   onChange={handleInputChange}
+                  maxLength={MAX_LENGTH_NAME}
                   placeholder="Ingresar nombre..."
                   className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor(
                     hasFieldError("nombre"),
@@ -277,28 +295,45 @@ export function InstitutionModal({
                   disabled={isSubmitting}
                   autoFocus
                 />
+
                 <div className="mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-300 ${getProgressBarColor(nameCharCount, MAX_LENGTH_NAME)}`}
-                    style={{ width: `${(nameCharCount / MAX_LENGTH_NAME) * 100}%` }}
+                    className={`h-full transition-all duration-300 ${getProgressBarColor(
+                      nameCharCount,
+                      MAX_LENGTH_NAME
+                    )}`}
+                    style={{
+                      width: `${(nameCharCount / MAX_LENGTH_NAME) * 100}%`,
+                    }}
                   />
                 </div>
               </div>
 
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-1">
-                  <label htmlFor="municipality" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="municipality"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Municipalidad:
                   </label>
-                  <span className={`text-xs font-medium ${getCharCountColor(municipalityCharCount, MAX_LENGTH_MUNICIPALITY)}`}>
+
+                  <span
+                    className={`text-xs font-medium ${getCharCountColor(
+                      municipalityCharCount,
+                      MAX_LENGTH_MUNICIPALITY
+                    )}`}
+                  >
                     {municipalityCharCount}/{MAX_LENGTH_MUNICIPALITY} caracteres
                   </span>
                 </div>
+
                 <input
                   type="text"
                   id="municipality"
                   value={municipality}
                   onChange={handleInputChange}
+                  maxLength={MAX_LENGTH_MUNICIPALITY}
                   placeholder="Ingresar municipio..."
                   className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor(
                     hasFieldError("municipal"),
@@ -307,28 +342,45 @@ export function InstitutionModal({
                   )}`}
                   disabled={isSubmitting}
                 />
+
                 <div className="mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-300 ${getProgressBarColor(municipalityCharCount, MAX_LENGTH_MUNICIPALITY)}`}
-                    style={{ width: `${(municipalityCharCount / MAX_LENGTH_MUNICIPALITY) * 100}%` }}
+                    className={`h-full transition-all duration-300 ${getProgressBarColor(
+                      municipalityCharCount,
+                      MAX_LENGTH_MUNICIPALITY
+                    )}`}
+                    style={{
+                      width: `${(municipalityCharCount / MAX_LENGTH_MUNICIPALITY) * 100}%`,
+                    }}
                   />
                 </div>
               </div>
 
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-1">
-                  <label htmlFor="geocode" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="geocode"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Código Postal / Geocódigo:
                   </label>
-                  <span className={`text-xs font-medium ${getCharCountColor(geocodeCharCount, MAX_LENGTH_GEOCODE)}`}>
+
+                  <span
+                    className={`text-xs font-medium ${getCharCountColor(
+                      geocodeCharCount,
+                      MAX_LENGTH_GEOCODE
+                    )}`}
+                  >
                     {geocodeCharCount}/{MAX_LENGTH_GEOCODE} caracteres
                   </span>
                 </div>
+
                 <input
                   type="text"
                   id="geocode"
                   value={geocode}
                   onChange={handleInputChange}
+                  maxLength={MAX_LENGTH_GEOCODE}
                   placeholder="Ingresar código..."
                   className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor(
                     hasFieldError("geoc"),
@@ -337,28 +389,45 @@ export function InstitutionModal({
                   )}`}
                   disabled={isSubmitting}
                 />
+
                 <div className="mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-300 ${getProgressBarColor(geocodeCharCount, MAX_LENGTH_GEOCODE)}`}
-                    style={{ width: `${(geocodeCharCount / MAX_LENGTH_GEOCODE) * 100}%` }}
+                    className={`h-full transition-all duration-300 ${getProgressBarColor(
+                      geocodeCharCount,
+                      MAX_LENGTH_GEOCODE
+                    )}`}
+                    style={{
+                      width: `${(geocodeCharCount / MAX_LENGTH_GEOCODE) * 100}%`,
+                    }}
                   />
                 </div>
               </div>
 
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-1">
-                  <label htmlFor="typeinst" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="typeinst"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Tipo:
                   </label>
-                  <span className={`text-xs font-medium ${getCharCountColor(typeCharCount, MAX_LENGTH_TYPE)}`}>
+
+                  <span
+                    className={`text-xs font-medium ${getCharCountColor(
+                      typeCharCount,
+                      MAX_LENGTH_TYPE
+                    )}`}
+                  >
                     {typeCharCount}/{MAX_LENGTH_TYPE} caracteres
                   </span>
                 </div>
+
                 <input
                   type="text"
                   id="typeinst"
                   value={typeinst}
                   onChange={handleInputChange}
+                  maxLength={MAX_LENGTH_TYPE}
                   placeholder="Ingresar tipo..."
                   className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor(
                     hasFieldError("tipo"),
@@ -367,10 +436,16 @@ export function InstitutionModal({
                   )}`}
                   disabled={isSubmitting}
                 />
+
                 <div className="mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-300 ${getProgressBarColor(typeCharCount, MAX_LENGTH_TYPE)}`}
-                    style={{ width: `${(typeCharCount / MAX_LENGTH_TYPE) * 100}%` }}
+                    className={`h-full transition-all duration-300 ${getProgressBarColor(
+                      typeCharCount,
+                      MAX_LENGTH_TYPE
+                    )}`}
+                    style={{
+                      width: `${(typeCharCount / MAX_LENGTH_TYPE) * 100}%`,
+                    }}
                   />
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
+import React, { useState, useEffect, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import type { QuestionModalProps, CreateQuestionDTO } from "../Questions.types";
@@ -20,7 +20,7 @@ export function QuestionModal({
     commentaries: false,
   });
   const [formErrors, setFormErrors] = useState<string[]>([]);
-  const [serverError, setServerError] = useState<string | null>(null); // ← estado interno
+  const [serverError, setServerError] = useState<string | null>(null);
 
   useEffect(() => {
     setServerError(error || null);
@@ -35,51 +35,57 @@ export function QuestionModal({
       });
       setFormErrors([]);
       setServerError(null);
-      onClearServerError();
+      onClearServerError?.();
     }
   }, [isOpen, initialData, onClearServerError]);
 
+  // Validación evitando duplicados
   const validateForm = (data: CreateQuestionDTO) => {
     const result = Questionschema.safeParse(data);
-    if (!result.success) {
-      setFormErrors(result.error.issues.map((e) => e.message));
-      return false;
+    const errorsSet = new Set<string>();
+
+    if (!data.name || data.name.trim().length < 5) {
+      errorsSet.add("El nombre debe tener al menos 5 caracteres.");
     }
-    setFormErrors([]);
-    return true;
+
+    if (!data.name || data.name.trim() === "") {
+      errorsSet.add("El nombre es obligatorio.");
+    }
+
+    if (!result.success) {
+      result.error.issues.forEach(e => errorsSet.add(e.message));
+    }
+
+    const errors = Array.from(errorsSet);
+    setFormErrors(errors);
+
+    return errors.length === 0;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm(formData)) onSave(formData);
   };
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
     setServerError(null);
-    if (error) onClearServerError();
-
-    const newData = { ...formData, [name]: value };
-    setFormData(newData);
-    validateForm(newData); 
+    onClearServerError?.();
+    validateForm({ ...formData, [name]: value });
   };
 
   const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, commentaries: e.target.checked }));
     setServerError(null);
-    if (error) onClearServerError();
-
-    const newData = { ...formData, commentaries: e.target.checked };
-    setFormData(newData);
-    validateForm(newData); 
+    onClearServerError?.();
   };
 
   const handleClose = () => {
     setFormData({ name: "", instructions: "", commentaries: false });
     setFormErrors([]);
     setServerError(null);
-    onClearServerError();
+    onClearServerError?.();
     onClose();
   };
 
@@ -87,41 +93,44 @@ export function QuestionModal({
 
   const hasClientErrors = formErrors.length > 0;
   const hasServerError = !!serverError;
-
   const isUnchanged =
     formData.name.trim() === (initialData?.name ?? "").trim() &&
-    (formData.instructions ?? "").trim() ===
-      (initialData?.instructions ?? "").trim() &&
+    (formData.instructions ?? "").trim() === (initialData?.instructions ?? "").trim() &&
     formData.commentaries === Boolean(initialData?.commentaries);
+
+  const getProgress = (value: number, max: number) => Math.min(100, (value / max) * 100);
 
   return (
     <>
       <div
-        className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-40 transition-opacity"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
         onClick={handleClose}
       />
 
-      <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
-          <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button
-              onClick={handleClose}
-              className="text-white hover:text-gray-300"
-            >
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden">
+          
+          {/* Header */}
+          <div className="flex justify-between items-center p-4 bg-[#891b28]">
+            <h2 className="text-lg font-bold text-white">{title}</h2>
+            <button onClick={handleClose} className="text-white hover:text-gray-300">
               <X size={24} />
             </button>
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6 space-y-4">
+
+              {/* Pregunta */}
               <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Pregunta:
-                </label>
+                <div className="flex justify-between mb-1">
+                  <label htmlFor="name" className="text-sm font-medium text-black">
+                    Pregunta:
+                  </label>
+                  <span className="text-xs text-gray-500 font-semibold">
+                    {formData.name.length}/200 caracteres
+                  </span>
+                </div>
                 <textarea
                   id="name"
                   name="name"
@@ -129,31 +138,49 @@ export function QuestionModal({
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Escribe la pregunta..."
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#F2C27A] text-black"
                   disabled={isSubmitting}
                   autoFocus
+                  maxLength={200}
                 />
+                <div className="h-1 bg-gray-200 rounded-full mt-1">
+                  <div
+                    className="h-1 bg-[#F2C27A] rounded-full transition-all"
+                    style={{ width: `${getProgress(formData.name.length, 200)}%` }}
+                  />
+                </div>
               </div>
 
+              {/* Instrucciones */}
               <div>
-                <label
-                  htmlFor="instructions"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Instrucciones (Opcional):
-                </label>
+                <div className="flex justify-between mb-1">
+                  <label htmlFor="instructions" className="text-sm font-medium text-black">
+                    Instrucciones (Opcional):
+                  </label>
+                  <span className="text-xs text-gray-500 font-semibold">
+                    {(formData.instructions ?? "").length}/500 caracteres
+                  </span>
+                </div>
                 <textarea
                   id="instructions"
                   name="instructions"
                   rows={4}
-                  value={formData.instructions}
+                  value={formData.instructions ?? ""}
                   onChange={handleChange}
                   placeholder="Instrucciones detalladas para responder..."
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#F2C27A] text-black"
                   disabled={isSubmitting}
+                  maxLength={500}
                 />
+                <div className="h-1 bg-gray-200 rounded-full mt-1">
+                  <div
+                    className="h-1 bg-[#F2C27A] rounded-full transition-all"
+                    style={{ width: `${getProgress(formData.instructions?.length ?? 0, 500)}%` }}
+                  />
+                </div>
               </div>
 
+              {/* Checkbox */}
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -161,33 +188,21 @@ export function QuestionModal({
                   name="commentaries"
                   checked={formData.commentaries}
                   onChange={handleCheckboxChange}
-                  className="w-5 h-5 text-[#691b31] border-gray-300 rounded focus:ring-[#691b31]"
+                  className="w-5 h-5 text-[#891b28] border-gray-300 rounded focus:ring-[#891b28]"
                   disabled={isSubmitting}
                 />
-                <label
-                  htmlFor="commentaries"
-                  className="text-sm font-medium text-gray-700 select-none"
-                >
+                <label htmlFor="commentaries" className="text-sm font-medium text-gray-700 select-none">
                   ¿Habilitar campo de comentarios extra?
                 </label>
               </div>
 
-              {/* Errores cliente (Zod) */}
-              {hasClientErrors && (
-                <div id="form-errors-client">
-                  <FormErrors errors={formErrors} />
-                </div>
-              )}
-
-              {/* Errores servidor (Laravel) — igual que DependenciesModal */}
-              {hasServerError && (
-                <div id="form-errors-server">
-                  <FormErrors errors={[serverError!]} />
-                </div>
-              )}
+              {/* Errores */}
+              {hasClientErrors && <FormErrors errors={formErrors} />}
+              {hasServerError && <FormErrors errors={[serverError!]} />}
             </div>
 
-            <div className="flex justify-end items-center gap-4 p-4 bg-gray-50 border-t">
+            {/* Buttons */}
+            <div className="flex justify-end gap-4 p-4 bg-gray-50 border-t">
               <button
                 type="button"
                 onClick={handleClose}
@@ -199,13 +214,13 @@ export function QuestionModal({
               <button
                 type="submit"
                 disabled={isSubmitting || hasClientErrors || isUnchanged}
-                className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                className="bg-white border border-[#891b28] text-[#891b28] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
               </button>
-
             </div>
           </form>
+
         </div>
       </div>
     </>

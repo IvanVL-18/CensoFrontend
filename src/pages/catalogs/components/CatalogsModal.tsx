@@ -63,6 +63,7 @@ export function CatalogModal({
     const ModuleById = Modules.find(
       (u) => String(u.id).trim() === normalizedModuleId,
     );
+
     if (ModuleById) {
       finalModuleId = ModuleById.id;
     } else if (normalizedModuleName && Modules.length) {
@@ -103,6 +104,7 @@ export function CatalogModal({
       name: currentName,
       slug: currentSlug,
     });
+
     const errors: { name?: string; slug?: string; Module?: string } = {};
 
     if (!result.success) {
@@ -113,7 +115,7 @@ export function CatalogModal({
     }
 
     if (!currentModuleId) {
-      errors.Module = "Debe seleccionar una Modulo";
+      errors.Module = "Debe seleccionar un módulo";
     }
 
     setFieldErrors(errors);
@@ -122,7 +124,13 @@ export function CatalogModal({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setTouchedFields({ name: true, slug: true, module: true });
+
+    setTouchedFields({
+      name: true,
+      slug: true,
+      module: true,
+    });
+
     if (validateForm(name, slug, ModuleId)) {
       onSave(name, slug, ModuleId);
     }
@@ -130,6 +138,7 @@ export function CatalogModal({
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value.slice(0, NAME_MAX_LENGTH);
+
     setName(newName);
     setNameCharCount(newName.length);
     setTouchedFields((prev) => ({ ...prev, name: true }));
@@ -139,6 +148,7 @@ export function CatalogModal({
 
   const handleSlugChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newSlug = e.target.value.slice(0, SLUG_MAX_LENGTH);
+
     setSlug(newSlug);
     setSlugCharCount(newSlug.length);
     setTouchedFields((prev) => ({ ...prev, slug: true }));
@@ -148,6 +158,7 @@ export function CatalogModal({
 
   const handleModuleChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newModuleId = e.target.value;
+
     setModuleId(newModuleId);
     setTouchedFields((prev) => ({ ...prev, module: true }));
     validateForm(name, slug, newModuleId);
@@ -162,20 +173,21 @@ export function CatalogModal({
     setServerError(null);
     setNameCharCount(0);
     setSlugCharCount(0);
-    setTouchedFields({ name: false, slug: false, module: false });
+    setTouchedFields({
+      name: false,
+      slug: false,
+      module: false,
+    });
     onClose();
   };
 
-  if (!isOpen) return null;
-
   const getFieldStyles = (
-    value: string,
     maxLength: number,
     currentCharCount: number,
     hasFieldError: boolean,
   ) => {
     const isNearLimit =
-      currentCharCount >= maxLength - 10 && currentCharCount <= maxLength;
+      currentCharCount >= maxLength - 10 && currentCharCount < maxLength;
     const isAtLimit = currentCharCount >= maxLength;
 
     const getBorderColor = () => {
@@ -204,22 +216,24 @@ export function CatalogModal({
     };
   };
 
+  if (!isOpen) return null;
+
   const hasNameError = touchedFields.name && !!fieldErrors.name;
   const hasSlugError = touchedFields.slug && !!fieldErrors.slug;
   const hasModuleError = touchedFields.module && !!fieldErrors.Module;
 
   const nameStyles = getFieldStyles(
-    name,
     NAME_MAX_LENGTH,
     nameCharCount,
     hasNameError,
   );
+
   const slugStyles = getFieldStyles(
-    slug,
     SLUG_MAX_LENGTH,
     slugCharCount,
     hasSlugError,
   );
+
   const ModuleBorderColor = hasModuleError
     ? "border-red-500 focus:ring-red-400"
     : "border-gray-300 focus:ring-[#DDC9A3]";
@@ -230,11 +244,14 @@ export function CatalogModal({
         className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-[9999] transition-opacity"
         onClick={handleClose}
       />
+
       <div className="fixed inset-0 bg-[#000000ab] z-[10000] flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
+
             <button
+              type="button"
               onClick={handleClose}
               className="text-white hover:text-gray-300"
             >
@@ -252,22 +269,26 @@ export function CatalogModal({
                   >
                     Nombre del catálogo:
                   </label>
+
                   <span
                     className={`text-xs font-medium ${nameStyles.charCountColor}`}
                   >
                     {nameCharCount}/{NAME_MAX_LENGTH} caracteres
                   </span>
                 </div>
+
                 <input
                   type="text"
                   id="catalogName"
                   value={name}
                   onChange={handleNameChange}
+                  maxLength={NAME_MAX_LENGTH}
                   placeholder="Ingresar nombre..."
                   className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${nameStyles.borderColor}`}
                   disabled={isSubmitting}
                   autoFocus
                 />
+
                 <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all duration-300 ${nameStyles.progressColor}`}
@@ -286,21 +307,25 @@ export function CatalogModal({
                   >
                     Slug:
                   </label>
+
                   <span
                     className={`text-xs font-medium ${slugStyles.charCountColor}`}
                   >
                     {slugCharCount}/{SLUG_MAX_LENGTH} caracteres
                   </span>
                 </div>
+
                 <input
                   type="text"
                   id="catalogSlug"
                   value={slug}
                   onChange={handleSlugChange}
+                  maxLength={SLUG_MAX_LENGTH}
                   placeholder="Ingresar slug..."
                   className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${slugStyles.borderColor}`}
                   disabled={isSubmitting}
                 />
+
                 <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all duration-300 ${slugStyles.progressColor}`}
@@ -318,6 +343,7 @@ export function CatalogModal({
                 >
                   Módulo:
                 </label>
+
                 <select
                   id="ModuleId"
                   value={ModuleId}
@@ -326,6 +352,7 @@ export function CatalogModal({
                   disabled={isSubmitting}
                 >
                   <option value="">Seleccionar un módulo</option>
+
                   {Modules.map((Module) => (
                     <option key={Module.id} value={Module.id}>
                       {Module.name}
@@ -335,6 +362,7 @@ export function CatalogModal({
               </div>
 
               <FormErrors errors={visibleErrors} />
+
               {serverError && <FormErrors errors={[serverError]} />}
             </div>
 
@@ -347,9 +375,14 @@ export function CatalogModal({
               >
                 Cancelar
               </button>
+
               <button
                 type="submit"
-                disabled={isSubmitting || allErrorMessages.length > 0 || name.trim() === initialName.trim()}
+                disabled={
+                  isSubmitting ||
+                  allErrorMessages.length > 0 ||
+                  name.trim() === initialName.trim()
+                }
                 className="bg-white border border-[#691b31] text-[#691b31] font-bold py-2 px-6 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}

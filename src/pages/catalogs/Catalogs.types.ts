@@ -97,7 +97,7 @@ export interface CatalogModalProps {
   initialModuleName?: string; 
   Modules: Module[];
   onClose: () => void;
-  onSave: (name: string, slug: string, ModuleId: string) => void;
+  onSave: (name: string, slug: string, moduleId: string) => void;
 }
 
 export interface CatalogsTableProps {

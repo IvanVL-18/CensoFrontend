@@ -19,6 +19,8 @@ import { UserSchema } from "../schemas/Users.schema";
 import type { Rol } from "../../Roles/Roles.types";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
 
+const EMAIL_MAX_LENGTH = 100;
+
 interface ExtendedUserModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
@@ -57,11 +59,13 @@ export function UserModal({
     dependency_id: "",
     institution_id: "",
   });
+
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [pwdFocus, setPwdFocus] = useState(false);
+  const [emailCharCount, setEmailCharCount] = useState(0);
 
   const hasChanges = useMemo(() => {
     const normalize = (val: any) =>
@@ -121,15 +125,18 @@ export function UserModal({
 
   const validateForm = (data: typeof formData) => {
     const dataForValidation: any = { ...data };
+
     if (initialData && !dataForValidation.password) {
       delete dataForValidation.password;
       delete dataForValidation.password_confirmation;
     }
-    // Strip empty optional relation fields so Zod treats them as undefined
+
     if (!dataForValidation.role_id) delete dataForValidation.role_id;
     if (!dataForValidation.occupation_id) delete dataForValidation.occupation_id;
     if (!dataForValidation.dependency_id) delete dataForValidation.dependency_id;
-    if (!dataForValidation.institution_id) delete dataForValidation.institution_id;
+    if (!dataForValidation.institution_id) {
+      delete dataForValidation.institution_id;
+    }
 
     const result = UserSchema.safeParse(dataForValidation);
 
@@ -146,8 +153,8 @@ export function UserModal({
         const key = String(issue.path?.[0] ?? "form");
         if (!fe[key]) fe[key] = issue.message;
       });
-      setFieldErrors(fe);
 
+      setFieldErrors(fe);
       return false;
     }
 
@@ -171,6 +178,7 @@ export function UserModal({
           );
           if (match) return match.id;
         }
+
         if (fallbackId) {
           const directMatch = catalog.find(
             (item) => String(item.id) === String(fallbackId),
@@ -180,8 +188,11 @@ export function UserModal({
 
         return "";
       };
+
+      const initialEmail = initialData?.email || "";
+
       setFormData({
-        email: initialData?.email || "",
+        email: initialEmail,
         password: "",
         password_confirmation: "",
         role_id: findIdInCatalog(
@@ -205,6 +216,8 @@ export function UserModal({
           initialData?.institution_id,
         ),
       });
+
+      setEmailCharCount(initialEmail.length);
       setFormErrors([]);
       setFieldErrors({});
     }
@@ -224,11 +237,41 @@ export function UserModal({
   ) => {
     const { name, value } = e.target;
 
+    const nextValue =
+      name === "email" ? value.slice(0, EMAIL_MAX_LENGTH) : value;
+
+    if (name === "email") {
+      setEmailCharCount(nextValue.length);
+    }
+
     setFormData((prev) => {
-      const next = { ...prev, [name]: value };
+      const next = { ...prev, [name]: nextValue };
       validateForm(next);
       return next;
     });
+  };
+
+  const getEmailBorderColor = () => {
+    if (fieldErrors.email) return "border-red-500 focus:ring-red-400";
+    if (emailCharCount >= EMAIL_MAX_LENGTH) {
+      return "border-red-300 focus:ring-red-400";
+    }
+    if (emailCharCount >= EMAIL_MAX_LENGTH - 10) {
+      return "border-amber-300 focus:ring-amber-400";
+    }
+    return "border-gray-300 focus:ring-[#DDC9A3]";
+  };
+
+  const getEmailProgressColor = () => {
+    if (emailCharCount >= EMAIL_MAX_LENGTH) return "bg-red-600";
+    if (emailCharCount >= EMAIL_MAX_LENGTH - 10) return "bg-amber-500";
+    return "bg-[#DDC9A3]";
+  };
+
+  const getEmailCharCountColor = () => {
+    if (emailCharCount >= EMAIL_MAX_LENGTH) return "text-red-600";
+    if (emailCharCount >= EMAIL_MAX_LENGTH - 10) return "text-amber-600";
+    return "text-gray-500";
   };
 
   if (!isOpen) {
@@ -237,11 +280,14 @@ export function UserModal({
 
   const hasClientErrors =
     formErrors.length > 0 || Object.keys(fieldErrors).length > 0;
+
   const handleClose = () => {
     setFormErrors([]);
     setFieldErrors({});
+    setEmailCharCount(0);
     onClose();
   };
+
   const showConfirmStatus =
     (!initialData || formData.password.length > 0) &&
     formData.password_confirmation.length > 0;
@@ -258,7 +304,8 @@ export function UserModal({
     formData.password !== formData.password_confirmation;
 
   const isUnchanged = !hasChanges;
-  const isDisabled = isSubmitting || hasClientErrors || isUnchanged || confirmMismatch;
+  const isDisabled =
+    isSubmitting || hasClientErrors || isUnchanged || confirmMismatch;
 
   return (
     <>
@@ -271,7 +318,9 @@ export function UserModal({
         <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-hidden max-h-[90vh] flex flex-col">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
+
             <button
+              type="button"
               onClick={handleClose}
               className="text-white hover:text-gray-300"
             >
@@ -286,12 +335,21 @@ export function UserModal({
           >
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Correo Electrónico:
-                </label>
+                <div className="flex justify-between items-center mb-1">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Correo Electrónico:
+                  </label>
+
+                  <span
+                    className={`text-xs font-medium ${getEmailCharCountColor()}`}
+                  >
+                    {emailCharCount}/{EMAIL_MAX_LENGTH} caracteres
+                  </span>
+                </div>
+
                 <input
                   type="email"
                   id="email"
@@ -299,8 +357,19 @@ export function UserModal({
                   autoComplete="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                  maxLength={EMAIL_MAX_LENGTH}
+                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getEmailBorderColor()}`}
                 />
+
+                <div className="mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-300 ${getEmailProgressColor()}`}
+                    style={{
+                      width: `${(emailCharCount / EMAIL_MAX_LENGTH) * 100}%`,
+                    }}
+                  />
+                </div>
+
                 {fieldErrors.email && (
                   <p className="mt-1 text-xs text-red-600">
                     {fieldErrors.email}
@@ -319,6 +388,7 @@ export function UserModal({
                     : "(Obligatoria)"}
                   :
                 </label>
+
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -331,6 +401,7 @@ export function UserModal({
                     onBlur={() => setPwdFocus(false)}
                     className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
                   />
+
                   <button
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
@@ -340,6 +411,7 @@ export function UserModal({
                     {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
+
                 {(!initialData || formData.password.length > 0) && (
                   <PasswordStrengthMeter
                     password={formData.password}
@@ -347,6 +419,7 @@ export function UserModal({
                     showRules={pwdFocus}
                   />
                 )}
+
                 {fieldErrors.password && (
                   <p className="mt-1 text-xs text-red-600">
                     {fieldErrors.password}
@@ -361,6 +434,7 @@ export function UserModal({
                 >
                   Confirmar Contraseña:
                 </label>
+
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -370,6 +444,7 @@ export function UserModal({
                     onChange={handleChange}
                     className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
                   />
+
                   <button
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
@@ -383,6 +458,7 @@ export function UserModal({
                     )}
                   </button>
                 </div>
+
                 {showConfirmStatus && (
                   <div
                     className={`mt-2 flex items-center gap-2 text-xs font-medium ${
@@ -411,6 +487,7 @@ export function UserModal({
                 >
                   Rol:
                 </label>
+
                 <select
                   id="role_id"
                   name="role_id"
@@ -419,6 +496,7 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Rol</option>
+
                   {roles.map((role) => (
                     <option key={role.id} value={role.id}>
                       {role.name}
@@ -434,6 +512,7 @@ export function UserModal({
                 >
                   Ocupación:
                 </label>
+
                 <select
                   id="occupation_id"
                   name="occupation_id"
@@ -442,6 +521,7 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Ocupación</option>
+
                   {occupations.map((occ: any) => (
                     <option key={occ.id} value={occ.id}>
                       {occ.name}
@@ -457,6 +537,7 @@ export function UserModal({
                 >
                   Dependencia:
                 </label>
+
                 <select
                   id="dependency_id"
                   name="dependency_id"
@@ -465,9 +546,11 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Dependencia</option>
+
                   {dependencies.length === 0 && (
                     <option disabled>Cargando dependencia...</option>
                   )}
+
                   {dependencies.map((dependency: any) => (
                     <option key={dependency.id} value={dependency.id}>
                       {dependency.name}
@@ -483,6 +566,7 @@ export function UserModal({
                 >
                   Institución:
                 </label>
+
                 <select
                   id="institution_id"
                   name="institution_id"
@@ -491,6 +575,7 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Institución</option>
+
                   {institutions.map((inst: any) => (
                     <option key={inst.id} value={inst.id}>
                       {inst.name}
@@ -503,6 +588,7 @@ export function UserModal({
                 <div id="form-errors-client">
                   <FormErrors errors={formErrors} />
                 </div>
+
                 {error && (
                   <div id="form-errors-server">
                     <FormErrors errors={[error]} />
@@ -525,6 +611,7 @@ export function UserModal({
               >
                 <UserRoundPen size={20} />
               </button>
+
               <button
                 type="button"
                 onClick={handleClose}
@@ -533,6 +620,7 @@ export function UserModal({
               >
                 Cancelar
               </button>
+
               <button
                 type="submit"
                 disabled={isDisabled}
