@@ -33,8 +33,9 @@ import Answers from "./pages/Answers/Answers";
 import CensusInstitutionsPage from "./pages/AdminAnswers/CensusInstitutionsPage";
 import InstitutionUsersPage from "./pages/AdminAnswers/InstitutionUsersPage";
 import UserAnswersPage from "./pages/AdminAnswers/UserAnswersPage";
-import "./App.css";
 import ForgotPasswordPage from "./pages/login/page/ForgotPasswordPage";
+import "./App.css";
+
 export default function App() {
   return (
     <Routes>
@@ -42,6 +43,7 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+
       {/* ── Área autenticada ─────────────────────────────────────────────── */}
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
@@ -159,6 +161,7 @@ export default function App() {
           </Route>
         </Route>
       </Route>
+
       {/* ── Fallback ─────────────────────────────────────────────────────── */}
       <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>

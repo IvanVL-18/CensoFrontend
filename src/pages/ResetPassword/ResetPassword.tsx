@@ -5,6 +5,7 @@ import TopBar from "../login/components/TopBar";
 import Footer from "../login/components/Footer";
 import FallingEmblems from "../login/components/FallingEmblems";
 import ResetPasswordCard from "./components/ResetPasswordCard";
+import { useAuthContext } from "../../context/AuthContext";
 
 type TokenStatus = "validating" | "valid" | "invalid";
 
@@ -14,36 +15,35 @@ export default function ResetPassword() {
   const [tokenStatus, setTokenStatus] = useState<TokenStatus>("validating");
 
   const token = searchParams.get("token") || "";
-  const email = searchParams.get("email") || "";
+
+  const { loginWithToken } = useAuthContext();
 
   useEffect(() => {
-    if (!token || !email) {
+    if (!token) {
       setTokenStatus("invalid");
       return;
     }
 
-    // Para limpiar la url del token
     window.history.replaceState({}, "", "/reset-password");
 
-    // Validamos el token en el backend
     api
-      .post("/password/validate-token", { token, email })
+      .get(`/password/${token}/verify-token`)
       .then(() => setTokenStatus("valid"))
       .catch(() => setTokenStatus("invalid"));
   }, []);
 
   const handlePasswordReset = async ({ password }: { password: string }) => {
     try {
-      await api.post("/password/reset", {
+      const response = await api.post("/password/reset", {
         token,
-        email,
         password,
         password_confirmation: password,
       });
 
-      setTimeout(() => navigate("/login"), 3000);
+      await loginWithToken(response.data.access_token);
+
+      setTimeout(() => navigate("/inicio"), 3000);
     } catch (error: any) {
-      console.error("Error al restablecer:", error.response?.data);
       throw new Error(
         error.response?.data?.message ||
           "El enlace podría ser inválido o haber caducado.",
@@ -81,7 +81,7 @@ export default function ResetPassword() {
           )}
 
           {tokenStatus === "valid" && (
-            <ResetPasswordCard email={email} onSubmit={handlePasswordReset} />
+            <ResetPasswordCard onSubmit={handlePasswordReset} />
           )}
         </div>
       </section>

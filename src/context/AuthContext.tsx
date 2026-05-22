@@ -7,7 +7,11 @@ import {
 } from "react";
 import type { ReactNode } from "react";
 
-import { loginRequest, logoutRequest, meRequest } from "../services/authService";
+import {
+  loginRequest,
+  logoutRequest,
+  meRequest,
+} from "../services/authService";
 import type { LoginCredentials, MeResponse } from "../services/authService";
 
 interface AuthUser {
@@ -20,10 +24,12 @@ interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
-  isLoading: boolean;       // login/logout en curso
-  isHydrating: boolean;     // carga inicial al montar la app
+  isLoading: boolean; // login/logout en curso
+
+  isHydrating: boolean; // carga inicial al montar la app
   error: string | null;
   login: (credentials: LoginCredentials) => Promise<void>;
+  loginWithToken: (access_token: string) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
   hasPermission: (permission: string) => boolean;
@@ -42,16 +48,25 @@ function toAuthUser(me: MeResponse): AuthUser {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]               = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading]     = useState(false);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [isHydrating, setIsHydrating] = useState(true); // true hasta que /me responda
-  const [error, setError]             = useState<string | null>(null);
+  const loginWithToken = useCallback(async (access_token: string) => {
+    sessionStorage.setItem("access_token", access_token);
+    const me = await meRequest();
+    if (me) setUser(toAuthUser(me));
+  }, []);
+  const [error, setError] = useState<string | null>(null);
 
   // ── Rehidratación en cada recarga de página ──────────────────────────────
   useEffect(() => {
     meRequest()
-      .then((me) => { if (me) setUser(toAuthUser(me)); })
-      .catch(() => { /* sin cookie válida → usuario null, pantalla de login */ })
+      .then((me) => {
+        if (me) setUser(toAuthUser(me));
+      })
+      .catch(() => {
+        /* sin cookie válida → usuario null, pantalla de login */
+      })
       .finally(() => setIsHydrating(false));
   }, []);
 
@@ -62,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const { access_token } = await loginRequest(credentials);
-      sessionStorage.setItem('access_token', access_token);
+      sessionStorage.setItem("access_token", access_token);
       const me = await meRequest();
       if (me) setUser(toAuthUser(me));
     } catch (err) {
@@ -78,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await logoutRequest(); // Laravel borra el token + cookie
     } finally {
-      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem("access_token");
       setUser(null); // Limpiamos estado aunque el request falle
     }
   }, []);
@@ -86,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   const markProfileComplete = useCallback(() => {
-    setUser((prev) => prev ? { ...prev, complete: true } : prev);
+    setUser((prev) => (prev ? { ...prev, complete: true } : prev));
   }, []);
 
   // ── Verificación de permisos ─────────────────────────────────────────────
@@ -98,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (user.role === "Super Admin") return true;
       return user.permissions.includes(permission);
     },
-    [user]
+    [user],
   );
 
   return (
@@ -110,6 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isHydrating,
         error,
         login,
+        loginWithToken,
         logout,
         clearError,
         hasPermission,
@@ -123,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuthContext() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuthContext debe usarse dentro de <AuthProvider>");
+  if (!ctx)
+    throw new Error("useAuthContext debe usarse dentro de <AuthProvider>");
   return ctx;
 }
