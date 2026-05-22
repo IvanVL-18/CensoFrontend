@@ -12,6 +12,7 @@ import type {
   CensusQuestionRow,
   PaginationLinksObj,
 } from "./CensusQuestions.types";
+import { useToast } from "../../../context/ToastContext";
 
 
 
@@ -36,7 +37,6 @@ type UseCensusQuestionsReturn = {
   loading: boolean;
   paginating: boolean;
   saving: boolean;
-  error: string | null;
   hasAssignments: boolean;
   allChecked: boolean;
   currentPage: number;
@@ -60,10 +60,10 @@ export const useCensusQuestions = (
   );
   const [indexes, setIndexes] = useState<QuestionIndexOption[]>([]);
   const [questions, setQuestions] = useState<QuestionOption[]>([]);
+  const { addToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [paginating, setPaginating] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [hasAssignments, setHasAssignments] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
@@ -124,7 +124,6 @@ export const useCensusQuestions = (
     async (page: number, signal?: AbortSignal, isInitial = false) => {
       try {
         isInitial ? setLoading(true) : setPaginating(true);
-        setError(null);
 
         const data = await getCensusQuestions(censusSectionId, page, signal);
 
@@ -183,8 +182,9 @@ export const useCensusQuestions = (
           response?: { data?: { message?: string } };
         };
         if (e?.name === "CanceledError" || e?.name === "AbortError") return;
-        setError(
+        addToast(
           e?.response?.data?.message ?? "No se pudo cargar la información.",
+          "danger",
         );
       } finally {
         setLoading(false);
@@ -303,13 +303,12 @@ export const useCensusQuestions = (
     if (!censusSectionId) return false;
 
     if (validItems.length === 0) {
-      setError("Selecciona al menos una pregunta y asígnale un índice.");
+      addToast("Selecciona al menos una pregunta y asígnale un índice.", "warning");
       return false;
     }
 
     try {
       setSaving(true);
-      setError(null);
 
     
       if (hasAssignments) {
@@ -334,6 +333,7 @@ export const useCensusQuestions = (
       initialLoadDone.current = false;
       setMapVersion(0);
       await loadData(currentPage, undefined, false);
+      addToast("Preguntas guardadas correctamente.", "success");
       return true;
     } catch (err: unknown) {
       const e = err as {
@@ -344,12 +344,12 @@ export const useCensusQuestions = (
       const apiError = e?.response?.data;
       if (apiError?.errors) {
         const firstKey = Object.keys(apiError.errors)[0];
-        setError(
-          apiError.errors[firstKey]?.[0] ??
-            "No se pudieron guardar los cambios.",
+        addToast(
+          apiError.errors[firstKey]?.[0] ?? "No se pudieron guardar los cambios.",
+          "danger",
         );
       } else {
-        setError(apiError?.message ?? "No se pudieron guardar los cambios.");
+        addToast(apiError?.message ?? "No se pudieron guardar los cambios.", "danger");
       }
       return false;
     } finally {
@@ -377,7 +377,6 @@ export const useCensusQuestions = (
     loading,
     paginating,
     saving,
-    error,
     hasAssignments,
     allChecked,
     currentPage,
