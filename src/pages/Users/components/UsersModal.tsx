@@ -13,8 +13,10 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
-import { FormErrors } from "./FormErrors";
-import { UserSchema } from "../schemas/Users.schema";
+import { FormErrors } from "./FormErrors";  
+//import { UserSchema } from "../schemas/Users.schema";
+import { UserSchema, UpdateUserSchema } from "../schemas/Users.schema";
+
 
 import type { Rol } from "../../Roles/Roles.types";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
@@ -119,30 +121,143 @@ export function UserModal({
     );
   }, [formData, initialData, roles, occupations, dependencies, institutions]);
 
-  const validateForm = (data: typeof formData) => {
-  const dataForValidation: any = { ...data };
+const buildPayload = (data: typeof formData) => {
+  const payload: any = { ...data };
 
-  // Si es creación, siempre enviar strings
+  const normalize = (val: any) =>
+    val === null || val === undefined ? "" : String(val).trim();
+
+  const getSelectedName = (list: any[], id: string | number) => {
+    const item = list.find((i) => String(i.id) === String(id));
+    return item ? item.name : "";
+  };
+
   if (!initialData) {
-    dataForValidation.password = data.password ?? "";
-    dataForValidation.password_confirmation = data.password_confirmation ?? "";
-  }
-  // Si es edición, enviar solo si se llenó
-  else if (data.password || data.password_confirmation) {
-    dataForValidation.password = data.password ?? "";
-    dataForValidation.password_confirmation = data.password_confirmation ?? "";
+    payload.password = data.password ?? "";
+    payload.password_confirmation = data.password_confirmation ?? "";
+
+    if (!payload.role_id) delete payload.role_id;
+    if (!payload.occupation_id) delete payload.occupation_id;
+    if (!payload.dependency_id) delete payload.dependency_id;
+    if (!payload.institution_id) delete payload.institution_id;
+
+    return payload;
   }
 
-  const result = UserSchema.safeParse(dataForValidation);
+  if (normalize(payload.email) === normalize(initialData?.email)) {
+    delete payload.email;
+  }
+
+  if (data.password || data.password_confirmation) {
+    payload.password = data.password ?? "";
+    payload.password_confirmation = data.password_confirmation ?? "";
+  } else {
+    delete payload.password;
+    delete payload.password_confirmation;
+  }
+
+  const selectedRoleName = getSelectedName(roles, data.role_id);
+  const selectedOccupationName = getSelectedName(
+    occupations,
+    data.occupation_id,
+  );
+  const selectedDependencyName = getSelectedName(
+    dependencies,
+    data.dependency_id,
+  );
+  const selectedInstitutionName = getSelectedName(
+    institutions,
+    data.institution_id,
+  );
+
+  if (
+    !payload.role_id ||
+    normalize(selectedRoleName) === normalize(initialData?.role?.name)
+  ) {
+    delete payload.role_id;
+  }
+
+  if (
+    !payload.occupation_id ||
+    normalize(selectedOccupationName) === normalize(initialData?.occupation?.name)
+  ) {
+    delete payload.occupation_id;
+  }
+
+  if (
+    !payload.dependency_id ||
+    normalize(selectedDependencyName) === normalize(initialData?.dependency?.name)
+  ) {
+    delete payload.dependency_id;
+  }
+
+  if (
+    !payload.institution_id ||
+    normalize(selectedInstitutionName) === normalize(initialData?.institution?.name)
+  ) {
+    delete payload.institution_id;
+  }
+
+  return payload;
+};
+
+const validateForm = (data: typeof formData) => {
+  const dataForValidation = buildPayload(data);
+
+  const schema = initialData ? UpdateUserSchema : UserSchema;
+
+  const result = schema.safeParse(dataForValidation);
 
   if (!result.success) {
-    
+    const listIssues = result.error.issues.filter((issue) => {
+      const field = String(issue.path?.[0] ?? "");
+
+      if (
+        initialData &&
+        !data.password &&
+        !data.password_confirmation &&
+        (field === "password" || field === "password_confirmation")
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+    setFormErrors(listIssues.map((i) => i.message));
+
+    const fe: Record<string, string> = {};
+
+    listIssues.forEach((issue) => {
+      const key = String(issue.path?.[0] ?? "form");
+
+      if (!fe[key]) {
+        fe[key] = issue.message;
+      }
+    });
+
+    setFieldErrors(fe);
+
+    return listIssues.length === 0;
   }
 
+  setFormErrors([]);
+  setFieldErrors({});
   return true;
 };
 
+const handleSubmit = (e: FormEvent) => {
+  e.preventDefault();
 
+  const ok = validateForm(formData);
+  if (!ok) return;
+
+  const payload = buildPayload(formData);
+
+  console.log("PAYLOAD FINAL DESDE MODAL:", JSON.stringify(payload, null, 2));
+
+  onSave(payload);
+};
   useEffect(() => {
     if (isOpen) {
       const findIdInCatalog = (
@@ -197,14 +312,14 @@ export function UserModal({
     }
   }, [isOpen, initialData, roles, occupations, dependencies, institutions]);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  // const handleSubmit = (e: FormEvent) => {
+  //   e.preventDefault();
 
-    const ok = validateForm(formData);
-    if (!ok) return;
+  //   const ok = validateForm(formData);
+  //   if (!ok) return;
 
-    onSave(formData);
-  };
+  //   onSave(formData);
+  // };
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
