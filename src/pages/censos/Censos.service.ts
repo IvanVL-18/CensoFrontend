@@ -8,6 +8,9 @@ import type {
   ModuleForCensoShowResponse,
   ModuleForCensoRequest,
   GetCensusResponse,
+  GetCensusFiltersResponse,
+  CensusQueryFilters,
+  CensusQueryResponse,
 } from "./Censos.types";
 
 export type CensoFilter = "all" | "active" | "inactive";
@@ -178,5 +181,21 @@ export const getCensusStructure = async (
   const body: Record<string, string> = { census_id: censusId, mode };
   if (mode === "personalized" && moduleId) body.module_id = moduleId;
   const { data } = await api.post("/censuses/get-census", body);
+  return data;
+};
+
+export const getCensusFilters = async (
+  censusId: string,
+  signal?: AbortSignal,
+): Promise<GetCensusFiltersResponse> => {
+  const { data } = await api.get(`/censuses/${censusId}/get-filters`, { signal });
+  return data;
+};
+
+export const queryCensusSections = async (
+  filters: CensusQueryFilters,
+  signal?: AbortSignal,
+): Promise<CensusQueryResponse> => {
+  const { data } = await api.post("/censuses/filters", filters, { signal });
   return data;
 };

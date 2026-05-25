@@ -174,3 +174,40 @@ export interface CensusViewModuleItem {
 export interface GetCensusResponse {
   census_modules: CensusViewModuleItem[];
 }
+
+/* =========================
+   CENSUS QUERY (filter rubric)
+========================= */
+
+export interface FilterSelectorItem {
+  id: string;
+  name: string;
+}
+
+export interface FilterIndicator {
+  id: string;
+  name: string;
+}
+
+export interface GetCensusFiltersResponse {
+  modules: FilterSelectorItem[];
+  indicators: FilterIndicator[];
+}
+
+export interface CensusQuerySection {
+  id: string;
+  name: string;
+  index: string;
+}
+
+export interface CensusQueryFilters {
+  census_id: string;
+  module_id: string;
+  indicator_id?: string;
+  required_attention?: boolean;
+  search?: string;
+}
+
+export interface CensusQueryResponse {
+  sections: CensusQuerySection[];
+}
