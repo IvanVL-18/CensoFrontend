@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { getUserAnswers } from "./AdminAnswers.service";
 import type { UserAnswersResponse, ModuleItem, SectionItem, QuestionItem } from "./AdminAnswers.types";
-import ModalBase from "../../components/Modal";
+import { AdminAnswerModal } from "../Answers/components/AdminAnswerModal";
 
 // ── Subcomponents ────────────────────────────────────────────────────────────
 
@@ -53,19 +53,14 @@ function QuestionRow({ question }: { question: QuestionItem }) {
       </div>
 
       {/* Modal */}
-      <ModalBase
-  open={modalOpen}
-  title={question.name}
+      
+
+// En QuestionRow, cambia el ModalBase por:
+<AdminAnswerModal
+  isOpen={modalOpen}
+  question={answered ? question : null}
   onClose={() => setModalOpen(false)}
-  widthClass="max-w-4xl"
->
-  <div className="max-h-[70vh] overflow-y-auto">
-    <p className="text-xs text-slate-400 font-mono mb-3">{question.index}</p>
-    <pre className="text-sm text-slate-700 whitespace-pre-wrap break-words font-sans">
-      {question.answer?.answer ?? "Sin respuesta"}
-    </pre>
-  </div>
-</ModalBase>
+/>
     </>
   );
 }
