@@ -13,8 +13,9 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
-import { FormErrors } from "./FormErrors";
-import { UserSchema } from "../schemas/Users.schema";
+import { FormErrors } from "./FormErrors"; 
+import { UserSchema, UpdateUserSchema } from "../schemas/Users.schema";
+
 
 import type { Rol } from "../../Roles/Roles.types";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
@@ -119,43 +120,142 @@ export function UserModal({
     );
   }, [formData, initialData, roles, occupations, dependencies, institutions]);
 
-  const validateForm = (data: typeof formData) => {
-    const dataForValidation: any = { ...data };
-    if (initialData && !dataForValidation.password) {
-      delete dataForValidation.password;
-      delete dataForValidation.password_confirmation;
-    }
-    // Strip empty optional relation fields so Zod treats them as undefined
-    if (!dataForValidation.role_id) delete dataForValidation.role_id;
-    if (!dataForValidation.occupation_id) delete dataForValidation.occupation_id;
-    if (!dataForValidation.dependency_id) delete dataForValidation.dependency_id;
-    if (!dataForValidation.institution_id) delete dataForValidation.institution_id;
+const buildPayload = (data: typeof formData) => {
+  const payload: any = { ...data };
 
-    const result = UserSchema.safeParse(dataForValidation);
+  const normalize = (val: any) =>
+    val === null || val === undefined ? "" : String(val).trim();
 
-    if (!result.success) {
-      const listIssues = result.error.issues.filter((issue) => {
-        const field = String(issue.path?.[0] ?? "");
-        return field !== "password" && field !== "password_confirmation";
-      });
-
-      setFormErrors(listIssues.map((i) => i.message));
-
-      const fe: Record<string, string> = {};
-      result.error.issues.forEach((issue) => {
-        const key = String(issue.path?.[0] ?? "form");
-        if (!fe[key]) fe[key] = issue.message;
-      });
-      setFieldErrors(fe);
-
-      return false;
-    }
-
-    setFormErrors([]);
-    setFieldErrors({});
-    return true;
+  const getSelectedName = (list: any[], id: string | number) => {
+    const item = list.find((i) => String(i.id) === String(id));
+    return item ? item.name : "";
   };
 
+  if (!initialData) {
+    payload.password = data.password ?? "";
+    payload.password_confirmation = data.password_confirmation ?? "";
+
+    if (!payload.role_id) delete payload.role_id;
+    if (!payload.occupation_id) delete payload.occupation_id;
+    if (!payload.dependency_id) delete payload.dependency_id;
+    if (!payload.institution_id) delete payload.institution_id;
+
+    return payload;
+  }
+
+  if (normalize(payload.email) === normalize(initialData?.email)) {
+    delete payload.email;
+  }
+
+  if (data.password || data.password_confirmation) {
+    payload.password = data.password ?? "";
+    payload.password_confirmation = data.password_confirmation ?? "";
+  } else {
+    delete payload.password;
+    delete payload.password_confirmation;
+  }
+
+  const selectedRoleName = getSelectedName(roles, data.role_id);
+  const selectedOccupationName = getSelectedName(
+    occupations,
+    data.occupation_id,
+  );
+  const selectedDependencyName = getSelectedName(
+    dependencies,
+    data.dependency_id,
+  );
+  const selectedInstitutionName = getSelectedName(
+    institutions,
+    data.institution_id,
+  );
+
+  if (
+    !payload.role_id ||
+    normalize(selectedRoleName) === normalize(initialData?.role?.name)
+  ) {
+    delete payload.role_id;
+  }
+
+  if (
+    !payload.occupation_id ||
+    normalize(selectedOccupationName) === normalize(initialData?.occupation?.name)
+  ) {
+    delete payload.occupation_id;
+  }
+
+  if (
+    !payload.dependency_id ||
+    normalize(selectedDependencyName) === normalize(initialData?.dependency?.name)
+  ) {
+    delete payload.dependency_id;
+  }
+
+  if (
+    !payload.institution_id ||
+    normalize(selectedInstitutionName) === normalize(initialData?.institution?.name)
+  ) {
+    delete payload.institution_id;
+  }
+
+  return payload;
+};
+
+const validateForm = (data: typeof formData) => {
+  const dataForValidation = buildPayload(data);
+
+  const schema = initialData ? UpdateUserSchema : UserSchema;
+
+  const result = schema.safeParse(dataForValidation);
+
+  if (!result.success) {
+    const listIssues = result.error.issues.filter((issue) => {
+      const field = String(issue.path?.[0] ?? "");
+
+      if (
+        initialData &&
+        !data.password &&
+        !data.password_confirmation &&
+        (field === "password" || field === "password_confirmation")
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+    setFormErrors(listIssues.map((i) => i.message));
+
+    const fe: Record<string, string> = {};
+
+    listIssues.forEach((issue) => {
+      const key = String(issue.path?.[0] ?? "form");
+
+      if (!fe[key]) {
+        fe[key] = issue.message;
+      }
+    });
+
+    setFieldErrors(fe);
+
+    return listIssues.length === 0;
+  }
+
+  setFormErrors([]);
+  setFieldErrors({});
+  return true;
+};
+
+const handleSubmit = (e: FormEvent) => {
+  e.preventDefault();
+
+  const ok = validateForm(formData);
+  if (!ok) return;
+
+  const payload = buildPayload(formData);
+
+
+  onSave(payload);
+};
   useEffect(() => {
     if (isOpen) {
       const findIdInCatalog = (
@@ -210,14 +310,7 @@ export function UserModal({
     }
   }, [isOpen, initialData, roles, occupations, dependencies, institutions]);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-
-    const ok = validateForm(formData);
-    if (!ok) return;
-
-    onSave(formData);
-  };
+ 
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -325,7 +418,7 @@ export function UserModal({
                     id="password"
                     name="password"
                     autoComplete="new-password"
-                    value={formData.password}
+                    value={formData.password ?? ""}
                     onChange={handleChange}
                     onFocus={() => setPwdFocus(true)}
                     onBlur={() => setPwdFocus(false)}
@@ -366,7 +459,7 @@ export function UserModal({
                     type={showConfirmPassword ? "text" : "password"}
                     id="password_confirmation"
                     name="password_confirmation"
-                    value={formData.password_confirmation}
+                    value={formData.password_confirmation ?? ""} 
                     onChange={handleChange}
                     className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
                   />
