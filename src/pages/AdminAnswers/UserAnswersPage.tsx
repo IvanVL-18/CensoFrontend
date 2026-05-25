@@ -6,43 +6,67 @@ import {
 } from "lucide-react";
 import { getUserAnswers } from "./AdminAnswers.service";
 import type { UserAnswersResponse, ModuleItem, SectionItem, QuestionItem } from "./AdminAnswers.types";
+import ModalBase from "../../components/Modal";
 
 // ── Subcomponents ────────────────────────────────────────────────────────────
 
 function QuestionRow({ question }: { question: QuestionItem }) {
   const answered = question.answer !== null;
+  const [modalOpen, setModalOpen] = useState(false);
+
   return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-slate-100 last:border-0">
-      {/* Status icon */}
-      <div className="shrink-0 mt-0.5">
-        {answered
-          ? <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-          : <XCircle     className="h-4 w-4 text-slate-300" />
-        }
+    <>
+      <div className="flex items-start gap-3 py-2.5 border-b border-slate-100 last:border-0">
+        {/* Status icon */}
+        <div className="shrink-0 mt-0.5">
+          {answered
+            ? <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            : <XCircle className="h-4 w-4 text-slate-300" />
+          }
+        </div>
+
+        {/* Question info */}
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-slate-400 font-mono">{question.index}</p>
+          <p className="text-sm text-slate-700 mt-0.5">{question.name}</p>
+          {question.instructions && (
+            <p className="text-xs text-slate-400 mt-0.5 italic">{question.instructions}</p>
+          )}
+        </div>
+
+        {/* Answer */}
+        <div className="shrink-0 ml-2 text-right">
+          {answered ? (
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="flex w-full items-center justify-center rounded-xl px-4 py-2 font-bold transition-colors bg-[#691B31] text-white hover:bg-[#DDC9A3] hover:text-[#691B31]"
+            >
+              Ver respuesta
+            </button>
+          ) : (
+            <span className="rounded-md bg-slate-100 border border-slate-200 px-2 py-1 text-xs text-slate-400">
+              Sin respuesta
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Question info */}
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-slate-400 font-mono">{question.index}</p>
-        <p className="text-sm text-slate-700 mt-0.5">{question.name}</p>
-        {question.instructions && (
-          <p className="text-xs text-slate-400 mt-0.5 italic">{question.instructions}</p>
-        )}
-      </div>
-
-      {/* Answer */}
-      <div className="shrink-0 ml-2 text-right">
-        {answered ? (
-          <span className="inline-block max-w-[180px] truncate rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-xs font-medium text-emerald-700">
-            {question.answer!.answer}
-          </span>
-        ) : (
-          <span className="rounded-md bg-slate-100 border border-slate-200 px-2 py-1 text-xs text-slate-400">
-            Sin respuesta
-          </span>
-        )}
-      </div>
-    </div>
+      {/* Modal */}
+      <ModalBase
+  open={modalOpen}
+  title={question.name}
+  onClose={() => setModalOpen(false)}
+  widthClass="max-w-4xl"
+>
+  <div className="max-h-[70vh] overflow-y-auto">
+    <p className="text-xs text-slate-400 font-mono mb-3">{question.index}</p>
+    <pre className="text-sm text-slate-700 whitespace-pre-wrap break-words font-sans">
+      {question.answer?.answer ?? "Sin respuesta"}
+    </pre>
+  </div>
+</ModalBase>
+    </>
   );
 }
 
