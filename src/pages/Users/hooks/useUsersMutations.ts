@@ -77,11 +77,6 @@ export function useUsersMutations({
           delete updateData.institution_id;
         }
 
-        console.log(
-          "PAYLOAD LIMPIO QUE SE ENVÍA AL BACKEND:",
-          JSON.stringify(updateData, null, 2),
-        );
-
         response = await updateUser(editingUser.id, updateData);
 
         addToast(

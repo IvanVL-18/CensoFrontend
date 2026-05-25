@@ -13,8 +13,7 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
-import { FormErrors } from "./FormErrors";  
-//import { UserSchema } from "../schemas/Users.schema";
+import { FormErrors } from "./FormErrors"; 
 import { UserSchema, UpdateUserSchema } from "../schemas/Users.schema";
 
 
@@ -254,7 +253,6 @@ const handleSubmit = (e: FormEvent) => {
 
   const payload = buildPayload(formData);
 
-  console.log("PAYLOAD FINAL DESDE MODAL:", JSON.stringify(payload, null, 2));
 
   onSave(payload);
 };
@@ -312,14 +310,7 @@ const handleSubmit = (e: FormEvent) => {
     }
   }, [isOpen, initialData, roles, occupations, dependencies, institutions]);
 
-  // const handleSubmit = (e: FormEvent) => {
-  //   e.preventDefault();
-
-  //   const ok = validateForm(formData);
-  //   if (!ok) return;
-
-  //   onSave(formData);
-  // };
+ 
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
