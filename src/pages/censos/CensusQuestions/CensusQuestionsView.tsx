@@ -4,8 +4,26 @@ import { ArrowLeft, Save, Eye } from "lucide-react";
 import { useCensusQuestions } from "./useCensusQuestions";
 import Pagination from "../../../components/Pagination";
 import { ViewQuestionModal } from "./ViewQuestionsModal";
+import { ToastProvider, useToast } from "../../../context/ToastContext";
+import { Toast } from "../../../components/Toast";
 
-const CensusQuestionsView: React.FC = () => {
+function ToastContainer() {
+  const { toasts, removeToast } = useToast();
+  return (
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+      {toasts.map((toast) => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => removeToast(toast.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+const CensusQuestionsPageContent: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -29,7 +47,6 @@ const CensusQuestionsView: React.FC = () => {
     loading,
     paginating,
     saving,
-    error,
     allChecked,
     currentPage,
     lastPage,
@@ -55,7 +72,7 @@ const CensusQuestionsView: React.FC = () => {
     <>
       <div className="w-full p-6">
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-       
+
         <div className="flex items-center justify-between bg-[var(--pantone-7421)] px-6 py-4 text-white">
           <div>
             <h1 className="text-lg font-semibold">Preguntas</h1>
@@ -75,15 +92,8 @@ const CensusQuestionsView: React.FC = () => {
           </button>
         </div>
 
-        
-        {error && (
-          <div className="border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
         <div className="p-6">
-          
+
           <div className="relative overflow-x-auto rounded-xl border border-gray-200">
             {paginating && (
               <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70">
@@ -140,13 +150,14 @@ const CensusQuestionsView: React.FC = () => {
                           row.checked ? "bg-green-50" : "bg-white"
                         }`}
                       >
-                       
+
                         <td className="px-4 py-3">
                           <input
                             type="checkbox"
                             checked={row.checked}
                             onChange={(e) =>
                               toggleQuestionRow(
+                                row.question_name,
                                 row.question_id,
                                 e.target.checked,
                               )
@@ -155,17 +166,17 @@ const CensusQuestionsView: React.FC = () => {
                           />
                         </td>
 
-                      
+
                         <td className="px-4 py-3 font-medium">
                           {row.question_name}
                         </td>
 
-                        
+
                         <td className="px-4 py-3">
                           <select
                             value={row.selected_index_id}
                             onChange={(e) =>
-                              changeIndex(row.question_id, e.target.value)
+                              changeIndex(row.question_name, e.target.value)
                             }
                             disabled={!row.checked}
                             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
@@ -179,7 +190,7 @@ const CensusQuestionsView: React.FC = () => {
                           </select>
                         </td>
 
-                        
+
                         <td className="px-4 py-3">
                           {row.checked ? (
                             <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
@@ -194,7 +205,7 @@ const CensusQuestionsView: React.FC = () => {
                           )}
                         </td>
 
-                      
+
                         <td className="px-4 py-3 text-center">
                           <button
                             type="button"
@@ -213,7 +224,7 @@ const CensusQuestionsView: React.FC = () => {
             </table>
           </div>
 
-         
+
           <div className="mt-4">
             <Pagination
               meta={{ current_page: currentPage, last_page: lastPage }}
@@ -222,7 +233,7 @@ const CensusQuestionsView: React.FC = () => {
             />
           </div>
 
-        
+
           <div className="mt-6 flex items-center justify-end gap-3">
             <button
               type="button"
@@ -250,8 +261,16 @@ const CensusQuestionsView: React.FC = () => {
         onClose={closeQuestionModal}
         questionId={selectedQuestionId}
       />
+
+      <ToastContainer />
     </>
   );
 };
 
-export default CensusQuestionsView;
+export default function CensusQuestionsView() {
+  return (
+    <ToastProvider>
+      <CensusQuestionsPageContent />
+    </ToastProvider>
+  );
+}

@@ -1,15 +1,13 @@
-// src/components/charts/QuestionnaireCharts.tsx
-import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
-type Questionnaire = {
+export type Questionnaire = {
   id: string;
   name: string;
   totalQuestions: number;
   resolvedQuestions: number;
 };
 
-const QUESTIONNAIRES: Questionnaire[] = [
+export const QUESTIONNAIRES: Questionnaire[] = [
   {
     id: "cng",
     name: "Censo Nacional de Gobierno",
@@ -30,9 +28,12 @@ const QUESTIONNAIRES: Questionnaire[] = [
   },
 ];
 
-export default function QuestionnaireCharts() {
-  const [selectedId, setSelectedId] = useState<string>(QUESTIONNAIRES[0]?.id);
+type Props = {
+  selectedId: string;
+  onSelectChange: (id: string) => void;
+};
 
+export default function QuestionnaireCharts({ selectedId, onSelectChange }: Props) {
   const selected =
     QUESTIONNAIRES.find((q) => q.id === selectedId) ?? QUESTIONNAIRES[0];
 
@@ -53,7 +54,7 @@ export default function QuestionnaireCharts() {
           <div className="relative w-full sm:w-[360px]">
             <select
               value={selectedId}
-              onChange={(e) => setSelectedId(e.target.value)}
+              onChange={(e) => onSelectChange(e.target.value)}
               className="w-full appearance-none rounded-lg bg-[#F5F1EA] text-[#3b2a2e] text-xs sm:text-sm pl-3 pr-8 py-2 border border-white/60 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#F5F1EA] focus:border-white"
             >
               {QUESTIONNAIRES.map((q) => (
