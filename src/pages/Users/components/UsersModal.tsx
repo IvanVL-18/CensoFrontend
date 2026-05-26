@@ -14,12 +14,12 @@ import {
   XCircle,
 } from "lucide-react";
 import { FormErrors } from "./FormErrors";
-import { UserSchema } from "../schemas/Users.schema";
+import { UserSchema, UpdateUserSchema } from "../schemas/Users.schema";
 
 import type { Rol } from "../../Roles/Roles.types";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
 
-const EMAIL_MAX_LENGTH = 100;
+const EMAIL_MAX_LENGTH = 55;
 
 interface ExtendedUserModalProps {
   isOpen: boolean;
@@ -59,7 +59,6 @@ export function UserModal({
     dependency_id: "",
     institution_id: "",
   });
-
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -123,39 +122,127 @@ export function UserModal({
     );
   }, [formData, initialData, roles, occupations, dependencies, institutions]);
 
+  const buildPayload = (data: typeof formData) => {
+    const payload: any = { ...data };
+
+    const normalize = (val: any) =>
+      val === null || val === undefined ? "" : String(val).trim();
+
+    const getSelectedName = (list: any[], id: string | number) => {
+      const item = list.find((i) => String(i.id) === String(id));
+      return item ? item.name : "";
+    };
+
+    if (!initialData) {
+      payload.password = data.password ?? "";
+      payload.password_confirmation = data.password_confirmation ?? "";
+
+      if (!payload.role_id) delete payload.role_id;
+      if (!payload.occupation_id) delete payload.occupation_id;
+      if (!payload.dependency_id) delete payload.dependency_id;
+      if (!payload.institution_id) delete payload.institution_id;
+
+      return payload;
+    }
+
+    if (normalize(payload.email) === normalize(initialData?.email)) {
+      delete payload.email;
+    }
+
+    if (data.password || data.password_confirmation) {
+      payload.password = data.password ?? "";
+      payload.password_confirmation = data.password_confirmation ?? "";
+    } else {
+      delete payload.password;
+      delete payload.password_confirmation;
+    }
+
+    const selectedRoleName = getSelectedName(roles, data.role_id);
+    const selectedOccupationName = getSelectedName(
+      occupations,
+      data.occupation_id,
+    );
+    const selectedDependencyName = getSelectedName(
+      dependencies,
+      data.dependency_id,
+    );
+    const selectedInstitutionName = getSelectedName(
+      institutions,
+      data.institution_id,
+    );
+
+    if (
+      !payload.role_id ||
+      normalize(selectedRoleName) === normalize(initialData?.role?.name)
+    ) {
+      delete payload.role_id;
+    }
+
+    if (
+      !payload.occupation_id ||
+      normalize(selectedOccupationName) ===
+        normalize(initialData?.occupation?.name)
+    ) {
+      delete payload.occupation_id;
+    }
+
+    if (
+      !payload.dependency_id ||
+      normalize(selectedDependencyName) ===
+        normalize(initialData?.dependency?.name)
+    ) {
+      delete payload.dependency_id;
+    }
+
+    if (
+      !payload.institution_id ||
+      normalize(selectedInstitutionName) ===
+        normalize(initialData?.institution?.name)
+    ) {
+      delete payload.institution_id;
+    }
+
+    return payload;
+  };
+
   const validateForm = (data: typeof formData) => {
-    const dataForValidation: any = { ...data };
+    const dataForValidation = buildPayload(data);
 
-    if (initialData && !dataForValidation.password) {
-      delete dataForValidation.password;
-      delete dataForValidation.password_confirmation;
-    }
+    const schema = initialData ? UpdateUserSchema : UserSchema;
 
-    if (!dataForValidation.role_id) delete dataForValidation.role_id;
-    if (!dataForValidation.occupation_id) delete dataForValidation.occupation_id;
-    if (!dataForValidation.dependency_id) delete dataForValidation.dependency_id;
-    if (!dataForValidation.institution_id) {
-      delete dataForValidation.institution_id;
-    }
-
-    const result = UserSchema.safeParse(dataForValidation);
+    const result = schema.safeParse(dataForValidation);
 
     if (!result.success) {
       const listIssues = result.error.issues.filter((issue) => {
         const field = String(issue.path?.[0] ?? "");
-        return field !== "password" && field !== "password_confirmation";
+
+        if (
+          initialData &&
+          !data.password &&
+          !data.password_confirmation &&
+          (field === "password" || field === "password_confirmation")
+        ) {
+          return false;
+        }
+
+        return true;
       });
 
       setFormErrors(listIssues.map((i) => i.message));
 
       const fe: Record<string, string> = {};
-      result.error.issues.forEach((issue) => {
+
+      listIssues.forEach((issue) => {
         const key = String(issue.path?.[0] ?? "form");
-        if (!fe[key]) fe[key] = issue.message;
+
+        if (!fe[key]) {
+          fe[key] = issue.message;
+        }
       });
 
       setFieldErrors(fe);
-      return false;
+
+      return listIssues.length === 0;
     }
 
     setFormErrors([]);
@@ -163,6 +250,16 @@ export function UserModal({
     return true;
   };
 
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+
+    const ok = validateForm(formData);
+    if (!ok) return;
+
+    const payload = buildPayload(formData);
+
+    onSave(payload);
+  };
   useEffect(() => {
     if (isOpen) {
       const findIdInCatalog = (
@@ -178,7 +275,6 @@ export function UserModal({
           );
           if (match) return match.id;
         }
-
         if (fallbackId) {
           const directMatch = catalog.find(
             (item) => String(item.id) === String(fallbackId),
@@ -223,15 +319,6 @@ export function UserModal({
     }
   }, [isOpen, initialData, roles, occupations, dependencies, institutions]);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-
-    const ok = validateForm(formData);
-    if (!ok) return;
-
-    onSave(formData);
-  };
-
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -251,43 +338,18 @@ export function UserModal({
     });
   };
 
-  const getEmailBorderColor = () => {
-    if (fieldErrors.email) return "border-red-500 focus:ring-red-400";
-    if (emailCharCount >= EMAIL_MAX_LENGTH) {
-      return "border-red-300 focus:ring-red-400";
-    }
-    if (emailCharCount >= EMAIL_MAX_LENGTH - 10) {
-      return "border-amber-300 focus:ring-amber-400";
-    }
-    return "border-gray-300 focus:ring-[#DDC9A3]";
-  };
-
-  const getEmailProgressColor = () => {
-    if (emailCharCount >= EMAIL_MAX_LENGTH) return "bg-red-600";
-    if (emailCharCount >= EMAIL_MAX_LENGTH - 10) return "bg-amber-500";
-    return "bg-[#DDC9A3]";
-  };
-
-  const getEmailCharCountColor = () => {
-    if (emailCharCount >= EMAIL_MAX_LENGTH) return "text-red-600";
-    if (emailCharCount >= EMAIL_MAX_LENGTH - 10) return "text-amber-600";
-    return "text-gray-500";
-  };
-
   if (!isOpen) {
     return null;
   }
 
   const hasClientErrors =
     formErrors.length > 0 || Object.keys(fieldErrors).length > 0;
-
   const handleClose = () => {
     setFormErrors([]);
     setFieldErrors({});
     setEmailCharCount(0);
     onClose();
   };
-
   const showConfirmStatus =
     (!initialData || formData.password.length > 0) &&
     formData.password_confirmation.length > 0;
@@ -318,9 +380,7 @@ export function UserModal({
         <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-hidden max-h-[90vh] flex flex-col">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
-
             <button
-              type="button"
               onClick={handleClose}
               className="text-white hover:text-gray-300"
             >
@@ -335,20 +395,12 @@ export function UserModal({
           >
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <div className="flex justify-between items-center mb-1">
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Correo Electrónico:
-                  </label>
-
-                  <span
-                    className={`text-xs font-medium ${getEmailCharCountColor()}`}
-                  >
-                    {emailCharCount}/{EMAIL_MAX_LENGTH} caracteres
-                  </span>
-                </div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Correo Electrónico:
+                </label>
 
                 <input
                   type="email"
@@ -358,17 +410,12 @@ export function UserModal({
                   value={formData.email}
                   onChange={handleChange}
                   maxLength={EMAIL_MAX_LENGTH}
-                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getEmailBorderColor()}`}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 />
 
-                <div className="mt-1 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-300 ${getEmailProgressColor()}`}
-                    style={{
-                      width: `${(emailCharCount / EMAIL_MAX_LENGTH) * 100}%`,
-                    }}
-                  />
-                </div>
+                <p className="mt-1 text-xs text-gray-500 text-right">
+                  {emailCharCount}/{EMAIL_MAX_LENGTH} caracteres
+                </p>
 
                 {fieldErrors.email && (
                   <p className="mt-1 text-xs text-red-600">
@@ -388,20 +435,18 @@ export function UserModal({
                     : "(Obligatoria)"}
                   :
                 </label>
-
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
                     autoComplete="new-password"
-                    value={formData.password}
+                    value={formData.password ?? ""}
                     onChange={handleChange}
                     onFocus={() => setPwdFocus(true)}
                     onBlur={() => setPwdFocus(false)}
                     className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
                   />
-
                   <button
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
@@ -411,7 +456,6 @@ export function UserModal({
                     {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-
                 {(!initialData || formData.password.length > 0) && (
                   <PasswordStrengthMeter
                     password={formData.password}
@@ -419,7 +463,6 @@ export function UserModal({
                     showRules={pwdFocus}
                   />
                 )}
-
                 {fieldErrors.password && (
                   <p className="mt-1 text-xs text-red-600">
                     {fieldErrors.password}
@@ -434,17 +477,15 @@ export function UserModal({
                 >
                   Confirmar Contraseña:
                 </label>
-
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     id="password_confirmation"
                     name="password_confirmation"
-                    value={formData.password_confirmation}
+                    value={formData.password_confirmation ?? ""}
                     onChange={handleChange}
                     className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] pr-10"
                   />
-
                   <button
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
@@ -458,7 +499,6 @@ export function UserModal({
                     )}
                   </button>
                 </div>
-
                 {showConfirmStatus && (
                   <div
                     className={`mt-2 flex items-center gap-2 text-xs font-medium ${
@@ -487,7 +527,6 @@ export function UserModal({
                 >
                   Rol:
                 </label>
-
                 <select
                   id="role_id"
                   name="role_id"
@@ -496,7 +535,6 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Rol</option>
-
                   {roles.map((role) => (
                     <option key={role.id} value={role.id}>
                       {role.name}
@@ -512,7 +550,6 @@ export function UserModal({
                 >
                   Ocupación:
                 </label>
-
                 <select
                   id="occupation_id"
                   name="occupation_id"
@@ -521,7 +558,6 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Ocupación</option>
-
                   {occupations.map((occ: any) => (
                     <option key={occ.id} value={occ.id}>
                       {occ.name}
@@ -537,7 +573,6 @@ export function UserModal({
                 >
                   Dependencia:
                 </label>
-
                 <select
                   id="dependency_id"
                   name="dependency_id"
@@ -546,11 +581,9 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Dependencia</option>
-
                   {dependencies.length === 0 && (
                     <option disabled>Cargando dependencia...</option>
                   )}
-
                   {dependencies.map((dependency: any) => (
                     <option key={dependency.id} value={dependency.id}>
                       {dependency.name}
@@ -566,7 +599,6 @@ export function UserModal({
                 >
                   Institución:
                 </label>
-
                 <select
                   id="institution_id"
                   name="institution_id"
@@ -575,7 +607,6 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Institución</option>
-
                   {institutions.map((inst: any) => (
                     <option key={inst.id} value={inst.id}>
                       {inst.name}
@@ -588,7 +619,6 @@ export function UserModal({
                 <div id="form-errors-client">
                   <FormErrors errors={formErrors} />
                 </div>
-
                 {error && (
                   <div id="form-errors-server">
                     <FormErrors errors={[error]} />
@@ -611,7 +641,6 @@ export function UserModal({
               >
                 <UserRoundPen size={20} />
               </button>
-
               <button
                 type="button"
                 onClick={handleClose}
@@ -620,7 +649,6 @@ export function UserModal({
               >
                 Cancelar
               </button>
-
               <button
                 type="submit"
                 disabled={isDisabled}
