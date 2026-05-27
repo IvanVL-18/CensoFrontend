@@ -3,6 +3,7 @@ import type {
   CensusInstitutionsResponse,
   InstitutionUsersResponse,
   UserAnswersResponse,
+  GetAnswersResponse,
 } from "./AdminAnswers.types";
 
 const enc = (id: string) => encodeURIComponent(id);
@@ -32,5 +33,18 @@ export const getUserAnswers = async (
   const { data } = await api.get(
     `/admin/censuses/${enc(censusId)}/institutions/${enc(institutionId)}/users/${enc(userId)}/answers`,
   );
+  return data;
+};
+
+export const getAnswersForReport = async (
+  censusId: string,
+  institutionId: string,
+  userId: string,
+): Promise<GetAnswersResponse> => {
+  const { data } = await api.post(`/admin/censuses/get-answers`, {
+    census_id: censusId,
+    institution_id: institutionId,
+    user_id: userId,
+  });
   return data;
 };
