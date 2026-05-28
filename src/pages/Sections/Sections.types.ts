@@ -1,8 +1,15 @@
+export interface Indicator {
+  id: string;
+  name: string;
+}
+
 export interface Section {
   id: string;
   name: string;
   instructions: string | null;
-  created_at: string; 
+  indicator_id: string | null;
+  needs_attention: boolean;
+  created_at: string;
   updated_at: string;
   deleted_at: string;
 }
@@ -75,7 +82,7 @@ export interface SectionModalProps {
 }
 
 export interface SectionsTableProps {
-  Sections: Section[]; 
+  Sections: Section[];
   meta: Meta | null;
   loading: boolean;
   error: string | null;
@@ -89,10 +96,12 @@ export interface SectionsTableProps {
 export interface ViewSectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  Section: Section | null; 
+  Section: Section | null;
 }
 export interface CreateSectionDTO {
   name: string;
   instructions?: string | null;
+  indicator_id?: string | null;
+  needs_attention?: boolean;
 }
 export type UpdateSectionDTO = Partial<CreateSectionDTO>;

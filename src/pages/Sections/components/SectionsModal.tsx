@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
-import type { SectionModalProps } from "../Sections.types";
+import type { SectionModalProps, Indicator } from "../Sections.types";
 import { Sectionschema } from "../schemas/Sections.schema";
 
 const NAME_MAX = 180;
@@ -19,16 +19,43 @@ export function SectionModal({
 }: SectionModalProps & { isViewOnly?: boolean }) {
   const [name, setName] = useState("");
   const [instructions, setInstructions] = useState("");
+  const [indicatorId, setIndicatorId] = useState<string | null>(null);
+  const [needsAttention, setNeedsAttention] = useState(false);
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
   const [nameCharCount, setNameCharCount] = useState(0);
   const [instructionsCharCount, setInstructionsCharCount] = useState(0);
+  const [indicators, setIndicators] = useState<Indicator[]>([]);
+  const [loadingIndicators, setLoadingIndicators] = useState(false);
+  const [indicatorsError, setIndicatorsError] = useState<string | null>(null);
+
+  // Fetch indicators when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    setLoadingIndicators(true);
+    setIndicatorsError(null);
+    fetch("/api/indicators")
+      .then((res) => {
+        if (!res.ok) throw new Error("Error al cargar los indicadores.");
+        return res.json();
+      })
+      .then((json) => {
+        setIndicators(json.data ?? []);
+      })
+      .catch(() => {
+        setIndicatorsError("No se pudieron cargar los indicadores.");
+      })
+      .finally(() => {
+        setLoadingIndicators(false);
+      });
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
-      
       setName(initialData?.name || "");
       setInstructions(initialData?.instructions || "");
+      setIndicatorId(initialData?.indicator_id ?? null);
+      setNeedsAttention(initialData?.needs_attention ?? false);
       setNameCharCount(initialData?.name?.length || 0);
       setInstructionsCharCount(initialData?.instructions?.length || 0);
       setFormErrors([]);
@@ -44,10 +71,17 @@ export function SectionModal({
     }
   }, [error]);
 
-  const validateForm = (currentName: string, currentInstructions: string) => {
+  const validateForm = (
+    currentName: string,
+    currentInstructions: string,
+    currentIndicatorId: string | null,
+    currentNeedsAttention: boolean,
+  ) => {
     const result = Sectionschema.safeParse({
       name: currentName,
       instructions: currentInstructions,
+      indicator_id: currentIndicatorId,
+      needs_attention: currentNeedsAttention,
     });
     if (!result.success) {
       const errorMessages = result.error.issues.map((err) => err.message);
@@ -62,13 +96,20 @@ export function SectionModal({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    const isValid = validateForm(name, instructions);
+    const isValid = validateForm(
+      name,
+      instructions,
+      indicatorId,
+      needsAttention,
+    );
     if (!isValid) return;
 
     const isEditMode = !!initialData;
 
     const initialName = (initialData?.name ?? "").trim();
     const initialInstr = (initialData?.instructions ?? "").trim();
+    const initialIndicatorId = initialData?.indicator_id ?? null;
+    const initialNeedsAttention = initialData?.needs_attention ?? false;
 
     const currentName = name.trim();
     const currentInstr = instructions.trim();
@@ -81,6 +122,10 @@ export function SectionModal({
         patch.instructions = currentInstr === "" ? null : currentInstr;
       }
 
+      if (indicatorId !== initialIndicatorId) patch.indicator_id = indicatorId;
+      if (needsAttention !== initialNeedsAttention)
+        patch.needs_attention = needsAttention;
+
       onSave(patch);
       return;
     }
@@ -88,6 +133,8 @@ export function SectionModal({
     onSave({
       name: currentName,
       ...(currentInstr ? { instructions: currentInstr } : {}),
+      indicator_id: indicatorId,
+      needs_attention: needsAttention,
     });
   };
 
@@ -96,7 +143,7 @@ export function SectionModal({
     if (newName.length <= NAME_MAX) {
       setName(newName);
       setNameCharCount(newName.length);
-      validateForm(newName, instructions);
+      validateForm(newName, instructions, indicatorId, needsAttention);
       if (serverError) setServerError(null);
     }
   };
@@ -106,14 +153,29 @@ export function SectionModal({
     if (newInstructions.length <= INSTRUCTIONS_MAX) {
       setInstructions(newInstructions);
       setInstructionsCharCount(newInstructions.length);
-      validateForm(name, newInstructions);
+      validateForm(name, newInstructions, indicatorId, needsAttention);
       if (serverError) setServerError(null);
     }
+  };
+
+  const handleIndicatorChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value || null;
+    setIndicatorId(val);
+    validateForm(name, instructions, val, needsAttention);
+    if (serverError) setServerError(null);
+  };
+
+  const handleNeedsAttentionChange = (value: boolean) => {
+    if (isViewOnly || isSubmitting) return;
+    setNeedsAttention(value);
+    validateForm(name, instructions, indicatorId, value);
   };
 
   const handleClose = () => {
     setName("");
     setInstructions("");
+    setIndicatorId(null);
+    setNeedsAttention(false);
     setNameCharCount(0);
     setInstructionsCharCount(0);
     setFormErrors([]);
@@ -129,31 +191,40 @@ export function SectionModal({
   const hasServerError = !!serverError;
   const hasChanges =
     name.trim() !== (initialData?.name ?? "").trim() ||
-    instructions.trim() !== (initialData?.instructions ?? "").trim();
+    instructions.trim() !== (initialData?.instructions ?? "").trim() ||
+    indicatorId !== (initialData?.indicator_id ?? null) ||
+    needsAttention !== (initialData?.needs_attention ?? false);
 
-  const nameIsNearLimit = nameCharCount >= NAME_MAX - 10 && nameCharCount <= NAME_MAX;
+  const nameIsNearLimit =
+    nameCharCount >= NAME_MAX - 10 && nameCharCount <= NAME_MAX;
   const nameIsAtLimit = nameCharCount >= NAME_MAX;
 
-  const instrIsNearLimit = instructionsCharCount >= INSTRUCTIONS_MAX - 10 && instructionsCharCount <= INSTRUCTIONS_MAX;
+  const instrIsNearLimit =
+    instructionsCharCount >= INSTRUCTIONS_MAX - 10 &&
+    instructionsCharCount <= INSTRUCTIONS_MAX;
   const instrIsAtLimit = instructionsCharCount >= INSTRUCTIONS_MAX;
 
-  const getInputBorderColor = (hasFieldErrors: boolean, isNearLimit: boolean, isAtLimit: boolean) => {
-    if (hasFieldErrors) return 'border-red-500 focus:ring-red-400';
-    if (isAtLimit) return 'border-red-300 focus:ring-red-400';
-    if (isNearLimit) return 'border-amber-300 focus:ring-amber-400';
-    return 'border-gray-300 focus:ring-[#DDC9A3]';
+  const getInputBorderColor = (
+    hasFieldErrors: boolean,
+    isNearLimit: boolean,
+    isAtLimit: boolean,
+  ) => {
+    if (hasFieldErrors) return "border-red-500 focus:ring-red-400";
+    if (isAtLimit) return "border-red-300 focus:ring-red-400";
+    if (isNearLimit) return "border-amber-300 focus:ring-amber-400";
+    return "border-gray-300 focus:ring-[#DDC9A3]";
   };
 
   const getProgressBarColor = (isAtLimit: boolean, isNearLimit: boolean) => {
-    if (isAtLimit) return 'bg-red-600';
-    if (isNearLimit) return 'bg-amber-500';
-    return 'bg-[#DDC9A3]';
+    if (isAtLimit) return "bg-red-600";
+    if (isNearLimit) return "bg-amber-500";
+    return "bg-[#DDC9A3]";
   };
 
   const getCharCountColor = (isAtLimit: boolean, isNearLimit: boolean) => {
-    if (isAtLimit) return 'text-red-600';
-    if (isNearLimit) return 'text-amber-600';
-    return 'text-gray-500';
+    if (isAtLimit) return "text-red-600";
+    if (isNearLimit) return "text-amber-600";
+    return "text-gray-500";
   };
 
   return (
@@ -167,7 +238,10 @@ export function SectionModal({
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
-            <button onClick={handleClose} className="text-white hover:text-gray-300">
+            <button
+              onClick={handleClose}
+              className="text-white hover:text-gray-300"
+            >
               <X size={24} />
             </button>
           </div>
@@ -176,10 +250,15 @@ export function SectionModal({
             <div className="p-6">
               {/* Campo Nombre */}
               <div className="flex justify-between items-center mb-2">
-                <label htmlFor="SectionName" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="SectionName"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Nombre de la Sección:
                 </label>
-                <span className={`text-xs font-medium ${getCharCountColor(nameIsAtLimit, nameIsNearLimit)}`}>
+                <span
+                  className={`text-xs font-medium ${getCharCountColor(nameIsAtLimit, nameIsNearLimit)}`}
+                >
                   {nameCharCount}/{NAME_MAX} caracteres
                 </span>
               </div>
@@ -193,7 +272,7 @@ export function SectionModal({
                 className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor(
                   hasClientErrors || hasServerError,
                   nameIsNearLimit,
-                  nameIsAtLimit
+                  nameIsAtLimit,
                 )}`}
                 disabled={isSubmitting || isViewOnly}
                 autoFocus={!isViewOnly}
@@ -207,10 +286,15 @@ export function SectionModal({
 
               {/* Campo Instrucciones */}
               <div className="flex justify-between items-center mb-2">
-                <label htmlFor="SectionInstructions" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="SectionInstructions"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Instrucciones (Opcional):
                 </label>
-                <span className={`text-xs font-medium ${getCharCountColor(instrIsAtLimit, instrIsNearLimit)}`}>
+                <span
+                  className={`text-xs font-medium ${getCharCountColor(instrIsAtLimit, instrIsNearLimit)}`}
+                >
                   {instructionsCharCount}/{INSTRUCTIONS_MAX} caracteres
                 </span>
               </div>
@@ -224,15 +308,84 @@ export function SectionModal({
                 className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor(
                   hasClientErrors || hasServerError,
                   instrIsNearLimit,
-                  instrIsAtLimit
+                  instrIsAtLimit,
                 )}`}
                 disabled={isSubmitting || isViewOnly}
               />
               <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden mb-2">
                 <div
                   className={`h-full transition-all duration-300 ${getProgressBarColor(instrIsAtLimit, instrIsNearLimit)}`}
-                  style={{ width: `${(instructionsCharCount / INSTRUCTIONS_MAX) * 100}%` }}
+                  style={{
+                    width: `${(instructionsCharCount / INSTRUCTIONS_MAX) * 100}%`,
+                  }}
                 />
+              </div>
+
+              {/* Campo Indicador */}
+              <div className="flex justify-between items-center mb-2">
+                <label
+                  htmlFor="SectionIndicator"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Indicador (Opcional):
+                </label>
+              </div>
+              {loadingIndicators ? (
+                <div className="border border-gray-300 rounded-lg p-2 w-full text-sm text-gray-400 bg-gray-50 mb-4">
+                  Cargando indicadores...
+                </div>
+              ) : indicatorsError ? (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-2 mb-4">
+                  {indicatorsError}
+                </div>
+              ) : (
+                <select
+                  id="SectionIndicator"
+                  value={indicatorId ?? ""}
+                  onChange={handleIndicatorChange}
+                  disabled={isSubmitting || isViewOnly}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] bg-white text-sm text-gray-700 disabled:bg-gray-100 disabled:text-gray-500 mb-4"
+                >
+                  <option value="">— Sin indicador —</option>
+                  {indicators.map((ind) => (
+                    <option key={ind.id} value={ind.id}>
+                      {ind.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {/* Campo Necesita Atención */}
+              <div className="flex justify-between items-center mb-2">
+                <span className="block text-sm font-medium text-gray-700">
+                  Necesita Atención:
+                </span>
+              </div>
+              <div className="flex gap-3 mb-2">
+                <button
+                  type="button"
+                  onClick={() => handleNeedsAttentionChange(true)}
+                  disabled={isSubmitting || isViewOnly}
+                  className={`flex-1 py-2 px-4 rounded-lg border text-sm font-semibold transition-colors ${
+                    needsAttention
+                      ? "bg-red-900 border-red-900 text-white"
+                      : "bg-white border-gray-300 text-gray-600 hover:border-red-300 hover:text-red-800"
+                  } disabled:opacity-50 disabled:cursor-default`}
+                >
+                  Sí
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleNeedsAttentionChange(false)}
+                  disabled={isSubmitting || isViewOnly}
+                  className={`flex-1 py-2 px-4 rounded-lg border text-sm font-semibold transition-colors ${
+                    !needsAttention
+                      ? "bg-[#C3A67C] border-[#C3A67C] text-white"
+                      : "bg-white border-gray-300 text-gray-600 hover:border-[#C3A67C] hover:text-[#8a6f45]"
+                  } disabled:opacity-50 disabled:cursor-default`}
+                >
+                  No
+                </button>
               </div>
 
               <div id="form-errors-client">
