@@ -31,11 +31,10 @@ import Questions from "./pages/Questions/Questions";
 import Builder from "././pages/Designer/components/Builder";
 import Answers from "./pages/Answers/Answers";
 import CensusInstitutionsPage from "./pages/AdminAnswers/CensusInstitutionsPage";
-import InstitutionUsersPage   from "./pages/AdminAnswers/InstitutionUsersPage";
-import UserAnswersPage        from "./pages/AdminAnswers/UserAnswersPage";
+import InstitutionUsersPage from "./pages/AdminAnswers/InstitutionUsersPage";
+import UserAnswersPage from "./pages/AdminAnswers/UserAnswersPage";
+import Indicators from "./pages/Indicators/Indicators";
 import "./App.css";
-
-
 
 export default function App() {
   return (
@@ -46,32 +45,49 @@ export default function App() {
       {/* ── Área autenticada ─────────────────────────────────────────────── */}
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
-
           <Route path="/" element={<Navigate to="/inicio" replace />} />
 
           {/* Sin permiso específico (cualquier usuario autenticado) */}
-          <Route path="/inicio"        element={<HomePage />} />
-          <Route path="/verification"  element={<Verification />} />
+          <Route path="/inicio" element={<HomePage />} />
+          <Route path="/verification" element={<Verification />} />
           <Route path="/ResetPassword" element={<ResetPassword />} />
           <Route path="/configuracion" element={<ConfigurationsPage />} />
-          <Route path="/mis-censos"    element={<Answers />} />
+          <Route path="/mis-censos" element={<Answers />} />
 
           {/* Dashboard */}
           <Route element={<ProtectedRoute permission="dashboard.view" />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/admin/censos/:censusId/instituciones"                                                                    element={<CensusInstitutionsPage />} />
-            <Route path="/admin/censos/:censusId/instituciones/:institutionId/usuarios"                                            element={<InstitutionUsersPage />} />
-            <Route path="/admin/censos/:censusId/instituciones/:institutionId/usuarios/:userId/respuestas"                         element={<UserAnswersPage />} />
+            <Route
+              path="/admin/censos/:censusId/instituciones"
+              element={<CensusInstitutionsPage />}
+            />
+            <Route
+              path="/admin/censos/:censusId/instituciones/:institutionId/usuarios"
+              element={<InstitutionUsersPage />}
+            />
+            <Route
+              path="/admin/censos/:censusId/instituciones/:institutionId/usuarios/:userId/respuestas"
+              element={<UserAnswersPage />}
+            />
           </Route>
 
           {/* ── Censos ───────────────────────────────────────────────────── */}
           <Route element={<ProtectedRoute permission="censos.view" />}>
-            <Route path="/censos"                        element={<Censos />} />
-            <Route path="/censos/:id"                    element={<CensoDetail />} />
-            <Route path="/censos/:id/modulos"            element={<CensoModulesView />} />
-            <Route path="/censos/secciones/:id"          element={<CensoSectionsView />} />
-            <Route path="/censos/preguntas/:id"          element={<CensusQuestionsView />} />
-            <Route path="/censos/:censusId/ver-censo"    element={<CensusViewPage />} />
+            <Route path="/censos" element={<Censos />} />
+            <Route path="/censos/:id" element={<CensoDetail />} />
+            <Route path="/censos/:id/modulos" element={<CensoModulesView />} />
+            <Route
+              path="/censos/secciones/:id"
+              element={<CensoSectionsView />}
+            />
+            <Route
+              path="/censos/preguntas/:id"
+              element={<CensusQuestionsView />}
+            />
+            <Route
+              path="/censos/:censusId/ver-censo"
+              element={<CensusViewPage />}
+            />
           </Route>
 
           <Route element={<ProtectedRoute permission="censos.edit" />}>
@@ -81,6 +97,10 @@ export default function App() {
           {/* ── Catálogos ────────────────────────────────────────────────── */}
           <Route element={<ProtectedRoute permission="modules.view" />}>
             <Route path="/Modulos" element={<Modules />} />
+          </Route>
+
+          <Route element={<ProtectedRoute permission="indicators.view" />}>
+            <Route path="/Indicadores" element={<Indicators />} />
           </Route>
 
           <Route element={<ProtectedRoute permission="sections.view" />}>
@@ -118,12 +138,15 @@ export default function App() {
 
           {/* ── Roles y Permisos ─────────────────────────────────────────── */}
           <Route element={<ProtectedRoute permission="roles.view" />}>
-            <Route path="/roles"    element={<Roles />} />
+            <Route path="/roles" element={<Roles />} />
             <Route path="/permisos" element={<Permissions />} />
           </Route>
 
           <Route element={<ProtectedRoute permission="roles.edit" />}>
-            <Route path="/roles/permission-roles" element={<PermissionRoles />} />
+            <Route
+              path="/roles/permission-roles"
+              element={<PermissionRoles />}
+            />
           </Route>
 
           {/* ── Reportes y análisis ──────────────────────────────────────── */}
@@ -138,7 +161,6 @@ export default function App() {
           <Route element={<ProtectedRoute permission="reports.view" />}>
             <Route path="/reportes" element={<ReportsPage />} />
           </Route>
-
         </Route>
       </Route>
 

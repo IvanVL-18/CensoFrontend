@@ -11,6 +11,7 @@ import {
   FileText,
   UserCog,
   FolderOpen,
+  LocateFixed,
 } from "lucide-react";
 
 import ConfigurationLayout from "./components/ConfigurationLayout";
@@ -83,10 +84,20 @@ const ALL_CONFIG_ITEMS = [
   },
   {
     title: "Categorías",
-    description: "Administra las categorías del sistema para controlar el acceso a los distintos módulos del censo",
+    description:
+      "Administra las categorías del sistema para controlar el acceso a los distintos módulos del censo",
     to: "/categorias",
     icon: <FolderOpen className="w-5 h-5 text-[var(--pantone-7421)]" />,
     permission: "categories.view",
+  },
+
+  {
+    title: "Indicadores",
+    description:
+      "Agrega y gestiona indicadores para evaluar la calidad de los datos de las secciones",
+    to: "/indicadores",
+    icon: <LocateFixed className="w-5 h-5 text-[var(--pantone-7421)]" />,
+    permission: "indicators.view",
   },
 ];
 
@@ -96,7 +107,7 @@ export default function ConfigurationPage() {
 
   const items = useMemo(
     () => ALL_CONFIG_ITEMS.filter((item) => hasPermission(item.permission)),
-    [hasPermission]
+    [hasPermission],
   );
 
   return (
