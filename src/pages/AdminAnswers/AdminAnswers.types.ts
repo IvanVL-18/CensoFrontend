@@ -64,3 +64,17 @@ export interface UserAnswersResponse {
   user: UserRef;
   modules: ModuleItem[];
 }
+
+// POST /api/admin/censuses/get-answers
+export interface CensusDetail {
+  name: string;
+  init_date: string;
+  deadline: string;
+}
+
+export interface GetAnswersResponse {
+  census: CensusDetail;
+  user: UserRef;
+  institution: InstitutionRef;
+  modules: ModuleItem[];
+}

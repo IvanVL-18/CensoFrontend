@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronRight, Users, Loader2, AlertCircle, ArrowLeft, Mail } from "lucide-react";
-import { getInstitutionUsers } from "./AdminAnswers.service";
+import { ChevronRight, Users, Loader2, AlertCircle, ArrowLeft, Mail, FileDown } from "lucide-react";
+import { getInstitutionUsers, getAnswersForReport } from "./AdminAnswers.service";
 import type { InstitutionUsersResponse } from "./AdminAnswers.types";
+import { generateAnswersPdf } from "./generateAnswersPdf";
 
 export default function InstitutionUsersPage() {
   const { censusId, institutionId } = useParams<{
@@ -16,6 +17,8 @@ export default function InstitutionUsersPage() {
   const [data,    setData]    = useState<InstitutionUsersResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState<Record<string, boolean>>({});
+  const [pdfError,   setPdfError]   = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!censusId || !institutionId) return;
@@ -32,6 +35,21 @@ export default function InstitutionUsersPage() {
     navigate(
       `/admin/censos/${encodeURIComponent(censusId!)}/instituciones/${encodeURIComponent(institutionId!)}/usuarios/${encodeURIComponent(userId)}/respuestas?from=${encodeURIComponent(from)}`,
     );
+  };
+
+  const handleDownloadPdf = async (userId: string) => {
+    if (!censusId || !institutionId) return;
+    setPdfLoading((prev) => ({ ...prev, [userId]: true }));
+    setPdfError((prev) => ({ ...prev, [userId]: "" }));
+    try {
+      const reportData = await getAnswersForReport(censusId, institutionId, userId);
+      await generateAnswersPdf(reportData);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error al generar el PDF.";
+      setPdfError((prev) => ({ ...prev, [userId]: msg }));
+    } finally {
+      setPdfLoading((prev) => ({ ...prev, [userId]: false }));
+    }
   };
 
   const backToInstitutions = () =>
@@ -107,7 +125,7 @@ export default function InstitutionUsersPage() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">#</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nombre</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">Correo</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Acción</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-100">
@@ -129,14 +147,36 @@ export default function InstitutionUsersPage() {
                           {user.email}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => handleUserClick(user.id)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#7A0C2E] border border-[#7A0C2E]/30 hover:bg-[#7A0C2E] hover:text-white transition-colors"
-                        >
-                          Ver respuestas
-                          <ChevronRight className="h-3.5 w-3.5" />
-                        </button>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-2 flex-wrap">
+                          <button
+                            onClick={() => handleUserClick(user.id)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#7A0C2E] border border-[#7A0C2E]/30 hover:bg-[#7A0C2E] hover:text-white transition-colors"
+                          >
+                            Ver respuestas
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </button>
+
+                          <button
+                            onClick={() => handleDownloadPdf(user.id)}
+                            disabled={pdfLoading[user.id]}
+                            title={pdfError[user.id] || "Descargar PDF"}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 border border-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {pdfLoading[user.id] ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <FileDown className="h-3.5 w-3.5" />
+                            )}
+                            {pdfLoading[user.id] ? "Generando…" : "PDF"}
+                          </button>
+                        </div>
+
+                        {pdfError[user.id] && (
+                          <p className="text-xs text-red-500 mt-1 text-center">
+                            {pdfError[user.id]}
+                          </p>
+                        )}
                       </td>
                     </tr>
                   ))}
