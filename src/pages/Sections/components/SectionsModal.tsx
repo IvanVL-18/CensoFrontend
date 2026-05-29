@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import type { SectionModalProps, Indicator } from "../Sections.types";
+import { getIndicators } from "../sections.service";
 import { Sectionschema } from "../schemas/Sections.schema";
 
 const NAME_MAX = 180;
@@ -34,13 +35,9 @@ export function SectionModal({
     if (!isOpen) return;
     setLoadingIndicators(true);
     setIndicatorsError(null);
-    fetch("/api/indicators")
-      .then((res) => {
-        if (!res.ok) throw new Error("Error al cargar los indicadores.");
-        return res.json();
-      })
-      .then((json) => {
-        setIndicators(json.data ?? []);
+    getIndicators()
+      .then((data) => {
+        setIndicators(data);
       })
       .catch(() => {
         setIndicatorsError("No se pudieron cargar los indicadores.");
@@ -235,7 +232,7 @@ export function SectionModal({
       ></div>
 
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-md flex flex-col max-h-[90vh]">
           <div className="flex justify-between items-center p-4 bg-red-900">
             <h2 className="text-xl font-bold text-white">{title}</h2>
             <button
@@ -246,8 +243,12 @@ export function SectionModal({
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate>
-            <div className="p-6">
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="flex flex-col flex-1 overflow-hidden"
+          >
+            <div className="p-6 overflow-y-auto flex-1">
               {/* Campo Nombre */}
               <div className="flex justify-between items-center mb-2">
                 <label
@@ -344,14 +345,22 @@ export function SectionModal({
                   value={indicatorId ?? ""}
                   onChange={handleIndicatorChange}
                   disabled={isSubmitting || isViewOnly}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] bg-white text-sm text-gray-700 disabled:bg-gray-100 disabled:text-gray-500 mb-4"
+                  className="border border-gray-300 rounded-lg p-2 w-full truncate focus:outline-none focus:ring-2 focus:ring-[#DDC9A3] mb-4"
                 >
                   <option value="">— Sin indicador —</option>
-                  {indicators.map((ind) => (
-                    <option key={ind.id} value={ind.id}>
-                      {ind.name}
-                    </option>
-                  ))}
+                  {indicators.map((ind) => {
+                    const MAX_LENGTH = 45;
+                    const displayName =
+                      ind.name.length > MAX_LENGTH
+                        ? `${ind.name.substring(0, MAX_LENGTH)}...`
+                        : ind.name;
+
+                    return (
+                      <option key={ind.id} value={ind.id}>
+                        {displayName}
+                      </option>
+                    );
+                  })}
                 </select>
               )}
 

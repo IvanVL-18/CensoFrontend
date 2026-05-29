@@ -1,6 +1,7 @@
 import api from "../../lib/Axios";
 import type {
   Section,
+  Indicator,
   PaginatedSectionsResponse,
   CreateSectionDTO,
   UpdateSectionDTO,
@@ -10,21 +11,19 @@ export type SectionFilter = "all" | "active" | "inactive";
 
 type SectionId = string | number;
 
-
-
 export const getSections = async (
   filter: SectionFilter = "all",
   search: string = "",
   page: number = 1,
-  sortBy: string = "id",           
-  direction: "asc" | "desc" = "asc", 
+  sortBy: string = "id",
+  direction: "asc" | "desc" = "asc",
   signal?: AbortSignal,
 ): Promise<PaginatedSectionsResponse> => {
   const params = new URLSearchParams();
-  
+
   if (search) params.append("search", search);
   params.append("page", page.toString());
-    params.append("sort_by", sortBy);
+  params.append("sort_by", sortBy);
   params.append("direction", direction);
 
   const response = await api.get<PaginatedSectionsResponse>(
@@ -37,15 +36,16 @@ export const getSections = async (
   return response.data;
 };
 
-
-
 export const getSection = async (
   id: SectionId,
   signal?: AbortSignal,
 ): Promise<Section> => {
-  const response = await api.get<{ data: Section } | Section>(`/sections/${id}`, {
-    signal,
-  });
+  const response = await api.get<{ data: Section } | Section>(
+    `/sections/${id}`,
+    {
+      signal,
+    },
+  );
   return (response.data as any).data ?? response.data;
 };
 
@@ -64,12 +64,16 @@ export const updateSection = async (
   return response.data;
 };
 
-export const banSection = async (id: SectionId): Promise<{ message: string }> => {
+export const banSection = async (
+  id: SectionId,
+): Promise<{ message: string }> => {
   const response = await api.delete(`/sections/${id}`);
   return response.data;
 };
 
-export const restoreSection = async (id: SectionId): Promise<{ message: string }> => {
+export const restoreSection = async (
+  id: SectionId,
+): Promise<{ message: string }> => {
   const response = await api.post(`/sections/${id}/restore`);
   return response.data;
 };
@@ -88,4 +92,9 @@ export const importSections = async (
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
+};
+
+export const getIndicators = async (): Promise<Indicator[]> => {
+  const response = await api.get<{ data: Indicator[] }>("/indicators");
+  return response.data.data;
 };
