@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { Catalogschema } from "../schemas/Catalogs.schema";
 import type { CatalogModalProps } from "../Catalogs.types";
+import { CharCountInput } from "../../../components/CharCountInput";
 
 const NAME_MAX_LENGTH = 125;
 const SLUG_MAX_LENGTH = 50;
@@ -243,100 +244,40 @@ export function CatalogModal({
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
-            <div className="p-6 space-y-4">
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label
-                    htmlFor="catalogName"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Nombre del catálogo:
-                  </label>
-                  <span
-                    className={`text-xs font-medium ${nameStyles.charCountColor}`}
-                  >
-                    {nameCharCount}/{NAME_MAX_LENGTH} caracteres
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  id="catalogName"
-                  value={name}
-                  onChange={handleNameChange}
-                  placeholder="Ingresar nombre..."
-                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${nameStyles.borderColor}`}
-                  disabled={isSubmitting}
-                  autoFocus
-                />
-                <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-300 ${nameStyles.progressColor}`}
-                    style={{
-                      width: `${(nameCharCount / NAME_MAX_LENGTH) * 100}%`,
-                    }}
-                  />
-                </div>
-              </div>
+            <CharCountInput
+              id="catalogName"
+              label="Nombre del catálogo:"
+              value={name}
+              maxLength={NAME_MAX_LENGTH}
+              placeholder="Ingresar nombre..."
+              disabled={isSubmitting}
+              hasError={hasNameError}
+              autoFocus
+              onChange={(val) => {
+                setName(val);
+                setNameCharCount(val.length);
+                setTouchedFields((prev) => ({ ...prev, name: true }));
+                validateForm(val, slug, ModuleId);
+                setServerError(null);
+              }}
+            />
 
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label
-                    htmlFor="catalogSlug"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Slug:
-                  </label>
-                  <span
-                    className={`text-xs font-medium ${slugStyles.charCountColor}`}
-                  >
-                    {slugCharCount}/{SLUG_MAX_LENGTH} caracteres
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  id="catalogSlug"
-                  value={slug}
-                  onChange={handleSlugChange}
-                  placeholder="Ingresar slug..."
-                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${slugStyles.borderColor}`}
-                  disabled={isSubmitting}
-                />
-                <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-300 ${slugStyles.progressColor}`}
-                    style={{
-                      width: `${(slugCharCount / SLUG_MAX_LENGTH) * 100}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="ModuleId"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Módulo:
-                </label>
-                <select
-                  id="ModuleId"
-                  value={ModuleId}
-                  onChange={handleModuleChange}
-                  className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${ModuleBorderColor}`}
-                  disabled={isSubmitting}
-                >
-                  <option value="">Seleccionar un módulo</option>
-                  {Modules.map((Module) => (
-                    <option key={Module.id} value={Module.id}>
-                      {Module.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <FormErrors errors={visibleErrors} />
-              {serverError && <FormErrors errors={[serverError]} />}
-            </div>
+            <CharCountInput
+              id="catalogSlug"
+              label="Slug:"
+              value={slug}
+              maxLength={SLUG_MAX_LENGTH}
+              placeholder="Ingresar slug..."
+              disabled={isSubmitting}
+              hasError={hasSlugError}
+              onChange={(val) => {
+                setSlug(val);
+                setSlugCharCount(val.length);
+                setTouchedFields((prev) => ({ ...prev, slug: true }));
+                validateForm(name, val, ModuleId);
+                setServerError(null);
+              }}
+            />
 
             <div className="flex justify-end items-center gap-4 p-4 bg-gray-50">
               <button

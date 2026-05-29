@@ -1,8 +1,9 @@
-import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import type { CategoryModalProps } from "../Categories.types";
 import { Categorieschema } from "../schemas/Categories.schema";
+import { CharCountInput } from "../../../components/CharCountInput";
 
 const MAX_LENGTH = 65;
 
@@ -17,7 +18,6 @@ export function CategoryModal({
 }: CategoryModalProps) {
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
-  const [charCount, setCharCount] = useState(initialName.length);
   const [serverError, setServerError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -29,73 +29,32 @@ export function CategoryModal({
       setName(initialName);
       setFormErrors([]);
       setServerError(null);
-      setCharCount(initialName.length);
     }
   }, [isOpen, initialName]);
 
   const validateForm = (currentName: string) => {
     const result = Categorieschema.safeParse({ name: currentName });
-    
     if (!result.success) {
-      const errors = result.error.issues.map((err) => err.message);
-      setFormErrors(errors);
+      setFormErrors(result.error.issues.map((err) => err.message));
       return false;
     }
-    
     setFormErrors([]);
     return true;
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (validateForm(name)) {
-      onSave(name);
-    }
-  };
-
-  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    
-    if (newName.length <= MAX_LENGTH) {
-      setName(newName);
-      setCharCount(newName.length);
-      validateForm(newName);
-      setServerError(null);
-    }
+    if (validateForm(name)) onSave(name);
   };
 
   const handleClose = () => {
     setName("");
     setFormErrors([]);
     setServerError(null);
-    setCharCount(0);
     onClose();
   };
 
   if (!isOpen) return null;
-
-  const hasErrors = formErrors.length > 0 || !!serverError;
-  const isNearLimit = charCount >= MAX_LENGTH - 10 && charCount <= MAX_LENGTH;
-  const isAtLimit = charCount >= MAX_LENGTH;
-
-  const getInputBorderColor = () => {
-    if (hasErrors) return 'border-red-500 focus:ring-red-400';
-    if (isAtLimit) return 'border-red-300 focus:ring-red-400';
-    if (isNearLimit) return 'border-amber-300 focus:ring-amber-400';
-    return 'border-gray-300 focus:ring-[#DDC9A3]';
-  };
-
-  const getProgressBarColor = () => {
-    if (isAtLimit) return 'bg-red-600';
-    if (isNearLimit) return 'bg-amber-500';
-    return 'bg-[#DDC9A3]';
-  };
-
-  const getCharCountColor = () => {
-    if (isAtLimit) return 'text-red-600';
-    if (isNearLimit) return 'text-amber-600';
-    return 'text-gray-500';
-  };
 
   return (
     <>
@@ -113,31 +72,21 @@ export function CategoryModal({
           </div>
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
-              <div className="flex justify-between items-center mb-2">
-                <label htmlFor="CategoryName" className="block text-sm font-medium text-gray-700">
-                  Nombre de la categoría:
-                </label>
-                <span className={`text-xs font-medium ${getCharCountColor()}`}>
-                  {charCount}/{MAX_LENGTH} caracteres
-                </span>
-              </div>
-              <input
-                type="text"
+              <CharCountInput
                 id="CategoryName"
+                label="Nombre de la categoría:"
                 value={name}
-                onChange={handleNameChange}
-                placeholder="Ingresar nombre..."
                 maxLength={MAX_LENGTH}
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor()}`}
+                placeholder="Ingresar nombre..."
                 disabled={isSubmitting}
+                hasError={formErrors.length > 0}
                 autoFocus
+                onChange={(val) => {
+                  setName(val);
+                  validateForm(val);
+                  setServerError(null);
+                }}
               />
-              <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-300 ${getProgressBarColor()}`}
-                  style={{ width: `${(charCount / MAX_LENGTH) * 100}%` }}
-                />
-              </div>
               <FormErrors errors={formErrors} />
               {serverError && <FormErrors errors={[serverError]} />}
             </div>
@@ -150,7 +99,6 @@ export function CategoryModal({
               >
                 Cancelar
               </button>
-
               <button
                 type="submit"
                 disabled={isSubmitting || formErrors.length > 0 || name.trim() === initialName.trim()}
@@ -158,7 +106,6 @@ export function CategoryModal({
               >
                 {isSubmitting ? "Guardando..." : "Guardar"}
               </button>
-              
             </div>
           </form>
         </div>
