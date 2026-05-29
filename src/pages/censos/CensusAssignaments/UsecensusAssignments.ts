@@ -81,14 +81,21 @@ export const useCensusAssignments = (
         const fetchedInstitutions = data.institutions ?? [];
         const fetchedAssignments = data.assignments ?? [];
 
-        mapRef.current = buildInitialMap(
-          fetchedInstitutions,
-          fetchedAssignments,
+        // Asignadas primero, luego las disponibles sin duplicar
+        const assignedNames = new Set(fetchedAssignments.map((a) => a.name));
+        const assignedAsOptions: InstitutionOption[] = fetchedAssignments.map(
+          (a) => ({ id: a.institution_id, name: a.name }),
         );
+        const unassignedOnly = fetchedInstitutions.filter(
+          (i) => !assignedNames.has(i.name),
+        );
+        const merged = [...assignedAsOptions, ...unassignedOnly];
+
+        mapRef.current = buildInitialMap(merged, fetchedAssignments);
         setMapVersion((v) => v + 1);
 
         setSectionInfo(data.section);
-        setInstitutions(fetchedInstitutions);
+        setInstitutions(merged);
         setHasAssignments(fetchedAssignments.length > 0);
       } catch (err: unknown) {
         const e = err as {

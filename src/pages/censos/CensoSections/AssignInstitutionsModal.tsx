@@ -49,11 +49,12 @@ export function AssignInstitutionsModal({
         // Las instituciones ya asignadas pueden no venir en res.institutions.
         // Las reconstruimos desde res.assignments y las fusionamos al inicio de la lista.
         const assignedIds = new Set(res.assignments.map((a) => a.institution_id));
+        const assignedNames = new Set(res.assignments.map((a) => a.name));
         const assignedAsInstitutions: AssignmentInstitution[] = res.assignments.map((a) => ({
           id: a.institution_id,
           name: a.name,
         }));
-        const unassignedNotDuplicated = res.institutions.filter((i) => !assignedIds.has(i.id));
+        const unassignedNotDuplicated = res.institutions.filter((i) => !assignedNames.has(i.name));
         // Asignadas primero, luego las disponibles
         setInstitutions([...assignedAsInstitutions, ...unassignedNotDuplicated]);
         setExistingAssignments(res.assignments);

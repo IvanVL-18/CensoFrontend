@@ -190,7 +190,6 @@ export default function Dashboard() {
           title="Gráficas"
           centralizedCount={centralizedCount}
           totalInstitutions={totalInstitutions}
-          questionsByCenso={qByCenso}
         />
       </div>
     </div>
