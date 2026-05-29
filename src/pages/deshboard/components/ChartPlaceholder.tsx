@@ -1,4 +1,15 @@
-import React from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
 
 type DonutItem = { label: string; value: number };
 type BarItem = { label: string; value: number | string };
@@ -7,79 +18,106 @@ type Props =
   | { kind: "donut"; donutData: DonutItem[] }
   | { kind: "bar"; barData: BarItem[] };
 
+const DONUT_COLORS = ["#7C1227", "#CBD5E1"];
+const BAR_COLOR = "#7C1227";
+
+function DonutTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { name: string; value: number }[];
+}) {
+  if (!active || !payload?.length) return null;
+  const { name, value } = payload[0];
+  return (
+    <div className="rounded-lg border border-black/10 bg-white px-3 py-2 shadow-md text-xs">
+      <p className="font-semibold text-[#3b2a2e] mb-0.5">{name}</p>
+      <p className="text-[#7b6670]">
+        <span className="font-bold text-[#4b1220]">{value}</span>
+      </p>
+    </div>
+  );
+}
+
+function BarTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { value: number }[];
+  label?: string;
+}) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border border-black/10 bg-white px-3 py-2 shadow-md text-xs">
+      <p className="font-semibold text-[#3b2a2e] mb-1">{label}</p>
+      <p className="text-[#7b6670]">
+        <span className="font-bold text-[#4b1220]">{payload[0].value}</span>{" "}
+        preguntas
+      </p>
+    </div>
+  );
+}
+
 export default function ChartPlaceholder(props: Props) {
   if (props.kind === "donut") {
-    const colors = ["#6F7BD9", "#E7E9F8"];
-    const activeColors = ["#4F5BE6", "#CBD5E1"];
-    const values = props.donutData.map((d) => Number(d.value ?? 0));
-    const total = values.reduce((a, b) => a + b, 0) || 1;
-    const firstPct = Math.round(((values[0] ?? 0) / total) * 100);
-    const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
-    const donutStyle: React.CSSProperties = {
-      background:
-        activeIndex === null
-          ? `conic-gradient(${colors[0]} 0% ${firstPct}%, ${colors[1]} ${firstPct}% 100%)`
-          : activeIndex === 0
-            ? `conic-gradient(${activeColors[0]} 0% ${firstPct}%, #F1F5F9 ${firstPct}% 100%)`
-            : `conic-gradient(#F1F5F9 0% ${firstPct}%, ${activeColors[1]} ${firstPct}% 100%)`,
-    };
+    const data = props.donutData.map((d) => ({
+      name: d.label,
+      value: Number(d.value ?? 0),
+    }));
 
     return (
       <div className="flex flex-col-reverse sm:flex-row items-center sm:items-start gap-6 sm:gap-4">
+        {/* Leyenda */}
         <div className="w-full sm:w-auto min-w-[170px]">
-          {props.donutData.map((d, idx) => {
-            const isActive = activeIndex === idx;
-            const isDimmed = activeIndex !== null && !isActive;
-
-            const chipColor =
-              activeIndex === null
-                ? (colors[idx] ?? "#CBD5E1")
-                : isActive
-                  ? (activeColors[idx] ?? colors[idx])
-                  : "#E2E8F0";
-
-            return (
-              <button
-                key={d.label}
-                type="button"
-                onClick={() =>
-                  setActiveIndex((prev) => (prev === idx ? null : idx))
-                }
-                className={`
-                w-full text-left
-                flex items-center gap-2 text-sm mb-2
-                rounded-lg px-2 py-1
-                transition
-                ${isActive ? "bg-slate-50 ring-1 ring-slate-200" : "hover:bg-slate-50"}
-              `}
-                title="Click para resaltar"
-              >
-                <span
-                  className="h-3 w-3 rounded-sm transition"
-                  style={{ backgroundColor: chipColor }}
-                />
-                <span
-                  className={`truncate ${isDimmed ? "text-slate-400" : "text-slate-700"}`}
-                >
-                  {d.label}
-                </span>
-                <span
-                  className={`ml-auto ${isDimmed ? "text-slate-300" : "text-slate-500"}`}
-                >
-                  {Number(d.value ?? 0)}
-                </span>
-              </button>
-            );
-          })}
+          {data.map((d, idx) => (
+            <div
+              key={d.name}
+              className="flex items-center gap-2 text-sm mb-2 rounded-lg px-2 py-1 hover:bg-slate-50 transition-colors"
+            >
+              <span
+                className="h-3 w-3 shrink-0 rounded-sm border border-black/10"
+                style={{ backgroundColor: DONUT_COLORS[idx] ?? "#CBD5E1" }}
+              />
+              <span className="truncate text-slate-700">{d.name}</span>
+              <span className="ml-auto text-slate-500 font-medium">
+                {d.value}
+              </span>
+            </div>
+          ))}
         </div>
 
+        {/* Dona */}
         <div className="flex-1 flex justify-center">
-          <div className="relative h-40 w-40">
-            <div
-              className="absolute inset-0 rounded-full transition"
-              style={donutStyle}
-            />
-            <div className="absolute inset-5 rounded-full bg-white shadow-inner" />
+          <div className="w-40 h-40">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart style={{ outline: "none" }}>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="55%"
+                  outerRadius="80%"
+                  paddingAngle={0}
+                  dataKey="value"
+                  animationBegin={0}
+                  animationDuration={700}
+                >
+                  {data.map((_, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={DONUT_COLORS[index] ?? "#CBD5E1"}
+                      stroke="white"
+                      strokeWidth={3}
+                      style={{ outline: "none" }}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<DonutTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
@@ -87,62 +125,27 @@ export default function ChartPlaceholder(props: Props) {
   }
 
   const clean = props.barData.map((b) => ({
-    label: String(b.label ?? ""),
-    value: Number((b as any).value ?? 0),
+    name: String(b.label ?? ""),
+    value: Number(b.value ?? 0),
   }));
 
-  const max = Math.max(...clean.map((b) => b.value), 1);
-
   return (
-    <div className="w-full">
-      <div className="h-[260px] border border-slate-200 rounded-xl p-6">
-        <div className="relative h-full">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute left-0 right-0 border-t border-slate-100"
-              style={{ bottom: `${(i * 100) / 4}%` }}
-            />
-          ))}
-
-          <div className="absolute inset-0 flex items-end justify-around gap-6">
-            {clean.map((b) => {
-              const height = Math.round((b.value / max) * 100);
-
-              return (
-                <div key={b.label} className="flex flex-col items-center gap-2">
-                  <div className="relative group w-[64px]">
-                    <div
-                      className="
-                        pointer-events-none
-                        absolute -top-10 left-1/2 -translate-x-1/2
-                        opacity-0 group-hover:opacity-100
-                        transition
-                      "
-                    >
-                      <div className="bg-slate-900 text-white text-xs px-2 py-1 rounded-md shadow-lg whitespace-nowrap">
-                        {b.value} preguntas
-                      </div>
-                      <div className="mx-auto w-0 h-0 border-l-6 border-l-transparent border-r-6 border-r-transparent border-t-6 border-t-slate-900" />
-                    </div>
-                    <div
-                      className="w-full rounded-md"
-                      style={{
-                        height: `${height}%`,
-                        minHeight: b.value > 0 ? "12px" : "0px",
-                        backgroundColor: "#B08B57",
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs text-slate-600 text-center leading-tight max-w-[90px] line-clamp-2">
-                    {b.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+    <div className="h-[260px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={clean} margin={{ top: 10, right: 10, left: 0, bottom: 60 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+          <XAxis
+            dataKey="name"
+            tick={{ fontSize: 11, fill: "#64748b" }}
+            angle={-35}
+            textAnchor="end"
+            interval={0}
+          />
+          <YAxis tick={{ fontSize: 11, fill: "#64748b" }} width={32} />
+          <Tooltip content={<BarTooltip />} cursor={{ fill: "#f5f1ea" }} />
+          <Bar dataKey="value" fill={BAR_COLOR} radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }
