@@ -42,39 +42,6 @@ export default function ChartsPage() {
 
   const canExport = !!chartData && !loading && !error;
 
-  async function handleExportPdf() {
-    if (exporting) return;
-    setExporting(true);
-    setExportError(null);
-    try {
-      if (active === "modulos") {
-        if (!chartData || !chartRef.current) return;
-        await exportModulesPdf({
-          chartElement: chartRef.current,
-          censusName: chartData.census.name,
-          modules: chartData.modules,
-        });
-      } else {
-        const selected =
-          QUESTIONNAIRES.find((q) => q.id === selectedCensoId) ??
-          QUESTIONNAIRES[0];
-        await exportCensosPdf({
-          censusName: selected.name,
-          totalQuestions: selected.totalQuestions,
-          resolvedQuestions: selected.resolvedQuestions,
-        });
-      }
-    } catch {
-      setExportError("No se pudo generar el PDF. Intenta de nuevo.");
-    } finally {
-      setExporting(false);
-    }
-  }
-
-  const canExport =
-    active === "censos" ||
-    (active === "modulos" && !!chartData && !loading && !error);
-
   return (
     <div className="space-y-4">
       {/* Toolbar */}
