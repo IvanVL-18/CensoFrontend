@@ -33,6 +33,7 @@ import Answers from "./pages/Answers/Answers";
 import CensusInstitutionsPage from "./pages/AdminAnswers/CensusInstitutionsPage";
 import InstitutionUsersPage from "./pages/AdminAnswers/InstitutionUsersPage";
 import UserAnswersPage from "./pages/AdminAnswers/UserAnswersPage";
+import ForgotPasswordPage from "./pages/login/page/ForgotPasswordPage";
 import Indicators from "./pages/Indicators/Indicators";
 import "./App.css";
 
@@ -41,6 +42,8 @@ export default function App() {
     <Routes>
       {/* ── Ruta pública ─────────────────────────────────────────────────── */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* ── Área autenticada ─────────────────────────────────────────────── */}
       <Route element={<ProtectedRoute />}>
