@@ -21,6 +21,7 @@ export interface FullProfile {
   institution: { id: string; name: string } | null;
   created_at: string;
   updated_at: string;
+  census:      { id: string; name: string } | null;
 }
 
 export async function completeProfile(data: ProfileData): Promise<CompleteProfileResponse> {
@@ -43,6 +44,7 @@ export interface UpdateProfileData {
   occupation_id?: string | number | null;
   dependency_id?: string | number | null;
   institution_id?: string | number | null;
+  census_id?: string | number | null;
 }
 
 export async function updateProfile(profileData: UpdateProfileData): Promise<{ message: string }> {

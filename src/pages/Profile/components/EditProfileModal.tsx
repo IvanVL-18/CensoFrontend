@@ -2,6 +2,7 @@ import {
   X, UserRound, Phone, Smartphone, MapPin,
   Mail, Shield, Briefcase, Building2, Landmark,
   Loader2, ChevronDown,
+  ClipboardList,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -84,8 +85,8 @@ export default function EditProfileModal({ open, onClose }: Props) {
 
   const [profile,    setProfile]    = useState<FullProfile | null>(null);
   const [draft,      setDraft]      = useState({ name: "", lastname: "", phone: "", mobile: "", address: "" });
-  const [accountDraft, setAccountDraft] = useState({ role_id: "", occupation_id: "", dependency_id: "", institution_id: "" });
-  const [catalogs, setCatalogs] = useState<{ roles: CatalogItem[]; occupations: CatalogItem[]; dependencies: CatalogItem[]; institutions: CatalogItem[] }>({ roles: [], occupations: [], dependencies: [], institutions: [] });
+  const [accountDraft, setAccountDraft] = useState({ role_id: "", occupation_id: "", dependency_id: "", institution_id: "", census_id: "" });
+  const [catalogs, setCatalogs] = useState<{ roles: CatalogItem[]; occupations: CatalogItem[]; dependencies: CatalogItem[]; institutions: CatalogItem[]; censuses: CatalogItem[] }>({ roles: [], occupations: [], dependencies: [], institutions: [], censuses: [] });
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
   const [loading,    setLoading]    = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -128,9 +129,10 @@ export default function EditProfileModal({ open, onClose }: Props) {
       getCatalogList("occupations/active/content",  controller.signal),
       getCatalogList("dependency/active/content",   controller.signal),
       getCatalogList("institutions/active/content", controller.signal),
+      getCatalogList("censuses/active/content",    controller.signal),
     ])
-      .then(([rolesData, occsData, depsData, instsData]) => {
-        setCatalogs({ roles: rolesData, occupations: occsData, dependencies: depsData, institutions: instsData });
+      .then(([rolesData, occsData, depsData, instsData, censusesData]) => {
+        setCatalogs({ roles: rolesData, occupations: occsData, dependencies: depsData, institutions: instsData, censuses: censusesData });
       })
       .catch(() => {})
       .finally(() => { if (!controller.signal.aborted) setLoadingCatalogs(false); });
@@ -159,6 +161,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
       occupation_id:  findId(catalogs.occupations,  profile.occupation),
       dependency_id:  findId(catalogs.dependencies, profile.dependency),
       institution_id: findId(catalogs.institutions, profile.institution),
+      census_id:      findId(catalogs.censuses,    profile.census),
     });
   }, [profile, catalogs]);
 
@@ -179,6 +182,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
         payload.occupation_id  = accountDraft.occupation_id  || null;
         payload.dependency_id  = accountDraft.dependency_id  || null;
         payload.institution_id = accountDraft.institution_id || null;
+        payload.census_id      = accountDraft.census_id      || null;
       }
       const res = await updateProfile(payload);
       setSuccess(res.message ?? "Perfil actualizado correctamente.");
@@ -329,6 +333,32 @@ export default function EditProfileModal({ open, onClose }: Props) {
                             <ReadonlyField className="sm:col-span-2" label="Dirección" icon={MapPin} value={profile.address ?? ""} />
                           </>
                         )}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Censos asignados */}
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      Censos asignados
+                      <span className="ml-2 normal-case text-slate-400">(Editable)</span>
+                    </p>
+
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+                        <SelectField
+                          label="Censo"
+                          icon={ClipboardList}
+                          value={accountDraft.census_id}
+                          onChange={(v) =>
+                            setAccountDraft((s) => ({
+                              ...s,
+                              census_id: v,
+                            }))
+                          }
+                          options={catalogs.censuses}
+                          placeholder="Seleccionar censo"
+                          disabled={loadingCatalogs || submitting}
+                        />
                       </div>
                     </div>
                   </div>
