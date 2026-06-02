@@ -1,3 +1,4 @@
+import { PieChart, BarChart2 } from "lucide-react";
 import ChartPlaceholder from "./ChartPlaceholder";
 
 type Props = {
@@ -16,19 +17,31 @@ export default function ChartsCard({
   const barMinWidth = Math.max((questionsByCenso?.length ?? 0) * 140, 600);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="bg-[#7A0C2E] px-4 py-4 sm:py-5.5">
-        <h2 className="text-white font-semibold text-base">{title}</h2>
+    <div className="bg-white rounded-xl border border-black/5 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-3 bg-[#F5F1EA] border-b border-black/5 px-5 py-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#7C1227] shadow-sm shrink-0">
+          <BarChart2 size={16} className="text-white" />
+        </div>
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#7C1227]/60 leading-none mb-0.5">
+            Resumen
+          </p>
+          <h2 className="text-sm font-semibold text-[#4b1220] leading-none">
+            {title}
+          </h2>
+        </div>
       </div>
 
-      <div className="p-4 sm:p-5 space-y-6">
+      <div className="p-5 space-y-6">
+        {/* Sección dona */}
         <div>
-          <div className="flex items-baseline justify-between mb-3">
-            <h3 className="text-sm font-semibold text-slate-800">
-              Instituciones
-            </h3>
+          <div className="flex items-center gap-2 mb-4">
+            <PieChart size={15} className="text-[#7C1227]" />
+            <span className="text-sm font-semibold text-[#4b1220]">
+              Distribución de instituciones
+            </span>
           </div>
-
           <ChartPlaceholder
             kind="donut"
             donutData={[
@@ -41,10 +54,16 @@ export default function ChartsCard({
           />
         </div>
 
+        <div className="border-t border-gray-100" />
+
+        {/* Sección barras */}
         <div>
-          <h3 className="text-sm font-semibold text-slate-800 mb-3">
-            Preguntas por censo
-          </h3>
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart2 size={15} className="text-[#7C1227]" />
+            <span className="text-sm font-semibold text-[#4b1220]">
+              Preguntas por censo
+            </span>
+          </div>
           <div className="w-full overflow-x-auto pb-2">
             <div style={{ minWidth: barMinWidth }}>
               <ChartPlaceholder

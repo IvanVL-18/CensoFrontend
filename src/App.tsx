@@ -34,6 +34,7 @@ import CensusInstitutionsPage from "./pages/AdminAnswers/CensusInstitutionsPage"
 import InstitutionUsersPage from "./pages/AdminAnswers/InstitutionUsersPage";
 import UserAnswersPage from "./pages/AdminAnswers/UserAnswersPage";
 import ForgotPasswordPage from "./pages/login/page/ForgotPasswordPage";
+import Indicators from "./pages/Indicators/Indicators";
 import "./App.css";
 
 export default function App() {
@@ -99,6 +100,10 @@ export default function App() {
           {/* ── Catálogos ────────────────────────────────────────────────── */}
           <Route element={<ProtectedRoute permission="modules.view" />}>
             <Route path="/Modulos" element={<Modules />} />
+          </Route>
+
+          <Route element={<ProtectedRoute permission="indicators.view" />}>
+            <Route path="/Indicadores" element={<Indicators />} />
           </Route>
 
           <Route element={<ProtectedRoute permission="sections.view" />}>

@@ -97,13 +97,13 @@ export default function GeneralCharts({ modules, censusName }: Props) {
                     cy="50%"
                     innerRadius="55%"
                     outerRadius="80%"
-                    paddingAngle={2}
+                    paddingAngle={0}
                     dataKey="value"
                     animationBegin={0}
                     animationDuration={700}
                   >
                     {data.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" style={{ outline: "none" }} />
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="white" strokeWidth={3} style={{ outline: "none" }} />
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />

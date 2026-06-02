@@ -1,4 +1,4 @@
-export type ChartKind = "modulos" | "censos";
+export type ChartKind = "modulos";
 
 export type CensusModuleItem = {
   module_name: string;

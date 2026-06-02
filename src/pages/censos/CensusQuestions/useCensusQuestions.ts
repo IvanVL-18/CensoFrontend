@@ -44,7 +44,7 @@ type UseCensusQuestionsReturn = {
   paginationLinks: PaginationLinksObj | null;
   toggleQuestionRow: (questionName: string, questionId: string, checked: boolean) => void;
   toggleAllQuestionRows: (checked: boolean) => void;
-  changeIndex: (questionName: string, indexId: string) => void;
+  changeIndex: (questionName: string, questionId: string, indexId: string) => void;
   saveChanges: () => Promise<boolean>;
   reload: () => Promise<void>;
   goToPage: (page: number) => void;
@@ -92,7 +92,7 @@ export const useCensusQuestions = (
       const map: SelectedQuestionsMap = {};
 
       selectedQuestions.forEach((item) => {
-        const questionName = (item.question?.name ?? "").replace(/\s+/g, " ").trim();
+        const questionName = item.question?.name;
         if (!questionName) return;
 
         const matchedIndex = availableIndexes.find(
@@ -206,8 +206,8 @@ export const useCensusQuestions = (
     const map = mapRef.current;
 
     return questions.map((question) => {
-      const key = question.name.replace(/\s+/g, " ").trim();
-      const sel = map[key];
+      // Check by encrypted id first (toggled this session), then by name (pre-selected on load)
+      const sel = map[question.id] ?? map[question.name];
       const isChecked = sel?.checked ?? false;
       const currentIndexId = isChecked ? (sel?.index_id ?? "") : "";
 
@@ -233,20 +233,21 @@ export const useCensusQuestions = (
 
   const toggleQuestionRow = useCallback(
     (questionName: string, questionId: string, checked: boolean) => {
-      const key = questionName.replace(/\s+/g, " ").trim();
       updateMap((prev) => {
-        const existing = prev[key];
-        return {
-          ...prev,
-          [key]: {
-            question_id: existing?.question_id ?? questionId,
-            index_id: existing?.index_id ?? "",
-            index_name: existing?.index_name ?? "",
-            stored_index_name: existing?.stored_index_name ?? null,
-            census_question_id: existing?.census_question_id ?? null,
-            checked,
-          },
+        // Prefer id-keyed entry; fall back to name-keyed (from initial load)
+        const existing = prev[questionId] ?? prev[questionName];
+        const next = { ...prev };
+        // Migrate name-keyed entry to id-keyed to prevent duplicate-name selection bug
+        if (next[questionName]) delete next[questionName];
+        next[questionId] = {
+          question_id: existing?.question_id ?? questionId,
+          index_id: existing?.index_id ?? "",
+          index_name: existing?.index_name ?? "",
+          stored_index_name: existing?.stored_index_name ?? null,
+          census_question_id: existing?.census_question_id ?? null,
+          checked,
         };
+        return next;
       });
     },
     [updateMap],
@@ -257,9 +258,9 @@ export const useCensusQuestions = (
       updateMap((prev) => {
         const next = { ...prev };
         questions.forEach((question) => {
-          const key = question.name.replace(/\s+/g, " ").trim();
-          const existing = next[key];
-          next[key] = {
+          const existing = next[question.id] ?? next[question.name];
+          if (next[question.name]) delete next[question.name];
+          next[question.id] = {
             question_id: existing?.question_id ?? question.id,
             index_id: existing?.index_id ?? "",
             index_name: existing?.index_name ?? "",
@@ -275,13 +276,12 @@ export const useCensusQuestions = (
   );
 
   const changeIndex = useCallback(
-    (questionName: string, indexId: string) => {
-      const key = questionName.replace(/\s+/g, " ").trim();
+    (questionName: string, questionId: string, indexId: string) => {
       updateMap((prev) => {
-        if (!prev[key]) return prev;
+        const key = prev[questionId] ? questionId : prev[questionName] ? questionName : null;
+        if (!key) return prev;
         const idxName =
-          indexes.find((idx) => String(idx.id) === String(indexId))?.name ??
-          "";
+          indexes.find((idx) => String(idx.id) === String(indexId))?.name ?? "";
         return {
           ...prev,
           [key]: { ...prev[key], index_id: indexId, index_name: idxName },
