@@ -302,10 +302,7 @@ export const useCensusQuestions = (
   const saveChanges = useCallback(async () => {
     if (!censusSectionId) return false;
 
-    if (validItems.length === 0) {
-      addToast("Selecciona al menos una pregunta y asígnale un índice.", "warning");
-      return false;
-    }
+
 
     try {
       setSaving(true);

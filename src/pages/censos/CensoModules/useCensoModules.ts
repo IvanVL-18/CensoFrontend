@@ -166,10 +166,7 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
     try {
       if (!censoId) return false;
 
-      if (validItems.length === 0) {
-        setError("Selecciona un módulo y asígnale un índice.");
-        return false;
-      }
+
 
       setSaving(true);
       setError(null);
