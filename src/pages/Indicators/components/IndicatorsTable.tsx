@@ -122,7 +122,7 @@ export function IndicatorsTable({
                 </td>
 
                 {/* Celda "Nombre" */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-6 py-4 text-sm font-medium text-gray-900 max-w-xs truncate" title={Indicator.name}>
                   {Indicator.name}
                 </td>
 
