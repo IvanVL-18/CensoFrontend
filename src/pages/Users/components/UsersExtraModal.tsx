@@ -9,6 +9,8 @@ import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { UsersExtraSchema } from "../schemas/UsersExtra.schema";
 import type { User, UpdateUserDTO } from "../Users.types";
+import { CharCountInput } from "../../../components/CharCountInput";
+
 
 interface Props {
   isOpen: boolean;
@@ -20,19 +22,11 @@ interface Props {
 }
 
 const norm = (v: any) => (v === null || v === undefined ? "" : String(v));
-
 const toNull = (v: string) => {
   const s = v.trim();
   return s === "" ? null : s;
 };
 
-const getInputClass = (hasError: boolean) =>
-  [
-    "w-full rounded-lg p-2 border transition outline-none",
-    hasError
-      ? "border-red-500 focus:ring-2 focus:ring-red-200 focus:border-red-500"
-      : "border-gray-300 focus:ring-2 focus:ring-[#DDC9A3] focus:border-[#C3A67C]",
-  ].join(" ");
 
 export function UsersExtraModal({
   isOpen,
@@ -49,13 +43,11 @@ export function UsersExtraModal({
     mobile: "",
     address: "",
   });
-
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!isOpen || !User) return;
-
     setFormData({
       name: norm(User.name),
       lastname: norm(User.lastname),
@@ -63,14 +55,12 @@ export function UsersExtraModal({
       mobile: norm(User.mobile),
       address: norm(User.address),
     });
-
     setFormErrors([]);
     setFieldErrors({});
   }, [isOpen, User]);
 
   const hasChanges = useMemo(() => {
     if (!User) return false;
-
     return (
       norm(formData.name).trim() !== norm(User.name).trim() ||
       norm(formData.lastname).trim() !== norm(User.lastname).trim() ||
@@ -82,35 +72,27 @@ export function UsersExtraModal({
 
   const validateAndSetErrors = (data: typeof formData) => {
     const result = UsersExtraSchema.safeParse(data);
-
     if (result.success) {
       setFormErrors([]);
       setFieldErrors({});
       return true;
     }
-
     const uniqueMessages = Array.from(
       new Set(result.error.issues.map((issue) => issue.message))
     );
-
     const nextFieldErrors: Record<string, string> = {};
     result.error.issues.forEach((issue) => {
       const key = String(issue.path?.[0] ?? "form");
       if (!nextFieldErrors[key]) nextFieldErrors[key] = issue.message;
     });
-
     setFormErrors(uniqueMessages);
     setFieldErrors(nextFieldErrors);
     return false;
   };
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-
+  const handleFieldChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => {
-      const next = { ...prev, [name]: value };
+      const next = { ...prev, [field]: value };
       validateAndSetErrors(next);
       return next;
     });
@@ -119,35 +101,19 @@ export function UsersExtraModal({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!User) return;
-
     const isValid = validateAndSetErrors(formData);
     if (!isValid) return;
-
     const trim = (v: any) => (v ?? "").toString().trim();
-
     const payload: UpdateUserDTO = {};
-
-    if (trim(formData.name) !== trim(User.name)) {
-      payload.name = toNull(formData.name);
-    }
-    if (trim(formData.lastname) !== trim(User.lastname)) {
-      payload.lastname = toNull(formData.lastname);
-    }
-    if (trim(formData.phone) !== trim(User.phone)) {
-      payload.phone = toNull(formData.phone);
-    }
-    if (trim(formData.mobile) !== trim(User.mobile)) {
-      payload.mobile = toNull(formData.mobile);
-    }
-    if (trim(formData.address) !== trim(User.address)) {
-      payload.address = toNull(formData.address);
-    }
-
+    if (trim(formData.name) !== trim(User.name)) payload.name = toNull(formData.name);
+    if (trim(formData.lastname) !== trim(User.lastname)) payload.lastname = toNull(formData.lastname);
+    if (trim(formData.phone) !== trim(User.phone)) payload.phone = toNull(formData.phone);
+    if (trim(formData.mobile) !== trim(User.mobile)) payload.mobile = toNull(formData.mobile);
+    if (trim(formData.address) !== trim(User.address)) payload.address = toNull(formData.address);
     if (Object.keys(payload).length === 0) {
       setFormErrors(["No hay cambios para guardar."]);
       return;
     }
-
     onSave(payload);
   };
 
@@ -158,7 +124,6 @@ export function UsersExtraModal({
   };
 
   if (!isOpen || !User) return null;
-
   const hasClientErrors = formErrors.length > 0;
 
   return (
@@ -167,7 +132,6 @@ export function UsersExtraModal({
         className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity"
         onClick={handleClose}
       />
-
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/10 backdrop-blur-md">
         <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-white shadow-xl">
           <div className="flex items-center justify-between bg-red-900 p-4">
@@ -175,90 +139,93 @@ export function UsersExtraModal({
               <h2 className="text-xl font-bold text-white">Datos Personales</h2>
               <p className="text-sm text-white/80">{User.email}</p>
             </div>
-
-            <button
-              type="button"
-              onClick={handleClose}
-              className="text-white hover:text-gray-300"
-            >
+            <button type="button" onClick={handleClose} className="text-white hover:text-gray-300">
               <X size={24} />
             </button>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="flex-1 overflow-y-auto">
             <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
+
+              {/* Nombre */}
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Nombre:
-                </label>
-                <input
-                  name="name"
+                <CharCountInput
+                  id="name"
+                  label="Nombre:"
                   value={formData.name}
-                  onChange={handleChange}
-                  className={getInputClass(!!fieldErrors.name)}
+                  maxLength={50}
+                  placeholder=""
+                  disabled={isSubmitting}
+                  hasError={!!fieldErrors.name}
+                  onChange={(val) => handleFieldChange("name", val)}
                 />
                 {fieldErrors.name && (
                   <p className="mt-1 text-xs text-red-600">{fieldErrors.name}</p>
                 )}
               </div>
 
+              {/* Apellido */}
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Apellido:
-                </label>
-                <input
-                  name="lastname"
+                <CharCountInput
+                  id="lastname"
+                  label="Apellido:"
                   value={formData.lastname}
-                  onChange={handleChange}
-                  className={getInputClass(!!fieldErrors.lastname)}
+                  maxLength={50}
+                  placeholder=""
+                  disabled={isSubmitting}
+                  hasError={!!fieldErrors.lastname}
+                  onChange={(val) => handleFieldChange("lastname", val)}
                 />
                 {fieldErrors.lastname && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {fieldErrors.lastname}
-                  </p>
+                  <p className="mt-1 text-xs text-red-600">{fieldErrors.lastname}</p>
                 )}
               </div>
 
+              {/* Teléfono */}
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Teléfono:
-                </label>
-                <input
-                  name="phone"
+                <CharCountInput
+                  id="phone"
+                  label="Teléfono:"
                   value={formData.phone}
-                  onChange={handleChange}
-                  className={getInputClass(!!fieldErrors.phone)}
+                  maxLength={15}
+                  placeholder=""
+                  disabled={isSubmitting}
+                  hasError={!!fieldErrors.phone}
+                  onChange={(val) => handleFieldChange("phone", val)}
                 />
                 {fieldErrors.phone && (
                   <p className="mt-1 text-xs text-red-600">{fieldErrors.phone}</p>
                 )}
               </div>
 
+              {/* Celular */}
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Celular:
-                </label>
-                <input
-                  name="mobile"
+                <CharCountInput
+                  id="mobile"
+                  label="Celular:"
                   value={formData.mobile}
-                  onChange={handleChange}
-                  className={getInputClass(!!fieldErrors.mobile)}
+                  maxLength={15}
+                  placeholder=""
+                  disabled={isSubmitting}
+                  hasError={!!fieldErrors.mobile}
+                  onChange={(val) => handleFieldChange("mobile", val)}
                 />
                 {fieldErrors.mobile && (
                   <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
                 )}
               </div>
 
+              {/* Dirección - col-span-2 */}
               <div className="md:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Dirección:
-                </label>
-                <textarea
-                  name="address"
+                <CharCountInput
+                  id="address"
+                  label="Dirección:"
                   value={formData.address}
-                  onChange={handleChange}
-                  rows={3}
-                  className={getInputClass(!!fieldErrors.address)}
+                  maxLength={150}
+                  placeholder=""
+                  disabled={isSubmitting}
+                  hasError={!!fieldErrors.address}
+                  onChange={(val) => handleFieldChange("address", val)}
                 />
                 {fieldErrors.address && (
                   <p className="mt-1 text-xs text-red-600">{fieldErrors.address}</p>
@@ -269,7 +236,6 @@ export function UsersExtraModal({
                 <div id="form-errors-client">
                   <FormErrors errors={formErrors} />
                 </div>
-
                 {error && (
                   <div id="form-errors-server">
                     <FormErrors errors={[error]} />
@@ -287,7 +253,6 @@ export function UsersExtraModal({
               >
                 Cancelar
               </button>
-
               <button
                 type="submit"
                 disabled={isSubmitting || hasClientErrors || !hasChanges}
