@@ -29,7 +29,7 @@ export const Sectionschema = z.object({
     .optional()
     .nullable(),
 
-  needs_attention: z.boolean().optional(),
+  attention: z.union([z.boolean(), z.number()]).optional(),
 });
 
 export type SectionFormData = z.infer<typeof Sectionschema>;

@@ -52,7 +52,7 @@ export function SectionModal({
       setName(initialData?.name || "");
       setInstructions(initialData?.instructions || "");
       setIndicatorId(initialData?.indicator_id ?? null);
-      setNeedsAttention(initialData?.needs_attention ?? false);
+      setNeedsAttention(!!initialData?.attention);
       setNameCharCount(initialData?.name?.length || 0);
       setInstructionsCharCount(initialData?.instructions?.length || 0);
       setFormErrors([]);
@@ -78,7 +78,7 @@ export function SectionModal({
       name: currentName,
       instructions: currentInstructions,
       indicator_id: currentIndicatorId,
-      needs_attention: currentNeedsAttention,
+      attention: currentNeedsAttention,
     });
     if (!result.success) {
       const errorMessages = result.error.issues.map((err) => err.message);
@@ -106,7 +106,7 @@ export function SectionModal({
     const initialName = (initialData?.name ?? "").trim();
     const initialInstr = (initialData?.instructions ?? "").trim();
     const initialIndicatorId = initialData?.indicator_id ?? null;
-    const initialNeedsAttention = initialData?.needs_attention ?? false;
+    const initialNeedsAttention = !!initialData?.attention;
 
     const currentName = name.trim();
     const currentInstr = instructions.trim();
@@ -121,7 +121,7 @@ export function SectionModal({
 
       if (indicatorId !== initialIndicatorId) patch.indicator_id = indicatorId;
       if (needsAttention !== initialNeedsAttention)
-        patch.needs_attention = needsAttention;
+        patch.attention = needsAttention;
 
       onSave(patch);
       return;
@@ -131,7 +131,7 @@ export function SectionModal({
       name: currentName,
       ...(currentInstr ? { instructions: currentInstr } : {}),
       indicator_id: indicatorId,
-      needs_attention: needsAttention,
+      attention: needsAttention,
     });
   };
 
@@ -190,7 +190,7 @@ export function SectionModal({
     name.trim() !== (initialData?.name ?? "").trim() ||
     instructions.trim() !== (initialData?.instructions ?? "").trim() ||
     indicatorId !== (initialData?.indicator_id ?? null) ||
-    needsAttention !== (initialData?.needs_attention ?? false);
+    needsAttention !== !!initialData?.attention;
 
   const nameIsNearLimit =
     nameCharCount >= NAME_MAX - 10 && nameCharCount <= NAME_MAX;

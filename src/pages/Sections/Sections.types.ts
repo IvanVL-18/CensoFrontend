@@ -7,8 +7,8 @@ export interface Section {
   id: string;
   name: string;
   instructions: string | null;
-  indicator_id: string | null;
-  needs_attention: boolean;
+  indicator_name: string | null;
+  attention: boolean | number;
   created_at: string;
   updated_at: string;
   deleted_at: string;
@@ -102,6 +102,6 @@ export interface CreateSectionDTO {
   name: string;
   instructions?: string | null;
   indicator_id?: string | null;
-  needs_attention?: boolean;
+  attention?: boolean;
 }
 export type UpdateSectionDTO = Partial<CreateSectionDTO>;

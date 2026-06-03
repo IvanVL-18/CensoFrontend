@@ -17,12 +17,20 @@ const formatDate = (dateString: string | null) => {
   }
 };
 
-function DetailRow({ label, value }: { label: string; value: string | null | undefined }) {
+function DetailRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
   const safeValue = value?.trim() ? value : "N/A";
   return (
     <div>
       <label className="block text-sm font-medium text-gray-500">{label}</label>
-      <p className="text-lg text-gray-900 font-semibold break-words">{safeValue}</p>
+      <p className="text-lg text-gray-900 font-semibold break-words">
+        {safeValue}
+      </p>
     </div>
   );
 }
@@ -44,7 +52,9 @@ export function ViewSectionModal({
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
-            <h2 className="text-xl font-bold text-white">Detalle de la Sección</h2>
+            <h2 className="text-xl font-bold text-white">
+              Detalle de la Sección
+            </h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300"
@@ -60,9 +70,31 @@ export function ViewSectionModal({
                 <DetailRow label="Nombre de la Sección:" value={Section.name} />
               </div>
               <div className="col-span-2">
-                <DetailRow label="Instrucciones:" value={Section.instructions} />
+                <label className="block text-sm font-medium text-gray-500">
+                  Instrucciones:
+                </label>
+                <div className="max-h-32 overflow-y-auto mt-1 border border-gray-200 rounded-lg p-2">
+                  <p className="text-lg text-gray-900 font-semibold break-words">
+                    {Section.instructions?.trim()
+                      ? Section.instructions
+                      : "N/A"}
+                  </p>
+                </div>
               </div>
-
+              <div className="col-span-2">
+                <DetailRow
+                  label="Indicador:"
+                  value={Section.indicator_name ?? null}
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-500">
+                  Necesita Atención:
+                </label>
+                <p className="text-lg text-gray-900 font-semibold">
+                  {Section.attention ? "Sí" : "No"}
+                </p>
+              </div>
               <DetailRow
                 label="Fecha de creación:"
                 value={formatDate(Section.created_at)}
