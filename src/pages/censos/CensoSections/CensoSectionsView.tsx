@@ -5,8 +5,26 @@ import { useCensoSections } from "./useCensoSections";
 import Pagination from "../../../components/Pagination";
 import { ViewSectionModal } from "./ViewSectionsModal";
 import { AssignInstitutionsModal } from "./AssignInstitutionsModal";
+import { ToastProvider, useToast } from "../../../context/ToastContext";
+import { Toast } from "../../../components/Toast";
 
-const CensoSectionsView: React.FC = () => {
+function ToastContainer() {
+  const { toasts, removeToast } = useToast();
+  return (
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+      {toasts.map((toast) => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => removeToast(toast.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+const CensoSectionsPageContent: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -17,7 +35,6 @@ const CensoSectionsView: React.FC = () => {
     loading,
     paginating,
     saving,
-    error,
     allChecked,
     currentPage,
     lastPage,
@@ -90,12 +107,6 @@ const CensoSectionsView: React.FC = () => {
               Cerrar
             </button>
           </div>
-
-          {error && (
-            <div className="border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
 
           <div className="p-6">
             <div className="relative overflow-x-auto rounded-xl border border-gray-200">
@@ -308,8 +319,16 @@ const CensoSectionsView: React.FC = () => {
         sectionName={assignSectionName}
         onClose={closeAssignModal}
       />
+
+      <ToastContainer />
     </>
   );
 };
 
-export default CensoSectionsView;
+export default function CensoSectionsView() {
+  return (
+    <ToastProvider>
+      <CensoSectionsPageContent />
+    </ToastProvider>
+  );
+}

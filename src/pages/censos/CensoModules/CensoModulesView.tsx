@@ -2,8 +2,26 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, PlusCircle } from "lucide-react";
 import { useCensoModules } from "../CensoModules/useCensoModules";
+import { ToastProvider, useToast } from "../../../context/ToastContext";
+import { Toast } from "../../../components/Toast";
 
-const CensoModulesView: React.FC = () => {
+function ToastContainer() {
+  const { toasts, removeToast } = useToast();
+  return (
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+      {toasts.map((toast) => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onDismiss={() => removeToast(toast.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+const CensoModulesPageContent: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -13,19 +31,12 @@ const CensoModulesView: React.FC = () => {
     rows,
     loading,
     saving,
-    error,
     allChecked,
     toggleModule,
     toggleAllModules,
     changeIndex,
     saveChanges,
   } = useCensoModules(id ?? "");
-
-  const handleSave = async () => {
-    const ok = await saveChanges();
-    if (ok) {
-    }
-  };
 
   const handleBack = () => {
     navigate(-1);
@@ -62,12 +73,6 @@ const CensoModulesView: React.FC = () => {
             Cerrar
           </button>
         </div>
-
-        {error && (
-          <div className="border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
 
         <div className="p-6">
           <div className="overflow-x-auto rounded-xl border border-gray-200">
@@ -197,7 +202,7 @@ const CensoModulesView: React.FC = () => {
 
             <button
               type="button"
-              onClick={handleSave}
+              onClick={() => void saveChanges()}
               disabled={saving}
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--pantone-7421)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -207,8 +212,16 @@ const CensoModulesView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ToastContainer />
     </div>
   );
 };
 
-export default CensoModulesView;
+export default function CensoModulesView() {
+  return (
+    <ToastProvider>
+      <CensoModulesPageContent />
+    </ToastProvider>
+  );
+}
