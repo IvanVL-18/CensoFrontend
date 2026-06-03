@@ -60,14 +60,14 @@ function SectionsPageContent() {
   };
 
   const handleEditClick = async (partialSection: any) => {
-  try {
-    const fullSection = await getSection(partialSection.id);
-    modals.openEdit(fullSection);
-  } catch (error) {
-    console.error("Error al cargar detalles de la Sección", error);
-  }
-};
-  
+    try {
+      const fullSection = await getSection(partialSection.id);
+      console.log("fullSection:", fullSection);
+      modals.openEdit(fullSection);
+    } catch (error) {
+      console.error("Error al cargar detalles de la Sección", error);
+    }
+  };
 
   const {
     isSubmitting,
@@ -82,7 +82,9 @@ function SectionsPageContent() {
     openBulkError: modals.openBulkError,
   });
 
-  const modalTitle = modals.editingSection ? "Editar Sección" : "Agregar Sección";
+  const modalTitle = modals.editingSection
+    ? "Editar Sección"
+    : "Agregar Sección";
 
   let confirmTitle = "";
   let confirmMessage = "";
@@ -132,9 +134,21 @@ function SectionsPageContent() {
           onSort={handleSort}
           onView={handleViewClick}
           onEdit={hasPermission("sections.edit") ? handleEditClick : undefined}
-          onBan={hasPermission("sections.deactivate") ? (u) => modals.openConfirm(u, "ban") : undefined}
-          onRestore={hasPermission("sections.restore") ? (u) => modals.openConfirm(u, "restore") : undefined}
-          onDelete={hasPermission("sections.delete") ? (u) => modals.openConfirm(u, "delete") : undefined}
+          onBan={
+            hasPermission("sections.deactivate")
+              ? (u) => modals.openConfirm(u, "ban")
+              : undefined
+          }
+          onRestore={
+            hasPermission("sections.restore")
+              ? (u) => modals.openConfirm(u, "restore")
+              : undefined
+          }
+          onDelete={
+            hasPermission("sections.delete")
+              ? (u) => modals.openConfirm(u, "delete")
+              : undefined
+          }
         />
 
         {/* Paginación */}
@@ -157,7 +171,12 @@ function SectionsPageContent() {
         title={modalTitle}
         initialData={
           modals.editingSection
-            ? { name: modals.editingSection.name, instructions: modals.editingSection.instructions }
+            ? {
+                name: modals.editingSection.name,
+                instructions: modals.editingSection.instructions,
+                indicator_id: modals.editingSection.indicator_id ?? null,
+                attention: !!modals.editingSection.attention,
+              }
             : undefined
         }
         onClose={modals.closeForm}
@@ -168,7 +187,7 @@ function SectionsPageContent() {
       <ConfirmModal
         isOpen={modals.isConfirmOpen}
         isSubmitting={isSubmitting}
-        error={mutationError} 
+        error={mutationError}
         title={confirmTitle}
         message={confirmMessage}
         confirmButtonText={confirmButtonText}

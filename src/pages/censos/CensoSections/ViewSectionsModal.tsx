@@ -144,10 +144,16 @@ export function ViewSectionModal({
                   />
                 </div>
                 <div className="col-span-2">
-                  <DetailRow
-                    label="Instrucciones:"
-                    value={section.instructions}
-                  />
+                  <label className="block text-sm font-medium text-gray-500">
+                    Instrucciones:
+                  </label>
+                  <div className="max-h-32 overflow-y-auto mt-1 border border-gray-200 rounded-lg p-2">
+                    <p className="text-lg text-gray-900 font-semibold break-words">
+                      {section.instructions?.trim()
+                        ? section.instructions
+                        : "N/A"}
+                    </p>
+                  </div>
                 </div>
                 <DetailRow
                   label="Fecha de creación:"
