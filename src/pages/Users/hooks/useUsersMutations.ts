@@ -3,6 +3,7 @@ import { useToast } from "../../../context/ToastContext";
 import {
   createUser,
   updateUser,
+  updateUserExtra,
   banUser,
   restoreUser,
   forceDeleteUser,
@@ -25,7 +26,7 @@ export function useUsersMutations({
   closeConfirm,
   openBulkError,
   closeExtra,
-  patchUser, 
+  patchUser,
 }: UseUsersMutationsProps) {
   const { addToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,174 +36,127 @@ export function useUsersMutations({
   const [extraError, setExtraError] = useState<string | null>(null);
 
   const handleSave = useCallback(
-  async (userData: CreateUserDTO, editingUser?: User | null) => {
-    setIsSubmitting(true);
-    setMutationError(null);
+    async (userData: CreateUserDTO, editingUser?: User | null) => {
+      setIsSubmitting(true);
+      setMutationError(null);
 
-    const isSameValue = (a: any, b: any) => {
-      const normalize = (value: any) =>
-        value === null || value === undefined ? "" : String(value).trim();
-
-      return normalize(a) === normalize(b);
-    };
-
-    try {
-      let response;
-
-      if (editingUser) {
-        const updateData: UpdateUserDTO = { ...userData };
-
-        if (isSameValue(updateData.email, editingUser.email)) {
-          delete updateData.email;
-        }
-
-        if (!updateData.password) {
-          delete updateData.password;
-          delete updateData.password_confirmation;
-        }
-
-        if (!updateData.role_id) {
-          delete updateData.role_id;
-        }
-
-        if (!updateData.occupation_id) {
-          delete updateData.occupation_id;
-        }
-
-        if (!updateData.dependency_id) {
-          delete updateData.dependency_id;
-        }
-
-        if (!updateData.institution_id) {
-          delete updateData.institution_id;
-        }
-
-        response = await updateUser(editingUser.id, updateData);
-
-        addToast(
-          response?.message || "Usuario actualizado correctamente",
-          "success",
-        );
-      } else {
-        const createData: CreateUserDTO = {
-          email: userData.email,
-          password: userData.password,
-          password_confirmation: userData.password_confirmation,
-        };
-
-        if (userData.role_id) {
-          createData.role_id = userData.role_id;
-        }
-
-        if (userData.occupation_id) {
-          createData.occupation_id = userData.occupation_id;
-        }
-
-        if (userData.dependency_id) {
-          createData.dependency_id = userData.dependency_id;
-        }
-
-        if (userData.institution_id) {
-          createData.institution_id = userData.institution_id;
-        }
-
-        response = await createUser(createData);
-
-        addToast(response?.message || "Usuario creado correctamente", "success");
-      }
-
-      closeForm();
+      const isSameValue = (a: any, b: any) => {
+        const normalize = (value: any) =>
+          value === null || value === undefined ? "" : String(value).trim();
+        return normalize(a) === normalize(b);
+      };
 
       try {
-        refreshUsers();
-      } catch (refreshError) {
-        console.error(
-          "El usuario se guardó, pero falló refreshUsers:",
-          refreshError,
-        );
-      }
-    } catch (err: any) {
-      console.error("Error real al guardar usuario:", err);
-      console.error("Respuesta del backend:", err.response?.data || err.data);
+        let response;
 
-      const status = err.status || err.response?.status;
+        if (editingUser) {
+          const updateData: UpdateUserDTO = { ...userData };
 
-      /*
-        Caso especial:
-        El backend responde 400, pero la actualización sí se guarda.
-        Como no tenemos acceso al backend, evitamos mostrar error falso.
-      */
-      if (editingUser && status === 400) {
-        addToast("Usuario actualizado correctamente", "success");
+          if (isSameValue(updateData.email, editingUser.email)) {
+            delete updateData.email;
+          }
+
+          if (!updateData.password) {
+            delete updateData.password;
+            delete updateData.password_confirmation;
+          }
+
+          if (!updateData.role_id) delete updateData.role_id;
+          if (!updateData.occupation_id) delete updateData.occupation_id;
+          if (!updateData.dependency_id) delete updateData.dependency_id;
+          if (!updateData.institution_id) delete updateData.institution_id;
+
+          response = await updateUser(editingUser.id, updateData);
+          addToast(
+            response?.message || "Usuario actualizado correctamente",
+            "success",
+          );
+        } else {
+          const createData: CreateUserDTO = {
+            email: userData.email,
+            password: userData.password,
+            password_confirmation: userData.password_confirmation,
+          };
+
+          if (userData.role_id) createData.role_id = userData.role_id;
+          if (userData.occupation_id) createData.occupation_id = userData.occupation_id;
+          if (userData.dependency_id) createData.dependency_id = userData.dependency_id;
+          if (userData.institution_id) createData.institution_id = userData.institution_id;
+
+          response = await createUser(createData);
+          addToast(response?.message || "Usuario creado correctamente", "success");
+        }
 
         closeForm();
 
         try {
           refreshUsers();
         } catch (refreshError) {
-          console.error(
-            "El usuario se actualizó, pero falló refreshUsers:",
-            refreshError,
-          );
+          console.error("El usuario se guardó, pero falló refreshUsers:", refreshError);
+        }
+      } catch (err: any) {
+        console.error("Error real al guardar usuario:", err);
+        console.error("Respuesta del backend:", err.response?.data || err.data);
+
+        const status = err.status || err.response?.status;
+
+        /*
+          Caso especial:
+          El backend responde 400, pero la actualización sí se guarda.
+          Como no tenemos acceso al backend, evitamos mostrar error falso.
+        */
+        if (editingUser && status === 400) {
+          addToast("Usuario actualizado correctamente", "success");
+          closeForm();
+          try {
+            refreshUsers();
+          } catch (refreshError) {
+            console.error("El usuario se actualizó, pero falló refreshUsers:", refreshError);
+          }
+          return;
         }
 
-        return;
-      }
+        let msg =
+          err.response?.data?.message ||
+          err.data?.message ||
+          err.message ||
+          "Error al guardar";
 
-      let msg =
-        err.response?.data?.message ||
-        err.data?.message ||
-        err.message ||
-        "Error al guardar";
-
-      if (err.status === 422 && err.data?.errors) {
-        const details = Object.values(
-          err.data.errors as Record<string, string[]>,
-        )
-          .flat()
-          .join(" ");
-
-        if (details) {
-          msg = details;
+        if (err.status === 422 && err.data?.errors) {
+          const details = Object.values(
+            err.data.errors as Record<string, string[]>,
+          )
+            .flat()
+            .join(" ");
+          if (details) msg = details;
         }
-      }
 
-      if (err.response?.status === 422 && err.response?.data?.errors) {
-        const details = Object.values(
-          err.response.data.errors as Record<string, string[]>,
-        )
-          .flat()
-          .join(" ");
-
-        if (details) {
-          msg = details;
+        if (err.response?.status === 422 && err.response?.data?.errors) {
+          const details = Object.values(
+            err.response.data.errors as Record<string, string[]>,
+          )
+            .flat()
+            .join(" ");
+          if (details) msg = details;
         }
-      }
 
-      setMutationError(msg);
-      addToast(msg, "danger");
-    } finally {
-      setIsSubmitting(false);
-    }
-  },
-  [addToast, closeForm, refreshUsers],
-);
-  
+        setMutationError(msg);
+        addToast(msg, "danger");
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [addToast, closeForm, refreshUsers],
+  );
+
   const handleSaveExtra = useCallback(
     async (User: User, extraData: UpdateUserDTO) => {
       setIsExtraSubmitting(true);
       setExtraError(null);
 
       try {
-        const payload: UpdateUserDTO = {
-          ...extraData,
-          role_id: User.role_id,
-          occupation_id: User.occupation_id,
-          dependency_id: User.dependency_id,
-          institution_id: User.institution_id,
-        };
-
-        const response = await updateUser(User.id, payload);
+        // Solo se envían los campos que realmente cambiaron (extraData ya viene filtrado)
+        const response = await updateUserExtra(User.id, extraData);
         patchUser?.(User.id, extraData as any);
 
         addToast(response.message, "success");
@@ -219,7 +173,7 @@ export function useUsersMutations({
         setIsExtraSubmitting(false);
       }
     },
-    [addToast, closeExtra, refreshUsers],
+    [addToast, closeExtra, patchUser, refreshUsers],
   );
 
   const handleConfirmAction = useCallback(
