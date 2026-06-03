@@ -12,6 +12,7 @@ import type {
   CensoSectionRow,
   PaginationLinksObj,
 } from "./CensoSections.types";
+import { useToast } from "../../../context/ToastContext";
 
 type SelectedSectionState = {
   section_id: string;
@@ -32,7 +33,6 @@ type UseCensoSectionsReturn = {
   loading: boolean;
   paginating: boolean;
   saving: boolean;
-  error: string | null;
   hasAssignments: boolean;
   allChecked: boolean;
   currentPage: number;
@@ -53,13 +53,13 @@ type UseCensoSectionsReturn = {
 export const useCensoSections = (
   censusModuleId: string,
 ): UseCensoSectionsReturn => {
+  const { addToast } = useToast();
   const [moduleInfo, setModuleInfo] = useState<CensusModuleInfo | null>(null);
   const [indexes, setIndexes] = useState<SectionIndexOption[]>([]);
   const [sections, setSections] = useState<SectionInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [paginating, setPaginating] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [hasAssignments, setHasAssignments] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
@@ -118,7 +118,6 @@ export const useCensoSections = (
     async (page: number, signal?: AbortSignal, isInitial = false) => {
       try {
         isInitial ? setLoading(true) : setPaginating(true);
-        setError(null);
 
         const data = await getCensoSections(censusModuleId, page, signal);
 
@@ -177,8 +176,9 @@ export const useCensoSections = (
           response?: { data?: { message?: string } };
         };
         if (e?.name === "CanceledError" || e?.name === "AbortError") return;
-        setError(
+        addToast(
           e?.response?.data?.message ?? "No se pudo cargar la información.",
+          "danger",
         );
       } finally {
         setLoading(false);
@@ -293,30 +293,28 @@ export const useCensoSections = (
 
     try {
       setSaving(true);
-      setError(null);
 
-      if (hasAssignments) {
-        await updateCensoSections(censusModuleId, {
-          items: validItems.map((item) => ({
-            census_section_id: item.census_section_id ?? null,
-            index_id: item.index_id,
-            section_id: item.section_id,
-          })),
-        });
-      } else {
-        await storeCensoSections({
-          census_module_id: censusModuleId,
-          items: validItems.map((item) => ({
-            index_id: item.index_id,
-            section_id: item.section_id,
-          })),
-        });
-      }
+      const result = hasAssignments
+        ? await updateCensoSections(censusModuleId, {
+            items: validItems.map((item) => ({
+              census_section_id: item.census_section_id ?? null,
+              index_id: item.index_id,
+              section_id: item.section_id,
+            })),
+          })
+        : await storeCensoSections({
+            census_module_id: censusModuleId,
+            items: validItems.map((item) => ({
+              index_id: item.index_id,
+              section_id: item.section_id,
+            })),
+          });
 
       mapRef.current = {};
       initialLoadDone.current = false;
       setMapVersion(0);
       await loadData(currentPage, undefined, false);
+      addToast(result.message ?? "Secciones guardadas correctamente.", "success");
       return true;
     } catch (err: unknown) {
       const e = err as {
@@ -327,12 +325,12 @@ export const useCensoSections = (
       const apiError = e?.response?.data;
       if (apiError?.errors) {
         const firstKey = Object.keys(apiError.errors)[0];
-        setError(
-          apiError.errors[firstKey]?.[0] ??
-            "No se pudieron guardar los cambios.",
+        addToast(
+          apiError.errors[firstKey]?.[0] ?? "No se pudieron guardar los cambios.",
+          "danger",
         );
       } else {
-        setError(apiError?.message ?? "No se pudieron guardar los cambios.");
+        addToast(apiError?.message ?? "No se pudieron guardar los cambios.", "danger");
       }
       return false;
     } finally {
@@ -360,7 +358,6 @@ export const useCensoSections = (
     loading,
     paginating,
     saving,
-    error,
     hasAssignments,
     allChecked,
     currentPage,

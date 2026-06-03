@@ -308,29 +308,27 @@ export const useCensusQuestions = (
       setSaving(true);
 
     
-      if (hasAssignments) {
-        await updateCensusQuestions(censusSectionId, {
-          items: validItems.map((item) => ({
-            census_question_id: item.census_question_id ?? null,
-            index_id: item.index_id,
-            question_id: item.question_id,
-          })),
-        });
-      } else {
-        await storeCensusQuestions({
-          census_section_id: censusSectionId,
-          items: validItems.map((item) => ({
-            index_id: item.index_id,
-            question_id: item.question_id,
-          })),
-        });
-      }
+      const result = hasAssignments
+        ? await updateCensusQuestions(censusSectionId, {
+            items: validItems.map((item) => ({
+              census_question_id: item.census_question_id ?? null,
+              index_id: item.index_id,
+              question_id: item.question_id,
+            })),
+          })
+        : await storeCensusQuestions({
+            census_section_id: censusSectionId,
+            items: validItems.map((item) => ({
+              index_id: item.index_id,
+              question_id: item.question_id,
+            })),
+          });
 
       mapRef.current = {};
       initialLoadDone.current = false;
       setMapVersion(0);
       await loadData(currentPage, undefined, false);
-      addToast("Preguntas guardadas correctamente.", "success");
+      addToast(result.message ?? "Preguntas guardadas correctamente.", "success");
       return true;
     } catch (err: unknown) {
       const e = err as {

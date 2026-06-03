@@ -2,7 +2,7 @@ import { X, Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../../../lib/Axios";
 import { PreviewQuestionModal } from "./PreviewQuestionModal";
-// Ajusta la ruta según donde tengas PreviewQuestionModal en tu proyecto
+import { useToast } from "../../../context/ToastContext";
 
 interface QuestionDetail {
   id: string;
@@ -68,9 +68,9 @@ export function ViewQuestionModal({
   onClose,
   questionId,
 }: ViewQuestionModalProps) {
+  const { addToast } = useToast();
   const [question, setQuestion] = useState<QuestionDetail | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Estado del PreviewQuestionModal (Form.io)
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -83,7 +83,6 @@ export function ViewQuestionModal({
     const fetchQuestion = async () => {
       try {
         setLoading(true);
-        setError(null);
         setQuestion(null);
 
         const response = await api.get<{ data: QuestionDetail }>(
@@ -100,9 +99,11 @@ export function ViewQuestionModal({
           response?: { data?: { message?: string } };
         };
         if (e?.name === "CanceledError" || e?.name === "AbortError") return;
-        setError(
+        addToast(
           e?.response?.data?.message ?? "No se pudo cargar la pregunta.",
+          "danger",
         );
+        onClose();
       } finally {
         setLoading(false);
       }
@@ -147,10 +148,6 @@ export function ViewQuestionModal({
               <p className="text-center text-sm text-gray-400 py-6">
                 Cargando información...
               </p>
-            )}
-
-            {error && !loading && (
-              <p className="text-center text-sm text-red-600 py-6">{error}</p>
             )}
 
             {question && !loading && (

@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../../../lib/Axios";
+import { useToast } from "../../../context/ToastContext";
 
 interface SectionDetail {
   id: string;
@@ -56,9 +57,9 @@ export function ViewSectionModal({
   onClose,
   sectionId,
 }: ViewSectionModalProps) {
+  const { addToast } = useToast();
   const [section, setSection] = useState<SectionDetail | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen || !sectionId) return;
@@ -68,7 +69,6 @@ export function ViewSectionModal({
     const fetchSection = async () => {
       try {
         setLoading(true);
-        setError(null);
         setSection(null);
 
         const response = await api.get<{ data: SectionDetail }>(
@@ -85,7 +85,8 @@ export function ViewSectionModal({
           response?: { data?: { message?: string } };
         };
         if (e?.name === "CanceledError" || e?.name === "AbortError") return;
-        setError(e?.response?.data?.message ?? "No se pudo cargar la sección.");
+        addToast(e?.response?.data?.message ?? "No se pudo cargar la sección.", "danger");
+        onClose();
       } finally {
         setLoading(false);
       }
@@ -129,10 +130,6 @@ export function ViewSectionModal({
               <p className="text-center text-sm text-gray-400 py-6">
                 Cargando información...
               </p>
-            )}
-
-            {error && !loading && (
-              <p className="text-center text-sm text-red-600 py-6">{error}</p>
             )}
 
             {section && !loading && (

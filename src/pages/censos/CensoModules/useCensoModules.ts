@@ -11,6 +11,7 @@ import type {
   AssignedModule,
   CensoModuleRow,
 } from "./CensoModules.types";
+import { useToast } from "../../../context/ToastContext";
 
 type UseCensoModulesReturn = {
   censo: CensoInfo | null;
@@ -18,7 +19,6 @@ type UseCensoModulesReturn = {
   rows: CensoModuleRow[];
   loading: boolean;
   saving: boolean;
-  error: string | null;
   hasAssignments: boolean;
   allChecked: boolean;
   toggleModule: (moduleId: string, checked: boolean) => void;
@@ -29,12 +29,12 @@ type UseCensoModulesReturn = {
 };
 
 export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
+  const { addToast } = useToast();
   const [censo, setCenso] = useState<CensoInfo | null>(null);
   const [indexes, setIndexes] = useState<IndexInfo[]>([]);
   const [rows, setRows] = useState<CensoModuleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [hasAssignments, setHasAssignments] = useState(false);
 
   const buildRows = useCallback(
@@ -69,7 +69,6 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
     async (signal?: AbortSignal) => {
       try {
         setLoading(true);
-        setError(null);
 
         const data = await getCensoModules(censoId, signal);
         const fetchedIndexes = data.indexes ?? [];
@@ -96,8 +95,9 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
         setRows(rowsWithIndex);
       } catch (err: any) {
         if (err?.name === "CanceledError" || err?.name === "AbortError") return;
-        setError(
+        addToast(
           err?.response?.data?.message ?? "No se pudo cargar la información.",
+          "danger",
         );
       } finally {
         setLoading(false);
@@ -169,19 +169,18 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
 
 
       setSaving(true);
-      setError(null);
 
-      if (hasAssignments) {
-        await updateCensoModules(censoId, { items: validItems });
-      } else {
-        await storeCensoModules({ census_id: censoId, items: validItems });
-      }
+      const result = hasAssignments
+        ? await updateCensoModules(censoId, { items: validItems })
+        : await storeCensoModules({ census_id: censoId, items: validItems });
 
       await loadData();
+      addToast(result.message ?? "Módulos guardados correctamente.", "success");
       return true;
     } catch (err: any) {
-      setError(
+      addToast(
         err?.response?.data?.message ?? "No se pudieron guardar los cambios.",
+        "danger",
       );
       return false;
     } finally {
@@ -199,7 +198,6 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
     rows,
     loading,
     saving,
-    error,
     hasAssignments,
     allChecked,
     toggleAllModules,
