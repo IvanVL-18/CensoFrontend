@@ -289,10 +289,7 @@ export const useCensoSections = (
   const saveChanges = useCallback(async () => {
     if (!censusModuleId) return false;
 
-    /* if (validItems.length === 0) {
-      setError("Selecciona al menos una sección y asígnale un índice.");
-      return false;
-    } */
+
 
     try {
       setSaving(true);
