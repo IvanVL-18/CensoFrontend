@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronRight, Users, Loader2, AlertCircle, ArrowLeft, Mail, FileDown } from "lucide-react";
+import { ChevronRight, Users, Loader2, AlertCircle, ArrowLeft, Mail, FileDown, Sheet } from "lucide-react";
 import { getInstitutionUsers, getAnswersForReport } from "./AdminAnswers.service";
 import type { InstitutionUsersResponse } from "./AdminAnswers.types";
 import { generateAnswersPdf } from "./generateAnswersPdf";
+import { generateAnswersExcel } from "./generateAnswersExcel";
 
 export default function InstitutionUsersPage() {
   const { censusId, institutionId } = useParams<{
@@ -17,8 +18,10 @@ export default function InstitutionUsersPage() {
   const [data,    setData]    = useState<InstitutionUsersResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
-  const [pdfLoading, setPdfLoading] = useState<Record<string, boolean>>({});
-  const [pdfError,   setPdfError]   = useState<Record<string, string>>({});
+  const [pdfLoading,   setPdfLoading]   = useState<Record<string, boolean>>({});
+  const [pdfError,     setPdfError]     = useState<Record<string, string>>({});
+  const [xlsxLoading,  setXlsxLoading]  = useState<Record<string, boolean>>({});
+  const [xlsxError,    setXlsxError]    = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!censusId || !institutionId) return;
@@ -49,6 +52,21 @@ export default function InstitutionUsersPage() {
       setPdfError((prev) => ({ ...prev, [userId]: msg }));
     } finally {
       setPdfLoading((prev) => ({ ...prev, [userId]: false }));
+    }
+  };
+
+  const handleDownloadExcel = async (userId: string) => {
+    if (!censusId || !institutionId) return;
+    setXlsxLoading((prev) => ({ ...prev, [userId]: true }));
+    setXlsxError((prev) => ({ ...prev, [userId]: "" }));
+    try {
+      const reportData = await getAnswersForReport(censusId, institutionId, userId);
+      await generateAnswersExcel(reportData);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error al generar el Excel.";
+      setXlsxError((prev) => ({ ...prev, [userId]: msg }));
+    } finally {
+      setXlsxLoading((prev) => ({ ...prev, [userId]: false }));
     }
   };
 
@@ -170,11 +188,30 @@ export default function InstitutionUsersPage() {
                             )}
                             {pdfLoading[user.id] ? "Generando…" : "PDF"}
                           </button>
+
+                          <button
+                            onClick={() => handleDownloadExcel(user.id)}
+                            disabled={xlsxLoading[user.id]}
+                            title={xlsxError[user.id] || "Descargar Excel"}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-green-800 border border-green-400 hover:bg-green-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {xlsxLoading[user.id] ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Sheet className="h-3.5 w-3.5" />
+                            )}
+                            {xlsxLoading[user.id] ? "Generando…" : "Excel"}
+                          </button>
                         </div>
 
                         {pdfError[user.id] && (
                           <p className="text-xs text-red-500 mt-1 text-center">
                             {pdfError[user.id]}
+                          </p>
+                        )}
+                        {xlsxError[user.id] && (
+                          <p className="text-xs text-red-500 mt-1 text-center">
+                            {xlsxError[user.id]}
                           </p>
                         )}
                       </td>
