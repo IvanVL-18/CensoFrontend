@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isHydrating, setIsHydrating] = useState(true); // true hasta que /me responda
   const loginWithToken = useCallback(async (access_token: string) => {
-    sessionStorage.setItem("access_token", access_token);
+    localStorage.setItem("access_token", access_token);
     const me = await meRequest();
     if (me) setUser(toAuthUser(me));
   }, []);
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const { access_token } = await loginRequest(credentials);
-      sessionStorage.setItem("access_token", access_token);
+      localStorage.setItem("access_token", access_token);
       const me = await meRequest();
       if (me) setUser(toAuthUser(me));
     } catch (err) {
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await logoutRequest(); // Laravel borra el token + cookie
     } finally {
-      sessionStorage.removeItem("access_token");
+      localStorage.removeItem("access_token");
       setUser(null); // Limpiamos estado aunque el request falle
     }
   }, []);
