@@ -1,8 +1,9 @@
-import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import type { DependencyModalProps } from "../Dependencies.types";
 import { Dependencieschema } from "../schemas/Dependencies.schema";
+import { CharCountInput } from "../../../components/CharCountInput";
 
 const MAX_LENGTH = 45;
 
@@ -19,7 +20,6 @@ export function DependencyModal({
   const [name, setName] = useState(initialName);
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
-  const [charCount, setCharCount] = useState(initialName.length);
 
   useEffect(() => {
     setServerError(error || null);
@@ -30,7 +30,6 @@ export function DependencyModal({
       setName(initialName);
       setFormErrors([]);
       setServerError(null);
-      setCharCount(initialName.length);
       onClearServerError();
     }
   }, [isOpen, initialName, onClearServerError]);
@@ -38,69 +37,30 @@ export function DependencyModal({
   const validateForm = (currentName: string) => {
     const result = Dependencieschema.safeParse({ name: currentName });
     const errors: string[] = [];
-
     if (!result.success) {
       errors.push(...result.error.issues.map((err) => err.message));
     }
-
     if (/\d/.test(currentName)) {
       errors.push("El nombre no puede contener números");
     }
-
     setFormErrors(errors);
     return errors.length === 0;
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const isValid = validateForm(name);
-    if (isValid) onSave(name);
-  };
-
-  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    if (newName.length <= MAX_LENGTH) {
-      setName(newName);
-      setCharCount(newName.length);
-      validateForm(newName);
-      setServerError(null);
-      if (error) onClearServerError();
-    }
+    if (validateForm(name)) onSave(name);
   };
 
   const handleClose = () => {
     setName("");
     setFormErrors([]);
     setServerError(null);
-    setCharCount(0);
     onClearServerError();
     onClose();
   };
 
   if (!isOpen) return null;
-
-  const hasErrors = formErrors.length > 0 || !!serverError;
-  const isNearLimit = charCount >= MAX_LENGTH - 10 && charCount <= MAX_LENGTH;
-  const isAtLimit = charCount >= MAX_LENGTH;
-
-  const getInputBorderColor = () => {
-    if (hasErrors) return 'border-red-500 focus:ring-red-400';
-    if (isAtLimit) return 'border-red-300 focus:ring-red-400';
-    if (isNearLimit) return 'border-amber-300 focus:ring-amber-400';
-    return 'border-gray-300 focus:ring-[#DDC9A3]';
-  };
-
-  const getProgressBarColor = () => {
-    if (isAtLimit) return 'bg-red-600';
-    if (isNearLimit) return 'bg-amber-500';
-    return 'bg-[#DDC9A3]';
-  };
-
-  const getCharCountColor = () => {
-    if (isAtLimit) return 'text-red-600';
-    if (isNearLimit) return 'text-amber-600';
-    return 'text-gray-500';
-  };
 
   return (
     <>
@@ -108,7 +68,6 @@ export function DependencyModal({
         className="fixed inset-0 bg-blue bg-opacity-90 backdrop-blur-sm z-40 transition-opacity"
         onClick={handleClose}
       />
-
       <div className="fixed inset-0 bg-[#000000ab] z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
           <div className="flex justify-between items-center p-4 bg-red-900">
@@ -120,41 +79,25 @@ export function DependencyModal({
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="p-6">
-              <div className="flex justify-between items-center mb-2">
-                <label
-                  htmlFor="DependencyName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Nombre de la dependencia:
-                </label>
-                <span className={`text-xs font-medium ${getCharCountColor()}`}>
-                  {charCount}/{MAX_LENGTH} caracteres
-                </span>
-              </div>
-
-              <input
-                type="text"
+              <CharCountInput
                 id="DependencyName"
+                label="Nombre de la dependencia:"
                 value={name}
-                onChange={handleNameChange}
-                placeholder="Ingresar nombre..."
                 maxLength={MAX_LENGTH}
-                className={`border rounded-lg p-2 w-full focus:outline-none focus:ring-2 ${getInputBorderColor()}`}
+                placeholder="Ingresar nombre..."
                 disabled={isSubmitting}
+                hasError={formErrors.length > 0}
                 autoFocus
+                onChange={(val) => {
+                  setName(val);
+                  validateForm(val);
+                  setServerError(null);
+                  if (error) onClearServerError();
+                }}
               />
-
-              <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-300 ${getProgressBarColor()}`}
-                  style={{ width: `${(charCount / MAX_LENGTH) * 100}%` }}
-                />
-              </div>
-
               <div id="form-errors-client">
                 <FormErrors errors={formErrors} />
               </div>
-
               {serverError && (
                 <div id="form-errors-server">
                   <FormErrors errors={[serverError]} />
@@ -171,7 +114,6 @@ export function DependencyModal({
               >
                 Cancelar
               </button>
-
               <button
                 type="submit"
                 disabled={isSubmitting || formErrors.length > 0 || name.trim() === initialName.trim()}
