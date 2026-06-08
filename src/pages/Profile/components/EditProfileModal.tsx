@@ -379,52 +379,52 @@ export default function EditProfileModal({ open, onClose }: Props) {
                   </div>
                 </div>
               </div>
-
               {/* Censos asignados */}
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  Censos asignados
-                </p>
+<div>
+  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+    Censos asignados
+  </p>
 
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
-                  {catalogs.censuses.length > 0 ? (
-                    <div className="space-y-2">
-                      {catalogs.censuses.map((census: any, index: number) => (
-                        <details
-                          key={index}
-                          className="rounded-lg border border-slate-200 bg-white"
-                        >
-                          <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-slate-800">
-                            {census.name}
-                          </summary>
+  <details className="group rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
+    <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50">
+      <span>Ver censos</span>
 
-                          <div className="border-t border-slate-100 px-4 py-3 text-sm text-slate-600">
-                            <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                              <div>
-                                <p className="text-xs font-semibold uppercase text-slate-400">
-                                  Fecha de creación
-                                </p>
-                                <p>{census.init_date ?? "Sin fecha"}</p>
-                              </div>
+      <ChevronDown
+        size={18}
+        className="text-slate-400 transition-transform duration-200 group-open:rotate-180"
+      />
+    </summary>
 
-                              <div>
-                                <p className="text-xs font-semibold uppercase text-slate-400">
-                                  Fecha de término
-                                </p>
-                                <p>{census.deadline ?? "Sin fecha"}</p>
-                              </div>
-                            </div>
-                          </div>
-                        </details>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-slate-500">
-                      No hay censos asignados.
-                    </p>
-                  )}
-                </div>
-              </div>
+    <div className="mt-5 max-h-64 overflow-y-auto pr-2">
+      {catalogs.censuses.length > 0 ? (
+        <ol className="relative border-s border-slate-200">
+  {catalogs.censuses.map((census: any, index: number) => (
+    <li
+      key={index}
+      className={`ms-5 ${
+        index !== catalogs.censuses.length - 1 ? "mb-5" : ""
+      }`}
+    >
+      <div className="absolute -start-[7px] mt-1.5 h-3 w-3 rounded-full bg-slate-300 border border-white" />
+
+      <time className="text-xs font-medium text-slate-400">
+        {census.init_date ?? "Sin fecha"}
+      </time>
+
+      <p className="mt-1 text-sm font-medium text-slate-600">
+        {census.name}
+      </p>
+    </li>
+  ))}
+</ol>
+      ) : (
+        <p className="text-sm text-slate-500">
+          No hay censos asignados.
+        </p>
+      )}
+    </div>
+  </details>
+</div>
 
               {error && (
                 <p className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
