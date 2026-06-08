@@ -9,6 +9,7 @@ interface ToastProps {
   type: ToastType;
   onDismiss: () => void;
 }
+const DUPLICATE_NAME_MESSAGE_REGEX = /en uso/i;
 
 // Configuración de estilos para cada tipo de toast
 const toastConfig = {
@@ -34,18 +35,24 @@ const toastConfig = {
 
 export function Toast({ message, type, onDismiss }: ToastProps) {
   const config = toastConfig[type];
-
-  // Efecto para auto-cerrar el toast después de 5 segundos
+  const isDuplicateNameMessage = DUPLICATE_NAME_MESSAGE_REGEX.test(message);
   useEffect(() => {
+    if (isDuplicateNameMessage) {
+      onDismiss();
+      return;
+    }
+
     const timer = setTimeout(() => {
       onDismiss();
-    }, 5000); // 5 segundos
-
-    // Limpiamos el timer si el componente se desmonta
+    }, 5000);
     return () => {
       clearTimeout(timer);
     };
-  }, [onDismiss]);
+  }, [onDismiss, isDuplicateNameMessage]);
+
+  if (isDuplicateNameMessage) {
+    return null;
+  }
 
   return (
     <div

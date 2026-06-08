@@ -25,7 +25,7 @@ const ALL_ITEMS = [
   { to: "/instituciones", icon: Landmark,        label: "Instituciones",  permission: "institutions.view", roles: null },
   { to: "/censos",        icon: ClipboardList,   label: "Censos",         permission: "censos.view",    roles: null },
   { to: "/graficador",    icon: BarChart3,       label: "Graficador",     permission: "graficador.view", roles: null },
-  { to: "/reportes",      icon: CalendarRange,   label: "Reportes",       permission: "reports.view",   roles: null },
+  /*{ to: "/reportes",      icon: CalendarRange,   label: "Reportes",       permission: "reports.view",   roles: null },*/
   { to: "/configuracion", icon: Settings,        label: "Configuración",  permission: null,             roles: ["Admin", "Super Admin"] },
   { to: "/mis-censos",    icon: NotebookPen,     label: "Mis Censos",     permission: null,             roles: ["Surveyed"] },
 ];
