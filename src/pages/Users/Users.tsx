@@ -100,21 +100,21 @@ function UsersPageContent() {
   let confirmButtonColor: "danger" | "primary" = "danger";
 
   if (modals.actionType === "ban") {
-    confirmTitle = "Desactivar Usuario";
-    confirmMessage = `¿Estás seguro de que quieres desactivar el Usuario "${modals.actionUser?.name}"?`;
-    confirmButtonText = "Desactivar";
-    confirmButtonColor = "danger";
-  } else if (modals.actionType === "restore") {
-    confirmTitle = "Restaurar Usuario";
-    confirmMessage = `¿Estás seguro de que quieres restaurar el Usuario "${modals.actionUser?.name}"?`;
-    confirmButtonText = "Restaurar";
-    confirmButtonColor = "primary";
-  } else if (modals.actionType === "delete") {
-    confirmTitle = "Eliminar Permanentemente";
-    confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el Usuario "${modals.actionUser?.name}"? Esta acción no se puede deshacer.`;
-    confirmButtonText = "Eliminar";
-    confirmButtonColor = "danger";
-  }
+  confirmTitle = "Desactivar Usuario";
+  confirmMessage = `¿Estás seguro de que quieres desactivar el Usuario "${modals.actionUser?.name || modals.actionUser?.email}"?`;
+  confirmButtonText = "Desactivar";
+  confirmButtonColor = "danger";
+} else if (modals.actionType === "restore") {
+  confirmTitle = "Restaurar Usuario";
+  confirmMessage = `¿Estás seguro de que quieres restaurar el Usuario "${modals.actionUser?.name || modals.actionUser?.email}"?`;
+  confirmButtonText = "Restaurar";
+  confirmButtonColor = "primary";
+} else if (modals.actionType === "delete") {
+  confirmTitle = "Eliminar Permanentemente";
+  confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el Usuario "${modals.actionUser?.name || modals.actionUser?.email}"? Esta acción no se puede deshacer.`;
+  confirmButtonText = "Eliminar";
+  confirmButtonColor = "danger";
+}
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
