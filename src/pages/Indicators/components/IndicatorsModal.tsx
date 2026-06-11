@@ -4,7 +4,7 @@ import { FormErrors } from "./FormErrors";
 import type { IndicatorModalProps } from "../Indicators.types";
 import { Indicatorschema } from "../schemas/Indicators.schema";
 
-const MAX_LENGTH = 65;
+const MAX_LENGTH = 255;
 
 export function IndicatorModal({
   isOpen,
