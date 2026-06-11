@@ -11,17 +11,17 @@ export const Sectionschema = z.object({
     ),
 
   instructions: z
-    .string()
-    .max(4200, "La instrucción no puede exceder los 4200 caracteres.")
-    .regex(
-      /^[\p{L}\p{M}\s\d,.:;/"“”_()º°\r\n-]+$/u,
-      "La instrucción no puede tener emojis ni otros símbolos.",
-    )
-    .refine((val) => !val || val.length >= 10, {
-      message: "La instrucción debe tener al menos 10 caracteres.",
-    })
-    .optional()
-    .nullable(),
+  .string()
+  .max(4200, "La instrucción no puede exceder los 4200 caracteres.")
+  .refine((val) => !val || val.length >= 10, {
+    message: "La instrucción debe tener al menos 10 caracteres.",
+  })
+  .refine(
+    (val) => !val || /^[\p{L}\p{M}\s\d,.:;/"""_()º°\r\n-]+$/u.test(val),
+    "La instrucción no puede tener emojis ni otros símbolos.",
+  )
+  .optional()
+  .nullable(),
 
   indicator_id: z
     .string()
