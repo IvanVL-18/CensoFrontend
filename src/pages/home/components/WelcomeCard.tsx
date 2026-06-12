@@ -12,7 +12,7 @@ type Props = {
 import { useAuthContext } from "../../../context/AuthContext";
 
 export default function WelcomeCard({
-  title = "Censos del Estado de Hidalgo",
+  title = "Censo Nacional de Gobiernos Estatales Hidalgo 2026",
   subtitle = "Plataforma oficial para la gestión y análisis de censos",
   logoSrc = EstrellaHeader,
 }: Omit<Props, "userName">) {
