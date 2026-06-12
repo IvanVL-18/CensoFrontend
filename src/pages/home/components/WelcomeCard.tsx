@@ -13,7 +13,7 @@ import { useAuthContext } from "../../../context/AuthContext";
 
 export default function WelcomeCard({
   title = "Censo Nacional de Gobiernos Estatales Hidalgo 2026",
-  subtitle = "Plataforma oficial para la gestión y análisis de censos",
+  subtitle = " Plataforma para digitalizar y centralizar el proceso de captura del censo",
   logoSrc = EstrellaHeader,
 }: Omit<Props, "userName">) {
   const { user } = useAuthContext();
