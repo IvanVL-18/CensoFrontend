@@ -19,22 +19,11 @@ import "../../../styles/bootstrap-scoped.css";
 import type { FormSchema, QuestionResponse } from "../interfaces/Question";
 import ContainerCustom from "./ContainerCustom";
 import OperationsConfigModal from "./OperationsConfigModal";
+import { sanitizeSchema } from "../../../lib/formioSchema";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
-
-interface FormioComponent {
-  type: string;
-  key?: string;
-  label?: string;
-  inputMask?: string | null;
-  displayMask?: string | null;
-  components?: FormioComponent[];
-  columns?: FormioComponent[];
-  rows?: FormioComponent[][];
-  [key: string]: unknown;
-}
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -56,31 +45,7 @@ const INIT_GUARD_MS = 800;
  */
 const asFormType = (schema: FormSchema): any => schema;
 
-// ─── Sanitización ─────────────────────────────────────────────────────────────
-
-const sanitizeComponents = (components: FormioComponent[]): FormioComponent[] =>
-  components.map((comp) => {
-    const s: FormioComponent = { ...comp };
-
-    if (s.inputMask === null) s.inputMask = "";
-    if (s.displayMask === null) s.displayMask = "";
-
-    if (Array.isArray(s.components))
-      s.components = sanitizeComponents(s.components);
-    if (Array.isArray(s.columns)) s.columns = sanitizeComponents(s.columns);
-    if (Array.isArray(s.rows))
-      s.rows = s.rows.map((row) => sanitizeComponents(row));
-
-    return s;
-  });
-
-const sanitizeSchema = (schema: FormSchema): FormSchema => ({
-  ...schema,
-  display: schema.display ?? "form",
-  components: sanitizeComponents(
-    (schema.components ?? []) as FormioComponent[],
-  ),
-});
+// Sanitización: ver src/lib/formioSchema.ts (compartida con los modales)
 
 // ─── Sub-componente: Toast de guardado ────────────────────────────────────────
 // NOTA: ToastContainer usa portal y se monta en document.body (fuera de .bs),

@@ -1,0 +1,154 @@
+/* =====================================================================
+   Tema Form.io — armoniza el render Bootstrap de Form.io con el diseño
+   Tailwind del proyecto (bordes redondeados, paleta pantone, tipografía).
+
+   Todo va scoped bajo .bs para no afectar al resto de la app.
+   Cargar DESPUÉS de formio.full.min.css (ver App.css).
+   ===================================================================== */
+
+/* Tipografía del proyecto dentro de los formularios */
+.bs .formio-form {
+  font-family: var(--primary-font, "GMX", sans-serif);
+  color: #374151;
+}
+
+/* ── Labels ───────────────────────────────────────────────────────────
+   Preguntas largas (varias líneas) sin romper el layout */
+.bs .formio-form label {
+  white-space: normal;
+  word-break: break-word;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #374151;
+  margin-bottom: 0.4rem;
+}
+.bs .formio-form .form-check-label {
+  font-weight: 400;
+}
+
+/* ── Campos uniformes ───────────────────────────────────────────────── */
+.bs .formio-form .form-control,
+.bs .formio-form .form-select,
+.bs .formio-form .choices__inner {
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #fff;
+  font-size: 0.9rem;
+  min-height: 42px;
+}
+.bs .formio-form textarea.form-control {
+  min-height: 90px;
+}
+
+.bs .formio-form .form-control:focus,
+.bs .formio-form .form-select:focus,
+.bs .formio-form .choices.is-focused .choices__inner,
+.bs .formio-form .choices.is-open .choices__inner {
+  border-color: var(--pantone-7421, #691b31);
+  box-shadow: 0 0 0 0.2rem rgba(105, 27, 49, 0.12);
+  outline: none;
+}
+
+/* Campos calculados / solo lectura */
+.bs .formio-form .form-control:disabled,
+.bs .formio-form .form-select:disabled,
+.bs .formio-form .form-control[readonly] {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+/* ── Dropdown de selects (choices.js) ───────────────────────────────── */
+.bs .choices__list--dropdown,
+.bs .choices__list[aria-expanded] {
+  z-index: 60;
+  border-radius: 0.5rem;
+  border-color: #d1d5db;
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15);
+}
+.bs .choices__list--dropdown .choices__item--selectable.is-highlighted {
+  background-color: #f9fafb;
+}
+
+/* ── Separación entre preguntas ─────────────────────────────────────── */
+.bs .formio-form .formio-component {
+  margin-bottom: 1rem;
+}
+
+/* ── Columnas ────────────────────────────────────────────────────────
+   Alinear los campos por la base aunque las preguntas (labels) tengan
+   largos muy distintos — evita inputs "flotando" a alturas dispares */
+.bs .formio-form .formio-component-columns.row,
+.bs .formio-form .formio-component-columns > .row {
+  align-items: flex-end;
+  row-gap: 0.75rem;
+}
+
+/* ── Componentes anchos: scroll horizontal solo donde hace falta ─────
+   (el dropdown de los selects ya no queda recortado por un
+   overflow-x-auto global en el contenedor del formulario) */
+.bs .formio-component-datagrid,
+.bs .formio-component-editgrid,
+.bs .formio-component-table,
+.bs .formio-component-survey {
+  overflow-x: auto;
+}
+.bs .formio-form table {
+  width: 100%;
+}
+.bs .formio-form .table > :not(caption) > * > * {
+  padding: 0.5rem 0.75rem;
+}
+.bs .formio-form .table thead th {
+  background-color: #f9fafb;
+  font-size: 0.8rem;
+  color: #4b5563;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* ── Radios y checkboxes ────────────────────────────────────────────── */
+.bs .formio-form .form-check-input {
+  width: 1.05rem;
+  height: 1.05rem;
+  border-color: #9ca3af;
+}
+.bs .formio-form .form-check-input:checked {
+  background-color: var(--pantone-7421, #691b31);
+  border-color: var(--pantone-7421, #691b31);
+}
+
+/* ── Botones internos (agregar fila en datagrid, etc.) ──────────────── */
+.bs .formio-form .btn-primary {
+  background-color: var(--pantone-7421, #691b31);
+  border-color: var(--pantone-7421, #691b31);
+}
+.bs .formio-form .btn-primary:hover,
+.bs .formio-form .btn-primary:focus {
+  background-color: var(--pantone-7420, #a02142);
+  border-color: var(--pantone-7420, #a02142);
+}
+
+/* ── Paneles / fieldsets ────────────────────────────────────────────── */
+.bs .formio-form .card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+}
+.bs .formio-form .card .card-header {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* ── Ayudas y errores ───────────────────────────────────────────────── */
+.bs .formio-form .form-text {
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+.bs .formio-form .formio-errors .error,
+.bs .formio-form .invalid-feedback {
+  color: #dc2626;
+  font-size: 0.78rem;
+}
+.bs .formio-form .field-required:after {
+  color: #dc2626;
+}
