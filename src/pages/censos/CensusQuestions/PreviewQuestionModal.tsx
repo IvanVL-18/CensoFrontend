@@ -5,18 +5,17 @@ import { Form } from "@formio/react";
 // Bootstrap scoped: solo aplica dentro de <div className="bs">
 // Form.io necesita Bootstrap para renderizar sus campos correctamente.
 import "../../../styles/bootstrap-scoped.css";
+import {
+  evaluateOperations,
+  type OperationConfig,
+  type OperationResult,
+} from "../../../lib/formioOperations";
+import {
+  sanitizeSchema,
+  disableCalculatedFields,
+} from "../../../lib/formioSchema";
 
 const FormAny = Form as any;
-
-type OperationConfig = {
-  label: string;
-  expression: string;
-};
-
-type OperationResult = {
-  label: string;
-  result: number | string;
-};
 
 type RepeatConfig = {
   repeat: boolean;
@@ -45,162 +44,8 @@ type QuestionMeta = {
   questionary_year: string | number;
 };
 
-/* =========================================================
-   ================== SANITIZACIÓN =========================
-   ========================================================= */
-
-/**
- * Recorre recursivamente todos los componentes y reemplaza
- * inputMask/displayMask null por "" para evitar el crash de Form.io:
- * "Cannot read properties of null (reading 'length')"
- *
- * FIX #2: rows ahora se trata correctamente como array de arrays de celdas.
- * Antes se pasaba cada row directamente a sanitizeComponents (que espera
- * componentes, no celdas), lo que funcionaba por accidente porque las celdas
- * también tienen la propiedad components. Ahora se hace el spread explícito
- * de cada celda y se sanitizan sus components internos.
- */
-const sanitizeComponents = (components: any[]): any[] =>
-  components.map((comp) => {
-    const s = { ...comp };
-
-    if (s.inputMask === null)   s.inputMask   = "";
-    if (s.displayMask === null) s.displayMask = "";
-
-    if (Array.isArray(s.components))
-      s.components = sanitizeComponents(s.components);
-
-    if (Array.isArray(s.columns))
-      s.columns = s.columns.map((col: any) => ({
-        ...col,
-        components: sanitizeComponents(col.components ?? []),
-      }));
-
-    // FIX #2: rows es array de arrays de celdas { components: [...] }
-    if (Array.isArray(s.rows))
-      s.rows = s.rows.map((row: any[]) =>
-        Array.isArray(row)
-          ? row.map((cell: any) => ({
-              ...cell,
-              components: sanitizeComponents(cell.components ?? []),
-            }))
-          : row
-      );
-
-    return s;
-  });
-
-const sanitizeSchema = (schema: QuestionSchema): QuestionSchema => ({
-  ...schema,
-  display: schema.display ?? "form",
-  components: sanitizeComponents(schema.components ?? []),
-});
-
-/* =========================================================
-   ================== MOTOR MATEMÁTICO =====================
-   ========================================================= */
-
-/**
- * Parsea una expresión con o sin condición.
- * Soporta: SUMAR(var), SUMARSI(var, condicion)
- */
-const parseExpression = (expression: string) => {
-  const match = expression.match(/(\w+)\(([^,]*)(?:,\s*([^)]+))?\)/);
-  if (!match) return null;
-
-  return {
-    operation: match[1].toUpperCase(),
-    variable: match[2]?.trim() || null,
-    condition: match[3]?.trim() || null,
-  };
-};
-
-const extractNumbers = (dataArray: any[], variable: string): number[] =>
-  dataArray
-    .map((entry) => entry?.[variable])
-    .filter((val) => val !== null && val !== undefined && val !== "")
-    .map((val) => Number(val))
-    .filter((val) => !isNaN(val));
-
-/**
- * Evalúa una condición sobre un registro.
- * Equivalente al evaluateCondition de evaluator_data.js.
- */
-const evalCondition = (record: any, condition: string): boolean => {
-  try {
-    const keys = Object.keys(record);
-    // eslint-disable-next-line no-new-func
-    const fn = new Function(...keys, `return ${condition};`);
-    return fn(...keys.map((k) => record[k]));
-  } catch {
-    return false;
-  }
-};
-
-const filterByCondition = (dataArray: any[], variable: string, condition: string): number[] =>
-  dataArray
-    .filter((record) => evalCondition(record, condition))
-    .map((record) => record?.[variable])
-    .filter((val) => val !== null && val !== undefined && !isNaN(Number(val)))
-    .map(Number);
-
-/**
- * Motor matemático completo.
- * Básicas:       SUMAR, CONTAR, PROMEDIAR, MAX, MIN
- * Condicionales: SUMARSI, CONTARSI, PROMEDIARSI, MAXSI, MINSI
- */
-const evaluateOperations = (
-  operations: OperationConfig[],
-  submissions: any[]
-): OperationResult[] => {
-  if (!operations?.length || !submissions?.length) return [];
-
-  return operations.map((config) => {
-    const parsed = parseExpression(config.expression);
-    if (!parsed) return { label: config.label, result: "Sintaxis inválida" };
-
-    const { operation, variable, condition } = parsed;
-    const isConditional = condition !== null;
-
-    const values =
-      isConditional && variable
-        ? filterByCondition(submissions, variable, condition!)
-        : variable
-        ? extractNumbers(submissions, variable)
-        : [];
-
-    let result: number | string;
-
-    switch (operation) {
-      case "SUMAR":
-      case "SUMARSI":
-        result = values.reduce((a, b) => a + b, 0);
-        break;
-      case "CONTAR":
-      case "CONTARSI":
-        result = values.length;
-        break;
-      case "PROMEDIAR":
-      case "PROMEDIARSI":
-        result = values.length
-          ? parseFloat((values.reduce((a, b) => a + b, 0) / values.length).toFixed(2))
-          : 0;
-        break;
-      case "MAX":
-      case "MAXSI":
-        result = values.length ? Math.max(...values) : 0;
-        break;
-      case "MIN":
-      case "MINSI":
-        result = values.length ? Math.min(...values) : 0;
-        break;
-      default:
-        result = "Operación no reconocida";
-    }
-
-    return { label: config.label, result };
-  });
-};
+/* Motor matemático y sanitización: ver src/lib/formioOperations.ts
+   y src/lib/formioSchema.ts (compartidos por todos los modales). */
 
 /* =========================================================
    ======================= HOOKS ===========================
@@ -221,49 +66,6 @@ const useFormSchema = (isOpen: boolean, questionId: string | number | null) => {
   const [meta, setMeta]               = useState<QuestionMeta | null>(null);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState<string | null>(null);
-
-  /**
-   * FIX #4: ahora retorna un nuevo array en lugar de mutar los objetos recibidos,
-   * igual que hace sanitizeComponents. Así el schema nunca se muta después de
-   * ser parseado y es seguro reutilizarlo desde estado/caché.
-   */
-  const disableCalculatedFields = useCallback((components: any[]): any[] => {
-    if (!Array.isArray(components)) return [];
-
-    return components.map((comp: any) => {
-      const c = { ...comp };
-
-      if (
-        c.calculateValue &&
-        typeof c.calculateValue === "string" &&
-        c.calculateValue.trim() !== ""
-      ) {
-        c.disabled = true;
-      }
-
-      if (Array.isArray(c.components))
-        c.components = disableCalculatedFields(c.components);
-
-      // FIX #1 del análisis anterior: Array.isArray en columns y rows
-      if (Array.isArray(c.columns))
-        c.columns = c.columns.map((col: any) => ({
-          ...col,
-          components: disableCalculatedFields(col.components ?? []),
-        }));
-
-      if (Array.isArray(c.rows))
-        c.rows = c.rows.map((row: any) =>
-          Array.isArray(row)
-            ? row.map((cell: any) => ({
-                ...cell,
-                components: disableCalculatedFields(cell.components ?? []),
-              }))
-            : row
-        );
-
-      return c;
-    });
-  }, []);
 
   const buildSubmissions = useCallback((repeatConfig?: RepeatConfig): any[] => {
     if (!repeatConfig?.repeat) return [{}];
@@ -336,7 +138,7 @@ const useFormSchema = (isOpen: boolean, questionId: string | number | null) => {
       .finally(() => setLoading(false));
 
     return () => controller.abort();
-  }, [isOpen, questionId, disableCalculatedFields, buildSubmissions]);
+  }, [isOpen, questionId, buildSubmissions]);
 
   return { schema, submissions, setSubmissions, operations, meta, loading, error };
 };
@@ -613,7 +415,9 @@ export function PreviewQuestionModal({
               {/* .bs: Bootstrap scoped — Form.io necesita Bootstrap para renderizar
                    correctamente sus inputs, grids y estilos internos. El wrapper .bs
                    asegura que Bootstrap no afecte al resto del modal (que usa Tailwind). */}
-              <div className="bs overflow-x-auto">
+              {/* Sin overflow-x-auto: recortaba los dropdowns de los selects;
+                  el scroll horizontal lo manejan los componentes anchos (formio-theme.css) */}
+              <div className="bs">
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 min-w-0">
                   <FormAny
                     /**

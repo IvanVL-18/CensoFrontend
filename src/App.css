@@ -1,4 +1,6 @@
 @import "@formio/js/dist/formio.full.min.css";
+/* Tema propio: debe ir después del CSS de Form.io para poder sobreescribirlo */
+@import "./styles/formio-theme.css";
 
 .nav-link a {
     color: inherit;

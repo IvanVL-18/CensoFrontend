@@ -2,6 +2,15 @@ import { X, ChevronLeft, ChevronRight, Calculator, Loader2 } from "lucide-react"
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Form } from "@formio/react";
 import "../../../styles/bootstrap-scoped.css";
+import {
+  evaluateOperations,
+  type OperationConfig,
+  type OperationResult,
+} from "../../../lib/formioOperations";
+import {
+  sanitizeSchema,
+  disableAllFields,
+} from "../../../lib/formioSchema";
 
 
 const FormAny = Form as any;
@@ -23,159 +32,8 @@ type QuestionSchema = {
   [key: string]: any;
 };
 
-type OperationConfig = { label: string; expression: string };
-type OperationResult = { label: string; result: number | string };
-
-/* =========================================================
-   ================== SANITIZACIÓN =========================
-   ========================================================= */
-
-const sanitizeComponents = (components: any[]): any[] =>
-  components.map((comp) => {
-    const s = { ...comp };
-    if (s.inputMask === null) s.inputMask = "";
-    if (s.displayMask === null) s.displayMask = "";
-    if (Array.isArray(s.components))
-      s.components = sanitizeComponents(s.components);
-    if (Array.isArray(s.columns))
-      s.columns = s.columns.map((col: any) => ({
-        ...col,
-        components: sanitizeComponents(col.components ?? []),
-      }));
-    if (Array.isArray(s.rows))
-      s.rows = s.rows.map((row: any[]) =>
-        Array.isArray(row)
-          ? row.map((cell: any) => ({
-              ...cell,
-              components: sanitizeComponents(cell.components ?? []),
-            }))
-          : row
-      );
-    return s;
-  });
-
-const sanitizeSchema = (schema: QuestionSchema): QuestionSchema => ({
-  ...schema,
-  display: "form",
-  components: sanitizeComponents(schema.components ?? []),
-});
-
-/* =========================================================
-   ============= DESHABILITAR TODOS LOS CAMPOS =============
-   ========================================================= */
-
-const disableAllFields = (components: any[]): any[] => {
-  if (!Array.isArray(components)) return [];
-  return components.map((comp: any) => {
-    const c = { ...comp, disabled: true };
-    if (Array.isArray(c.components))
-      c.components = disableAllFields(c.components);
-    if (Array.isArray(c.columns))
-      c.columns = c.columns.map((col: any) => ({
-        ...col,
-        components: disableAllFields(col.components ?? []),
-      }));
-    if (Array.isArray(c.rows))
-      c.rows = c.rows.map((row: any) =>
-        Array.isArray(row)
-          ? row.map((cell: any) => ({
-              ...cell,
-              components: disableAllFields(cell.components ?? []),
-            }))
-          : row
-      );
-    return c;
-  });
-};
-
-/* =========================================================
-   ================ MOTOR MATEMÁTICO =======================
-   ========================================================= */
-
-const parseExpression = (expression: string) => {
-  const match = expression.match(/(\w+)\(([^,]*)(?:,\s*([^)]+))?\)/);
-  if (!match) return null;
-  return {
-    operation: match[1].toUpperCase(),
-    variable: match[2]?.trim() || null,
-    condition: match[3]?.trim() || null,
-  };
-};
-
-const extractNumbers = (dataArray: any[], variable: string): number[] =>
-  dataArray
-    .map((e) => e?.[variable])
-    .filter((v) => v !== null && v !== undefined && v !== "")
-    .map(Number)
-    .filter((v) => !isNaN(v));
-
-const evalCondition = (record: any, condition: string): boolean => {
-  try {
-    const keys = Object.keys(record);
-    // eslint-disable-next-line no-new-func
-    return new Function(...keys, `return ${condition};`)(...keys.map((k) => record[k]));
-  } catch {
-    return false;
-  }
-};
-
-const filterByCondition = (
-  dataArray: any[],
-  variable: string,
-  condition: string
-): number[] =>
-  dataArray
-    .filter((r) => evalCondition(r, condition))
-    .map((r) => r?.[variable])
-    .filter((v) => v !== null && v !== undefined && !isNaN(Number(v)))
-    .map(Number);
-
-const evaluateOperations = (
-  operations: OperationConfig[],
-  submissions: any[]
-): OperationResult[] => {
-  if (!operations?.length || !submissions?.length) return [];
-  return operations.map((config) => {
-    const parsed = parseExpression(config.expression);
-    if (!parsed) return { label: config.label, result: "Sintaxis inválida" };
-    const { operation, variable, condition } = parsed;
-    const isConditional = condition !== null;
-    const values =
-      isConditional && variable
-        ? filterByCondition(submissions, variable, condition!)
-        : variable
-        ? extractNumbers(submissions, variable)
-        : [];
-    let result: number | string;
-    switch (operation) {
-      case "SUMAR":
-      case "SUMARSI":
-        result = values.reduce((a, b) => a + b, 0);
-        break;
-      case "CONTAR":
-      case "CONTARSI":
-        result = values.length;
-        break;
-      case "PROMEDIAR":
-      case "PROMEDIARSI":
-        result = values.length
-          ? parseFloat((values.reduce((a, b) => a + b, 0) / values.length).toFixed(2))
-          : 0;
-        break;
-      case "MAX":
-      case "MAXSI":
-        result = values.length ? Math.max(...values) : 0;
-        break;
-      case "MIN":
-      case "MINSI":
-        result = values.length ? Math.min(...values) : 0;
-        break;
-      default:
-        result = "Operación no reconocida";
-    }
-    return { label: config.label, result };
-  });
-};
+/* Motor matemático y sanitización: ver src/lib/formioOperations.ts
+   y src/lib/formioSchema.ts (compartidos por todos los modales). */
 
 /* =========================================================
    ================ SUBCOMPONENTES =========================
@@ -255,7 +113,7 @@ export function AdminAnswerModal({ isOpen, question, onClose }: AdminAnswerModal
           ? JSON.parse(rawStructure)
           : { ...rawStructure };
 
-      parsed = sanitizeSchema(parsed);
+      parsed = { ...sanitizeSchema(parsed), display: "form" };
 
       // Deshabilitar todos los campos (modo lectura)
       parsed = {
@@ -364,7 +222,9 @@ export function AdminAnswerModal({ isOpen, question, onClose }: AdminAnswerModal
         <div className="overflow-y-auto p-6 bg-gray-50 flex-grow space-y-5">
           {schema ? (
             <>
-              <div className="bs overflow-x-auto">
+              {/* Sin overflow-x-auto: recortaba los dropdowns de los selects;
+                  el scroll horizontal lo manejan los componentes anchos (formio-theme.css) */}
+              <div className="bs">
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 min-w-0">
                   <FormAny
                     key={`admin-view-${question.id}-${currentIndex}`}

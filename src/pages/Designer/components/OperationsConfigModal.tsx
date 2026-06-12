@@ -17,7 +17,10 @@ interface OperationFormGroupProps {
     onInsert: (index: number, fn: string) => void;
 }
 
-const OPERATIONS = ['SUMAR', 'CONTAR', 'PROMEDIAR', 'SUMARSI', 'CONTARSI'] as const;
+const OPERATIONS = [
+    'SUMAR', 'CONTAR', 'PROMEDIAR', 'MAX', 'MIN',
+    'SUMARSI', 'CONTARSI', 'PROMEDIARSI', 'MAXSI', 'MINSI',
+] as const;
 
 const OperationFormGroup = ({ operation, index, onChange, onRemove, onInsert }: OperationFormGroupProps) => (
     <div className="mb-4 p-3 border rounded position-relative">
@@ -45,7 +48,7 @@ const OperationFormGroup = ({ operation, index, onChange, onRemove, onInsert }: 
                 as="textarea"
                 rows={3}
                 value={operation.expression}
-                placeholder="Ejemplo: SUMAR(variablex) + 20"
+                placeholder="Ejemplos: SUMAR(variablex) + 20 · SUMAR(a) - SUMAR(b) · CONTARSI(tipo, tipo == 1)"
                 onChange={(e) => onChange(index, 'expression', e.target.value)}
             />
         </Form.Group>
@@ -89,8 +92,19 @@ const OperationsConfigModal = ({ show, handleClose, schema, onSchemaChange }: Op
         setOperations(prev => prev.filter((_, i) => i !== index));
     };
 
+    // Inserta la función al final de la expresión (antes la reemplazaba completa);
+    // el motor soporta combinar varias funciones con aritmética.
     const handleInsertOperation = (index: number, fn: string) => {
-        handleOperationChange(index, 'expression', `${fn}(variable)`);
+        setOperations(prev => {
+            const updated = [...prev];
+            const current = updated[index].expression?.trim() ?? '';
+            const snippet = fn.endsWith('SI') ? `${fn}(variable, condicion)` : `${fn}(variable)`;
+            updated[index] = {
+                ...updated[index],
+                expression: current ? `${current} + ${snippet}` : snippet,
+            };
+            return updated;
+        });
     };
 
     const handleSave = () => {

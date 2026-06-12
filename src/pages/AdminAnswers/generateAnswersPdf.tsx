@@ -7,6 +7,8 @@ import {
   pdf,
 } from "@react-pdf/renderer";
 import type { GetAnswersResponse, QuestionItem } from "./AdminAnswers.types";
+import { evaluateOperations } from "../../lib/formioOperations";
+import { htmlToText, shouldShowLabel } from "../../lib/formioText";
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const MAROON  = "#7A0C2E";
@@ -54,13 +56,13 @@ const S = StyleSheet.create({
   sectionInst: { fontFamily: "Helvetica-Oblique", fontSize: 8, color: GRAY3, marginBottom: 4, marginLeft: 4 },
   // Question
   qContainer:  { marginBottom: 6, marginLeft: 4 },
-  qIndex:      { fontFamily: "Helvetica-Bold", fontSize: 7.5, color: GRAY3 },
-  qName:       { fontSize: 9, color: GRAY1, marginBottom: 3 },
+  qName:       { fontSize: 9, color: GRAY1, marginBottom: 4, lineHeight: 1.35 },
+  qIndexInline:{ fontFamily: "Helvetica-Bold", fontSize: 9, color: MAROON },
   qInst:       { fontFamily: "Helvetica-Oblique", fontSize: 7.5, color: GRAY4, marginBottom: 3 },
   noAnswer:    { fontFamily: "Helvetica-Oblique", fontSize: 8, color: GRAY4, marginLeft: 10, marginBottom: 2 },
   qDivider:    { borderBottomWidth: 0.3, borderBottomColor: GRAY5, marginTop: 5, marginBottom: 4, marginLeft: 6 },
-  // Answer area indent
-  answerArea:  { marginLeft: 10 },
+  // Answer area indent (borde guía a la izquierda)
+  answerArea:  { marginLeft: 6, paddingLeft: 8, borderLeftWidth: 0.6, borderLeftColor: GRAY5 },
   // Repeat iteration header
   iterHeader:  { backgroundColor: GRAYBG, flexDirection: "row", alignItems: "stretch", marginBottom: 5, borderRadius: 2 },
   iterAccent:  { width: 2, backgroundColor: MAROON, borderTopLeftRadius: 2, borderBottomLeftRadius: 2 },
@@ -111,8 +113,11 @@ const F = StyleSheet.create({
   gridHCell:   { color: WHITE, fontFamily: "Helvetica-Bold", fontSize: 7.5 },
   gridBCell:   { color: GRAY2 },
   emptyGrid:   { fontFamily: "Helvetica-Oblique", fontSize: 8, color: GRAY4, paddingVertical: 4, paddingHorizontal: 8, backgroundColor: DISABLEDL, borderWidth: 0.8, borderColor: GRAY5, borderRadius: 3 },
-  // Columns layout gap
-  colsGap:     { flexDirection: "row", gap: 8, marginBottom: 4 },
+  // Columns layout gap (alineadas por la base, igual que en la web)
+  colsGap:     { flexDirection: "row", gap: 8, marginBottom: 4, alignItems: "flex-end" },
+  // content / htmlelement
+  contentHeading: { fontFamily: "Helvetica-Bold", fontSize: 8, color: GRAY2, textAlign: "center", marginTop: 3, marginBottom: 3 },
+  contentText:    { fontSize: 7.5, color: GRAY3, marginBottom: 4, lineHeight: 1.4 },
   // Tabs section title
   tabTitle:    { fontFamily: "Helvetica-Bold", fontSize: 8, color: MAROON, borderBottomWidth: 0.5, borderBottomColor: GRAY5, paddingBottom: 3, marginBottom: 5, marginTop: 4 },
   // Raw text fallback
@@ -121,7 +126,9 @@ const F = StyleSheet.create({
 
 // ── Schema & value helpers ────────────────────────────────────────────────────
 
-const SKIP = new Set(["button", "htmlelement", "content", "file", "signature"]);
+// content/htmlelement NO se saltan: ahí viven los encabezados reales de las
+// preguntas ("Total", "Hombres", "Subtotal"...) — se renderizan como texto.
+const SKIP = new Set(["button", "file", "signature"]);
 
 type FlatComp = {
   key:    string;
@@ -178,7 +185,7 @@ function SimpleField({ comp, submission }: { comp: any; submission: any }) {
   const val = formatFieldValue(comp, raw);
   return (
     <View style={F.field} wrap={false}>
-      <Text style={F.label}>{comp.label || comp.key}</Text>
+      {shouldShowLabel(comp) && <Text style={F.label}>{comp.label}</Text>}
       <View style={F.inputBox}>
         {val
           ? <Text style={F.inputText}>{val}</Text>
@@ -193,7 +200,7 @@ function CheckboxField({ comp, submission }: { comp: any; submission: any }) {
   const checked = !!submission?.[comp.key];
   return (
     <View style={[F.field, F.checkRow]} wrap={false}>
-      <View style={[F.checkbox, checked ? F.chkChecked : undefined]}>
+      <View style={checked ? [F.checkbox, F.chkChecked] : F.checkbox}>
         {checked && <Text style={F.chkMark}>✓</Text>}
       </View>
       <Text style={F.chkLabel}>{comp.label || comp.key}</Text>
@@ -206,12 +213,12 @@ function SelectboxesField({ comp, submission }: { comp: any; submission: any }) 
   const vals: { value: string; label: string }[] = comp.data?.values ?? comp.values ?? [];
   return (
     <View style={F.field}>
-      <Text style={F.label}>{comp.label || comp.key}</Text>
+      {shouldShowLabel(comp) && <Text style={F.label}>{comp.label}</Text>}
       {vals.map((opt) => {
         const checked = !!(raw[opt.value]);
         return (
           <View key={opt.value} style={F.checkRow} wrap={false}>
-            <View style={[F.checkbox, checked ? F.chkChecked : undefined]}>
+            <View style={checked ? [F.checkbox, F.chkChecked] : F.checkbox}>
               {checked && <Text style={F.chkMark}>✓</Text>}
             </View>
             <Text style={F.chkLabel}>{opt.label}</Text>
@@ -227,7 +234,7 @@ function RadioField({ comp, submission }: { comp: any; submission: any }) {
   const vals: { value: string; label: string }[] = comp.data?.values ?? comp.values ?? [];
   return (
     <View style={F.field}>
-      <Text style={F.label}>{comp.label || comp.key}</Text>
+      {shouldShowLabel(comp) && <Text style={F.label}>{comp.label}</Text>}
       {vals.map((opt) => {
         const active = String(opt.value) === String(selected);
         return (
@@ -248,7 +255,7 @@ function DatagridField({ comp, submission }: { comp: any; submission: any }) {
   const cols = extractLeafComponents(comp.components ?? []);
   return (
     <View style={F.gridWrap}>
-      <Text style={F.gridLabel}>{comp.label || comp.key}</Text>
+      {shouldShowLabel(comp) && <Text style={F.gridLabel}>{comp.label}</Text>}
       {cols.length === 0 || rows.length === 0 ? (
         <Text style={F.emptyGrid}>Sin registros</Text>
       ) : (
@@ -280,7 +287,23 @@ function renderFormComponents(components: any[], submission: any): React.ReactEl
   for (const comp of components) {
     if (!comp) continue;
     if (SKIP.has(comp.type)) continue;
+    if (comp.hidden === true) continue;
     const k = comp.key || `c${idx++}`;
+
+    // ── Contenido HTML (encabezados/instrucciones de las preguntas) ───────
+    if (comp.type === "content" || comp.type === "htmlelement") {
+      const text = htmlToText(comp.html ?? comp.content ?? "");
+      if (!text) continue;
+      // Texto corto de una línea → encabezado centrado (títulos tipo
+      // "Total", "Hombres", "Pertenecen a pueblo indígena"); largo → párrafo
+      const isHeading = text.length <= 110 && !text.includes("\n");
+      out.push(
+        <Text key={k} style={isHeading ? F.contentHeading : F.contentText}>
+          {text}
+        </Text>,
+      );
+      continue;
+    }
 
     // ── Layout containers ─────────────────────────────────────────────────
     if (comp.type === "panel" || comp.type === "well") {
@@ -448,49 +471,57 @@ function buildSubmissions(question: QuestionItem): ParsedSubmissions | null {
 }
 
 // ── Math operations ───────────────────────────────────────────────────────────
+// Motor compartido en src/lib/formioOperations.ts (mismo que usan los modales)
 
-function parseExpr(expr: string) {
-  const m = expr.match(/(\w+)\(([^,]*)(?:,\s*([^)]+))?\)/);
-  if (!m) return null;
-  return { op: m[1].toUpperCase(), variable: m[2]?.trim() || null, cond: m[3]?.trim() || null };
-}
-
-function extractNums(data: any[], variable: string): number[] {
-  return data.map((e) => e?.[variable]).filter((v) => v !== null && v !== undefined && v !== "").map(Number).filter((v) => !isNaN(v));
-}
-
-function evalCond(record: any, cond: string): boolean {
-  try {
-    const keys = Object.keys(record);
-    // eslint-disable-next-line no-new-func
-    return new Function(...keys, `return ${cond};`)(...keys.map((k) => record[k]));
-  } catch { return false; }
-}
-
-function filterByCond(data: any[], variable: string, cond: string): number[] {
-  return data.filter((r) => evalCond(r, cond)).map((r) => r?.[variable]).filter((v) => v !== null && v !== undefined && !isNaN(Number(v))).map(Number);
-}
-
-function evaluateOperations(ops: OpConfig[], submissions: any[]): { label: string; result: string }[] {
-  if (!ops?.length || !submissions?.length) return [];
-  return ops.map(({ label, expression }) => {
-    const p = parseExpr(expression);
-    if (!p) return { label, result: "—" };
-    const values = p.cond && p.variable ? filterByCond(submissions, p.variable, p.cond) : p.variable ? extractNums(submissions, p.variable) : [];
-    let result: number | string;
-    switch (p.op) {
-      case "SUMAR":    case "SUMARSI":    result = values.reduce((a, b) => a + b, 0); break;
-      case "CONTAR":   case "CONTARSI":   result = values.length; break;
-      case "PROMEDIAR":case "PROMEDIARSI":result = values.length ? parseFloat((values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)) : 0; break;
-      case "MAX":      case "MAXSI":      result = values.length ? Math.max(...values) : 0; break;
-      case "MIN":      case "MINSI":      result = values.length ? Math.min(...values) : 0; break;
-      default: result = "N/D";
-    }
-    return { label, result: String(result) };
-  });
+function evaluateOperationsForPdf(
+  ops: OpConfig[],
+  submissions: any[]
+): { label: string; result: string }[] {
+  return evaluateOperations(ops, submissions).map((r) => ({
+    label: r.label,
+    result: String(r.result),
+  }));
 }
 
 // ── Question block ────────────────────────────────────────────────────────────
+
+function TotalsBlock({ results }: { results: { label: string; result: string }[] }) {
+  if (!results.length) return null;
+  return (
+    <View style={{ marginTop: 4 }}>
+      <View style={S.totalsHead} wrap={false}>
+        <Text style={S.totalsTitle}>Totales generales</Text>
+      </View>
+      {results.map((r, i) => (
+        <View key={i} style={S.totalRow} wrap={false}>
+          <Text style={S.totalLabel}>{r.label}:</Text>
+          <Text style={S.totalValue}>{r.result}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** Título de cada iteración repeat: campo "nombre/unidad" o label del repeat_config. */
+function iterationTitle(
+  sub: any,
+  index: number,
+  leafComps: FlatComp[]
+): string {
+  const titleField = leafComps.find(
+    (c) =>
+      sub[c.key] &&
+      typeof sub[c.key] === "string" &&
+      /nombre|name|instituci|entidad|unidad|organismo/i.test(c.label),
+  );
+  const fromField = titleField?.key ? sub[titleField.key] : null;
+  // data_repeat_config suele traer un label/nombre por unidad
+  const fromConfig = [sub.label, sub.nombre, sub.name, sub.unidad].find(
+    (v) => typeof v === "string" && v.trim() !== ""
+  );
+  const title = fromField || fromConfig;
+  return title ? `Registro ${index + 1} — ${title}` : `Registro ${index + 1}`;
+}
 
 function QuestionBlock({ question }: { question: QuestionItem }) {
   let answerContent: React.ReactElement;
@@ -507,61 +538,45 @@ function QuestionBlock({ question }: { question: QuestionItem }) {
           <Text style={F.rawText}>{question.answer.answer}</Text>
         </View>
       );
-    } else if (!parsed.isRepeat) {
-      // Single submission
-      answerContent = (
-        <View style={S.answerArea}>
-          {renderFormComponents(parsed.components, parsed.submissions[0])}
-        </View>
-      );
     } else {
-      // Repeat submissions
-      const leafComps = extractLeafComponents(parsed.components);
-      const opResults = evaluateOperations(parsed.operations, parsed.submissions);
+      const opResults = evaluateOperationsForPdf(parsed.operations, parsed.submissions);
 
-      answerContent = (
-        <View style={S.answerArea}>
-          {parsed.submissions.map((sub, i) => {
-            const titleField = leafComps.find(
-              (c) => sub[c.key] && typeof sub[c.key] === "string" && /nombre|name|instituci|entidad|unidad|organismo/i.test(c.label),
-            );
-            const iterTitle = titleField?.key && sub[titleField.key]
-              ? `Registro ${i + 1} — ${sub[titleField.key]}`
-              : `Registro ${i + 1}`;
+      if (!parsed.isRepeat) {
+        // Single submission (con totales si la pregunta define operaciones)
+        answerContent = (
+          <View style={S.answerArea}>
+            {renderFormComponents(parsed.components, parsed.submissions[0])}
+            <TotalsBlock results={opResults} />
+          </View>
+        );
+      } else {
+        // Repeat submissions
+        const leafComps = extractLeafComponents(parsed.components);
 
-            return (
+        answerContent = (
+          <View style={S.answerArea}>
+            {parsed.submissions.map((sub, i) => (
               <View key={i} style={{ marginBottom: 6 }}>
                 <View style={S.iterHeader} wrap={false}>
                   <View style={S.iterAccent} />
-                  <Text style={S.iterTitle}>{iterTitle}</Text>
+                  <Text style={S.iterTitle}>{iterationTitle(sub, i, leafComps)}</Text>
                 </View>
                 {renderFormComponents(parsed.components, sub)}
               </View>
-            );
-          })}
-
-          {opResults.length > 0 && (
-            <View style={{ marginTop: 4 }}>
-              <View style={S.totalsHead} wrap={false}>
-                <Text style={S.totalsTitle}>Totales generales</Text>
-              </View>
-              {opResults.map((r, i) => (
-                <View key={i} style={S.totalRow} wrap={false}>
-                  <Text style={S.totalLabel}>{r.label}:</Text>
-                  <Text style={S.totalValue}>{r.result}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-      );
+            ))}
+            <TotalsBlock results={opResults} />
+          </View>
+        );
+      }
     }
   }
 
   return (
     <View style={S.qContainer}>
-      <Text style={S.qIndex}>{question.index}</Text>
-      <Text style={S.qName}>{question.name}</Text>
+      <Text style={S.qName}>
+        {question.index ? <Text style={S.qIndexInline}>{question.index} · </Text> : null}
+        {question.name}
+      </Text>
       {question.instructions && <Text style={S.qInst}>{question.instructions}</Text>}
       {answerContent}
       <View style={S.qDivider} />
@@ -619,16 +634,13 @@ function AnswersDocument({ data }: { data: GetAnswersResponse }) {
         ))}
 
         {/* Fixed footer — repeats every page */}
-        <View
-          style={S.footer}
-          fixed
-          render={({ pageNumber, totalPages }) => (
-            <>
-              <Text style={S.footerText}>{data.census.name} · {data.institution.name}</Text>
-              <Text style={S.footerText}>Pág. {pageNumber} / {totalPages}</Text>
-            </>
-          )}
-        />
+        <View style={S.footer} fixed>
+          <Text style={S.footerText}>{data.census.name} · {data.institution.name}</Text>
+          <Text
+            style={S.footerText}
+            render={({ pageNumber, totalPages }) => `Pág. ${pageNumber} / ${totalPages}`}
+          />
+        </View>
       </Page>
     </Document>
   );

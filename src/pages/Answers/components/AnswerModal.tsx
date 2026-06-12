@@ -11,6 +11,15 @@ import { Form } from "@formio/react";
 import "../../../styles/bootstrap-scoped.css";
 import type { CensusQuestion, AnswerData } from "../Answers.types";
 import { useAnswerMutation } from "../hooks/useAnswerMutation";
+import {
+  evaluateOperations,
+  type OperationConfig,
+  type OperationResult,
+} from "../../../lib/formioOperations";
+import {
+  sanitizeSchema,
+  disableCalculatedFields,
+} from "../../../lib/formioSchema";
 
 const FormAny = Form as any;
 
@@ -31,136 +40,8 @@ type QuestionSchema = {
   [key: string]: any;
 };
 
-type OperationConfig = { label: string; expression: string };
-type OperationResult = { label: string; result: number | string };
-
-/* =========================================================
-   ================== SANITIZACIÓN =========================
-   ========================================================= */
-
-const sanitizeComponents = (components: any[]): any[] =>
-  components.map((comp) => {
-    const s = { ...comp };
-    if (s.inputMask === null) s.inputMask = "";
-    if (s.displayMask === null) s.displayMask = "";
-    if (Array.isArray(s.components))
-      s.components = sanitizeComponents(s.components);
-    if (Array.isArray(s.columns))
-      s.columns = s.columns.map((col: any) => ({
-        ...col,
-        components: sanitizeComponents(col.components ?? []),
-      }));
-    if (Array.isArray(s.rows))
-      s.rows = s.rows.map((row: any[]) =>
-        Array.isArray(row)
-          ? row.map((cell: any) => ({
-              ...cell,
-              components: sanitizeComponents(cell.components ?? []),
-            }))
-          : row
-      );
-    return s;
-  });
-
-const sanitizeSchema = (schema: QuestionSchema): QuestionSchema => ({
-  ...schema,
-  display: "form",
-  components: sanitizeComponents(schema.components ?? []),
-});
-
-/* =========================================================
-   ================ MOTOR MATEMÁTICO =======================
-   ========================================================= */
-
-const parseExpression = (expression: string) => {
-  const match = expression.match(/(\w+)\(([^,]*)(?:,\s*([^)]+))?\)/);
-  if (!match) return null;
-  return {
-    operation: match[1].toUpperCase(),
-    variable: match[2]?.trim() || null,
-    condition: match[3]?.trim() || null,
-  };
-};
-
-const extractNumbers = (dataArray: any[], variable: string): number[] =>
-  dataArray
-    .map((e) => e?.[variable])
-    .filter((v) => v !== null && v !== undefined && v !== "")
-    .map(Number)
-    .filter((v) => !isNaN(v));
-
-const evalCondition = (record: any, condition: string): boolean => {
-  try {
-    const keys = Object.keys(record);
-    // eslint-disable-next-line no-new-func
-    return new Function(...keys, `return ${condition};`)(...keys.map((k) => record[k]));
-  } catch {
-    return false;
-  }
-};
-
-const filterByCondition = (
-  dataArray: any[],
-  variable: string,
-  condition: string
-): number[] =>
-  dataArray
-    .filter((r) => evalCondition(r, condition))
-    .map((r) => r?.[variable])
-    .filter((v) => v !== null && v !== undefined && !isNaN(Number(v)))
-    .map(Number);
-
-const evaluateOperations = (
-  operations: OperationConfig[],
-  submissions: any[]
-): OperationResult[] => {
-  if (!operations?.length || !submissions?.length) return [];
-
-  return operations.map((config) => {
-    const parsed = parseExpression(config.expression);
-    if (!parsed) return { label: config.label, result: "Sintaxis inválida" };
-
-    const { operation, variable, condition } = parsed;
-    const isConditional = condition !== null;
-    const values =
-      isConditional && variable
-        ? filterByCondition(submissions, variable, condition!)
-        : variable
-        ? extractNumbers(submissions, variable)
-        : [];
-
-    let result: number | string;
-    switch (operation) {
-      case "SUMAR":
-      case "SUMARSI":
-        result = values.reduce((a, b) => a + b, 0);
-        break;
-      case "CONTAR":
-      case "CONTARSI":
-        result = values.length;
-        break;
-      case "PROMEDIAR":
-      case "PROMEDIARSI":
-        result = values.length
-          ? parseFloat(
-              (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
-            )
-          : 0;
-        break;
-      case "MAX":
-      case "MAXSI":
-        result = values.length ? Math.max(...values) : 0;
-        break;
-      case "MIN":
-      case "MINSI":
-        result = values.length ? Math.min(...values) : 0;
-        break;
-      default:
-        result = "Operación no reconocida";
-    }
-    return { label: config.label, result };
-  });
-};
+/* Motor matemático y sanitización: ver src/lib/formioOperations.ts
+   y src/lib/formioSchema.ts (compartidos por todos los modales). */
 
 /* =========================================================
    ==================== HOOK INTERNO =======================
@@ -279,37 +160,6 @@ export function AnswerModal({
     onClose,
   });
 
-  const disableCalculatedFields = useCallback((components: any[]): any[] => {
-    if (!Array.isArray(components)) return [];
-    return components.map((comp: any) => {
-      const c = { ...comp };
-      if (
-        c.calculateValue &&
-        typeof c.calculateValue === "string" &&
-        c.calculateValue.trim() !== ""
-      ) {
-        c.disabled = true;
-      }
-      if (Array.isArray(c.components))
-        c.components = disableCalculatedFields(c.components);
-      if (Array.isArray(c.columns))
-        c.columns = c.columns.map((col: any) => ({
-          ...col,
-          components: disableCalculatedFields(col.components ?? []),
-        }));
-      if (Array.isArray(c.rows))
-        c.rows = c.rows.map((row: any) =>
-          Array.isArray(row)
-            ? row.map((cell: any) => ({
-                ...cell,
-                components: disableCalculatedFields(cell.components ?? []),
-              }))
-            : row
-        );
-      return c;
-    });
-  }, []);
-
   // Parsea la respuesta guardada para precargar form.io
   const parseExistingAnswer = useCallback(
     (answerString: string | null, count: number): any[] => {
@@ -340,7 +190,7 @@ export function AnswerModal({
           ? JSON.parse(question.question_structure)
           : { ...question.question_structure };
 
-      parsed = sanitizeSchema(parsed);
+      parsed = { ...sanitizeSchema(parsed), display: "form" };
       if (parsed.components) {
         parsed = {
           ...parsed,
@@ -394,7 +244,7 @@ export function AnswerModal({
     } catch (e) {
       console.error("Error al parsear question_structure:", e);
     }
-  }, [isOpen, question, disableCalculatedFields, parseExistingAnswer]);
+  }, [isOpen, question, parseExistingAnswer]);
 
   const {
     currentIndex,
@@ -467,8 +317,10 @@ export function AnswerModal({
         <div className="overflow-y-auto p-6 bg-gray-50 flex-grow space-y-5">
           {schema ? (
             <>
-              {/* bootstrap-scoped: form.io necesita Bootstrap para renderizar correctamente */}
-              <div className="bs overflow-x-auto">
+              {/* bootstrap-scoped: form.io necesita Bootstrap para renderizar correctamente.
+                  Sin overflow-x-auto aquí: recortaba los dropdowns de los selects;
+                  el scroll horizontal lo manejan los componentes anchos (formio-theme.css) */}
+              <div className="bs">
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 min-w-0">
                   <FormAny
                     key={`answer-${question.id}-${currentIndex}`}
