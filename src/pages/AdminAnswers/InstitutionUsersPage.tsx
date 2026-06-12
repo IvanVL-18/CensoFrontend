@@ -1,10 +1,26 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronRight, Users, Loader2, AlertCircle, ArrowLeft, Mail, FileDown, Sheet } from "lucide-react";
-import { getInstitutionUsers, getAnswersForReport } from "./AdminAnswers.service";
+import {
+  ChevronRight,
+  Users,
+  Loader2,
+  AlertCircle,
+  ArrowLeft,
+  Mail,
+  FileDown,
+  Sheet,
+  Upload,
+} from "lucide-react";
+import {
+  getInstitutionUsers,
+  getAnswersForReport,
+} from "./AdminAnswers.service";
 import type { InstitutionUsersResponse } from "./AdminAnswers.types";
 import { generateAnswersPdf } from "./generateAnswersPdf";
 import { generateAnswersExcel } from "./generateAnswersExcel";
+import AddButton from "../../components/AddButton";
+import { useAdminAnswersMutations } from "./hooks/UseAdminAnswersMutations";
+import { BulkAnswersErrorModal } from "./BulkAnswersErrorModal";
 
 export default function InstitutionUsersPage() {
   const { censusId, institutionId } = useParams<{
@@ -15,13 +31,23 @@ export default function InstitutionUsersPage() {
   const [searchParams] = useSearchParams();
   const from = searchParams.get("from") ?? "/dashboard";
 
-  const [data,    setData]    = useState<InstitutionUsersResponse | null>(null);
+  const [data, setData] = useState<InstitutionUsersResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState<string | null>(null);
-  const [pdfLoading,   setPdfLoading]   = useState<Record<string, boolean>>({});
-  const [pdfError,     setPdfError]     = useState<Record<string, string>>({});
-  const [xlsxLoading,  setXlsxLoading]  = useState<Record<string, boolean>>({});
-  const [xlsxError,    setXlsxError]    = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState<Record<string, boolean>>({});
+  const [pdfError, setPdfError] = useState<Record<string, string>>({});
+  const [xlsxLoading, setXlsxLoading] = useState<Record<string, boolean>>({});
+  const [xlsxError, setXlsxError] = useState<Record<string, string>>({});
+
+  const {
+    fileInputRef,
+    bulkLoading,
+    bulkErrors,
+    bulkErrorModalOpen,
+    openFilePicker,
+    handleFileChange,
+    closeBulkErrorModal,
+  } = useAdminAnswersMutations();
 
   useEffect(() => {
     if (!censusId || !institutionId) return;
@@ -45,10 +71,15 @@ export default function InstitutionUsersPage() {
     setPdfLoading((prev) => ({ ...prev, [userId]: true }));
     setPdfError((prev) => ({ ...prev, [userId]: "" }));
     try {
-      const reportData = await getAnswersForReport(censusId, institutionId, userId);
+      const reportData = await getAnswersForReport(
+        censusId,
+        institutionId,
+        userId,
+      );
       await generateAnswersPdf(reportData);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error al generar el PDF.";
+      const msg =
+        err instanceof Error ? err.message : "Error al generar el PDF.";
       setPdfError((prev) => ({ ...prev, [userId]: msg }));
     } finally {
       setPdfLoading((prev) => ({ ...prev, [userId]: false }));
@@ -60,10 +91,15 @@ export default function InstitutionUsersPage() {
     setXlsxLoading((prev) => ({ ...prev, [userId]: true }));
     setXlsxError((prev) => ({ ...prev, [userId]: "" }));
     try {
-      const reportData = await getAnswersForReport(censusId, institutionId, userId);
+      const reportData = await getAnswersForReport(
+        censusId,
+        institutionId,
+        userId,
+      );
       await generateAnswersExcel(reportData);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error al generar el Excel.";
+      const msg =
+        err instanceof Error ? err.message : "Error al generar el Excel.";
       setXlsxError((prev) => ({ ...prev, [userId]: msg }));
     } finally {
       setXlsxLoading((prev) => ({ ...prev, [userId]: false }));
@@ -71,17 +107,25 @@ export default function InstitutionUsersPage() {
   };
 
   const backToInstitutions = () =>
-    navigate(`/admin/censos/${encodeURIComponent(censusId!)}/instituciones?from=${encodeURIComponent(from)}`);
+    navigate(
+      `/admin/censos/${encodeURIComponent(censusId!)}/instituciones?from=${encodeURIComponent(from)}`,
+    );
 
   return (
     <div className="space-y-4">
       {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 text-sm text-slate-500 flex-wrap">
-        <button onClick={() => navigate(from)} className="hover:text-slate-800 transition-colors">
+        <button
+          onClick={() => navigate(from)}
+          className="hover:text-slate-800 transition-colors"
+        >
           {from === "/censos" ? "Censos" : "Dashboard"}
         </button>
         <ChevronRight className="h-4 w-4 shrink-0" />
-        <button onClick={backToInstitutions} className="hover:text-slate-800 transition-colors truncate max-w-[160px]">
+        <button
+          onClick={backToInstitutions}
+          className="hover:text-slate-800 transition-colors truncate max-w-[160px]"
+        >
           {data?.census.name ?? "Censo"}
         </button>
         <ChevronRight className="h-4 w-4 shrink-0" />
@@ -95,21 +139,44 @@ export default function InstitutionUsersPage() {
       {/* Card */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         {/* Header */}
-        <div className="bg-[#7A0C2E] px-5 py-4 flex items-center gap-3">
-          <button
-            onClick={backToInstitutions}
-            className="rounded-md p-1 text-white/70 hover:text-white hover:bg-white/10 transition"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div>
-            <p className="text-white font-semibold text-base leading-tight">
-              {data?.institution.name ?? "Institución"}
-            </p>
-            <p className="text-white/60 text-xs mt-0.5">
-              Usuarios que han respondido en este censo
-            </p>
+        <div className="bg-[#7A0C2E] px-5 py-4 flex items-center gap-3 justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={backToInstitutions}
+              className="rounded-md p-1 text-white/70 hover:text-white hover:bg-white/10 transition"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div>
+              <p className="text-white font-semibold text-base leading-tight">
+                {data?.institution.name ?? "Institución"}
+              </p>
+              <p className="text-white/60 text-xs mt-0.5">
+                Usuarios que han respondido en este censo
+              </p>
+            </div>
           </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <AddButton
+            label={bulkLoading ? "Cargando…" : "Carga Masiva"}
+            onClick={openFilePicker}
+            icon={
+              bulkLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileDown className="h-4 w-4" />
+              )
+            }
+            variant="green"
+            disabled={bulkLoading}
+          />
         </div>
 
         {/* Body */}
@@ -131,7 +198,9 @@ export default function InstitutionUsersPage() {
           {!loading && !error && data && data.users.length === 0 && (
             <div className="text-center py-16 text-slate-400">
               <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">Ningún usuario ha respondido en esta institución.</p>
+              <p className="text-sm">
+                Ningún usuario ha respondido en esta institución.
+              </p>
             </div>
           )}
 
@@ -140,16 +209,29 @@ export default function InstitutionUsersPage() {
               <table className="min-w-full divide-y divide-slate-200">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">#</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nombre</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">Correo</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Acciones</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      #
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Nombre
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">
+                      Correo
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-100">
                   {data.users.map((user, i) => (
-                    <tr key={user.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-3 text-sm text-slate-400 w-10">{i + 1}</td>
+                    <tr
+                      key={user.id}
+                      className="hover:bg-slate-50 transition-colors"
+                    >
+                      <td className="px-4 py-3 text-sm text-slate-400 w-10">
+                        {i + 1}
+                      </td>
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium text-slate-800">
                           {user.name} {user.lastname}
@@ -223,6 +305,12 @@ export default function InstitutionUsersPage() {
           )}
         </div>
       </div>
+
+      <BulkAnswersErrorModal
+        isOpen={bulkErrorModalOpen}
+        errors={bulkErrors}
+        onClose={closeBulkErrorModal}
+      />
     </div>
   );
 }
