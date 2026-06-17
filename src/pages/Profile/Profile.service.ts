@@ -40,10 +40,8 @@ export interface UpdateProfileData {
   phone?: string | null;
   mobile?: string | null;
   address?: string | null;
-  role_id?: string | number | null;
   occupation_id?: string | number | null;
   dependency_id?: string | number | null;
-  institution_id?: string | number | null;
   census_id?: string | number | null;
 }
 

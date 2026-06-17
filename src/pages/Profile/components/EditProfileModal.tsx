@@ -84,8 +84,8 @@ export default function EditProfileModal({ open, onClose }: Props) {
 
   const [profile,    setProfile]    = useState<FullProfile | null>(null);
   const [draft,      setDraft]      = useState({ name: "", lastname: "", phone: "", mobile: "", address: "" });
-  const [accountDraft, setAccountDraft] = useState({ role_id: "", occupation_id: "", dependency_id: "", institution_id: "", census_id: "" });
-  const [catalogs, setCatalogs] = useState<{ roles: CatalogItem[]; occupations: CatalogItem[]; dependencies: CatalogItem[]; institutions: CatalogItem[]; censuses: CatalogItem[] }>({ roles: [], occupations: [], dependencies: [], institutions: [], censuses: [] });
+  const [accountDraft, setAccountDraft] = useState({ occupation_id: "", dependency_id: "", census_id: "" });
+  const [catalogs, setCatalogs] = useState<{ occupations: CatalogItem[]; dependencies: CatalogItem[]; censuses: CatalogItem[] }>({ occupations: [], dependencies: [], censuses: [] });
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
   const [loading,    setLoading]    = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -124,28 +124,22 @@ export default function EditProfileModal({ open, onClose }: Props) {
     const controller = new AbortController();
     setLoadingCatalogs(true);
     Promise.all([
-      getCatalogList("roles/active/content",        controller.signal),
       getCatalogList("occupations/active/content",  controller.signal),
       getCatalogList("dependency/active/content",   controller.signal),
-      getCatalogList("institutions/active/content", controller.signal),
       getCatalogList("censuses/active/content",    controller.signal),
     ])
       .then(([
-        rolesData,
         occsData,
         depsData,
-        instsData,
         censusesData,
-      ]: [CatalogItem[], CatalogItem[], CatalogItem[], CatalogItem[], CatalogItem[] | { censuses?: CatalogItem[] }]) => {
+      ]: [CatalogItem[], CatalogItem[], CatalogItem[] | { censuses?: CatalogItem[] }]) => {
         const censusItems = Array.isArray(censusesData)
           ? censusesData
           : censusesData?.censuses ?? [];
 
         setCatalogs({
-          roles: rolesData,
           occupations: occsData,
           dependencies: depsData,
-          institutions: instsData,
           censuses: censusItems,
         });
       })
@@ -172,11 +166,9 @@ export default function EditProfileModal({ open, onClose }: Props) {
     };
 
     setAccountDraft({
-      role_id:        findId(catalogs.roles,        profile.role),
-      occupation_id:  findId(catalogs.occupations,  profile.occupation),
-      dependency_id:  findId(catalogs.dependencies, profile.dependency),
-      institution_id: findId(catalogs.institutions, profile.institution),
-      census_id:      findId(catalogs.censuses,    profile.census),
+      occupation_id: findId(catalogs.occupations,  profile.occupation),
+      dependency_id: findId(catalogs.dependencies, profile.dependency),
+      census_id:     findId(catalogs.censuses,     profile.census),
     });
   }, [profile, catalogs]);
 
@@ -188,15 +180,18 @@ export default function EditProfileModal({ open, onClose }: Props) {
       const payload: UpdateProfileData = {
         name:     draft.name     || null,
         lastname: draft.lastname || null,
-        phone:    draft.phone    || null,
-        mobile:   draft.mobile   || null,
         address:  draft.address  || null,
       };
+      // Only include phone/mobile if changed — backend unique validation doesn't exclude current user
+      if (draft.phone !== (profile?.phone ?? "")) {
+        payload.phone = draft.phone || null;
+      }
+      if (draft.mobile !== (profile?.mobile ?? "")) {
+        payload.mobile = draft.mobile || null;
+      }
       if (canAlwaysEdit) {
-        payload.role_id        = accountDraft.role_id        || null;
         payload.occupation_id  = accountDraft.occupation_id  || null;
         payload.dependency_id  = accountDraft.dependency_id  || null;
-        payload.institution_id = accountDraft.institution_id || null;
         payload.census_id      = accountDraft.census_id      || null;
       }
       const res = await updateProfile(payload);
@@ -281,17 +276,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                     {canAlwaysEdit ? (
                       <>
-                        <SelectField
-                          label="Rol"
-                          icon={Shield}
-                          value={accountDraft.role_id}
-                          onChange={(v) =>
-                            setAccountDraft((s) => ({ ...s, role_id: v }))
-                          }
-                          options={catalogs.roles}
-                          placeholder="Seleccionar rol"
-                          disabled={loadingCatalogs || submitting}
-                        />
+                        <ReadonlyField label="Rol" icon={Shield} value={profile?.role?.name ?? ""} />
 
                         <SelectField
                           label="Ocupación"
@@ -317,17 +302,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
                           disabled={loadingCatalogs || submitting}
                         />
 
-                        <SelectField
-                          label="Institución"
-                          icon={Landmark}
-                          value={accountDraft.institution_id}
-                          onChange={(v) =>
-                            setAccountDraft((s) => ({ ...s, institution_id: v }))
-                          }
-                          options={catalogs.institutions}
-                          placeholder="Seleccionar institución"
-                          disabled={loadingCatalogs || submitting}
-                        />
+                        <ReadonlyField label="Institución" icon={Landmark} value={profile?.institution?.name ?? ""} />
                       </>
                     ) : (
                       <>
