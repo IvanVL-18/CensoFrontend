@@ -8,7 +8,6 @@ import type {
   CensusSectionInfo,
   QuestionOption,
   QuestionIndexOption,
-  SelectedQuestionItem,
   CensusQuestionRow,
   PaginationLinksObj,
 } from "./CensusQuestions.types";
@@ -84,32 +83,32 @@ export const useCensusQuestions = (
     [],
   );
 
-  const buildInitialMap = useCallback(
+  const buildQuestionDefaults = useCallback(
     (
-      selectedQuestions: SelectedQuestionItem[],
+      fetchedQuestions: QuestionOption[],
       availableIndexes: QuestionIndexOption[],
     ): SelectedQuestionsMap => {
       const map: SelectedQuestionsMap = {};
 
-      selectedQuestions.forEach((item) => {
-        const questionName = item.question?.name;
-        if (!questionName) return;
+      fetchedQuestions.forEach((question) => {
+        const assigned = question.assigned_index;
+        if (!assigned) return;
 
+        // Crypt::encryptString() no es determinístico: el id de assigned_index
+        // nunca coincide con los ids de la lista de indexes, se cruza por nombre.
         const matchedIndex = availableIndexes.find(
           (idx) =>
             idx.name.trim().toLowerCase() ===
-            item.index?.name?.trim().toLowerCase(),
+            assigned.name?.trim().toLowerCase(),
         );
 
-        map[questionName] = {
-          question_id: item.question?.id ?? "",
-          index_id: matchedIndex
-            ? String(matchedIndex.id)
-            : (item.index?.id ?? ""),
-          index_name: item.index?.name ?? "",
-          stored_index_name: item.index?.name ?? null,
+        map[question.name] = {
+          question_id: question.id,
+          index_id: matchedIndex ? String(matchedIndex.id) : assigned.id,
+          index_name: assigned.name ?? "",
+          stored_index_name: assigned.name ?? null,
           checked: true,
-          census_question_id: item.id ?? null,
+          census_question_id: question.census_question_id ?? null,
         };
       });
 
@@ -133,7 +132,7 @@ export const useCensusQuestions = (
         const fetchedQuestions = data.questions?.data ?? [];
         const fetchedSelected = data.selectedQuestions ?? [];
 
-        const freshMap = buildInitialMap(fetchedSelected, fetchedIndexes);
+        const freshMap = buildQuestionDefaults(fetchedQuestions, fetchedIndexes);
 
         if (!initialLoadDone.current) {
           mapRef.current = freshMap;
@@ -166,7 +165,10 @@ export const useCensusQuestions = (
         setMapVersion((v) => v + 1);
         setSectionInfo(data.censusSection);
         setIndexes(fetchedIndexes);
-        setHasAssignments(fetchedSelected.length > 0);
+        setHasAssignments(
+          fetchedSelected.length > 0 ||
+            fetchedQuestions.some((q) => q.census_question_id != null),
+        );
         setCurrentPage(data.questions?.current_page ?? 1);
         setLastPage(data.questions?.last_page ?? 1);
         setPaginationLinks({
@@ -191,7 +193,7 @@ export const useCensusQuestions = (
         setPaginating(false);
       }
     },
-    [censusSectionId, buildInitialMap],
+    [censusSectionId, buildQuestionDefaults],
   );
 
   useEffect(() => {

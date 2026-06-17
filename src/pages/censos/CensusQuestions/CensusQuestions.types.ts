@@ -7,6 +7,8 @@ export interface CensusSectionInfo {
 export interface QuestionOption {
   id: string;
   name: string;
+  assigned_index: { id: string; name: string } | null;
+  census_question_id: string | null;
 }
 
 export interface QuestionIndexOption {
