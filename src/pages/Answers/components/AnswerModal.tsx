@@ -1,5 +1,6 @@
 import {
-  X,
+  ArrowLeft,
+  Info,
   ChevronLeft,
   ChevronRight,
   Save,
@@ -282,46 +283,52 @@ export function AnswerModal({
   if (!isOpen || !question) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
-      onClick={(e) =>
-        e.target === e.currentTarget && !isSubmitting && onClose()
-      }
-    >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] flex flex-col max-h-[95vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
 
-        {/* HEADER */}
-        <div className="flex justify-between items-center px-6 py-4 bg-[var(--pantone-7421)] text-white shrink-0">
-          <div className="flex flex-col min-w-0">
-            <h2 className="text-lg font-bold tracking-tight truncate">
-              {question.index ? `${question.index} — ` : ""}
-              {question.name}
-            </h2>
-            {question.instructions && (
-              <span className="text-xs text-white/70 mt-0.5 line-clamp-1">
-                {question.instructions}
-              </span>
-            )}
-          </div>
+      {/* HEADER */}
+      <header className="shrink-0 bg-[var(--pantone-7421)] text-white shadow-md">
+        <div className="flex w-full items-start gap-3 px-3 py-4 sm:px-5 lg:px-6">
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            aria-label="Cerrar modal"
-            className="hover:bg-white/20 p-1.5 rounded-lg transition-colors shrink-0 ml-4 disabled:opacity-50"
+            aria-label="Volver"
+            className="mt-0.5 shrink-0 rounded-lg p-2 transition-colors hover:bg-white/20 disabled:opacity-50"
           >
-            <X size={22} />
+            <ArrowLeft size={22} />
           </button>
+          <div className="flex min-w-0 flex-grow flex-wrap items-baseline gap-x-3 gap-y-1.5">
+            {question.index && (
+              <span className="inline-flex shrink-0 translate-y-[-1px] items-center self-start rounded-md bg-white/20 px-2.5 py-1 text-xs font-bold tracking-wide">
+                {question.index}
+              </span>
+            )}
+            <h2 className="text-base font-bold leading-snug tracking-tight sm:text-lg md:text-xl">
+              {question.name}
+            </h2>
+          </div>
         </div>
+      </header>
 
-        {/* BODY */}
-        <div className="overflow-y-auto p-6 bg-gray-50 flex-grow space-y-5">
+      {/* BODY */}
+      <div className="flex-grow overflow-y-auto">
+        <div className="w-full space-y-5 px-3 py-4 sm:px-5 sm:py-6 lg:px-6">
           {schema ? (
             <>
+              {/* Instrucción completa de la pregunta */}
+              {question.instructions && (
+                <div className="flex gap-3 rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                  <Info size={18} className="mt-0.5 shrink-0 text-blue-500" />
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-blue-900/80">
+                    {question.instructions}
+                  </p>
+                </div>
+              )}
+
               {/* bootstrap-scoped: form.io necesita Bootstrap para renderizar correctamente.
                   Sin overflow-x-auto aquí: recortaba los dropdowns de los selects;
                   el scroll horizontal lo manejan los componentes anchos (formio-theme.css) */}
               <div className="bs">
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 min-w-0">
+                <div className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
                   <FormAny
                     key={`answer-${question.id}-${currentIndex}`}
                     form={schema}
@@ -338,32 +345,34 @@ export function AnswerModal({
               <OperationResults results={evaluatedResults} />
             </>
           ) : (
-            <div className="flex justify-center items-center h-40 text-gray-400 gap-2">
+            <div className="flex h-40 items-center justify-center gap-2 text-gray-400">
               <Loader2 size={24} className="animate-spin" />
               <span>Cargando formulario...</span>
             </div>
           )}
         </div>
+      </div>
 
-        {/* FOOTER */}
-        <div className="flex justify-between items-center px-6 py-4 bg-gray-50 border-t border-gray-200 shrink-0 gap-3">
+      {/* FOOTER */}
+      <footer className="shrink-0 border-t border-gray-200 bg-white shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
+        <div className="flex w-full items-center justify-between gap-3 px-3 py-4 sm:px-5 lg:px-6">
           {/* Paginación para formularios repeat */}
           {isRepeat ? (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => commitAndNavigate(-1)}
                 disabled={currentIndex === 0}
-                className="flex items-center gap-1 px-3 py-2 text-sm font-medium bg-white border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-50 disabled:opacity-40"
               >
                 <ChevronLeft size={16} /> Anterior
               </button>
-              <span className="text-sm font-semibold text-gray-500 bg-gray-200 px-3 py-1 rounded-full">
+              <span className="rounded-full bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-500">
                 {currentIndex + 1} / {submissions.length}
               </span>
               <button
                 onClick={() => commitAndNavigate(1)}
                 disabled={currentIndex === submissions.length - 1}
-                className="flex items-center gap-1 px-3 py-2 text-sm font-medium bg-white border border-gray-300 rounded-lg disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-50 disabled:opacity-40"
               >
                 Siguiente <ChevronRight size={16} />
               </button>
@@ -376,14 +385,14 @@ export function AnswerModal({
             <button
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-5 py-2 text-sm font-semibold bg-[#C3A67C] text-white rounded-lg hover:brightness-95 disabled:opacity-50 transition-colors"
+              className="rounded-lg bg-[#C3A67C] px-5 py-2 text-sm font-semibold text-white transition-colors hover:brightness-95 disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               onClick={handleFinish}
               disabled={isSubmitting || !isDirty}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold bg-[var(--pantone-7421)] text-white rounded-lg disabled:opacity-50 hover:brightness-90 transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-[var(--pantone-7421)] px-5 py-2 text-sm font-semibold text-white transition-colors hover:brightness-90 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
@@ -397,7 +406,7 @@ export function AnswerModal({
             </button>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
