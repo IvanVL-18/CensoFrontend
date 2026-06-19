@@ -36,6 +36,24 @@ export const getInstitutions = async (
   return response.data;
 };
 
+// Los links de paginación de Laravel traen URL absoluta (host de APP_URL).
+// Extraemos el path relativo para que pase por axios (baseURL + token de auth
+// + Accept: application/json). Con fetch() crudo el backend devolvía HTML de error.
+export const getInstitutionsByUrl = async (
+  url: string,
+  signal?: AbortSignal,
+): Promise<PaginatedInstitutionsResponse> => {
+  let path = url;
+  try {
+    const u = new URL(url);
+    path = u.pathname.replace(/^\/api/, "") + u.search;
+  } catch {
+    // url ya es relativa, se usa tal cual
+  }
+  const response = await api.get<PaginatedInstitutionsResponse>(path, { signal });
+  return response.data;
+};
+
 export const getInstitution = async (
   id: InstitutionId,
   signal?: AbortSignal,

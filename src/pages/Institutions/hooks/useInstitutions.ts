@@ -8,6 +8,7 @@ import {
 
 import {
   getInstitutions,
+  getInstitutionsByUrl,
   getInstitution,
   createInstitution,
   updateInstitution,
@@ -155,8 +156,7 @@ export function useInstitutions() {
 
   const loadInstitutionsByUrl = useCallback((url: string) => {
     setLoading(true);
-    fetch(url)
-      .then((res) => res.json() as Promise<PaginatedInstitutionsResponse>)
+    getInstitutionsByUrl(url)
       .then((response) => {
         setInstitutions(response.data);
         setLinks(response.links);
