@@ -6,11 +6,7 @@ import StatCard from "./components/StatCard";
 import QuestionnairesCard from "./components/QuestionnairesCard";
 import ChartsCard from "./components/ChartsCard";
 
-import type {
-  QuestionnaireItem,
-  Meta,
-  Links,
-} from "./dashboard.types";
+import type { QuestionnaireItem, Meta, Links } from "./dashboard.types";
 
 import {
   getDashboardCount,
@@ -32,7 +28,7 @@ export default function Dashboard() {
   const [totalInstitutions, setTotalInstitutions] = useState(0);
 
   const [qByCenso, setQByCenso] = useState<{ name: string; total: number }[]>(
-    []
+    [],
   );
 
   const [items, setItems] = useState<QuestionnaireItem[]>([]);
@@ -91,9 +87,9 @@ export default function Dashboard() {
           (qb.data ?? []).map((x: any) => ({
             name: String(x.name ?? x.censo_name ?? x.census_name ?? ""),
             total: Number(
-              x.total_preguntas ?? x.total_questions ?? x.total ?? 0
+              x.total_preguntas ?? x.total_questions ?? x.total ?? 0,
             ),
-          }))
+          })),
         );
       } catch (e: any) {
         console.error("Questions by censo error:", e?.message || e);
@@ -146,7 +142,9 @@ export default function Dashboard() {
   const handlePageNumber = (page: number) => fetchCensos(page);
 
   const handleViewCenso = (id: string) => {
-    navigate(`/admin/censos/${encodeURIComponent(id)}/instituciones`);
+    navigate(
+      `/admin/censos/${encodeURIComponent(id)}/instituciones?from=/dashboard`,
+    );
   };
 
   return (
