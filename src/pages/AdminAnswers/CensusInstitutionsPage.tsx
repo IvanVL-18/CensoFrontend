@@ -1,18 +1,30 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronRight, Building2, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import {
+  ChevronRight,
+  Building2,
+  Loader2,
+  AlertCircle,
+  ArrowLeft,
+} from "lucide-react";
 import { getCensusInstitutions } from "./AdminAnswers.service";
 import type { CensusInstitutionsResponse } from "./AdminAnswers.types";
+
+const backToLabels: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/censos": "Censos",
+};
 
 export default function CensusInstitutionsPage() {
   const { censusId } = useParams<{ censusId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const backTo = searchParams.get("from") ?? "/dashboard";
+  const backToLabel = backToLabels[backTo] ?? "Inicio";
 
-  const [data,    setData]    = useState<CensusInstitutionsResponse | null>(null);
+  const [data, setData] = useState<CensusInstitutionsResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!censusId) return;
@@ -21,13 +33,15 @@ export default function CensusInstitutionsPage() {
 
     getCensusInstitutions(censusId)
       .then(setData)
-      .catch((err) => setError(err?.message ?? "Error al cargar las instituciones."))
+      .catch((err) =>
+        setError(err?.message ?? "Error al cargar las instituciones."),
+      )
       .finally(() => setLoading(false));
   }, [censusId]);
 
   const handleInstitutionClick = (institutionId: string) => {
     navigate(
-      `/admin/censos/${encodeURIComponent(censusId!)}/instituciones/${encodeURIComponent(institutionId)}/usuarios`,
+      `/admin/censos/${encodeURIComponent(censusId!)}/instituciones/${encodeURIComponent(institutionId)}/usuarios?from=${encodeURIComponent(backTo)}`,
     );
   };
 
@@ -39,7 +53,7 @@ export default function CensusInstitutionsPage() {
           onClick={() => navigate(backTo)}
           className="hover:text-slate-800 transition-colors"
         >
-          {backTo === "/censos" ? "Censos" : "Dashboard"}
+          {backToLabel}
         </button>
         <ChevronRight className="h-4 w-4 shrink-0" />
         <span className="font-medium text-slate-800 truncate">
@@ -63,7 +77,9 @@ export default function CensusInstitutionsPage() {
             <p className="text-white font-semibold text-base leading-tight">
               {data?.census.name ?? "Censo"}
             </p>
-            <p className="text-white/60 text-xs mt-0.5">Selecciona una institución para ver sus respuestas</p>
+            <p className="text-white/60 text-xs mt-0.5">
+              Selecciona una institución para ver sus respuestas
+            </p>
           </div>
         </div>
 
@@ -86,7 +102,9 @@ export default function CensusInstitutionsPage() {
           {!loading && !error && data && data.institutions.length === 0 && (
             <div className="text-center py-16 text-slate-400">
               <Building2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">No hay instituciones asignadas a este censo.</p>
+              <p className="text-sm">
+                No hay instituciones asignadas a este censo.
+              </p>
             </div>
           )}
 
