@@ -26,9 +26,10 @@ export const getPermissions = async (
   params.append("page", page.toString());
     params.append("sort_by", sortBy);
   params.append("direction", direction);
+  params.append("filter", filter);
 
   const response = await api.get<PaginatedPermissionsResponse>(
-    `/permissions/${filter}/content`,
+    `/permissions/search`,
     {
       params: params,
       signal,

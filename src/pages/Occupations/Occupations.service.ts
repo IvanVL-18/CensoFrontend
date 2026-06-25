@@ -26,9 +26,10 @@ export const getOccupations = async (
   params.append("page", page.toString());
     params.append("sort_by", sortBy);
   params.append("direction", direction);
+  params.append("filter", filter);
 
   const response = await api.get<PaginatedOccupationsResponse>(
-    `/occupations/${filter}/content`,
+    `/occupations/search`,
     {
       params: params,
       signal,

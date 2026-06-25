@@ -25,9 +25,10 @@ export const getIndicators = async (
   params.append("page", page.toString());
   params.append("sort_by", sortBy);
   params.append("direction", direction);
+  params.append("filter", filter);
 
   const response = await api.get<PaginatedIndicatorsResponse>(
-    `/indicators/${filter}/content`,
+    `/indicators/search`,
     {
       params: params,
       signal,

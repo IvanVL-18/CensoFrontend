@@ -25,9 +25,10 @@ export const getSections = async (
   params.append("page", page.toString());
   params.append("sort_by", sortBy);
   params.append("direction", direction);
+  params.append("filter", filter);
 
   const response = await api.get<PaginatedSectionsResponse>(
-    `/sections/${filter}/content`,
+    `/sections/search`,
     {
       params: params,
       signal,

@@ -25,9 +25,10 @@ export const getCatalogs = async (
   params.append("page", page.toString());
   params.append("sort_by", sortBy);
   params.append("direction", direction);
+  params.append("filter", filter);
 
   const response = await api.get<PaginatedCatalogsResponse>(
-    `/catalogs/${filter}/content`,
+    `/catalogs/search`,
     {
       params: params,
       signal,
@@ -61,9 +62,10 @@ export const getModules = async (
   params.append("page", page.toString());
   params.append("sort_by", sortBy);
   params.append("direction", direction);
+  params.append("filter", filter);
 
   const response = await api.get<any>(
-    `/modules/${filter}/content`,
+    `/modules/search`,
     {
       params: params,
       signal,

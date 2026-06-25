@@ -26,9 +26,10 @@ export const getQuestions = async (
   params.append("page", page.toString());
     params.append("sort_by", sortBy);
   params.append("direction", direction);
+  params.append("filter", filter);
 
   const response = await api.get<PaginatedQuestionsResponse>(
-    `/questions/${filter}/content`,
+    `/questions/search`,
     {
       params: params,
       signal,

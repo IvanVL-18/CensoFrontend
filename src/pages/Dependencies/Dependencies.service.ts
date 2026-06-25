@@ -24,9 +24,10 @@ export const getDependencies = async (
   params.append("page", page.toString());
     params.append("sort_by", sortBy);
   params.append("direction", direction);
+  params.append("filter", filter);
 
   const response = await api.get<PaginatedDependenciesResponse>(
-    `/dependency/${filter}/content`,
+    `/dependency/search`,
     {
       params: params,
       signal,

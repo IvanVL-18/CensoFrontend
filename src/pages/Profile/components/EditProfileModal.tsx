@@ -174,9 +174,9 @@ export default function EditProfileModal({ open, onClose }: Props) {
     const controller = new AbortController();
     setLoadingCatalogs(true);
     Promise.all([
-      getCatalogList("occupations/active/content",  controller.signal),
-      getCatalogList("dependency/active/content",   controller.signal),
-      getCatalogList("censuses/active/content",    controller.signal),
+      getCatalogList("occupations/search?filter=active",  controller.signal),
+      getCatalogList("dependency/search?filter=active",   controller.signal),
+      getCatalogList("censuses/search?filter=active",    controller.signal),
     ])
       .then(([
         occsData,

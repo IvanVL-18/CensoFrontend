@@ -24,9 +24,10 @@ export const getRoles = async (
   params.append("page", page.toString());
     params.append("sort_by", sortBy);
   params.append("direction", direction);
+  params.append("filter", filter);
 
   const response = await api.get<PaginatedRolesResponse>(
-    `/roles/${filter}/content`,
+    `/roles/search`,
     {
       params: params,
       signal,
