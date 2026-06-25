@@ -475,6 +475,15 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               numbersOnly
                               error={draftErrors.mobile}
                             />
+                            <ProfileField
+                              className="sm:col-span-2"
+                              label="Dirección"
+                              icon={MapPin}
+                              value={draft.address}
+                              onChange={(v) => setDraft((s) => ({ ...s, address: v }))}
+                              maxLength={200}
+                              error={draftErrors.address}
+                            />
                           </>
                         ) : (
                           <>
