@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Eye } from "lucide-react";
 import { useCensusQuestions } from "./useCensusQuestions";
 import Pagination from "../../../components/Pagination";
 import { ViewQuestionModal } from "./ViewQuestionsModal";
+import { AiChatWidget } from "./AiChatWidget";
 import { ToastProvider, useToast } from "../../../context/ToastContext";
 import { Toast } from "../../../components/Toast";
 
@@ -57,6 +58,19 @@ const CensusQuestionsPageContent: React.FC = () => {
     saveChanges,
     goToPage,
   } = useCensusQuestions(id ?? "");
+
+  // Preguntas disponibles para analizar con IA: solo las asignadas
+  // (las únicas que tienen census_question_id cifrado != null).
+  const aiQuestions = useMemo(
+    () =>
+      rows
+        .filter((row) => row.census_question_id)
+        .map((row) => ({
+          censusQuestionId: row.census_question_id as string,
+          name: row.question_name,
+        })),
+    [rows],
+  );
 
   if (loading) {
     return (
@@ -261,6 +275,8 @@ const CensusQuestionsPageContent: React.FC = () => {
         onClose={closeQuestionModal}
         questionId={selectedQuestionId}
       />
+
+      <AiChatWidget questions={aiQuestions} />
 
       <ToastContainer />
     </>

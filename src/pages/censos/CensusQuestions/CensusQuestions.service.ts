@@ -50,3 +50,20 @@ export const getQuestionComponent = async (
   );
   return response.data;
 };
+
+export const askAi = async (
+  censusQuestionId: string,
+  prompt: string,
+  signal?: AbortSignal,
+): Promise<{ response: string }> => {
+  // El modelo de IA es local y lento: no fijamos timeout (timeout: 0).
+  const { data } = await api.post<{ response: string }>(
+    "/ai/chat",
+    {
+      census_question_id: censusQuestionId,
+      prompt,
+    },
+    { signal, timeout: 0 },
+  );
+  return data;
+};
