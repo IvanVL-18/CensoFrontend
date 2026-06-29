@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save, Eye } from "lucide-react";
+import { ArrowLeft, Save, Eye, Bot } from "lucide-react";
 import { useCensusQuestions } from "./useCensusQuestions";
 import Pagination from "../../../components/Pagination";
 import { ViewQuestionModal } from "./ViewQuestionsModal";
@@ -41,6 +41,22 @@ const CensusQuestionsPageContent: React.FC = () => {
     setSelectedQuestionId(null);
   };
 
+  // Modal de chat con IA (solo para preguntas asignadas).
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [aiQuestion, setAiQuestion] = useState<{
+    censusQuestionId: string;
+    name: string;
+  } | null>(null);
+
+  const openAiChat = (censusQuestionId: string, name: string) => {
+    setAiQuestion({ censusQuestionId, name });
+    setAiChatOpen(true);
+  };
+
+  const closeAiChat = () => {
+    setAiChatOpen(false);
+  };
+
   const {
     sectionInfo,
     indexes,
@@ -58,19 +74,6 @@ const CensusQuestionsPageContent: React.FC = () => {
     saveChanges,
     goToPage,
   } = useCensusQuestions(id ?? "");
-
-  // Preguntas disponibles para analizar con IA: solo las asignadas
-  // (las únicas que tienen census_question_id cifrado != null).
-  const aiQuestions = useMemo(
-    () =>
-      rows
-        .filter((row) => row.census_question_id)
-        .map((row) => ({
-          censusQuestionId: row.census_question_id as string,
-          name: row.question_name,
-        })),
-    [rows],
-  );
 
   if (loading) {
     return (
@@ -220,15 +223,33 @@ const CensusQuestionsPageContent: React.FC = () => {
                         </td>
 
 
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => openQuestionModal(row.question_id)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-green-600 text-white transition hover:bg-green-700"
-                            title="Ver pregunta"
-                          >
-                            <Eye size={18} />
-                          </button>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => openQuestionModal(row.question_id)}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-green-600 text-white transition hover:bg-green-700"
+                              title="Ver pregunta"
+                            >
+                              <Eye size={18} />
+                            </button>
+
+                            {row.census_question_id && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openAiChat(
+                                    row.census_question_id as string,
+                                    row.question_name,
+                                  )
+                                }
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--pantone-7421)] text-white transition hover:opacity-90"
+                                title="Analizar con IA"
+                              >
+                                <Bot size={18} />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -276,7 +297,12 @@ const CensusQuestionsPageContent: React.FC = () => {
         questionId={selectedQuestionId}
       />
 
-      <AiChatWidget questions={aiQuestions} />
+      <AiChatWidget
+        isOpen={aiChatOpen}
+        onClose={closeAiChat}
+        censusQuestionId={aiQuestion?.censusQuestionId ?? null}
+        questionName={aiQuestion?.name ?? null}
+      />
 
       <ToastContainer />
     </>
