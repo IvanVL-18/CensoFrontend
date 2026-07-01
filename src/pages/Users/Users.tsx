@@ -108,7 +108,7 @@ function UsersPageContent() {
   confirmTitle = "Restaurar Usuario";
   confirmMessage = `¿Estás seguro de que quieres restaurar el Usuario "${modals.actionUser?.name || modals.actionUser?.email}"?`;
   confirmButtonText = "Restaurar";
-  confirmButtonColor = "primary";
+  confirmButtonColor = "primary"; 
 } else if (modals.actionType === "delete") {
   confirmTitle = "Eliminar Permanentemente";
   confirmMessage = `¡Atención! ¿Estás seguro de que quieres ELIMINAR PERMANENTEMENTE el Usuario "${modals.actionUser?.name || modals.actionUser?.email}"? Esta acción no se puede deshacer.`;
