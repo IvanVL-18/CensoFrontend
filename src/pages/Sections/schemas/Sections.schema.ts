@@ -12,7 +12,7 @@ export const Sectionschema = z.object({
 
   instructions: z
   .string()
-  .max(4200, "La instrucción no puede exceder los 4200 caracteres.")
+  .max(7600, "La instrucción no puede exceder los 7600 caracteres.")
   .refine((val) => !val || val.length >= 10, {
     message: "La instrucción debe tener al menos 10 caracteres.",
   })

@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const UsersExtraSchema = z.object({
-  name: z.string().max(50, "Nombre máximo 50 caracteres").optional(),
-  lastname: z.string().max(50, "Apellido máximo 50 caracteres").optional(),
+  name: z.string().max(50, "El nombre no puede superar los 50 caracteres").optional(),
+  lastname: z.string().max(50, "El apellido no puede superar los 50 caracteres").optional(),
   phone: z
     .string()
     .max(20, "Teléfono máximo 20 caracteres")
@@ -13,7 +13,7 @@ export const UsersExtraSchema = z.object({
     .max(20, "Celular máximo 20 caracteres")
     .optional()
     .refine((v) => !v || /^[0-9+\-\s()]+$/.test(v), "Celular inválido"),
-  address: z.string().max(150, "Dirección máximo 150 caracteres").optional(),
+  address: z.string().max(200, "La dirección no puede superar los 200 caracteres").optional(),
 });
 
 export type UsersExtraFormData = z.infer<typeof UsersExtraSchema>;

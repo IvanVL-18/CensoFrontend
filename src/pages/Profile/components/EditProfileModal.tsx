@@ -445,7 +445,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               icon={UserRound}
                               value={draft.name}
                               onChange={(v) => setDraft((s) => ({ ...s, name: v }))}
-                              maxLength={45}
+                              maxLength={50}
                               error={draftErrors.name}
                             />
                             <ProfileField
@@ -453,7 +453,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               icon={UserRound}
                               value={draft.lastname}
                               onChange={(v) => setDraft((s) => ({ ...s, lastname: v }))}
-                              maxLength={45}
+                              maxLength={50}
                               error={draftErrors.lastname}
                             />
                             

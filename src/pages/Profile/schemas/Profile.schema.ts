@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 export const profileSchema = z.object({
-  name:     z.string().max(45).regex(/^[\p{L}\p{M}\s'\-\.,]+$/u, "Solo letras, espacios y puntuación básica").optional().nullable(),
-  lastname: z.string().max(45).regex(/^[\p{L}\p{M}\s'\-\.,]+$/u, "Solo letras, espacios y puntuación básica").optional().nullable(),
+  name:     z.string().max(50, "El nombre no puede superar los 50 caracteres").regex(/^[\p{L}\p{M}\s'\-\.,]+$/u, "Solo letras, espacios y puntuación básica").optional().nullable(),
+  lastname: z.string().max(50, "El apellido no puede superar los 50 caracteres").regex(/^[\p{L}\p{M}\s'\-\.,]+$/u, "Solo letras, espacios y puntuación básica").optional().nullable(),
   phone:  z.string().max(15).optional().nullable(),
   mobile: z.string().max(15).optional().nullable(),
-  address:  z.string().max(150).regex(/^[\p{L}\p{M}\p{N}\s'\-\.,#]+$/u, "Caracteres no válidos en la dirección").optional().nullable(),
+  address:  z.string().max(200, "La dirección no puede superar los 200 caracteres").regex(/^[\p{L}\p{M}\p{N}\s'\-\.,#]+$/u, "Caracteres no válidos en la dirección").optional().nullable(),
 });
 
 export type ProfileSchema = z.infer<typeof profileSchema>;

@@ -6,7 +6,7 @@ import { getIndicators } from "../sections.service";
 import { Sectionschema } from "../schemas/Sections.schema";
 
 const NAME_MAX = 180;
-const INSTRUCTIONS_MAX = 4200;
+const INSTRUCTIONS_MAX = 7600;
 
 export function SectionModal({
   isOpen,
