@@ -15,21 +15,19 @@ export const getCatalogs = async (
   filter: CatalogFilter = "all",
   search: string = "",
   page: number = 1,
-  sortBy: string = "id",           
+  _sortBy: string = "id",           
   direction: "asc" | "desc" = "asc", 
   signal?: AbortSignal,
 ): Promise<PaginatedCatalogsResponse> => {
-  const params = new URLSearchParams();
-  
-  if (search) params.append("search", search);
-  params.append("page", page.toString());
-  params.append("sort_by", sortBy);
-  params.append("direction", direction);
-
-  const response = await api.get<PaginatedCatalogsResponse>(
-    `/catalogs/${filter}/content`,
+  const response = await api.post<PaginatedCatalogsResponse>(
+    `/catalogs/search`,
     {
-      params: params,
+      status: filter,
+      search: search || undefined,
+      order: direction,
+    },
+    {
+      params: { page },
       signal,
     },
   );
@@ -51,21 +49,19 @@ export const getModules = async (
   filter: string = "all",
   search: string = "",
   page: number = 1,
-  sortBy: string = "id",           
+  _sortBy: string = "id",           
   direction: "asc" | "desc" = "asc", 
   signal?: AbortSignal,
 ): Promise<any> => { 
-  const params = new URLSearchParams();
-  
-  if (search) params.append("search", search);
-  params.append("page", page.toString());
-  params.append("sort_by", sortBy);
-  params.append("direction", direction);
-
-  const response = await api.get<any>(
-    `/modules/${filter}/content`,
+  const response = await api.post<any>(
+    `/modules/search`,
     {
-      params: params,
+      status: filter,
+      search: search || undefined,
+      order: direction,
+    },
+    {
+      params: { page },
       signal,
     },
   );
