@@ -7,8 +7,8 @@ export const CreateUserSchema = z
   .object({
     email: z
       .string()
-      .min(10, "El correo debe tener al menos 10 caracteres.")
-      .max(55, "El correo no debe exceder 55 caracteres.")
+      .min(10, "El correo electrónico debe tener al menos 10 caracteres.")
+      .max(55, "El correo electrónico no debe exceder los 55 caracteres.")
       .email("El correo electrónico no es válido."),
     password: z
       .string()
@@ -33,8 +33,8 @@ export const UpdateUserSchema = z
   .object({
     email: z
       .string()
-      .min(10, "El correo debe tener al menos 10 caracteres.")
-      .max(55, "El correo no debe exceder 55 caracteres.")
+      .min(10, "El correo electrónico debe tener al menos 10 caracteres.")
+      .max(55, "El correo electrónico no debe exceder los 55 caracteres.")
       .email("El correo electrónico no es válido.")
       .optional(),
     password: z

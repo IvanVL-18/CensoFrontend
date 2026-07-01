@@ -26,10 +26,10 @@ export const getUsers = async (
   params.append("sort_by", sortBy);
   params.append("direction", direction);
 
-  const response = await api.get<PaginatedUsersResponse>(
-    `/users/${filter}/content`,
-    { params, signal },
-  );
+  const response = await api.get<PaginatedUsersResponse>(`/users`, {
+    params,
+    signal,
+  });
   return response.data;
 };
 

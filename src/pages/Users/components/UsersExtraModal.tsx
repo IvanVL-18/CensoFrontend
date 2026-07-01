@@ -221,7 +221,7 @@ export function UsersExtraModal({
                   id="address"
                   label="Dirección:"
                   value={formData.address}
-                  maxLength={150}
+                  maxLength={200}
                   placeholder=""
                   disabled={isSubmitting}
                   hasError={!!fieldErrors.address}

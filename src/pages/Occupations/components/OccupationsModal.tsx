@@ -4,7 +4,7 @@ import { FormErrors } from "./FormErrors";
 import type { OccupationModalProps } from "../Occupations.types";
 import { Occupationschema } from "../schemas/Occupations.schema";
 
-const MAX_LENGTH = 45;
+const MAX_LENGTH = 100;
 
 export function OccupationModal({
   isOpen,
