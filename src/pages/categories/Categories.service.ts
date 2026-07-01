@@ -16,21 +16,19 @@ export const getCategories = async (
   filter: CategoryFilter = "all",
   search: string = "",
   page: number = 1,
-  sortBy: string = "id",           
+  _sortBy: string = "id",           
   direction: "asc" | "desc" = "asc", 
   signal?: AbortSignal,
 ): Promise<PaginatedCategoriesResponse> => {
-  const params = new URLSearchParams();
-  
-  if (search) params.append("search", search);
-  params.append("page", page.toString());
-    params.append("sort_by", sortBy);
-  params.append("direction", direction);
-
-  const response = await api.get<PaginatedCategoriesResponse>(
-    `/categories/${filter}/content`,
+  const response = await api.post<PaginatedCategoriesResponse>(
+    `/categories/search`,
     {
-      params: params,
+      status: filter,
+      search: search || undefined,
+      order: direction,
+    },
+    {
+      params: { page },
       signal,
     },
   );

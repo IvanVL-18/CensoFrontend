@@ -15,21 +15,19 @@ export const getInstitutions = async (
   filter: InstitutionFilter = "all",
   search: string = "",
   page: number = 1,
-  sortBy: string = "id",           
+  _sortBy: string = "id",           
   direction: "asc" | "desc" = "asc",  
   signal?: AbortSignal,
 ): Promise<PaginatedInstitutionsResponse> => {
-  const params = new URLSearchParams();
-  
-  if (search) params.append("search", search);
-  params.append("page", page.toString());
-    params.append("sort_by", sortBy);
-  params.append("direction", direction);
-
-  const response = await api.get<PaginatedInstitutionsResponse>(
-    `/institutions/${filter}/content`,
+  const response = await api.post<PaginatedInstitutionsResponse>(
+    `/institutions/search`,
     {
-      params: params,
+      status: filter,
+      search: search || undefined,
+      order: direction,
+    },
+    {
+      params: { page },
       signal,
     },
   );

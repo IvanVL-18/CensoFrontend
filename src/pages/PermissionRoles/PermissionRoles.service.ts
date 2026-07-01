@@ -40,10 +40,14 @@ export const getRolesContent = async (
   page: number = 1,
   signal?: AbortSignal
 ): Promise<Paginated<RoleRow>> => {
-  const res = await api.get<Paginated<RoleRow>>(`/roles/${content}/content`, {
-    params: { page },
-    signal,
-  });
+  const res = await api.post<Paginated<RoleRow>>(
+    `/roles/search`,
+    { status: content },
+    {
+      params: { page },
+      signal,
+    },
+  );
   return res.data;
 };
 
