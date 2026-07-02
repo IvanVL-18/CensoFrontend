@@ -30,6 +30,7 @@ import CensusViewPage from "./pages/censos/CensusViewPage";
 import Questions from "./pages/Questions/Questions";
 import Builder from "././pages/Designer/components/Builder";
 import Answers from "./pages/Answers/Answers";
+import ImportAnswersPage from "./pages/Answers/import/ImportAnswersPage";
 import CensusInstitutionsPage from "./pages/AdminAnswers/CensusInstitutionsPage";
 import InstitutionUsersPage from "./pages/AdminAnswers/InstitutionUsersPage";
 import UserAnswersPage from "./pages/AdminAnswers/UserAnswersPage";
@@ -71,6 +72,14 @@ export default function App() {
             <Route
               path="/admin/censos/:censusId/instituciones/:institutionId/usuarios/:userId/respuestas"
               element={<UserAnswersPage />}
+            />
+          </Route>
+
+          {/* Importación de respuestas desde Excel INEGI */}
+          <Route element={<ProtectedRoute permission="answers.create" />}>
+            <Route
+              path="/admin/importar-respuestas"
+              element={<ImportAnswersPage />}
             />
           </Route>
 
