@@ -59,7 +59,6 @@ export function useSectionsData() {
       })
       .catch((err) => {
         if (err.name === "CanceledError" || err.code === "ERR_CANCELED") return;
-        console.error(err);
         setError("Error al cargar los datos.");
       })
       .finally(() => {
@@ -87,7 +86,9 @@ export function useSectionsData() {
       const urlObj = new URL(url);
       const pageParam = urlObj.searchParams.get("page");
       if (pageParam) setPage(Number(pageParam));
-    } catch (e) { console.error(e); }
+    } catch {
+      // URL de paginación inválida: se ignora el cambio de página
+    }
   }, []);
 
   // 3. IMPLEMENTACIÓN DEL SORT
