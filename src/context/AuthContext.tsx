@@ -11,6 +11,7 @@ import {
   loginRequest,
   logoutRequest,
   meRequest,
+  profileCompletionRequest,
 } from "../services/authService";
 import type { LoginCredentials, MeResponse } from "../services/authService";
 
@@ -38,13 +39,43 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-function toAuthUser(me: MeResponse): AuthUser {
+function toAuthUser(me: MeResponse, complete: boolean): AuthUser {
   return {
     name: me.name ?? "Usuario",
-    complete: me.complete,
+    complete,
     role: me.role,
     permissions: me.permissions ?? [],
   };
+}
+
+// /me ya no devuelve la bandera de perfil completo: solo llega en la respuesta
+// del login (profile_completed). Se persiste en sessionStorage y, cuando no está
+// (recarga con cookie, reset-password), se infiere de /profile-completion.
+const PROFILE_COMPLETED_KEY = "profile_completed";
+const REQUIRED_PROFILE_FIELDS = [
+  "name",
+  "lastname",
+  "phone",
+  "mobile",
+  "address",
+] as const;
+
+function storeProfileCompleted(completed: boolean) {
+  sessionStorage.setItem(PROFILE_COMPLETED_KEY, String(completed));
+}
+
+async function resolveProfileCompleted(): Promise<boolean> {
+  const stored = sessionStorage.getItem(PROFILE_COMPLETED_KEY);
+  if (stored !== null) return stored === "true";
+
+  try {
+    const { user_data } = await profileCompletionRequest();
+    const completed = REQUIRED_PROFILE_FIELDS.every((f) => !!user_data?.[f]);
+    storeProfileCompleted(completed);
+    return completed;
+  } catch {
+    return true; // ante la duda no se muestra el modal; no se cachea el fallo
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -54,15 +85,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithToken = useCallback(async (access_token: string) => {
     sessionStorage.setItem("access_token", access_token);
     const me = await meRequest();
-    if (me) setUser(toAuthUser(me));
+    if (me) setUser(toAuthUser(me, await resolveProfileCompleted()));
   }, []);
   const [error, setError] = useState<string | null>(null);
 
   // ── Rehidratación en cada recarga de página ──────────────────────────────
   useEffect(() => {
     meRequest()
-      .then((me) => {
-        if (me) setUser(toAuthUser(me));
+      .then(async (me) => {
+        if (me) setUser(toAuthUser(me, await resolveProfileCompleted()));
       })
       .catch(() => {
         /* sin cookie válida → usuario null, pantalla de login */
@@ -76,10 +107,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      const { access_token } = await loginRequest(credentials);
+      const { access_token, profile_completed } = await loginRequest(credentials);
       sessionStorage.setItem("access_token", access_token);
+      storeProfileCompleted(profile_completed);
       const me = await meRequest();
-      if (me) setUser(toAuthUser(me));
+      if (me) setUser(toAuthUser(me, profile_completed));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
       throw err; // LoginCard lo captura para no navegar
@@ -94,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await logoutRequest(); // Laravel borra el token + cookie
     } finally {
       sessionStorage.removeItem("access_token");
+      sessionStorage.removeItem(PROFILE_COMPLETED_KEY);
       setUser(null); // Limpiamos estado aunque el request falle
     }
   }, []);
@@ -101,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   const markProfileComplete = useCallback(() => {
+    storeProfileCompleted(true);
     setUser((prev) => (prev ? { ...prev, complete: true } : prev));
   }, []);
 
