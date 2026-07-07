@@ -8,7 +8,6 @@ import {
 
 import {
   getInstitutions,
-  getInstitutionsByUrl,
   getInstitution,
   createInstitution,
   updateInstitution,
@@ -46,6 +45,7 @@ export function useInstitutions() {
   const [error, setError] = useState<string | null>(null);
 
   const [filter, setFilter] = useState<InstitutionFilter>("all");
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "created_at",
@@ -138,7 +138,7 @@ export function useInstitutions() {
 
   useEffect(() => {
     setLoading(true);
-    getInstitutions(filter)
+    getInstitutions(filter, "", page)
       .then((response) => {
         setInstitutions(response.data);
         setLinks(response.links);
@@ -152,29 +152,12 @@ export function useInstitutions() {
       .finally(() => {
         setLoading(false);
       });
-  }, [filter, reloadToken]);
-
-  const loadInstitutionsByUrl = useCallback((url: string) => {
-    setLoading(true);
-    getInstitutionsByUrl(url)
-      .then((response) => {
-        setInstitutions(response.data);
-        setLinks(response.links);
-        setMeta(response.meta);
-        setError(null);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError(`Error al cargar la página: ${err.message}`);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+  }, [filter, page, reloadToken]);
 
   const handleFilterChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       setFilter(e.target.value as InstitutionFilter);
+      setPage(1);
     },
     [],
   );
@@ -183,14 +166,18 @@ export function useInstitutions() {
     setSearchTerm(e.target.value);
   }, []);
 
-  const handlePageClick = useCallback(
-    (url: string | null) => {
-      if (url) {
-        loadInstitutionsByUrl(url);
-      }
-    },
-    [loadInstitutionsByUrl],
-  );
+  // Los links del paginador apuntan a POST /institutions/search; un GET a esa
+  // URL cae en GET /institutions/{id} con id="search" (400). Extraemos el
+  // número de página y repetimos el POST con los filtros actuales.
+  const handlePageClick = useCallback((url: string | null) => {
+    if (!url) return;
+    try {
+      const pageParam = new URL(url).searchParams.get("page");
+      if (pageParam) setPage(Number(pageParam));
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
   const handleSort = useCallback((key: keyof Institution) => {
     setSortConfig((currentConfig) => {
