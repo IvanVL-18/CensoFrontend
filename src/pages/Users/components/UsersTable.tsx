@@ -5,7 +5,7 @@ import {
   Trash2,
   CircleArrowUp,
   Ban,
-  type LucideProps, 
+  type LucideProps,
 } from "lucide-react";
 import type { UsersTableProps } from "../Users.types";
 import Loading from "../../../components/Loading";
@@ -47,7 +47,7 @@ export function UsersTable({
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
               <button
-                onClick={() => onSort("id")} 
+                onClick={() => onSort("id")}
                 className="
                   flex items-center space-x-1     
                   text-xs font-medium text-gray-500 uppercase tracking-wider
@@ -60,14 +60,14 @@ export function UsersTable({
             </th>
             <th className="px-6 py-3 text-left w-full">
               <button
-                onClick={() => onSort("email")} 
+                onClick={() => onSort("name")}
                 className="
                   flex items-center space-x-1     
                   text-xs font-medium text-gray-500 uppercase tracking-wider
                   hover:text-opacity-75 transition-colors
                 "
               >
-                <span>Correo</span>
+                <span>Nombre</span>
                 <IconSort size={16} strokeWidth={2.5} />
               </button>
             </th>
@@ -111,7 +111,7 @@ export function UsersTable({
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {User.email}
+                  {User.name}
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
@@ -206,7 +206,7 @@ export function UsersTable({
                       )}
                     </>
                   )}
-                </td> 
+                </td>
               </tr>
             ))}
         </tbody>

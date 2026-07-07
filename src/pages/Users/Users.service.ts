@@ -13,23 +13,16 @@ type UserId = string | number;
 const enc = (v: string | number) => encodeURIComponent(String(v));
 
 export const getUsers = async (
-  filter: UserFilter = "all",
+  status: UserFilter = "all",
   search: string = "",
-  page: number = 1,
-  sortBy: string = "id",
-  direction: "asc" | "desc" = "asc",
+  order: "asc" | "desc" = "asc",
   signal?: AbortSignal,
 ): Promise<PaginatedUsersResponse> => {
-  const params = new URLSearchParams();
-  if (search) params.append("search", search);
-  params.append("page", page.toString());
-  params.append("sort_by", sortBy);
-  params.append("direction", direction);
-
-  const response = await api.get<PaginatedUsersResponse>(`/users`, {
-    params,
-    signal,
-  });
+  const response = await api.post<PaginatedUsersResponse>(
+    "/users/search",
+    { status, search, order },
+    { signal },
+  );
   return response.data;
 };
 
@@ -73,9 +66,7 @@ export const banUser = async (id: UserId): Promise<{ message: string }> => {
   return response.data;
 };
 
-export const restoreUser = async (
-  id: UserId,
-): Promise<{ message: string }> => {
+export const restoreUser = async (id: UserId): Promise<{ message: string }> => {
   const response = await api.post(`/users/${id}/restore`);
   return response.data;
 };
