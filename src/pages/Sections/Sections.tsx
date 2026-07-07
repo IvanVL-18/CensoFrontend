@@ -49,23 +49,23 @@ function SectionsPageContent() {
   const modals = useSectionsModals();
 
   const { hasPermission } = useAuthContext();
+  const { addToast } = useToast();
 
   const handleViewClick = async (partialSection: any) => {
     try {
       const fullSection = await getSection(partialSection.id);
       modals.openView(fullSection);
-    } catch (error) {
-      console.error("Error al cargar detalles de la Sección", error);
+    } catch {
+      addToast("No se pudieron cargar los detalles de la Sección", "danger");
     }
   };
 
   const handleEditClick = async (partialSection: any) => {
     try {
       const fullSection = await getSection(partialSection.id);
-      console.log("fullSection:", fullSection);
       modals.openEdit(fullSection);
-    } catch (error) {
-      console.error("Error al cargar detalles de la Sección", error);
+    } catch {
+      addToast("No se pudieron cargar los detalles de la Sección", "danger");
     }
   };
 
@@ -174,7 +174,7 @@ function SectionsPageContent() {
             ? {
                 name: modals.editingSection.name,
                 instructions: modals.editingSection.instructions,
-                indicator_id: modals.editingSection.indicator_id ?? null,
+                indicator_name: modals.editingSection.indicator_name ?? null,
                 attention: !!modals.editingSection.attention,
               }
             : undefined

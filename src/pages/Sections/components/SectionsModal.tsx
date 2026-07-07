@@ -21,6 +21,9 @@ export function SectionModal({
   const [name, setName] = useState("");
   const [instructions, setInstructions] = useState("");
   const [indicatorId, setIndicatorId] = useState<string | null>(null);
+  const [initialIndicatorId, setInitialIndicatorId] = useState<string | null>(
+    null,
+  );
   const [needsAttention, setNeedsAttention] = useState(false);
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -51,7 +54,8 @@ export function SectionModal({
     if (isOpen) {
       setName(initialData?.name || "");
       setInstructions(initialData?.instructions || "");
-      setIndicatorId(initialData?.indicator_id ?? null);
+      setIndicatorId(null);
+      setInitialIndicatorId(null);
       setNeedsAttention(!!initialData?.attention);
       setNameCharCount(initialData?.name?.length || 0);
       setInstructionsCharCount(initialData?.instructions?.length || 0);
@@ -59,6 +63,20 @@ export function SectionModal({
       setServerError(null);
     }
   }, [isOpen, initialData]);
+
+  // Preselecciona el indicador por nombre: la API cifra los ids con IV
+  // aleatorio, por lo que el id de la sección nunca coincide con los del listado
+  useEffect(() => {
+    if (!isOpen || !initialData?.indicator_name || indicators.length === 0)
+      return;
+    const target = initialData.indicator_name.trim().toLowerCase();
+    const match = indicators.find(
+      (ind) => ind.name.trim().toLowerCase() === target,
+    );
+    const id = match?.id ?? null;
+    setIndicatorId(id);
+    setInitialIndicatorId(id);
+  }, [isOpen, initialData, indicators]);
 
   useEffect(() => {
     if (error) {
@@ -105,7 +123,6 @@ export function SectionModal({
 
     const initialName = (initialData?.name ?? "").trim();
     const initialInstr = (initialData?.instructions ?? "").trim();
-    const initialIndicatorId = initialData?.indicator_id ?? null;
     const initialNeedsAttention = !!initialData?.attention;
 
     const currentName = name.trim();
@@ -172,6 +189,7 @@ export function SectionModal({
     setName("");
     setInstructions("");
     setIndicatorId(null);
+    setInitialIndicatorId(null);
     setNeedsAttention(false);
     setNameCharCount(0);
     setInstructionsCharCount(0);
@@ -189,7 +207,7 @@ export function SectionModal({
   const hasChanges =
     name.trim() !== (initialData?.name ?? "").trim() ||
     instructions.trim() !== (initialData?.instructions ?? "").trim() ||
-    indicatorId !== (initialData?.indicator_id ?? null) ||
+    indicatorId !== initialIndicatorId ||
     needsAttention !== !!initialData?.attention;
 
   const nameIsNearLimit =

@@ -9,17 +9,26 @@ export interface LoginResponse {
   name?: string;
   token_type: string;
   access_token: string;
-  complete: boolean;
+  profile_completed: boolean;
 }
 
 export interface MeResponse {
   id: string;
   name: string;
   email: string;
-  complete: boolean;
   role: string | null;
   permissions: string[];
   profile?: {
+    name?: string;
+    lastname?: string;
+    phone?: string;
+    mobile?: string;
+    address?: string;
+  };
+}
+
+export interface ProfileCompletionResponse {
+  user_data: {
     name?: string;
     lastname?: string;
     phone?: string;
@@ -41,6 +50,16 @@ export async function loginRequest(credentials: LoginCredentials): Promise<Login
  */
 export async function logoutRequest(): Promise<void> {
   await api.post('/logout');
+}
+
+/**
+ * PATCH /profile-completion
+ * Devuelve los campos del perfil que el usuario ya tiene guardados.
+ * /me ya no incluye la bandera de perfil completo, así que se infiere de aquí.
+ */
+export async function profileCompletionRequest(): Promise<ProfileCompletionResponse> {
+  const { data } = await api.patch<ProfileCompletionResponse>('/profile-completion');
+  return data;
 }
 
 /**
