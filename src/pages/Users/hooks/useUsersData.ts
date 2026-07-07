@@ -89,7 +89,7 @@ export function useUsersData() {
     const controller = new AbortController();
     setLoading(true);
 
-    getUsers(filter, "", sortConfig.direction, controller.signal)
+    getUsers(filter, searchTerm, sortConfig.direction, controller.signal)
       .then((data) => {
         setUsers(data.data);
         setLinks(data.links);
@@ -99,14 +99,20 @@ export function useUsersData() {
       .catch((err) => {
         if (err.name === "CanceledError" || err.code === "ERR_CANCELED") return;
         console.error(err);
-        setError("Error al cargar los datos.");
+        const validationErrors = err.response?.data?.errors;
+        if (validationErrors) {
+          const firstError = Object.values(validationErrors)[0] as string[];
+          setError(firstError[0]);
+        } else {
+          setError(err.response?.data?.message ?? "Error al cargar los datos.");
+        }
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
 
     return () => controller.abort();
-  }, [filter, page, sortConfig, reloadToken]);
+  }, [filter, searchTerm, page, sortConfig, reloadToken]);
 
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return Users;

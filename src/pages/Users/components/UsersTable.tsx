@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import type { UsersTableProps } from "../Users.types";
 import Loading from "../../../components/Loading";
+import { ValidationError } from "../../../components/ValidationError";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -87,14 +88,12 @@ export function UsersTable({
 
           {error && (
             <tr>
-              <td
-                colSpan={3}
-                className="text-center p-6 text-red-600 font-semibold"
-              >
-                {error}
+              <td colSpan={3} className="p-4">
+                <ValidationError message={error} />
               </td>
             </tr>
           )}
+
           {!loading && !error && Users.length === 0 && (
             <tr>
               <td colSpan={3} className="text-center p-6 text-gray-500">
