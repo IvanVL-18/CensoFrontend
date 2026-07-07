@@ -93,6 +93,8 @@ export const importSections = async (
 };
 
 export const getIndicators = async (): Promise<Indicator[]> => {
-  const response = await api.get<{ data: Indicator[] }>("/indicators");
+  const response = await api.get<{ data: Indicator[] }>(
+    "/indicators/data/list",
+  );
   return response.data.data;
 };

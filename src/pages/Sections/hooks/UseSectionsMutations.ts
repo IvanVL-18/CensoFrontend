@@ -97,7 +97,6 @@ export function useSectionsMutations({
         addToast(response.message || "Importación exitosa", "success");
         refreshSections();
       } catch (err: any) {
-        console.error("Error en carga masiva:", err);
         if (err.status === 422 && err.data?.errors) {
           openBulkError(err.data.errors);
           addToast("El archivo contiene errores que debes corregir", "warning");

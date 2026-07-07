@@ -71,12 +71,16 @@ export interface FormErrorsProps {
   errors: string[];
 }
 
+export interface SectionInitialData extends CreateSectionDTO {
+  indicator_name?: string | null;
+}
+
 export interface SectionModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
   error: string | null;
   title: string;
-  initialData?: CreateSectionDTO;
+  initialData?: SectionInitialData;
   onClose: () => void;
   onSave: (data: CreateSectionDTO) => void;
 }
