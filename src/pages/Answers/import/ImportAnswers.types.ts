@@ -41,9 +41,19 @@ export interface ImportTotals {
   errores: number;
 }
 
+export interface ImportCensusInfo {
+  detected_name: string | null;
+  modulo: string | null;
+  seccion: string | null;
+  exists: boolean;
+  name: string | null; // nombre del censo en BD cuando existe
+  clone_from: string | null; // censo base a clonar cuando no existe
+}
+
 export interface ImportPreviewResponse {
   batch_id: string;
   template_code: string;
+  census: ImportCensusInfo;
   entidad: ImportEntity | null;
   informant: ImportInformant;
   suggested_user: SuggestedUser | null;
@@ -53,6 +63,7 @@ export interface ImportPreviewResponse {
 
 export interface ImportConfirmResponse {
   message: string;
+  census?: { name: string };
   created: number;
   updated: number;
   comments_saved: number;

@@ -63,10 +63,10 @@ function ImportAnswersContent() {
 
   // ── Fase 1: subir y previsualizar ──
   const handlePreview = useCallback(async () => {
-    if (!censusId || !file) return;
+    if (!file) return;
     setLoading(true);
     try {
-      const result = await uploadImportPreview(censusId, file);
+      const result = await uploadImportPreview(censusId || null, file);
       setPreview(result);
       setTargetUser(
         result.suggested_user
@@ -150,13 +150,19 @@ function ImportAnswersContent() {
                 value={censusId}
                 onChange={(e) => setCensusId(e.target.value)}
               >
-                <option value="">Selecciona un censo…</option>
+                <option value="">
+                  Detectar desde el archivo (recomendado)
+                </option>
                 {censuses.map((census) => (
                   <option key={census.id} value={census.id}>
                     {census.name}
                   </option>
                 ))}
               </select>
+              <p className="mt-1 text-xs text-gray-500">
+                El archivo trae el nombre del censo en su portada; si no existe
+                en el sistema, se creará automáticamente al confirmar.
+              </p>
             </div>
 
             <div
@@ -209,7 +215,7 @@ function ImportAnswersContent() {
 
             <button
               type="button"
-              disabled={!censusId || !file || loading}
+              disabled={!file || loading}
               className="w-full rounded-lg bg-[var(--pantone-7421)] px-4 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
               onClick={handlePreview}
             >
@@ -220,6 +226,38 @@ function ImportAnswersContent() {
 
         {step === "preview" && preview && (
           <div className="space-y-6">
+            {/* Censo detectado en la portada del archivo */}
+            <div
+              className={`rounded-lg border p-4 ${
+                preview.census.exists
+                  ? "border-gray-200"
+                  : "border-yellow-300 bg-yellow-50"
+              }`}
+            >
+              <h2 className="mb-1 font-semibold text-gray-800">
+                Censo destino
+              </h2>
+              <p className="text-sm text-gray-700">
+                {preview.census.name ??
+                  preview.census.detected_name ??
+                  "No detectado"}
+              </p>
+              {(preview.census.modulo || preview.census.seccion) && (
+                <p className="text-xs text-gray-500">
+                  {[preview.census.modulo, preview.census.seccion]
+                    .filter(Boolean)
+                    .join(" — ")}
+                </p>
+              )}
+              {!preview.census.exists && (
+                <p className="mt-1 text-sm text-yellow-800">
+                  ⚠ Este censo no existe en el sistema: al confirmar se creará
+                  automáticamente copiando la estructura de “
+                  {preview.census.clone_from}”.
+                </p>
+              )}
+            </div>
+
             {/* Informante detectado */}
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-lg border border-gray-200 p-4">
@@ -322,6 +360,11 @@ function ImportAnswersContent() {
             <h2 className="text-lg font-semibold text-gray-800">
               Importación completada
             </h2>
+            {report.census?.name && (
+              <p className="text-sm text-gray-600">
+                Censo: {report.census.name}
+              </p>
+            )}
             <div className="grid grid-cols-3 gap-3 text-sm">
               <div className="rounded-lg bg-green-50 p-3">
                 <p className="text-2xl font-bold text-green-700">

@@ -12,12 +12,16 @@ export const getCensuses = async (): Promise<CensusOption[]> => {
 };
 
 export const uploadImportPreview = async (
-  censusId: string,
+  censusId: string | null,
   file: File
 ): Promise<ImportPreviewResponse> => {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("census_id", censusId);
+  // opcional: si no se manda, el backend detecta el censo por el nombre
+  // que trae la portada del Excel (y lo crea si no existe, al confirmar)
+  if (censusId) {
+    formData.append("census_id", censusId);
+  }
 
   const response = await api.post<ImportPreviewResponse>(
     "/imports/answers/preview",
