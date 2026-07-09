@@ -109,6 +109,7 @@ export default function Pagination({
   // Solo permite dígitos mientras se escribe (bloquea letras, símbolos, etc.)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
+
     if (raw === "" || /^\d+$/.test(raw)) {
       setInputValue(raw);
     }
@@ -141,8 +142,9 @@ export default function Pagination({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      e.currentTarget.blur(); // dispara onBlur -> commitPage
+      e.currentTarget.blur();
     }
+
     if (e.key === "Escape") {
       setInputValue(String(current));
       e.currentTarget.blur();
@@ -151,7 +153,9 @@ export default function Pagination({
 
   return (
     <div className={clsx("w-full", className)}>
-      {error && <p className="mb-2 text-xs text-red-600 text-center">{error}</p>}
+      {error && (
+        <p className="mb-2 text-xs text-red-600 text-center">{error}</p>
+      )}
 
       <div className="flex justify-center">
         <div
@@ -185,26 +189,23 @@ export default function Pagination({
           </button>
 
           {/* Input de página editable */}
-          <div className="flex items-center gap-1">
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={inputValue}
-              disabled={loading}
-              onChange={handleInputChange}
-              onBlur={commitPage}
-              onKeyDown={handleKeyDown}
-              className={clsx(
-                "h-9 w-12 px-1 rounded-lg border border-gray-200 bg-white",
-                "text-center text-sm font-medium text-gray-800",
-                "focus:outline-none focus:ring-2 focus:ring-gray-300",
-                loading && "opacity-50 cursor-not-allowed"
-              )}
-              title={`Página ${current} de ${last}`}
-            />
-            <span className="text-sm text-gray-500 select-none">/ {last}</span>
-          </div>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={inputValue}
+            disabled={loading}
+            onChange={handleInputChange}
+            onBlur={commitPage}
+            onKeyDown={handleKeyDown}
+            className={clsx(
+              "h-9 w-12 px-1 rounded-lg border border-gray-200 bg-white",
+              "text-center text-sm font-medium text-gray-800",
+              "focus:outline-none focus:ring-2 focus:ring-gray-300",
+              loading && "opacity-50 cursor-not-allowed"
+            )}
+            title={`Página ${current} de ${last}`}
+          />
 
           {/* Next */}
           <button
