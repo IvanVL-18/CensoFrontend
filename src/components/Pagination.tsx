@@ -1,4 +1,5 @@
 // src/components/Pagination.tsx
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -58,10 +59,19 @@ export default function Pagination({
   baseUrl,
   className,
 }: Props) {
-  if (!meta) return null;
+  const current = toNumber(meta?.current_page, 1);
+  const last = toNumber(meta?.last_page, 1);
 
-  const current = toNumber(meta.current_page, 1);
-  const last = toNumber(meta.last_page, 1);
+  // Valor local del input (string, para permitir edición libre mientras escribe)
+  const [inputValue, setInputValue] = useState(String(current));
+
+  // Si la página actual cambia desde afuera (navegación por flechas, fetch, etc.)
+  // sincronizamos el input para que no quede desfasado.
+  useEffect(() => {
+    setInputValue(String(current));
+  }, [current]);
+
+  if (!meta) return null;
 
   const hasPrev = !!links?.prev;
   const hasNext = !!links?.next;
@@ -96,9 +106,56 @@ export default function Pagination({
     emitPage(current + 1);
   };
 
+  // Solo permite dígitos mientras se escribe (bloquea letras, símbolos, etc.)
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+
+    if (raw === "" || /^\d+$/.test(raw)) {
+      setInputValue(raw);
+    }
+  };
+
+  // Valida y navega al confirmar (blur o Enter)
+  const commitPage = () => {
+    if (inputValue === "") {
+      setInputValue(String(current));
+      return;
+    }
+
+    let page = parseInt(inputValue, 10);
+
+    if (Number.isNaN(page)) {
+      setInputValue(String(current));
+      return;
+    }
+
+    // Clamp: no dejamos pasar del límite ni bajar de 1
+    if (page < 1) page = 1;
+    if (page > last) page = last;
+
+    setInputValue(String(page));
+
+    if (page !== current) {
+      emitPage(page);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.currentTarget.blur();
+    }
+
+    if (e.key === "Escape") {
+      setInputValue(String(current));
+      e.currentTarget.blur();
+    }
+  };
+
   return (
     <div className={clsx("w-full", className)}>
-      {error && <p className="mb-2 text-xs text-red-600 text-center">{error}</p>}
+      {error && (
+        <p className="mb-2 text-xs text-red-600 text-center">{error}</p>
+      )}
 
       <div className="flex justify-center">
         <div
@@ -131,21 +188,24 @@ export default function Pagination({
             <ChevronLeft className="h-5 w-5 text-gray-700" />
           </button>
 
-          {/* Número actual (como tu imagen) */}
-          <div
-            className="
-              h-9 min-w-9 px-3
-              rounded-lg
-              border border-gray-200
-              bg-white
-              grid place-items-center
-              text-sm font-medium text-gray-800
-              select-none
-            "
+          {/* Input de página editable */}
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={inputValue}
+            disabled={loading}
+            onChange={handleInputChange}
+            onBlur={commitPage}
+            onKeyDown={handleKeyDown}
+            className={clsx(
+              "h-9 w-12 px-1 rounded-lg border border-gray-200 bg-white",
+              "text-center text-sm font-medium text-gray-800",
+              "focus:outline-none focus:ring-2 focus:ring-gray-300",
+              loading && "opacity-50 cursor-not-allowed"
+            )}
             title={`Página ${current} de ${last}`}
-          >
-            {current}
-          </div>
+          />
 
           {/* Next */}
           <button
