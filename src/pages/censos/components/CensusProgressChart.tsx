@@ -72,11 +72,11 @@ export function CensusProgressChart({
 
       <div className="flex flex-1 gap-4 w-full">
         <div className="flex-1 rounded-lg border border-gray-200 px-4 py-3 text-center">
-          <p className="text-2xl font-bold text-[#691b31]">{totalExpected}</p>
+          <p className="text-2xl font-bold text-[#C3A67C]">{totalExpected}</p>
           <p className="text-xs text-gray-500 mt-1">Esperados</p>
         </div>
         <div className="flex-1 rounded-lg border border-gray-200 px-4 py-3 text-center">
-          <p className="text-2xl font-bold text-[#C3A67C]">{totalCompleted}</p>
+          <p className="text-2xl font-bold text-[#691b31]">{totalCompleted}</p>
           <p className="text-xs text-gray-500 mt-1">Completados</p>
         </div>
       </div>
