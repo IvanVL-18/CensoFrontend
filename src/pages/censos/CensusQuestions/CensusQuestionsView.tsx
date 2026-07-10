@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Eye } from "lucide-react";
 import { useCensusQuestions } from "./useCensusQuestions";
 import Pagination from "../../../components/Pagination";
+import { SearchInput } from "../../../components/SearchInput";
 import { ViewQuestionModal } from "./ViewQuestionsModal";
 import { ToastProvider, useToast } from "../../../context/ToastContext";
 import { Toast } from "../../../components/Toast";
@@ -51,6 +52,9 @@ const CensusQuestionsPageContent: React.FC = () => {
     currentPage,
     lastPage,
     paginationLinks,
+    searchTerm,
+    setSearchTerm,
+    searchError,
     usedIndexIds,
     toggleQuestionRow,
     toggleAllQuestionRows,
@@ -94,6 +98,13 @@ const CensusQuestionsPageContent: React.FC = () => {
         </div>
 
         <div className="p-6">
+          <div className="mb-4 w-full max-w-md rounded-xl border border-gray-200">
+            <SearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Buscar pregunta por nombre..."
+            />
+          </div>
 
           <div className="relative overflow-x-auto rounded-xl border border-gray-200">
             {paginating && (
@@ -131,10 +142,15 @@ const CensusQuestionsPageContent: React.FC = () => {
                 {rows.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={4}
-                      className="px-4 py-6 text-center text-sm text-gray-500"
+                      colSpan={5}
+                      className={`px-4 py-6 text-center text-sm ${
+                        searchError ? "text-red-600" : "text-gray-500"
+                      }`}
                     >
-                      No hay preguntas disponibles.
+                      {searchError ??
+                        (searchTerm.trim()
+                          ? "No se encontraron preguntas para la búsqueda."
+                          : "No hay preguntas disponibles.")}
                     </td>
                   </tr>
                 ) : (

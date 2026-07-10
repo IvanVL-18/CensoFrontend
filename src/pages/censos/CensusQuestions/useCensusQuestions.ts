@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCensusQuestions,
+  searchCensusQuestions,
   storeCensusQuestions,
   updateCensusQuestions,
 } from "./CensusQuestions.service";
@@ -54,6 +55,9 @@ type UseCensusQuestionsReturn = {
   currentPage: number;
   lastPage: number;
   paginationLinks: PaginationLinksObj | null;
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
+  searchError: string | null;
   usedIndexIds: Set<string>;
   toggleQuestionRow: (questionName: string, questionId: string, checked: boolean) => void;
   toggleAllQuestionRows: (checked: boolean) => void;
@@ -82,6 +86,20 @@ export const useCensusQuestions = (
   const [lastPage, setLastPage] = useState(1);
   const [paginationLinks, setPaginationLinks] =
     useState<PaginationLinksObj | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  // Error de validación del backend al buscar; se muestra en la tabla.
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  // Debounce: espera 500ms después de dejar de escribir para buscar.
+  // El backend exige mínimo 2 caracteres; con menos se muestra la lista completa.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmed = searchTerm.trim();
+      setDebouncedSearch(trimmed.length >= 2 ? trimmed : "");
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const mapRef = useRef<SelectedQuestionsMap>({});
   const [mapVersion, setMapVersion] = useState(0);
@@ -137,6 +155,30 @@ export const useCensusQuestions = (
     async (page: number, signal?: AbortSignal, isInitial = false) => {
       try {
         isInitial ? setLoading(true) : setPaginating(true);
+        setSearchError(null);
+
+        if (debouncedSearch) {
+          // Modo búsqueda: el backend solo devuelve las preguntas filtradas.
+          // Sección, índices y mapa de selecciones se conservan tal cual.
+          const data = await searchCensusQuestions(
+            censusSectionId,
+            debouncedSearch,
+            page,
+            signal,
+          );
+          if (signal?.aborted) return;
+
+          setCurrentPage(data.questions?.current_page ?? 1);
+          setLastPage(data.questions?.last_page ?? 1);
+          setPaginationLinks({
+            first: data.questions?.first_page_url ?? null,
+            last: data.questions?.last_page_url ?? null,
+            prev: data.questions?.prev_page_url ?? null,
+            next: data.questions?.next_page_url ?? null,
+          });
+          setQuestions(data.questions?.data ?? []);
+          return;
+        }
 
         const data = await getCensusQuestions(censusSectionId, page, signal);
 
@@ -210,24 +252,43 @@ export const useCensusQuestions = (
       } catch (err: unknown) {
         const e = err as {
           name?: string;
-          response?: { data?: { message?: string } };
+          response?: {
+            data?: { message?: string; errors?: Record<string, string[]> };
+          };
         };
         if (e?.name === "CanceledError" || e?.name === "AbortError") return;
-        addToast(
-          e?.response?.data?.message ?? "No se pudo cargar la información.",
-          "danger",
-        );
+
+        const apiError = e?.response?.data;
+        const firstValidationError = apiError?.errors
+          ? Object.values(apiError.errors)[0]?.[0]
+          : undefined;
+
+        if (debouncedSearch) {
+          // Error al buscar: se muestra en el área de la tabla, no como toast.
+          setSearchError(
+            firstValidationError ??
+              apiError?.message ??
+              "No se pudo realizar la búsqueda.",
+          );
+          setQuestions([]);
+        } else {
+          addToast(
+            apiError?.message ?? "No se pudo cargar la información.",
+            "danger",
+          );
+        }
       } finally {
         setLoading(false);
         setPaginating(false);
       }
     },
-    [censusSectionId, buildInitialMap],
+    [censusSectionId, buildInitialMap, debouncedSearch],
   );
 
+  // Carga inicial y recarga (a página 1) cuando cambia la búsqueda con debounce
   useEffect(() => {
     const controller = new AbortController();
-    void loadData(1, controller.signal, true);
+    void loadData(1, controller.signal, !initialLoadDone.current);
     return () => controller.abort();
   }, [loadData]);
 
@@ -366,7 +427,15 @@ export const useCensusQuestions = (
       mapRef.current = {};
       initialLoadDone.current = false;
       setMapVersion(0);
-      await loadData(currentPage, undefined, false);
+      if (debouncedSearch) {
+        // Se limpia la búsqueda: el mapa debe reconstruirse desde show, que es
+        // el único endpoint que devuelve las asignaciones completas;
+        // el efecto de carga recargará al cambiar debouncedSearch.
+        setSearchTerm("");
+        setDebouncedSearch("");
+      } else {
+        await loadData(currentPage, undefined, false);
+      }
       addToast(result.message ?? "Preguntas guardadas correctamente.", "success");
       return true;
     } catch (err: unknown) {
@@ -389,7 +458,7 @@ export const useCensusQuestions = (
     } finally {
       setSaving(false);
     }
-  }, [censusSectionId, hasAssignments, validItems, loadData, currentPage]);
+  }, [censusSectionId, hasAssignments, validItems, loadData, currentPage, debouncedSearch]);
 
   const reload = useCallback(async () => {
     await loadData(currentPage, undefined, false);
@@ -416,6 +485,9 @@ export const useCensusQuestions = (
     currentPage,
     lastPage,
     paginationLinks,
+    searchTerm,
+    setSearchTerm,
+    searchError,
     usedIndexIds,
     toggleQuestionRow,
     toggleAllQuestionRows,
