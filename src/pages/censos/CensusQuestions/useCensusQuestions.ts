@@ -27,6 +27,18 @@ type SelectedQuestionState = {
 
 type SelectedQuestionsMap = Record<string, SelectedQuestionState>;
 
+// Ordena índices por segmentos numéricos ("1.1.10" va después de "1.1.9").
+const compareIndexNames = (a: { name: string }, b: { name: string }) => {
+  const partsA = a.name.split(".").map(Number);
+  const partsB = b.name.split(".").map(Number);
+  const len = Math.max(partsA.length, partsB.length);
+  for (let i = 0; i < len; i++) {
+    const diff = (partsA[i] ?? -1) - (partsB[i] ?? -1);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+};
+
 
 
 type UseCensusQuestionsReturn = {
@@ -42,6 +54,7 @@ type UseCensusQuestionsReturn = {
   currentPage: number;
   lastPage: number;
   paginationLinks: PaginationLinksObj | null;
+  usedIndexIds: Set<string>;
   toggleQuestionRow: (questionName: string, questionId: string, checked: boolean) => void;
   toggleAllQuestionRows: (checked: boolean) => void;
   changeIndex: (questionName: string, questionId: string, indexId: string) => void;
@@ -129,9 +142,27 @@ export const useCensusQuestions = (
 
         if (signal?.aborted) return;
 
-        const fetchedIndexes = data.indexes ?? [];
         const fetchedQuestions = data.questions?.data ?? [];
         const fetchedSelected = data.selectedQuestions ?? [];
+
+        // El backend descarta de data.indexes los índices ya asignados a la
+        // sección; se reincorporan desde selectedQuestions para poder resolver
+        // y mostrar la asignación actual de cada pregunta (matching por nombre).
+        const availableIndexes = data.indexes ?? [];
+        const assignedIndexes = fetchedSelected
+          .map((item) => item.index)
+          .filter(
+            (assigned) =>
+              assigned?.name &&
+              !availableIndexes.some(
+                (idx) =>
+                  idx.name.trim().toLowerCase() ===
+                  assigned.name.trim().toLowerCase(),
+              ),
+          );
+        const fetchedIndexes = [...availableIndexes, ...assignedIndexes].sort(
+          compareIndexNames,
+        );
 
         const freshMap = buildInitialMap(fetchedSelected, fetchedIndexes);
 
@@ -229,7 +260,15 @@ export const useCensusQuestions = (
     [rows],
   );
 
-
+  // Índices ya elegidos en alguna pregunta (incluye las de otras páginas);
+  // cada fila los oculta de su select, excepto el suyo propio.
+  const usedIndexIds = useMemo(() => {
+    return new Set(
+      Object.values(mapRef.current)
+        .filter((item) => item.checked && item.index_id)
+        .map((item) => String(item.index_id)),
+    );
+  }, [mapVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleQuestionRow = useCallback(
     (questionName: string, questionId: string, checked: boolean) => {
@@ -377,6 +416,7 @@ export const useCensusQuestions = (
     currentPage,
     lastPage,
     paginationLinks,
+    usedIndexIds,
     toggleQuestionRow,
     toggleAllQuestionRows,
     changeIndex,

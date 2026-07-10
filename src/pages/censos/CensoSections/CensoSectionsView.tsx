@@ -43,6 +43,7 @@ const CensoSectionsPageContent: React.FC = () => {
     searchTerm,
     setSearchTerm,
     searchError,
+    usedIndexIds,
     toggleSectionRow,
     toggleAllSectionRows,
     changeIndex,
@@ -211,11 +212,18 @@ const CensoSectionsPageContent: React.FC = () => {
                               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
                             >
                               <option value="">Selecciona un índice</option>
-                              {indexes.map((idx) => (
-                                <option key={idx.id} value={idx.id}>
-                                  {idx.name}
-                                </option>
-                              ))}
+                              {indexes
+                                .filter(
+                                  (idx) =>
+                                    String(idx.id) ===
+                                      String(row.selected_index_id) ||
+                                    !usedIndexIds.has(String(idx.id)),
+                                )
+                                .map((idx) => (
+                                  <option key={idx.id} value={idx.id}>
+                                    {idx.name}
+                                  </option>
+                                ))}
                             </select>
                           </td>
 
