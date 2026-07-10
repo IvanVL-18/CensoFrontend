@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Eye, ArrowRight, Landmark } from "lucide-react";
 import { useCensoSections } from "./useCensoSections";
 import Pagination from "../../../components/Pagination";
+import { SearchInput } from "../../../components/SearchInput";
 import { ViewSectionModal } from "./ViewSectionsModal";
 import { AssignInstitutionsModal } from "./AssignInstitutionsModal";
 import { ToastProvider, useToast } from "../../../context/ToastContext";
@@ -39,6 +40,10 @@ const CensoSectionsPageContent: React.FC = () => {
     currentPage,
     lastPage,
     paginationLinks,
+    searchTerm,
+    setSearchTerm,
+    searchError,
+    usedIndexIds,
     toggleSectionRow,
     toggleAllSectionRows,
     changeIndex,
@@ -109,6 +114,14 @@ const CensoSectionsPageContent: React.FC = () => {
           </div>
 
           <div className="p-6">
+            <div className="mb-4 w-full max-w-md rounded-xl border border-gray-200">
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Buscar sección por nombre..."
+              />
+            </div>
+
             <div className="relative overflow-x-auto rounded-xl border border-gray-200">
               {paginating && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70">
@@ -146,9 +159,14 @@ const CensoSectionsPageContent: React.FC = () => {
                     <tr>
                       <td
                         colSpan={5}
-                        className="px-4 py-6 text-center text-sm text-gray-500"
+                        className={`px-4 py-6 text-center text-sm ${
+                          searchError ? "text-red-600" : "text-gray-500"
+                        }`}
                       >
-                        No hay secciones disponibles.
+                        {searchError ??
+                          (searchTerm.trim()
+                            ? "No se encontraron secciones para la búsqueda."
+                            : "No hay secciones disponibles.")}
                       </td>
                     </tr>
                   ) : (
@@ -194,11 +212,18 @@ const CensoSectionsPageContent: React.FC = () => {
                               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
                             >
                               <option value="">Selecciona un índice</option>
-                              {indexes.map((idx) => (
-                                <option key={idx.id} value={idx.id}>
-                                  {idx.name}
-                                </option>
-                              ))}
+                              {indexes
+                                .filter(
+                                  (idx) =>
+                                    String(idx.id) ===
+                                      String(row.selected_index_id) ||
+                                    !usedIndexIds.has(String(idx.id)),
+                                )
+                                .map((idx) => (
+                                  <option key={idx.id} value={idx.id}>
+                                    {idx.name}
+                                  </option>
+                                ))}
                             </select>
                           </td>
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCensoSections,
+  searchCensoSections,
   storeCensoSections,
   updateCensoSections,
 } from "./CensoSections.service";
@@ -25,6 +26,18 @@ type SelectedSectionState = {
 
 type SelectedSectionsMap = Record<string, SelectedSectionState>;
 
+// Ordena índices por segmentos numéricos ("1.10" va después de "1.9").
+const compareIndexNames = (a: { name: string }, b: { name: string }) => {
+  const partsA = a.name.split(".").map(Number);
+  const partsB = b.name.split(".").map(Number);
+  const len = Math.max(partsA.length, partsB.length);
+  for (let i = 0; i < len; i++) {
+    const diff = (partsA[i] ?? -1) - (partsB[i] ?? -1);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+};
+
 type UseCensoSectionsReturn = {
   moduleInfo: CensusModuleInfo | null;
   indexes: SectionIndexOption[];
@@ -38,6 +51,10 @@ type UseCensoSectionsReturn = {
   currentPage: number;
   lastPage: number;
   paginationLinks: PaginationLinksObj | null;
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
+  searchError: string | null;
+  usedIndexIds: Set<string>;
   toggleSectionRow: (
     sectionName: string,
     sectionId: string,
@@ -65,6 +82,20 @@ export const useCensoSections = (
   const [lastPage, setLastPage] = useState(1);
   const [paginationLinks, setPaginationLinks] =
     useState<PaginationLinksObj | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  // Error de validación del backend al buscar; se muestra en la tabla.
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  // Debounce: espera 500ms después de dejar de escribir para buscar.
+  // El backend exige mínimo 2 caracteres; con menos se muestra la lista completa.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmed = searchTerm.trim();
+      setDebouncedSearch(trimmed.length >= 2 ? trimmed : "");
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const mapRef = useRef<SelectedSectionsMap>({});
   const [mapVersion, setMapVersion] = useState(0);
@@ -118,14 +149,56 @@ export const useCensoSections = (
     async (page: number, signal?: AbortSignal, isInitial = false) => {
       try {
         isInitial ? setLoading(true) : setPaginating(true);
+        setSearchError(null);
+
+        if (debouncedSearch) {
+          // Modo búsqueda: el backend solo devuelve las secciones filtradas.
+          // Módulo, índices y mapa de selecciones se conservan tal cual.
+          const data = await searchCensoSections(
+            censusModuleId,
+            debouncedSearch,
+            page,
+            signal,
+          );
+          if (signal?.aborted) return;
+
+          setCurrentPage(data.sections?.current_page ?? 1);
+          setLastPage(data.sections?.last_page ?? 1);
+          setPaginationLinks({
+            first: data.sections?.first_page_url ?? null,
+            last: data.sections?.last_page_url ?? null,
+            prev: data.sections?.prev_page_url ?? null,
+            next: data.sections?.next_page_url ?? null,
+          });
+          setSections(data.sections?.data ?? []);
+          return;
+        }
 
         const data = await getCensoSections(censusModuleId, page, signal);
 
         if (signal?.aborted) return;
 
-        const fetchedIndexes = data.indexes ?? [];
         const fetchedSections = data.sections?.data ?? [];
         const fetchedSelected = data.selectedSections ?? [];
+
+        // El backend descarta de data.indexes los índices ya asignados al
+        // módulo; se reincorporan desde selectedSections para poder resolver
+        // y mostrar la asignación actual de cada sección (matching por nombre).
+        const availableIndexes = data.indexes ?? [];
+        const assignedIndexes = fetchedSelected
+          .map((item) => item.index)
+          .filter(
+            (assigned) =>
+              assigned?.name &&
+              !availableIndexes.some(
+                (idx) =>
+                  idx.name.trim().toLowerCase() ===
+                  assigned.name.trim().toLowerCase(),
+              ),
+          );
+        const fetchedIndexes = [...availableIndexes, ...assignedIndexes].sort(
+          compareIndexNames,
+        );
 
         const freshMap = buildInitialMap(fetchedSelected, fetchedIndexes);
 
@@ -173,24 +246,43 @@ export const useCensoSections = (
       } catch (err: unknown) {
         const e = err as {
           name?: string;
-          response?: { data?: { message?: string } };
+          response?: {
+            data?: { message?: string; errors?: Record<string, string[]> };
+          };
         };
         if (e?.name === "CanceledError" || e?.name === "AbortError") return;
-        addToast(
-          e?.response?.data?.message ?? "No se pudo cargar la información.",
-          "danger",
-        );
+
+        const apiError = e?.response?.data;
+        const firstValidationError = apiError?.errors
+          ? Object.values(apiError.errors)[0]?.[0]
+          : undefined;
+
+        if (debouncedSearch) {
+          // Error al buscar: se muestra en el área de la tabla, no como toast.
+          setSearchError(
+            firstValidationError ??
+              apiError?.message ??
+              "No se pudo realizar la búsqueda.",
+          );
+          setSections([]);
+        } else {
+          addToast(
+            apiError?.message ?? "No se pudo cargar la información.",
+            "danger",
+          );
+        }
       } finally {
         setLoading(false);
         setPaginating(false);
       }
     },
-    [censusModuleId, buildInitialMap],
+    [censusModuleId, buildInitialMap, debouncedSearch],
   );
 
+  // Carga inicial y recarga (a página 1) cuando cambia la búsqueda con debounce
   useEffect(() => {
     const controller = new AbortController();
-    void loadData(1, controller.signal, true);
+    void loadData(1, controller.signal, !initialLoadDone.current);
     return () => controller.abort();
   }, [loadData]);
 
@@ -218,6 +310,16 @@ export const useCensoSections = (
     () => rows.length > 0 && rows.every((r) => r.checked),
     [rows],
   );
+
+  // Índices ya elegidos en alguna sección (incluye las de otras páginas);
+  // cada fila los oculta de su select, excepto el suyo propio.
+  const usedIndexIds = useMemo(() => {
+    return new Set(
+      Object.values(mapRef.current)
+        .filter((item) => item.checked && item.index_id)
+        .map((item) => String(item.index_id)),
+    );
+  }, [mapVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleSectionRow = useCallback(
     (sectionName: string, sectionId: string, checked: boolean) => {
@@ -313,7 +415,15 @@ export const useCensoSections = (
       mapRef.current = {};
       initialLoadDone.current = false;
       setMapVersion(0);
-      await loadData(currentPage, undefined, false);
+      if (debouncedSearch) {
+        // Se limpia la búsqueda: el mapa debe reconstruirse desde show, que es
+        // el único endpoint que devuelve las asignaciones completas;
+        // el efecto de carga recargará al cambiar debouncedSearch.
+        setSearchTerm("");
+        setDebouncedSearch("");
+      } else {
+        await loadData(currentPage, undefined, false);
+      }
       addToast(result.message ?? "Secciones guardadas correctamente.", "success");
       return true;
     } catch (err: unknown) {
@@ -363,6 +473,10 @@ export const useCensoSections = (
     currentPage,
     lastPage,
     paginationLinks,
+    searchTerm,
+    setSearchTerm,
+    searchError,
+    usedIndexIds,
     toggleSectionRow,
     toggleAllSectionRows,
     changeIndex,

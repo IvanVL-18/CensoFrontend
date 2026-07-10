@@ -2,7 +2,6 @@ import {
   useEffect,
   useMemo,
   useState,
-  type ChangeEvent,
   type FormEvent,
 } from "react";
 import { X } from "lucide-react";
@@ -105,16 +104,15 @@ export function UsersExtraModal({
     if (!isValid) return;
     const trim = (v: any) => (v ?? "").toString().trim();
     const payload: UpdateUserDTO = {};
-    if (trim(formData.name) !== trim(User.name)) payload.name = toNull(formData.name);
-    if (trim(formData.lastname) !== trim(User.lastname)) payload.lastname = toNull(formData.lastname);
-    if (trim(formData.phone) !== trim(User.phone)) payload.phone = toNull(formData.phone);
-    if (trim(formData.mobile) !== trim(User.mobile)) payload.mobile = toNull(formData.mobile);
-    if (trim(formData.address) !== trim(User.address)) payload.address = toNull(formData.address);
+    if (trim(formData.name) !== trim(User.name)) payload.name;
+    if (trim(formData.lastname) !== trim(User.lastname)) payload.lastname ;
+    if (trim(formData.phone) !== trim(User.phone)) payload.phone ;
+    if (trim(formData.mobile) !== trim(User.mobile)) payload.mobile ;
+    if (trim(formData.address) !== trim(User.address)) payload.address ;
     if (Object.keys(payload).length === 0) {
-      setFormErrors(["No hay cambios para guardar."]);
-      return;
+       onSave(payload);
     }
-    onSave(payload);
+   
   };
 
   const handleClose = () => {

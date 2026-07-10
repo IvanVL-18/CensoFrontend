@@ -71,7 +71,24 @@ export const useCensoModules = (censoId: string): UseCensoModulesReturn => {
         setLoading(true);
 
         const data = await getCensoModules(censoId, signal);
-        const fetchedIndexes = data.indexes ?? [];
+
+        // El backend descarta de data.indexes los índices ya asignados al censo;
+        // se reincorporan desde selectedModules para poder resolver y mostrar
+        // la asignación actual de cada módulo (el matching es por nombre).
+        const availableIndexes = data.indexes ?? [];
+        const assignedIndexes = (data.selectedModules ?? [])
+          .map((item) => item.index)
+          .filter(
+            (assigned) =>
+              !availableIndexes.some(
+                (idx) =>
+                  idx.name.trim().toLowerCase() ===
+                  assigned.name.trim().toLowerCase(),
+              ),
+          );
+        const fetchedIndexes = [...availableIndexes, ...assignedIndexes].sort(
+          (a, b) => Number(a.name) - Number(b.name),
+        );
 
         setCenso(data.census);
         setIndexes(fetchedIndexes);
