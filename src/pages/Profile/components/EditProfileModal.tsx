@@ -130,6 +130,9 @@ export default function EditProfileModal({ open, onClose }: Props) {
   const [profile,    setProfile]    = useState<FullProfile | null>(null);
   const [draft,      setDraft]      = useState({ name: "", lastname: "", phone: "", mobile: "", address: "" });
   const [draftErrors, setDraftErrors] = useState<Partial<Record<keyof typeof draft, string>>>({});
+  // NUEVO: rastrea qué campos ha tocado el usuario, para no mostrar errores
+  // en campos vacíos que todavía no han sido editados.
+  const [touched, setTouched] = useState<Partial<Record<keyof typeof draft, boolean>>>({});
   const [accountDraft,         setAccountDraft]         = useState({ occupation_id: "", dependency_id: "", census_id: "" });
   const [originalAccountDraft, setOriginalAccountDraft] = useState({ occupation_id: "", dependency_id: "", census_id: "" });
   const [passwordDraft, setPasswordDraft] = useState({ password: "", password_confirmation: "" });
@@ -145,7 +148,14 @@ export default function EditProfileModal({ open, onClose }: Props) {
   const isIncomplete = !profile?.name?.trim() || !profile?.lastname?.trim() || !profile?.address?.trim();
   const isEditable = isIncomplete || canAlwaysEdit;
 
-  // Validación en tiempo real del draft
+  // Helper para actualizar un campo del draft y marcarlo como "touched"
+  const setDraftField = (field: keyof typeof draft, value: string) => {
+    setDraft((s) => ({ ...s, [field]: value }));
+    setTouched((t) => (t[field] ? t : { ...t, [field]: true }));
+  };
+
+  // Validación en tiempo real del draft (el resultado se sigue calculando
+  // completo, pero solo se MUESTRA si el campo fue tocado o se intentó guardar)
   useEffect(() => {
     if (!isEditable) return;
     const result = profileSchema.safeParse(draft);
@@ -166,6 +176,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
     setError(null);
     setSuccess(null);
     setDraftErrors({});
+    setTouched({});
     setLoading(true);
 
     getProfile()
@@ -280,6 +291,10 @@ export default function EditProfileModal({ open, onClose }: Props) {
 
   const handleSave = async () => {
     if (hasDraftErrors) {
+      // Si el usuario intenta guardar con errores pendientes, revelamos los
+      // errores de los campos que SÍ tienen contenido inválido. Los campos
+      // vacíos no muestran mensaje inline (solo bloquean el guardado).
+      setTouched({ name: true, lastname: true, phone: true, mobile: true, address: true });
       setError("Corrige los errores en los datos personales antes de guardar.");
       return;
     }
@@ -444,45 +459,45 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               label="Nombre(s)"
                               icon={UserRound}
                               value={draft.name}
-                              onChange={(v) => setDraft((s) => ({ ...s, name: v }))}
+                              onChange={(v) => setDraftField("name", v)}
                               maxLength={45}
-                              error={draftErrors.name}
+                              error={touched.name && draft.name.trim() ? draftErrors.name : undefined}
                             />
                             <ProfileField
                               label="Apellidos"
                               icon={UserRound}
                               value={draft.lastname}
-                              onChange={(v) => setDraft((s) => ({ ...s, lastname: v }))}
+                              onChange={(v) => setDraftField("lastname", v)}
                               maxLength={45}
-                              error={draftErrors.lastname}
+                              error={touched.lastname && draft.lastname.trim() ? draftErrors.lastname : undefined}
                             />
                             
                             <ProfileField
                               label="Teléfono fijo"
                               icon={Phone}
                               value={draft.phone}
-                              onChange={(v) => setDraft((s) => ({ ...s, phone: v }))}
+                              onChange={(v) => setDraftField("phone", v)}
                               maxLength={15}
                               numbersOnly
-                              error={draftErrors.phone}
+                              error={touched.phone && draft.phone.trim() ? draftErrors.phone : undefined}
                             />
                             <ProfileField
                               label="Teléfono móvil"
                               icon={Smartphone}
                               value={draft.mobile}
-                              onChange={(v) => setDraft((s) => ({ ...s, mobile: v }))}
+                              onChange={(v) => setDraftField("mobile", v)}
                               maxLength={15}
                               numbersOnly
-                              error={draftErrors.mobile}
+                              error={touched.mobile && draft.mobile.trim() ? draftErrors.mobile : undefined}
                             />
                             <ProfileField
                               className="sm:col-span-2"
                               label="Dirección"
                               icon={MapPin}
                               value={draft.address}
-                              onChange={(v) => setDraft((s) => ({ ...s, address: v }))}
+                              onChange={(v) => setDraftField("address", v)}
                               maxLength={200}
-                              error={draftErrors.address}
+                              error={touched.address && draft.address.trim() ? draftErrors.address : undefined}
                             />
                           </>
                         ) : (
