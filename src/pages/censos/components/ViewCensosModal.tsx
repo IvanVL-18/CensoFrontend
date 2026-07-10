@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   X,
   Calendar,
@@ -11,6 +11,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import type { ViewCensoModalProps } from "../Censos.types";
 import { CloneCensoModal } from "./CloneCensoModal";
+import { CensusProgressChart } from "./CensusProgressChart";
+import { getCenso } from "../Censos.service";
 
 const formatDate = (dateString?: string | null) => {
   if (!dateString) return "—";
@@ -49,6 +51,29 @@ export function ViewCensoModal({
   const navigate = useNavigate();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [cloneOpen, setCloneOpen] = useState(false);
+  const [progressData, setProgressData] = useState<{
+    percentage: number;
+    total_expected: number;
+    total_completed: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!isOpen || !Censo?.id) {
+      setProgressData(null);
+      return;
+    }
+    const controller = new AbortController();
+    getCenso(Censo.id, controller.signal)
+      .then((fullCenso) => {
+        setProgressData({
+          percentage: fullCenso.percentage ?? 0,
+          total_expected: fullCenso.total_expected ?? 0,
+          total_completed: fullCenso.total_completed ?? 0,
+        });
+      })
+      .catch(() => setProgressData(null));
+    return () => controller.abort();
+  }, [isOpen, Censo?.id]);
 
   if (!isOpen || !Censo) return null;
 
@@ -56,8 +81,9 @@ export function ViewCensoModal({
     ? new Date(Censo.created_at).getFullYear()
     : "—";
 
-  const totalPreguntas = 0;
-  const porcentaje = 100;
+  const totalExpected = progressData?.total_expected ?? 0;
+  const totalCompleted = progressData?.total_completed ?? 0;
+  const porcentaje = progressData?.percentage ?? 0;
 
   return (
     <>
@@ -122,8 +148,17 @@ export function ViewCensoModal({
           </div>
 
           <div className="overflow-y-auto divide-y divide-gray-200">
-           
-
+            <div className="px-6 py-4">
+              <div className="flex items-center gap-2 text-gray-700 mb-3">
+                <PieChart size={16} className="text-[#691b31]" />
+                <h3 className="text-sm font-semibold">Progreso de captura</h3>
+              </div>
+              <CensusProgressChart
+                percentage={porcentaje}
+                totalExpected={totalExpected}
+                totalCompleted={totalCompleted}
+              />
+            </div>
             {Censo.description && (
               <div className="px-6 py-4">
                 <h3 className="text-sm font-semibold text-gray-700 mb-1">
