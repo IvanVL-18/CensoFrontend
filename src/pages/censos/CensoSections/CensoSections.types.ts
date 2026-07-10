@@ -61,6 +61,13 @@ export interface GetCensoSectionsResponse {
   selectedSections: SelectedSectionItem[];
 }
 
+// La búsqueda devuelve el listado paginado filtrado. selectedSections llega
+// filtrado por el término, así que el front no lo usa (el mapa local manda).
+export interface SearchCensoSectionsResponse {
+  sections: PaginatedSectionsResponse;
+  selectedSections?: SelectedSectionItem[];
+}
+
 export interface CensoSectionRow {
   section_id: string;
   section_name: string;

@@ -1,19 +1,19 @@
 export interface User {
   id: string;
-  name: string | null;
-  lastname: string | null;
-  phone: string | null;
-  mobile: string | null;
-  address: string | null;
+  name: string ;
+  lastname: string ;
+  phone: string ;
+  mobile: string ;
+  address: string ;
   email: string;
-  email_verified_at: string | null;
+  email_verified_at: string ;
   role_id: number;
-  occupation_id: number | null;
-  dependency_id: number | null;
-  institution_id: number | null;
+  occupation_id: number ;
+  dependency_id: number ;
+  institution_id: number ;
   created_at: string;
   updated_at: string;
-  deleted_at: string | null;
+  deleted_at: string ;
   role?: { id: number; name: string };
   occupation?: { id: number; name: string };
   dependency?: { id: number; name: string };
@@ -21,9 +21,9 @@ export interface User {
 }
 
 export interface MetaLink {
-  url: string | null;
+  url: string ;
   label: string;
-  page: number | null;
+  page: number ;
   active: boolean;
 }
 
@@ -41,10 +41,10 @@ export interface Meta {
 export interface PaginatedUsersResponse {
   data: User[];
   links: {
-    first: string | null;
-    last: string | null;
-    prev: string | null;
-    next: string | null;
+    first: string ;
+    last: string ;
+    prev: string ;
+    next: string ;
   };
   meta: Meta;
 }
@@ -64,7 +64,7 @@ export interface BulkErrorModalProps {
 export interface ConfirmModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
-  error: string | null;
+  error: string ;
   title: string;
   message: string;
   confirmButtonText?: string;
@@ -80,18 +80,18 @@ export interface FormErrorsProps {
 export interface UserModalProps {
   isOpen: boolean;
   isSubmitting: boolean;
-  error: string | null;
+  error: string ;
   title: string;
-  initialData?: User | null;
+  initialData?: User ;
   onClose: () => void;
   onSave: (data: CreateUserDTO) => void;
 }
 
 export interface UsersTableProps {
   Users: User[];
-  meta: Meta | null;
+  meta: Meta ;
   loading: boolean;
-  error: string | null;
+  error: string ;
   onSort: (key: keyof User) => void;
   onView: (User: User) => void;
   onEdit?: (User: User) => void;
@@ -102,20 +102,20 @@ export interface UsersTableProps {
 export interface ViewUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  User: User | null;
+  User: User ;
 }
 export interface CreateUserDTO {
-  name?: string | null;
-  lastname?: string | null;
-  phone?: string | null;
-  mobile?: string | null;
-  address?: string | null;
+  name?: string ;
+  lastname?: string ;
+  phone?: string ;
+  mobile?: string ;
+  address?: string ;
   email: string;
   password?: string;
   password_confirmation?: string;
   role_id?: string | number;
-  occupation_id?: string | number | null;
-  dependency_id?: string | number | null;
-  institution_id?: string | number | null;
+  occupation_id?: string | number ;
+  dependency_id?: string | number ;
+  institution_id?: string | number ;
 }
 export type UpdateUserDTO = Partial<CreateUserDTO>;

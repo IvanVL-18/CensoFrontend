@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Eye, ArrowRight, Landmark } from "lucide-react";
 import { useCensoSections } from "./useCensoSections";
 import Pagination from "../../../components/Pagination";
+import { SearchInput } from "../../../components/SearchInput";
 import { ViewSectionModal } from "./ViewSectionsModal";
 import { AssignInstitutionsModal } from "./AssignInstitutionsModal";
 import { ToastProvider, useToast } from "../../../context/ToastContext";
@@ -39,6 +40,9 @@ const CensoSectionsPageContent: React.FC = () => {
     currentPage,
     lastPage,
     paginationLinks,
+    searchTerm,
+    setSearchTerm,
+    searchError,
     toggleSectionRow,
     toggleAllSectionRows,
     changeIndex,
@@ -109,6 +113,14 @@ const CensoSectionsPageContent: React.FC = () => {
           </div>
 
           <div className="p-6">
+            <div className="mb-4 w-full max-w-md rounded-xl border border-gray-200">
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Buscar sección por nombre..."
+              />
+            </div>
+
             <div className="relative overflow-x-auto rounded-xl border border-gray-200">
               {paginating && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70">
@@ -146,9 +158,14 @@ const CensoSectionsPageContent: React.FC = () => {
                     <tr>
                       <td
                         colSpan={5}
-                        className="px-4 py-6 text-center text-sm text-gray-500"
+                        className={`px-4 py-6 text-center text-sm ${
+                          searchError ? "text-red-600" : "text-gray-500"
+                        }`}
                       >
-                        No hay secciones disponibles.
+                        {searchError ??
+                          (searchTerm.trim()
+                            ? "No se encontraron secciones para la búsqueda."
+                            : "No hay secciones disponibles.")}
                       </td>
                     </tr>
                   ) : (

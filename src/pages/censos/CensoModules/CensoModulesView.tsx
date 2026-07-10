@@ -42,6 +42,14 @@ const CensoModulesPageContent: React.FC = () => {
     navigate(-1);
   };
 
+  // Índices ya elegidos en algún módulo; cada fila los oculta de su select,
+  // excepto el suyo propio.
+  const usedIndexIds = new Set(
+    rows
+      .filter((row) => row.checked && row.selected_index_id)
+      .map((row) => row.selected_index_id),
+  );
+
   if (loading) {
     return (
       <div className="w-full p-6">
@@ -140,11 +148,17 @@ const CensoModulesPageContent: React.FC = () => {
                           className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
                         >
                           <option value="">Selecciona un índice</option>
-                          {indexes.map((index) => (
-                            <option key={index.id} value={index.id}>
-                              {index.name}
-                            </option>
-                          ))}
+                          {indexes
+                            .filter(
+                              (index) =>
+                                index.id === row.selected_index_id ||
+                                !usedIndexIds.has(index.id),
+                            )
+                            .map((index) => (
+                              <option key={index.id} value={index.id}>
+                                {index.name}
+                              </option>
+                            ))}
                         </select>
                       </td>
 

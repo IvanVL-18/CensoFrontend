@@ -229,7 +229,7 @@ export const useCensusQuestions = (
     [rows],
   );
 
- 
+
 
   const toggleQuestionRow = useCallback(
     (questionName: string, questionId: string, checked: boolean) => {
