@@ -336,7 +336,6 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               icon={Phone}
                               value={draft.phone}
                               onChange={(v) => setDraftField("phone", v)}
-                              onChange={(v) => setDraftField("phone", v)}
                               maxLength={15}
                               numbersOnly
                               error={draftErrors.phone}
@@ -345,7 +344,6 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               label="Teléfono móvil"
                               icon={Smartphone}
                               value={draft.mobile}
-                              onChange={(v) => setDraftField("mobile", v)}
                               onChange={(v) => setDraftField("mobile", v)}
                               maxLength={15}
                               numbersOnly
@@ -356,7 +354,6 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               label="Dirección"
                               icon={MapPin}
                               value={draft.address}
-                              onChange={(v) => setDraftField("address", v)}
                               onChange={(v) => setDraftField("address", v)}
                               maxLength={200}
                               error={draftErrors.address}
