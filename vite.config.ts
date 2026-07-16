@@ -7,12 +7,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://apis-censo.test',
+        target: 'http://apis-censo.eba-xday2ijd.us-east-1.elasticbeanstalk.com/api',
         changeOrigin: true,
         secure: false,
       },
       '/sanctum': {
-        target: 'http://apis-censo.test',
+        target: 'http://apis-censo.eba-xday2ijd.us-east-1.elasticbeanstalk.com/api/sanctum',
         changeOrigin: true,
         secure: false,
       },
