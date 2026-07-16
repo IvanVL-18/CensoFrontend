@@ -1,15 +1,25 @@
 import {
-  X, UserRound, Phone, Smartphone, MapPin,
-  Mail, Shield, Briefcase, Building2, Landmark,
-  Loader2, ChevronDown, Lock, Eye, EyeOff,
+  X,
+  UserRound,
+  Phone,
+  Smartphone,
+  MapPin,
+  Mail,
+  Shield,
+  Briefcase,
+  Building2,
+  Landmark,
+  Loader2,
+  ChevronDown,
+  Lock,
+  Eye,
+  EyeOff,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { EditProfileModalProps as Props } from "../Profile.types";
 import ProfileField from "./ProfileField";
-import { getProfile, updateProfile, getCatalogList, type FullProfile, type UpdateProfileData } from "../Profile.service";
-import { profileSchema, passwordChangeSchema } from "../schemas/Profile.schema";
-import { useAuthContext } from "../../../context/AuthContext";
+import { useEditProfile, type CatalogItem } from "../hooks/useEditProfile";
+import ErrorOverlay from "../../../components/ErrorOverlay";
 
 function ReadonlyField({
   label,
@@ -32,8 +42,6 @@ function ReadonlyField({
     </div>
   );
 }
-
-type CatalogItem = { id: string | number; name: string };
 
 function SelectField({
   label,
@@ -96,7 +104,12 @@ function PasswordField({
   const id = `pw-${label.toLowerCase().replace(/\s+/g, "-")}`;
   return (
     <div className={className}>
-      <label htmlFor={id} className="block text-xs font-medium text-slate-700 mb-1">{label}</label>
+      <label
+        htmlFor={id}
+        className="block text-xs font-medium text-slate-700 mb-1"
+      >
+        {label}
+      </label>
       <div className="relative">
         <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
           <Lock className="h-4 w-4" />
@@ -123,205 +136,35 @@ function PasswordField({
 }
 
 export default function EditProfileModal({ open, onClose }: Props) {
-  const { user: authUser } = useAuthContext();
-  const canAlwaysEdit = authUser?.role === "Admin" || authUser?.role === "Super Admin";
-  const isSurveyor    = authUser?.role === "Surveyed";
-
-  const [profile,    setProfile]    = useState<FullProfile | null>(null);
-  const [draft,      setDraft]      = useState({ name: "", lastname: "", phone: "", mobile: "", address: "" });
-  const [draftErrors, setDraftErrors] = useState<Partial<Record<keyof typeof draft, string>>>({});
-  const [accountDraft,         setAccountDraft]         = useState({ occupation_id: "", dependency_id: "", census_id: "" });
-  const [originalAccountDraft, setOriginalAccountDraft] = useState({ occupation_id: "", dependency_id: "", census_id: "" });
-  const [passwordDraft, setPasswordDraft] = useState({ password: "", password_confirmation: "" });
-  const [showPassword,  setShowPassword]  = useState(false);
-  const [showConfirm,   setShowConfirm]   = useState(false);
-  const [catalogs, setCatalogs] = useState<{ occupations: CatalogItem[]; dependencies: CatalogItem[]; censuses: CatalogItem[] }>({ occupations: [], dependencies: [], censuses: [] });
-  const [loadingCatalogs, setLoadingCatalogs] = useState(false);
-  const [loading,    setLoading]    = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error,      setError]      = useState<string | null>(null);
-  const [success,    setSuccess]    = useState<string | null>(null);
-
-  const isIncomplete = !profile?.name?.trim() || !profile?.lastname?.trim() || !profile?.address?.trim();
-  const isEditable = isIncomplete || canAlwaysEdit;
-
-  // Validación en tiempo real del draft
-  useEffect(() => {
-    if (!isEditable) return;
-    const result = profileSchema.safeParse(draft);
-    if (result.success) {
-      setDraftErrors({});
-    } else {
-      const errors: Partial<Record<keyof typeof draft, string>> = {};
-      for (const issue of result.error.issues) {
-        const field = issue.path[0] as keyof typeof draft;
-        if (!errors[field]) errors[field] = issue.message;
-      }
-      setDraftErrors(errors);
-    }
-  }, [draft, isEditable]);
-
-  useEffect(() => {
-    if (!open) return;
-    setError(null);
-    setSuccess(null);
-    setDraftErrors({});
-    setLoading(true);
-
-    getProfile()
-      .then((p) => {
-        setProfile(p);
-        setDraft({
-          name:     p.name     ?? "",
-          lastname: p.lastname ?? "",
-          phone:    p.phone    ?? "",
-          mobile:   p.mobile   ?? "",
-          address:  p.address  ?? "",
-        });
-      })
-      .catch((err) => {
-        setError(err?.message ?? "Error al cargar el perfil.");
-      })
-      .finally(() => setLoading(false));
-  }, [open]);
-
-  useEffect(() => {
-    if (!open || !canAlwaysEdit) return;
-    const controller = new AbortController();
-    setLoadingCatalogs(true);
-    Promise.all([
-      getCatalogList("occupations/data/list",  controller.signal),
-      getCatalogList("dependency/data/list",   controller.signal),
-      getCatalogList("censuses/active/content",    controller.signal),
-    ])
-      .then(([
-        occsData,
-        depsData,
-        censusesData,
-      ]: [CatalogItem[], CatalogItem[], CatalogItem[] | { censuses?: CatalogItem[] }]) => {
-        const censusItems = Array.isArray(censusesData)
-          ? censusesData
-          : censusesData?.censuses ?? [];
-        setCatalogs({
-          occupations: occsData,
-          dependencies: depsData,
-          censuses: censusItems,
-        });
-      })
-      .catch(() => {})
-      .finally(() => { if (!controller.signal.aborted) setLoadingCatalogs(false); });
-    return () => controller.abort();
-  }, [open, canAlwaysEdit]);
-
-  useEffect(() => {
-    if (!open || !isSurveyor) return;
-    const controller = new AbortController();
-    getCatalogList("answers/my-censuses", controller.signal)
-      .then((data) => {
-        const items = Array.isArray(data) ? data : (data as any)?.censuses ?? [];
-        setCatalogs((prev) => ({ ...prev, censuses: items }));
-      })
-      .catch(() => {});
-    return () => controller.abort();
-  }, [open, isSurveyor]);
-
-  useEffect(() => {
-    if (!profile || !canAlwaysEdit) return;
-
-    const findId = (
-      catalog: CatalogItem[],
-      relation: { id: string | number; name: string } | null | undefined,
-    ): string => {
-      if (!relation) return "";
-      const byId = catalog.find((item) => String(item.id) === String(relation.id));
-      if (byId) return String(byId.id);
-      const byName = catalog.find(
-        (item) => item.name.trim().toLowerCase() === relation.name.trim().toLowerCase(),
-      );
-      return byName ? String(byName.id) : "";
-    };
-
-    const initial = {
-      occupation_id: findId(catalogs.occupations,  profile.occupation),
-      dependency_id: findId(catalogs.dependencies, profile.dependency),
-      census_id:     findId(catalogs.censuses,     profile.census),
-    };
-    setAccountDraft(initial);
-    setOriginalAccountDraft(initial);
-  }, [profile, catalogs]);
-
-  const passwordValidation = useMemo(() => {
-    const { password, password_confirmation } = passwordDraft;
-    if (!password) return null;
-    const result = passwordChangeSchema.safeParse({ password, password_confirmation });
-    if (result.success) return [];
-    return result.error.issues
-      .filter((e) => !(e.path[0] === "password_confirmation" && !password_confirmation))
-      .map((e) => e.message);
-  }, [passwordDraft]);
-
-  const hasDraftErrors = Object.keys(draftErrors).length > 0;
-
-  const hasChanges = useMemo(() => {
-    const personalChanged =
-      draft.name     !== (profile?.name     ?? "") ||
-      draft.lastname !== (profile?.lastname ?? "") ||
-      draft.phone    !== (profile?.phone    ?? "") ||
-      draft.mobile   !== (profile?.mobile   ?? "") ||
-      draft.address  !== (profile?.address  ?? "");
-    const passwordChanged = !!passwordDraft.password;
-    if (!canAlwaysEdit) return personalChanged || passwordChanged;
-    const accountChanged =
-      accountDraft.occupation_id !== originalAccountDraft.occupation_id ||
-      accountDraft.dependency_id !== originalAccountDraft.dependency_id ||
-      accountDraft.census_id     !== originalAccountDraft.census_id;
-    return personalChanged || accountChanged || passwordChanged;
-  }, [draft, profile, accountDraft, originalAccountDraft, canAlwaysEdit, passwordDraft]);
-
-  const handleSave = async () => {
-    if (hasDraftErrors) {
-      setError("Corrige los errores en los datos personales antes de guardar.");
-      return;
-    }
-    if (passwordDraft.password && passwordValidation && passwordValidation.length > 0) {
-      setError("Corrige los errores en la contraseña antes de guardar.");
-      return;
-    }
-    setSubmitting(true);
-    setError(null);
-    setSuccess(null);
-    try {
-      const payload: UpdateProfileData = {
-        name:     draft.name     || null,
-        lastname: draft.lastname || null,
-        address:  draft.address  || null,
-      };
-      if (draft.phone !== (profile?.phone ?? "")) {
-        payload.phone = draft.phone || null;
-      }
-      if (draft.mobile !== (profile?.mobile ?? "")) {
-        payload.mobile = draft.mobile || null;
-      }
-      if (canAlwaysEdit) {
-        payload.occupation_id  = accountDraft.occupation_id  || null;
-        payload.dependency_id  = accountDraft.dependency_id  || null;
-        payload.census_id      = accountDraft.census_id      || null;
-      }
-      if (passwordDraft.password) {
-        payload.password              = passwordDraft.password;
-        payload.password_confirmation = passwordDraft.password_confirmation;
-      }
-      const res = await updateProfile(payload);
-      setPasswordDraft({ password: "", password_confirmation: "" });
-      setShowPassword(false);
-      setShowConfirm(false);
-      setSuccess(res.message ?? "Perfil actualizado correctamente.");
-    } catch (err: any) {
-      setError(err?.message ?? "Error al guardar los cambios.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const {
+    canAlwaysEdit,
+    isSurveyor,
+    isIncomplete,
+    isEditable,
+    profile,
+    loading,
+    submitting,
+    error,
+    dismissError,
+    success,
+    draft,
+    setDraftField,
+    draftErrors,
+    accountDraft,
+    setAccountDraftField,
+    catalogs,
+    loadingCatalogs,
+    passwordDraft,
+    setPasswordField,
+    passwordValidation,
+    showPassword,
+    toggleShowPassword,
+    showConfirm,
+    toggleShowConfirm,
+    hasChanges,
+    hasDraftErrors,
+    handleSave,
+  } = useEditProfile(open);
 
   if (!open) return null;
 
@@ -337,7 +180,6 @@ export default function EditProfileModal({ open, onClose }: Props) {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="relative flex h-full flex-col">
-
             {/* Header */}
             <div className="shrink-0 border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5">
               <button
@@ -379,25 +221,32 @@ export default function EditProfileModal({ open, onClose }: Props) {
 
               {!loading && profile && (
                 <div className="space-y-4">
-
                   {/* Información de cuenta */}
                   <div>
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                       Información de cuenta
                       {canAlwaysEdit && (
-                        <span className="ml-2 normal-case text-slate-400">(Editable)</span>
+                        <span className="ml-2 normal-case text-slate-400">
+                          (Editable)
+                        </span>
                       )}
                     </p>
                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                         {canAlwaysEdit ? (
                           <>
-                            <ReadonlyField label="Rol" icon={Shield} value={profile?.role?.name ?? ""} />
+                            <ReadonlyField
+                              label="Rol"
+                              icon={Shield}
+                              value={profile?.role?.name ?? ""}
+                            />
                             <SelectField
                               label="Ocupación"
                               icon={Briefcase}
                               value={accountDraft.occupation_id}
-                              onChange={(v) => setAccountDraft((s) => ({ ...s, occupation_id: v }))}
+                              onChange={(v) =>
+                                setAccountDraftField("occupation_id", v)
+                              }
                               options={catalogs.occupations}
                               placeholder="Seleccionar ocupación"
                               disabled={loadingCatalogs || submitting}
@@ -406,19 +255,41 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               label="Dependencia"
                               icon={Building2}
                               value={accountDraft.dependency_id}
-                              onChange={(v) => setAccountDraft((s) => ({ ...s, dependency_id: v }))}
+                              onChange={(v) =>
+                                setAccountDraftField("dependency_id", v)
+                              }
                               options={catalogs.dependencies}
                               placeholder="Seleccionar dependencia"
                               disabled={loadingCatalogs || submitting}
                             />
-                            <ReadonlyField label="Institución" icon={Landmark} value={profile?.institution?.name ?? ""} />
+                            <ReadonlyField
+                              label="Institución"
+                              icon={Landmark}
+                              value={profile?.institution?.name ?? ""}
+                            />
                           </>
                         ) : (
                           <>
-                            <ReadonlyField label="Rol" icon={Shield} value={profile.role?.name ?? ""} />
-                            <ReadonlyField label="Ocupación" icon={Briefcase} value={profile.occupation?.name ?? ""} />
-                            <ReadonlyField label="Dependencia" icon={Building2} value={profile.dependency?.name ?? ""} />
-                            <ReadonlyField label="Institución" icon={Landmark} value={profile.institution?.name ?? ""} />
+                            <ReadonlyField
+                              label="Rol"
+                              icon={Shield}
+                              value={profile.role?.name ?? ""}
+                            />
+                            <ReadonlyField
+                              label="Ocupación"
+                              icon={Briefcase}
+                              value={profile.occupation?.name ?? ""}
+                            />
+                            <ReadonlyField
+                              label="Dependencia"
+                              icon={Building2}
+                              value={profile.dependency?.name ?? ""}
+                            />
+                            <ReadonlyField
+                              label="Institución"
+                              icon={Landmark}
+                              value={profile.institution?.name ?? ""}
+                            />
                           </>
                         )}
                       </div>
@@ -430,10 +301,14 @@ export default function EditProfileModal({ open, onClose }: Props) {
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                       Datos personales
                       {isIncomplete && (
-                        <span className="ml-2 normal-case text-amber-500">(Completa tu información)</span>
+                        <span className="ml-2 normal-case text-amber-500">
+                          (Completa tu información)
+                        </span>
                       )}
                       {!isIncomplete && canAlwaysEdit && (
-                        <span className="ml-2 normal-case text-slate-400">(Editable)</span>
+                        <span className="ml-2 normal-case text-slate-400">
+                          (Editable)
+                        </span>
                       )}
                     </p>
                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
@@ -444,7 +319,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               label="Nombre(s)"
                               icon={UserRound}
                               value={draft.name}
-                              onChange={(v) => setDraft((s) => ({ ...s, name: v }))}
+                              onChange={(v) => setDraftField("name", v)}
                               maxLength={50}
                               error={draftErrors.name}
                             />
@@ -452,16 +327,15 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               label="Apellidos"
                               icon={UserRound}
                               value={draft.lastname}
-                              onChange={(v) => setDraft((s) => ({ ...s, lastname: v }))}
+                              onChange={(v) => setDraftField("lastname", v)}
                               maxLength={50}
                               error={draftErrors.lastname}
                             />
-                            
                             <ProfileField
                               label="Teléfono fijo"
                               icon={Phone}
                               value={draft.phone}
-                              onChange={(v) => setDraft((s) => ({ ...s, phone: v }))}
+                              onChange={(v) => setDraftField("phone", v)}
                               maxLength={15}
                               numbersOnly
                               error={draftErrors.phone}
@@ -470,7 +344,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               label="Teléfono móvil"
                               icon={Smartphone}
                               value={draft.mobile}
-                              onChange={(v) => setDraft((s) => ({ ...s, mobile: v }))}
+                              onChange={(v) => setDraftField("mobile", v)}
                               maxLength={15}
                               numbersOnly
                               error={draftErrors.mobile}
@@ -480,18 +354,39 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               label="Dirección"
                               icon={MapPin}
                               value={draft.address}
-                              onChange={(v) => setDraft((s) => ({ ...s, address: v }))}
+                              onChange={(v) => setDraftField("address", v)}
                               maxLength={200}
                               error={draftErrors.address}
                             />
                           </>
                         ) : (
                           <>
-                            <ReadonlyField label="Nombre(s)" icon={UserRound} value={profile.name ?? ""} />
-                            <ReadonlyField label="Apellidos" icon={UserRound} value={profile.lastname ?? ""} />
-                            <ReadonlyField label="Teléfono fijo" icon={Phone} value={profile.phone ?? ""} />
-                            <ReadonlyField label="Teléfono móvil" icon={Smartphone} value={profile.mobile ?? ""} />
-                            <ReadonlyField className="sm:col-span-2" label="Dirección" icon={MapPin} value={profile.address ?? ""} />
+                            <ReadonlyField
+                              label="Nombre(s)"
+                              icon={UserRound}
+                              value={profile.name ?? ""}
+                            />
+                            <ReadonlyField
+                              label="Apellidos"
+                              icon={UserRound}
+                              value={profile.lastname ?? ""}
+                            />
+                            <ReadonlyField
+                              label="Teléfono fijo"
+                              icon={Phone}
+                              value={profile.phone ?? ""}
+                            />
+                            <ReadonlyField
+                              label="Teléfono móvil"
+                              icon={Smartphone}
+                              value={profile.mobile ?? ""}
+                            />
+                            <ReadonlyField
+                              className="sm:col-span-2"
+                              label="Dirección"
+                              icon={MapPin}
+                              value={profile.address ?? ""}
+                            />
                           </>
                         )}
                       </div>
@@ -502,41 +397,49 @@ export default function EditProfileModal({ open, onClose }: Props) {
                   <div>
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                       Cambiar contraseña
-                      <span className="ml-2 normal-case text-slate-400">(Opcional)</span>
+                      <span className="ml-2 normal-case text-slate-400">
+                        (Opcional)
+                      </span>
                     </p>
                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4 space-y-3">
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                         <PasswordField
                           label="Nueva contraseña"
                           value={passwordDraft.password}
-                          onChange={(v) => setPasswordDraft((s) => ({ ...s, password: v }))}
+                          onChange={(v) => setPasswordField("password", v)}
                           show={showPassword}
-                          onToggleShow={() => setShowPassword((s) => !s)}
+                          onToggleShow={toggleShowPassword}
                         />
                         <PasswordField
                           label="Confirmar contraseña"
                           value={passwordDraft.password_confirmation}
-                          onChange={(v) => setPasswordDraft((s) => ({ ...s, password_confirmation: v }))}
+                          onChange={(v) =>
+                            setPasswordField("password_confirmation", v)
+                          }
                           show={showConfirm}
-                          onToggleShow={() => setShowConfirm((s) => !s)}
+                          onToggleShow={toggleShowConfirm}
                         />
                       </div>
                       {passwordValidation && passwordValidation.length > 0 && (
                         <ul className="space-y-1 pl-1">
                           {passwordValidation.map((err) => (
-                            <li key={err} className="flex items-center gap-1.5 text-xs text-red-600">
+                            <li
+                              key={err}
+                              className="flex items-center gap-1.5 text-xs text-red-600"
+                            >
                               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
                               {err}
                             </li>
                           ))}
                         </ul>
                       )}
-                      {passwordValidation?.length === 0 && passwordDraft.password_confirmation && (
-                        <p className="flex items-center gap-1.5 text-xs text-green-600">
-                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-green-400" />
-                          Contraseña válida
-                        </p>
-                      )}
+                      {passwordValidation?.length === 0 &&
+                        passwordDraft.password_confirmation && (
+                          <p className="flex items-center gap-1.5 text-xs text-green-600">
+                            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-green-400" />
+                            Contraseña válida
+                          </p>
+                        )}
                     </div>
                   </div>
 
@@ -557,33 +460,31 @@ export default function EditProfileModal({ open, onClose }: Props) {
                         <div className="mt-5 max-h-64 overflow-y-auto pr-2">
                           {catalogs.censuses.length > 0 ? (
                             <ol className="relative border-s border-slate-200">
-                              {catalogs.censuses.map((census: any, index: number) => (
-                                <li
-                                  key={index}
-                                  className={`ms-5 ${index !== catalogs.censuses.length - 1 ? "mb-5" : ""}`}
-                                >
-                                  <div className="absolute -start-[7px] mt-1.5 h-3 w-3 rounded-full bg-slate-300 border border-white" />
-                                  <time className="text-xs font-medium text-slate-400">
-                                    {census.init_date ?? "Sin fecha"}
-                                  </time>
-                                  <p className="mt-1 text-sm font-medium text-slate-600">
-                                    {census.name}
-                                  </p>
-                                </li>
-                              ))}
+                              {catalogs.censuses.map(
+                                (census: any, index: number) => (
+                                  <li
+                                    key={index}
+                                    className={`ms-5 ${index !== catalogs.censuses.length - 1 ? "mb-5" : ""}`}
+                                  >
+                                    <div className="absolute -start-[7px] mt-1.5 h-3 w-3 rounded-full bg-slate-300 border border-white" />
+                                    <time className="text-xs font-medium text-slate-400">
+                                      {census.init_date ?? "Sin fecha"}
+                                    </time>
+                                    <p className="mt-1 text-sm font-medium text-slate-600">
+                                      {census.name}
+                                    </p>
+                                  </li>
+                                ),
+                              )}
                             </ol>
                           ) : (
-                            <p className="text-sm text-slate-500">No hay censos asignados.</p>
+                            <p className="text-sm text-slate-500">
+                              No hay censos asignados.
+                            </p>
                           )}
                         </div>
                       </details>
                     </div>
-                  )}
-
-                  {error && (
-                    <p className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
-                      {error}
-                    </p>
                   )}
 
                   {success && (
@@ -617,10 +518,11 @@ export default function EditProfileModal({ open, onClose }: Props) {
               </div>
             </div>
 
+            <ErrorOverlay message={error} onDismiss={dismissError} />
           </div>
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
