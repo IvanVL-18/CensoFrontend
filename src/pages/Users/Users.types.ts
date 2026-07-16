@@ -7,6 +7,7 @@ export interface User {
   address: string | null;
   email: string;
   email_verified_at: string | null;
+  profile_completed: boolean;
   role_id: number;
   occupation_id: number | null;
   dependency_id: number | null;
