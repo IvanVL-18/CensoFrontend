@@ -3,20 +3,20 @@ import react from '@vitejs/plugin-react-swc'
 import tailwind from '@tailwindcss/vite'
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), 'VITE_')
-  const apiBaseUrl = env.VITE_API_BASE_URL
+  const env = loadEnv(mode, process.cwd(), '')
+  const proxyTarget = env.API_PROXY_TARGET || 'http://apis-censo.test'
 
   return {
     plugins: [react(), tailwind()],
     server: {
       proxy: {
         '/api': {
-          target: apiBaseUrl,
+          target: proxyTarget,
           changeOrigin: true,
           secure: false,
         },
         '/sanctum': {
-          target: `${apiBaseUrl}/sanctum`,
+          target: proxyTarget,
           changeOrigin: true,
           secure: false,
         },
