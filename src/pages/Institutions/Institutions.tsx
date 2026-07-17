@@ -187,9 +187,6 @@ function InstitutionsPageContent() {
         isOpen={isMapModalOpen}
         onClose={handleMapModalClose}
         institution={mapInstitution}
-        editable
-        pendingCoords={pendingCoords}
-        onPickLocation={onPickLocation}
       />
 
       <EditLocationModal
