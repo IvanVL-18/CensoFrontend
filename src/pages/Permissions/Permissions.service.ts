@@ -24,7 +24,7 @@ export const getPermissions = async (
     `/permissions/search`,
     {
       status: filter,
-      search: search || undefined,
+      content: search || undefined,
       order: direction,
     },
     {

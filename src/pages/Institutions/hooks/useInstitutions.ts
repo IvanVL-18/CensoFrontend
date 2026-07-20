@@ -138,7 +138,7 @@ export function useInstitutions() {
 
   useEffect(() => {
     setLoading(true);
-    getInstitutions(filter, "", page)
+    getInstitutions(filter, searchTerm, page)
       .then((response) => {
         setInstitutions(response.data);
         setLinks(response.links);
@@ -152,7 +152,7 @@ export function useInstitutions() {
       .finally(() => {
         setLoading(false);
       });
-  }, [filter, page, reloadToken]);
+  }, [filter, page, reloadToken, searchTerm]);
 
   const handleFilterChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
@@ -192,14 +192,10 @@ export function useInstitutions() {
     });
   }, []);
 
-  const filteredInstitutions = useMemo(() => {
-    return institutions.filter((institution) =>
-      institution.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [institutions, searchTerm]);
+  
 
   const sortedInstitutions = useMemo(() => {
-    let sortableItems = [...filteredInstitutions];
+    let sortableItems = [...institutions];
     sortableItems.sort((a, b) => {
       const valA = a[sortConfig.key];
       const valB = b[sortConfig.key];
@@ -214,7 +210,7 @@ export function useInstitutions() {
       return 0;
     });
     return sortableItems;
-  }, [filteredInstitutions, sortConfig]);
+  }, [institutions, sortConfig]);
 
   const handleAddClick = useCallback(() => {
     setEditingInstitution(null);

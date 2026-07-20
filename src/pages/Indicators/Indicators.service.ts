@@ -23,7 +23,7 @@ export const getIndicators = async (
     `/indicators/search`,
     {
       status: filter,
-      search: search || undefined,
+      content: search || undefined,
       order: direction,
     },
     {

@@ -22,7 +22,7 @@ export const getRoles = async (
     `/roles/search`,
     {
       status: filter,
-      search: search || undefined,
+      content: search || undefined,
       order: direction,
     },
     {

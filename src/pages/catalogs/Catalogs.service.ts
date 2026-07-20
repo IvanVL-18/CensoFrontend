@@ -23,7 +23,7 @@ export const getCatalogs = async (
     `/catalogs/search`,
     {
       status: filter,
-      search: search || undefined,
+      content: search || undefined,
       order: direction,
     },
     {
@@ -57,7 +57,7 @@ export const getModules = async (
     `/modules/search`,
     {
       status: filter,
-      search: search || undefined,
+      content: search || undefined,
       order: direction,
     },
     {

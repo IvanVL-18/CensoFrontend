@@ -30,7 +30,7 @@ export const searchCensusQuestions = async (
     `/census-question/search`,
     {
       census_section_id: censusSectionId,
-      search,
+      content: search,
     },
     {
       signal,

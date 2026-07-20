@@ -23,7 +23,7 @@ export const getInstitutions = async (
     `/institutions/search`,
     {
       status: filter,
-      search: search || undefined,
+      content: search || undefined,
       order: direction,
     },
     {
@@ -79,7 +79,7 @@ export const forceDeleteInstitution = async (
 export const importInstitutions = async (
   formData: FormData,
 ): Promise<{ message: string }> => {
-  const response = await api.post("/modules/import", formData, {
+  const response = await api.post("/institutions/import", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data;
