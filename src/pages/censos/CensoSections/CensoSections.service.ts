@@ -37,7 +37,7 @@ export const searchCensoSections = async (
     `/census-section/search`,
     {
       census_module_id: censusModuleId,
-      content: search,
+      search: search,
     },
     {
       signal,

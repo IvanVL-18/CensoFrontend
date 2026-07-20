@@ -24,7 +24,7 @@ export const getOccupations = async (
     `/occupations/search`,
     {
       status: filter,
-      content: search || undefined,
+      search: search || undefined,
       order: direction,
     },
     {

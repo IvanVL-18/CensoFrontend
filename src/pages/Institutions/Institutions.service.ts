@@ -23,7 +23,7 @@ export const getInstitutions = async (
     `/institutions/search`,
     {
       status: filter,
-      content: search || undefined,
+      search: search || undefined,
       order: direction,
     },
     {

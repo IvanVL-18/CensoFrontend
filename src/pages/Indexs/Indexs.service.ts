@@ -24,7 +24,7 @@ export const getIndexs = async (
     `/index/search`,
     {
       status: filter,
-      content: search || undefined,
+      search: search || undefined,
       order: direction,
     },
     {

@@ -24,7 +24,7 @@ export const getQuestions = async (
     `/questions/search`,
     {
       status: filter,
-      content: search || undefined,
+      search: search || undefined,
       order: direction,
     },
     {
