@@ -1,7 +1,6 @@
 import { useInstitutions } from "../Institutions/hooks/useInstitutions";
 import { useAuthContext } from "../../context/AuthContext";
-import { InstitutionsToolbar } from "../Institutions/components/InstitutionsToolbar"
-;
+import { InstitutionsToolbar } from "../Institutions/components/InstitutionsToolbar";
 import { InstitutionsTable } from "../Institutions/components/InstitutionsTable";
 import Pagination from "../../components/Pagination";
 import { InstitutionModal } from "../Institutions/components/InstitutionsModal";
@@ -10,10 +9,10 @@ import { ViewInstitutionModal } from "../Institutions/components/ViewInstitution
 import { MapModal } from "../Institutions/components/MapModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
-import  { EditLocationModal } from "../Institutions/EditLocationModal";
+import { EditLocationModal } from "../Institutions/EditLocationModal";
 
 function ToastContainer() {
-  const { toasts, removeToast } = useToast(); 
+  const { toasts, removeToast } = useToast();
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
@@ -29,12 +28,12 @@ function ToastContainer() {
   );
 }
 
-
 function InstitutionsPageContent() {
   const { hasPermission } = useAuthContext();
   const {
     loading,
     error,
+    isEditLoading,
     sortedInstitutions,
     meta: paginationMeta,
     links,
@@ -75,7 +74,6 @@ function InstitutionsPageContent() {
     onPickLocation,
   } = useInstitutions();
 
- 
   const modalTitle = editingInstitution
     ? "Editar Institución"
     : "Agregar Institución";
@@ -108,10 +106,8 @@ function InstitutionsPageContent() {
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
-
       <ToastContainer />
 
-     
       <InstitutionsToolbar
         filter={filter}
         searchTerm={searchTerm}
@@ -130,12 +126,18 @@ function InstitutionsPageContent() {
           onSort={handleSort}
           onShowMap={onShowMap}
           onView={onView}
-          onEdit={hasPermission("institutions.edit") ? onEdit : undefined}
+          onEdit={
+            hasPermission("institutions.edit") && !isEditLoading
+              ? onEdit
+              : undefined
+          }
           onBan={hasPermission("institutions.deactivate") ? onBan : undefined}
-          onRestore={hasPermission("institutions.restore") ? onRestore : undefined}
+          onRestore={
+            hasPermission("institutions.restore") ? onRestore : undefined
+          }
           onDelete={hasPermission("institutions.delete") ? onDelete : undefined}
         />
-  
+
         <div className="mt-4 flex justify-center">
           <Pagination
             meta={paginationMeta}
@@ -147,7 +149,6 @@ function InstitutionsPageContent() {
         </div>
       </div>
 
-      
       <InstitutionModal
         isOpen={isModalOpen}
         isSubmitting={isSubmitting}
@@ -159,7 +160,7 @@ function InstitutionsPageContent() {
         initialType={initialType}
         isEditMode={!!editingInstitution}
         onEditLocation={onEditLocation}
-        pendingCoords={pendingCoords} 
+        pendingCoords={pendingCoords}
         onClose={handleModalClose}
         onSave={handleModalSave}
       />
@@ -182,15 +183,11 @@ function InstitutionsPageContent() {
         onClose={handleViewModalClose}
       />
 
-<MapModal
-  isOpen={isMapModalOpen}
-  onClose={handleMapModalClose}
-  institution={mapInstitution}
-  editable
-  pendingCoords={pendingCoords}
-  onPickLocation={onPickLocation}
-/>
-
+      <MapModal
+        isOpen={isMapModalOpen}
+        onClose={handleMapModalClose}
+        institution={mapInstitution}
+      />
 
       <EditLocationModal
         isOpen={isEditMapOpen}
@@ -210,7 +207,6 @@ function InstitutionsPageContent() {
     </div>
   );
 }
-
 
 export default function Institutions() {
   return (

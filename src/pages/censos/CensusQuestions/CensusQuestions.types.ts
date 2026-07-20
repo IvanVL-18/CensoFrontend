@@ -62,6 +62,11 @@ export interface GetCensusQuestionsResponse {
   selectedQuestions: SelectedQuestionItem[];
 }
 
+export interface SearchCensusQuestionsResponse {
+  questions: PaginatedQuestionsResponse;
+  selectedQuestions: SelectedQuestionItem[];
+}
+
 export interface CensusQuestionRow {
   question_id: string;
   question_name: string;

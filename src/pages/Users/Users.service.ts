@@ -13,19 +13,27 @@ type UserId = string | number;
 const enc = (v: string | number) => encodeURIComponent(String(v));
 
 export const getUsers = async (
-  status: UserFilter = "all",
+  filter: UserFilter = "all",
   search: string = "",
-  order: "asc" | "desc" = "asc",
+  page: number = 1,
+  _sortBy: string = "id",
+  direction: "asc" | "desc" = "asc",
   signal?: AbortSignal,
 ): Promise<PaginatedUsersResponse> => {
   const response = await api.post<PaginatedUsersResponse>(
-    "/users/search",
-    { status, search, order },
-    { signal },
+    `/users/search`,
+    {
+      status: filter,
+      search: search || undefined,
+      order: direction,
+    },
+    {
+      params: { page },
+      signal,
+    },
   );
   return response.data;
 };
-
 export const getUser = async (
   id: UserId,
   signal?: AbortSignal,

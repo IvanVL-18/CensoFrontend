@@ -89,7 +89,14 @@ export function useUsersData() {
     const controller = new AbortController();
     setLoading(true);
 
-    getUsers(filter, searchTerm, sortConfig.direction, controller.signal)
+    getUsers(
+      filter,
+      searchTerm,
+      page,
+      sortConfig.key,
+      sortConfig.direction,
+      controller.signal,
+    )
       .then((data) => {
         setUsers(data.data);
         setLinks(data.links);
@@ -144,6 +151,7 @@ export function useUsersData() {
 
   const handleSearch = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    setPage(1);
   }, []);
 
   const handlePageChange = useCallback((url: string | null) => {

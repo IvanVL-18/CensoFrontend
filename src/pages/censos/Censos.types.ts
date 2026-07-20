@@ -9,6 +9,9 @@ export interface Censo {
   updated_at: string;
   deleted_at: string | null;
   status?: string;
+  percentage?: number;
+  total_expected?: number;
+  total_completed?: number;
 }
 
 export interface CreateCensoDTO {

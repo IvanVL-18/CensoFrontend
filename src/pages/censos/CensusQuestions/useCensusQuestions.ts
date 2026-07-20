@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCensusQuestions,
+  searchCensusQuestions,
   storeCensusQuestions,
   updateCensusQuestions,
 } from "./CensusQuestions.service";
@@ -27,6 +28,18 @@ type SelectedQuestionState = {
 
 type SelectedQuestionsMap = Record<string, SelectedQuestionState>;
 
+// Ordena índices por segmentos numéricos ("1.1.10" va después de "1.1.9").
+const compareIndexNames = (a: { name: string }, b: { name: string }) => {
+  const partsA = a.name.split(".").map(Number);
+  const partsB = b.name.split(".").map(Number);
+  const len = Math.max(partsA.length, partsB.length);
+  for (let i = 0; i < len; i++) {
+    const diff = (partsA[i] ?? -1) - (partsB[i] ?? -1);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+};
+
 
 
 type UseCensusQuestionsReturn = {
@@ -42,6 +55,10 @@ type UseCensusQuestionsReturn = {
   currentPage: number;
   lastPage: number;
   paginationLinks: PaginationLinksObj | null;
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
+  searchError: string | null;
+  usedIndexIds: Set<string>;
   toggleQuestionRow: (questionName: string, questionId: string, checked: boolean) => void;
   toggleAllQuestionRows: (checked: boolean) => void;
   changeIndex: (questionName: string, questionId: string, indexId: string) => void;
@@ -69,6 +86,20 @@ export const useCensusQuestions = (
   const [lastPage, setLastPage] = useState(1);
   const [paginationLinks, setPaginationLinks] =
     useState<PaginationLinksObj | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  // Error de validación del backend al buscar; se muestra en la tabla.
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  // Debounce: espera 500ms después de dejar de escribir para buscar.
+  // El backend exige mínimo 2 caracteres; con menos se muestra la lista completa.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmed = searchTerm.trim();
+      setDebouncedSearch(trimmed.length >= 2 ? trimmed : "");
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const mapRef = useRef<SelectedQuestionsMap>({});
   const [mapVersion, setMapVersion] = useState(0);
@@ -124,14 +155,56 @@ export const useCensusQuestions = (
     async (page: number, signal?: AbortSignal, isInitial = false) => {
       try {
         isInitial ? setLoading(true) : setPaginating(true);
+        setSearchError(null);
+
+        if (debouncedSearch) {
+          // Modo búsqueda: el backend solo devuelve las preguntas filtradas.
+          // Sección, índices y mapa de selecciones se conservan tal cual.
+          const data = await searchCensusQuestions(
+            censusSectionId,
+            debouncedSearch,
+            page,
+            signal,
+          );
+          if (signal?.aborted) return;
+
+          setCurrentPage(data.questions?.current_page ?? 1);
+          setLastPage(data.questions?.last_page ?? 1);
+          setPaginationLinks({
+            first: data.questions?.first_page_url ?? null,
+            last: data.questions?.last_page_url ?? null,
+            prev: data.questions?.prev_page_url ?? null,
+            next: data.questions?.next_page_url ?? null,
+          });
+          setQuestions(data.questions?.data ?? []);
+          return;
+        }
 
         const data = await getCensusQuestions(censusSectionId, page, signal);
 
         if (signal?.aborted) return;
 
-        const fetchedIndexes = data.indexes ?? [];
         const fetchedQuestions = data.questions?.data ?? [];
         const fetchedSelected = data.selectedQuestions ?? [];
+
+        // El backend descarta de data.indexes los índices ya asignados a la
+        // sección; se reincorporan desde selectedQuestions para poder resolver
+        // y mostrar la asignación actual de cada pregunta (matching por nombre).
+        const availableIndexes = data.indexes ?? [];
+        const assignedIndexes = fetchedSelected
+          .map((item) => item.index)
+          .filter(
+            (assigned) =>
+              assigned?.name &&
+              !availableIndexes.some(
+                (idx) =>
+                  idx.name.trim().toLowerCase() ===
+                  assigned.name.trim().toLowerCase(),
+              ),
+          );
+        const fetchedIndexes = [...availableIndexes, ...assignedIndexes].sort(
+          compareIndexNames,
+        );
 
         const freshMap = buildInitialMap(fetchedSelected, fetchedIndexes);
 
@@ -179,24 +252,43 @@ export const useCensusQuestions = (
       } catch (err: unknown) {
         const e = err as {
           name?: string;
-          response?: { data?: { message?: string } };
+          response?: {
+            data?: { message?: string; errors?: Record<string, string[]> };
+          };
         };
         if (e?.name === "CanceledError" || e?.name === "AbortError") return;
-        addToast(
-          e?.response?.data?.message ?? "No se pudo cargar la información.",
-          "danger",
-        );
+
+        const apiError = e?.response?.data;
+        const firstValidationError = apiError?.errors
+          ? Object.values(apiError.errors)[0]?.[0]
+          : undefined;
+
+        if (debouncedSearch) {
+          // Error al buscar: se muestra en el área de la tabla, no como toast.
+          setSearchError(
+            firstValidationError ??
+              apiError?.message ??
+              "No se pudo realizar la búsqueda.",
+          );
+          setQuestions([]);
+        } else {
+          addToast(
+            apiError?.message ?? "No se pudo cargar la información.",
+            "danger",
+          );
+        }
       } finally {
         setLoading(false);
         setPaginating(false);
       }
     },
-    [censusSectionId, buildInitialMap],
+    [censusSectionId, buildInitialMap, debouncedSearch],
   );
 
+  // Carga inicial y recarga (a página 1) cuando cambia la búsqueda con debounce
   useEffect(() => {
     const controller = new AbortController();
-    void loadData(1, controller.signal, true);
+    void loadData(1, controller.signal, !initialLoadDone.current);
     return () => controller.abort();
   }, [loadData]);
 
@@ -229,7 +321,15 @@ export const useCensusQuestions = (
     [rows],
   );
 
- 
+  // Índices ya elegidos en alguna pregunta (incluye las de otras páginas);
+  // cada fila los oculta de su select, excepto el suyo propio.
+  const usedIndexIds = useMemo(() => {
+    return new Set(
+      Object.values(mapRef.current)
+        .filter((item) => item.checked && item.index_id)
+        .map((item) => String(item.index_id)),
+    );
+  }, [mapVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleQuestionRow = useCallback(
     (questionName: string, questionId: string, checked: boolean) => {
@@ -327,7 +427,15 @@ export const useCensusQuestions = (
       mapRef.current = {};
       initialLoadDone.current = false;
       setMapVersion(0);
-      await loadData(currentPage, undefined, false);
+      if (debouncedSearch) {
+        // Se limpia la búsqueda: el mapa debe reconstruirse desde show, que es
+        // el único endpoint que devuelve las asignaciones completas;
+        // el efecto de carga recargará al cambiar debouncedSearch.
+        setSearchTerm("");
+        setDebouncedSearch("");
+      } else {
+        await loadData(currentPage, undefined, false);
+      }
       addToast(result.message ?? "Preguntas guardadas correctamente.", "success");
       return true;
     } catch (err: unknown) {
@@ -350,7 +458,7 @@ export const useCensusQuestions = (
     } finally {
       setSaving(false);
     }
-  }, [censusSectionId, hasAssignments, validItems, loadData, currentPage]);
+  }, [censusSectionId, hasAssignments, validItems, loadData, currentPage, debouncedSearch]);
 
   const reload = useCallback(async () => {
     await loadData(currentPage, undefined, false);
@@ -377,6 +485,10 @@ export const useCensusQuestions = (
     currentPage,
     lastPage,
     paginationLinks,
+    searchTerm,
+    setSearchTerm,
+    searchError,
+    usedIndexIds,
     toggleQuestionRow,
     toggleAllQuestionRows,
     changeIndex,
