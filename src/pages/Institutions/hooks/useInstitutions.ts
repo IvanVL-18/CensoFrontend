@@ -101,6 +101,8 @@ export function useInstitutions() {
 
   const onShowMap = useCallback(
     (institution: Institution, editable: boolean = false) => {
+      setPendingCoords(null);
+      setPendingAddressData(null);
       setMapInstitution(institution);
       setMapEditable(editable);
       setIsMapModalOpen(true);
