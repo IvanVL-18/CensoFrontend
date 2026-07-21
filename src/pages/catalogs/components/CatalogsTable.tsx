@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import type { CatalogsTableProps } from "../Catalogs.types";
 import Loading from "../../../components/Loading";
-
+import { withEllipsis } from "../../../lib/text";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -43,7 +43,7 @@ export function CatalogsTable({
 }: CatalogsTableProps) {
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
+      <table className="min-w-full divide-y divide-gray-200 table-fixed">
         <thead className="bg-gray-50">
           <tr>
             {/* 1. Columna "No." */}
@@ -123,8 +123,13 @@ export function CatalogsTable({
                 </td>
 
                 {/* Celda "Nombre" */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {Catalog.name}
+                <td
+                  className="px-6 py-4 text-sm font-medium text-gray-900 max-w-0"
+                  title={Catalog.name ?? undefined}
+                >
+                  <span className="block truncate">
+                    {withEllipsis(Catalog.name, 60)}
+                  </span>
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}

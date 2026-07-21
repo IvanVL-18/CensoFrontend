@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import type { InstitutionTableProps } from "../institutions.types"; 
 import Loading from "../../../components/Loading";
+import { withEllipsis } from "../../../lib/text";
 
 
 
@@ -51,10 +52,9 @@ export function InstitutionsTable({
 }: InstitutionTableProps) {
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
+      <table className="min-w-full divide-y divide-gray-200 table-fixed">
         <thead className="bg-gray-50">
           <tr>
-            
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
               <button
                 onClick={() => onSort("id")} 
@@ -65,7 +65,6 @@ export function InstitutionsTable({
               </button>
             </th>
 
-            
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
               <button
                 onClick={() => onSort("name")} 
@@ -76,19 +75,16 @@ export function InstitutionsTable({
               </button>
             </th>
 
-            
             <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
               Ubicación
             </th>
 
-            
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
               Opciones
             </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          
           {loading && (
             <tr>
               <td colSpan={5} className="text-center p-6 text-gray-500">
@@ -108,7 +104,6 @@ export function InstitutionsTable({
             </tr>
           )}
 
-          
           {!loading && !error && institutions.length === 0 && (
             <tr>
               <td colSpan={5} className="text-center p-6 text-gray-500">
@@ -117,22 +112,23 @@ export function InstitutionsTable({
             </tr>
           )}
 
-      
           {!loading &&
             !error &&
             institutions.map((institution, index) => (
               <tr key={institution.id} className="hover:bg-gray-50">
-           
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                   {meta ? meta.from + index : institution.id}
                 </td>
 
-           
-                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {institution.name}
+                <td
+                  className="px-4 py-4 text-sm font-medium text-gray-900 max-w-0"
+                  title={institution.name ?? undefined}
+                >
+                  <span className="block truncate">
+                    {withEllipsis(institution.name, 60)}
+                  </span>
                 </td>
 
-              
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                   <button
                     title="Ver en Mapa"
@@ -143,11 +139,9 @@ export function InstitutionsTable({
                   </button>
                 </td>
 
-              
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
                   {!institution.deleted_at ? (
                     <>
-                    
                       <button
                         title="Ver Institución"
                         onClick={() => onView(institution)} 
@@ -156,7 +150,6 @@ export function InstitutionsTable({
                         <IconView />
                       </button>
 
-                      
                       {onEdit && (
                         <button
                           title="Editar Institución"
@@ -179,7 +172,6 @@ export function InstitutionsTable({
                     </>
                   ) : (
                     <>
-              
                       <button
                         title="Ver Institución"
                         onClick={() => onView(institution)} 
