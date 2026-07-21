@@ -30,7 +30,7 @@ type ToastState = {
 } | null;
 
 export function useEditProfile(open: boolean) {
-  const { user: authUser } = useAuthContext();
+  const { user: authUser, markProfileComplete } = useAuthContext();
   const canAlwaysEdit =
     authUser?.role === "Admin" || authUser?.role === "Super Admin";
   const isSurveyor = authUser?.role === "Surveyed";
@@ -318,12 +318,30 @@ export function useEditProfile(open: boolean) {
         message: res.message ?? "Perfil actualizado correctamente.",
         type: "success",
       });
+
+      const nowComplete =
+        draft.name.trim() !== "" &&
+        draft.lastname.trim() !== "" &&
+        draft.address.trim() !== "";
+      if (isIncomplete && nowComplete) {
+        markProfileComplete();
+      }
+
       if (canAlwaysEdit) {
         setOriginalAccountDraft(accountDraft);
       }
     } catch (err: any) {
+      let msg = err?.message ?? "Error al guardar los cambios.";
+      if (err?.status === 422 && err?.data?.errors) {
+        const details = Object.values(
+          err.data.errors as Record<string, string[]>,
+        )
+          .flat()
+          .join(" ");
+        if (details) msg = details;
+      }
       setToast({
-        message: err?.message ?? "Error al guardar los cambios.",
+        message: msg,
         type: "danger",
       });
     } finally {
