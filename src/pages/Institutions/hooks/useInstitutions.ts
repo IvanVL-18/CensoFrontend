@@ -161,7 +161,16 @@ export function useInstitutions() {
       })
       .catch((err) => {
         console.error(err);
-        setError(`Error al cargar las instituciones: ${err.message}`);
+        const validationErrors = err.response?.data?.errors;
+        if (validationErrors) {
+          const firstError = Object.values(validationErrors)[0] as string[];
+          setError(firstError[0]);
+        } else {
+          setError(
+            err.response?.data?.message ??
+              `Error al cargar las instituciones: ${err.message}`,
+          );
+        }
       })
       .finally(() => {
         setLoading(false);

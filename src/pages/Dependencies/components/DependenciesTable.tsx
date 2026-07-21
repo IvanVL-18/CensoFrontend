@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import type { DependenciesTableProps } from "../Dependencies.types";
 import Loading from "../../../components/Loading";
+import { ValidationError } from "../../../components/ValidationError";
 
 
 const defaultProps = {
@@ -84,11 +85,8 @@ export function DependenciesTable({
 
           {error && (
             <tr>
-              <td
-                colSpan={3}
-                className="text-center p-6 text-red-600 font-semibold"
-              >
-                {error}
+              <td colSpan={3} className="p-4">
+                <ValidationError message={error} />
               </td>
             </tr>
           )}
