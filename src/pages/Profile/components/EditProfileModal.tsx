@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   X,
   UserRound,
@@ -166,7 +167,24 @@ export default function EditProfileModal({ open, onClose }: Props) {
     handleSave,
   } = useEditProfile(open);
 
+  // Bloqueo local para evitar múltiples clics antes de que "submitting"
+  // se actualice (por ejemplo, si hay validaciones async previas a la petición)
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveClick = async () => {
+    if (isSaving || submitting) return;
+    setIsSaving(true);
+    try {
+      await handleSave();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (!open) return null;
+
+  const saveDisabled =
+    submitting || isSaving || !hasChanges || hasDraftErrors;
 
   return createPortal(
     <div className="fixed inset-0 z-[9999]">
@@ -185,7 +203,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
               <button
                 onClick={onClose}
                 aria-label="Cerrar"
-                disabled={submitting}
+                disabled={submitting || isSaving}
                 className="absolute right-3 top-3 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 sm:right-4 sm:top-4 disabled:opacity-50"
               >
                 <X className="h-5 w-5" />
@@ -249,7 +267,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               }
                               options={catalogs.occupations}
                               placeholder="Seleccionar ocupación"
-                              disabled={loadingCatalogs || submitting}
+                              disabled={loadingCatalogs || submitting || isSaving}
                             />
                             <SelectField
                               label="Dependencia"
@@ -260,7 +278,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
                               }
                               options={catalogs.dependencies}
                               placeholder="Seleccionar dependencia"
-                              disabled={loadingCatalogs || submitting}
+                              disabled={loadingCatalogs || submitting || isSaving}
                             />
                             <ReadonlyField
                               label="Institución"
@@ -502,18 +520,18 @@ export default function EditProfileModal({ open, onClose }: Props) {
                 <button
                   type="button"
                   onClick={onClose}
-                  disabled={submitting}
+                  disabled={submitting || isSaving}
                   className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 sm:w-auto"
                 >
                   Cerrar
                 </button>
                 <button
                   type="button"
-                  onClick={handleSave}
-                  disabled={submitting || !hasChanges || hasDraftErrors}
+                  onClick={handleSaveClick}
+                  disabled={saveDisabled}
                   className="w-full rounded-lg bg-[var(--pantone-7421)] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-95 active:opacity-90 disabled:opacity-60 sm:w-auto"
                 >
-                  {submitting ? "Guardando..." : "Guardar cambios"}
+                  {submitting || isSaving ? "Guardando..." : "Guardar cambios"}
                 </button>
               </div>
             </div>

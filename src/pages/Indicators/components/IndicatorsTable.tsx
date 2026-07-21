@@ -1,3 +1,4 @@
+import { withEllipsis } from "../../../lib/text";
 import {
   ArrowUpDown,
   Eye,
@@ -42,7 +43,7 @@ export function IndicatorsTable({
 }: IndicatorsTableProps) {
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
+      <table className="min-w-full divide-y divide-gray-200 table-fixed">
         <thead className="bg-gray-50">
           <tr>
             {/* 1. Columna "No." */}
@@ -122,8 +123,13 @@ export function IndicatorsTable({
                 </td>
 
                 {/* Celda "Nombre" */}
-                <td className="px-6 py-4 text-sm font-medium text-gray-900 max-w-xs truncate" title={Indicator.name}>
-                  {Indicator.name}
+                <td
+                  className="px-6 py-4 text-sm font-medium text-gray-900 max-w-0"
+                  title={Indicator.name ?? undefined}
+                >
+                  <span className="block truncate">
+                    {withEllipsis(Indicator.name, 60)}
+                  </span>
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}

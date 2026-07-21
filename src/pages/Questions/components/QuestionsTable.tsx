@@ -1,3 +1,4 @@
+import { withEllipsis } from "../../../lib/text";
 import {
   ArrowUpDown,
   Eye,
@@ -49,7 +50,7 @@ export function QuestionsTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
+      <table className="min-w-full divide-y divide-gray-200 table-fixed">
         <thead className="bg-gray-50">
           <tr>
             {/* 1. Columna "No." */}
@@ -67,7 +68,7 @@ export function QuestionsTable({
               </button>
             </th>
 
-            {/* 2. Columna "Nombre" */}
+            {/* 2. Columna "Pregunta" */}
             <th className="px-6 py-3 text-left w-full">
               <button
                 onClick={() => onSort("name")}
@@ -77,12 +78,17 @@ export function QuestionsTable({
                   hover:text-opacity-75 transition-colors
                 "
               >
-                <span>Nombre</span>
+                <span>Pregunta</span>
                 <IconSort size={16} strokeWidth={2.5} />
               </button>
             </th>
 
-            {/* 3. Columna "Opciones" */}
+            {/* 3. Columna "Instrucciones" */}
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64 hidden md:table-cell">
+              Instrucciones
+            </th>
+
+            {/* 4. Columna "Opciones" */}
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
               Opciones
             </th>
@@ -92,7 +98,7 @@ export function QuestionsTable({
           {/* --- Estados de Carga y Error --- */}
           {loading && (
             <tr>
-              <td colSpan={3} className="text-center p-6 text-gray-500">
+              <td colSpan={4} className="text-center p-6 text-gray-500">
                 <Loading />
               </td>
             </tr>
@@ -110,6 +116,14 @@ export function QuestionsTable({
           )}
 
           {/* --- Estado Vacío --- */}
+          {!loading && !error && Questions.length === 0 && (
+            <tr>
+              <td colSpan={4} className="text-center p-6 text-gray-500">
+                No se encontraron Preguntas.
+              </td>
+            </tr>
+          )}
+
           {!loading &&
             !error &&
             Questions.map((Question, index) => (
@@ -122,27 +136,29 @@ export function QuestionsTable({
                 </td>
 
                 {/* Pregunta (Nombre) con truncado */}
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                  <div
-                    className="max-w-md md:max-w-lg lg:max-w-xl truncate"
-                    title={Question.name}
-                  >
-                    {Question.name}
-                  </div>
+                <td
+                  className="px-6 py-4 text-sm font-medium text-gray-900 max-w-0"
+                  title={Question.name ?? undefined}
+                >
+                  <span className="block truncate">
+                    {withEllipsis(Question.name, 60)}
+                  </span>
                 </td>
 
                 {/* Instrucciones con truncado */}
-                <td className="px-6 py-4 text-sm text-gray-500 hidden md:table-cell">
-                  <div
-                    className="max-w-xs truncate"
-                    title={Question.instructions || ""}
-                  >
-                    {Question.instructions || (
-                      <span className="italic text-gray-400">
-                        Sin instrucciones
-                      </span>
-                    )}
-                  </div>
+                <td
+                  className="px-6 py-4 text-sm text-gray-500 max-w-0 hidden md:table-cell"
+                  title={Question.instructions ?? undefined}
+                >
+                  {Question.instructions ? (
+                    <span className="block truncate">
+                      {withEllipsis(Question.instructions, 60)}
+                    </span>
+                  ) : (
+                    <span className="italic text-gray-400">
+                      Sin instrucciones
+                    </span>
+                  )}
                 </td>
 
                 {/* Opciones (Igual que antes) */}
@@ -164,32 +180,36 @@ export function QuestionsTable({
                       </button>
 
                       {/* --- Botón EDITAR (Activo) --- */}
-                      {onEdit && <button
-                        title="Editar Modulo"
-                        onClick={() => onEdit(Question)}
-                        className="
+                      {onEdit && (
+                        <button
+                          title="Editar Modulo"
+                          onClick={() => onEdit(Question)}
+                          className="
                           bg-white text-[#691b31]
                           hover:bg-[#1b2469] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
-                      >
-                        <IconEdit />
-                      </button>}
+                        >
+                          <IconEdit />
+                        </button>
+                      )}
 
                       {/* --- Botón DESACTIVAR (Ban) --- */}
-                      {onBan && <button
-                        title="Desactivar Modulo"
-                        onClick={() => onBan(Question)}
-                        className="
+                      {onBan && (
+                        <button
+                          title="Desactivar Modulo"
+                          onClick={() => onBan(Question)}
+                          className="
                           bg-white text-[#691b31]
                           hover:bg-[#691b31] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
-                      >
-                        <IconBan />
-                      </button>}
+                        >
+                          <IconBan />
+                        </button>
+                      )}
 
                       {/* --- Botón BUILDER --- */}
                       <button
@@ -222,32 +242,36 @@ export function QuestionsTable({
                       </button>
 
                       {/* --- Botón RESTAURAR (ArrowUp) --- */}
-                      {onRestore && <button
-                        title="Restaurar Modulo"
-                        onClick={() => onRestore(Question)}
-                        className="
+                      {onRestore && (
+                        <button
+                          title="Restaurar Modulo"
+                          onClick={() => onRestore(Question)}
+                          className="
                            bg-white text-[#691b31]
                           hover:bg-[#1b6939] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
-                      >
-                        <IconCircleArrowUp />
-                      </button>}
+                        >
+                          <IconCircleArrowUp />
+                        </button>
+                      )}
 
                       {/* --- Botón ELIMINAR PERMANENTE (Delete) --- */}
-                      {onDelete && <button
-                        title="Eliminar Permanentemente"
-                        onClick={() => onDelete(Question)}
-                        className="
+                      {onDelete && (
+                        <button
+                          title="Eliminar Permanentemente"
+                          onClick={() => onDelete(Question)}
+                          className="
                            bg-white text-[#691b31]
                           hover:bg-[#691b31] hover:text-white
                           active:bg-[#691b31] active:text-white
                           p-2 rounded-lg leading-none transition-colors
                         "
-                      >
-                        <IconDelete />
-                      </button>}
+                        >
+                          <IconDelete />
+                        </button>
+                      )}
 
                       {/* --- Botón BUILDER --- */}
                       <button
