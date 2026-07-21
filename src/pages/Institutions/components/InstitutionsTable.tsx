@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import type { InstitutionTableProps } from "../institutions.types"; 
 import Loading from "../../../components/Loading";
+import { ValidationError } from "../../../components/ValidationError";
 
 
 
@@ -99,11 +100,8 @@ export function InstitutionsTable({
 
           {error && (
             <tr>
-              <td
-                colSpan={5}
-                className="text-center p-6 text-red-600 font-semibold"
-              >
-                {error}
+              <td colSpan={5} className="p-4">
+                <ValidationError message={error} />
               </td>
             </tr>
           )}

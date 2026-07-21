@@ -164,7 +164,16 @@ export function useCensosData() {
         setError(null);
       } catch (err: unknown) {
         if (isCanceledError(err)) return;
-        setError("Error al cargar los datos.");
+        const validationErrors = (err as any).response?.data?.errors;
+        if (validationErrors) {
+          const firstError = Object.values(validationErrors)[0] as string[];
+          setError(firstError[0]);
+        } else {
+          setError(
+            (err as any).response?.data?.message ??
+              "Error al cargar los datos.",
+          );
+        }
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }

@@ -59,7 +59,13 @@ export function useSectionsData() {
       })
       .catch((err) => {
         if (err.name === "CanceledError" || err.code === "ERR_CANCELED") return;
-        setError("Error al cargar los datos.");
+        const validationErrors = err.response?.data?.errors;
+        if (validationErrors) {
+          const firstError = Object.values(validationErrors)[0] as string[];
+          setError(firstError[0]);
+        } else {
+          setError(err.response?.data?.message ?? "Error al cargar los datos.");
+        }
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);

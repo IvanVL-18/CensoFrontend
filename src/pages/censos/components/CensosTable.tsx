@@ -8,6 +8,7 @@ import {
   type LucideProps,
 } from "lucide-react";
 import type { CensosTableProps } from "../Censos.types";
+import { ValidationError } from "../../../components/ValidationError";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -92,11 +93,8 @@ export function CensosTable({
 
           {error && (
             <tr>
-              <td
-                colSpan={3}
-                className="text-center p-6 text-red-600 font-semibold"
-              >
-                {error}
+              <td colSpan={3} className="p-4">
+                <ValidationError message={error} />
               </td>
             </tr>
           )}

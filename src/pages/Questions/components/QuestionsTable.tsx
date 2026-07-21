@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import type { QuestionsTableProps } from "../Questions.types";
 import Loading from "../../../components/Loading";
+import { ValidationError } from "../../../components/ValidationError";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -100,11 +101,8 @@ export function QuestionsTable({
 
           {error && (
             <tr>
-              <td
-                colSpan={4}
-                className="text-center p-6 text-red-600 font-semibold"
-              >
-                {error}
+              <td colSpan={4} className="p-4">
+                <ValidationError message={error} />
               </td>
             </tr>
           )}
