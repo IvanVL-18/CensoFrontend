@@ -19,7 +19,7 @@ import { createPortal } from "react-dom";
 import type { EditProfileModalProps as Props } from "../Profile.types";
 import ProfileField from "./ProfileField";
 import { useEditProfile, type CatalogItem } from "../hooks/useEditProfile";
-import ErrorOverlay from "../../../components/ErrorOverlay";
+import { Toast } from "../../../components/Toast";
 
 function ReadonlyField({
   label,
@@ -143,10 +143,10 @@ export default function EditProfileModal({ open, onClose }: Props) {
     isEditable,
     profile,
     loading,
+    loadError,
     submitting,
-    error,
-    dismissError,
-    success,
+    toast,
+    dismissToast,
     draft,
     setDraftField,
     draftErrors,
@@ -213,9 +213,9 @@ export default function EditProfileModal({ open, onClose }: Props) {
                 </div>
               )}
 
-              {!loading && error && !profile && (
+              {!loading && loadError && !profile && (
                 <p className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
-                  {error}
+                  {loadError}
                 </p>
               )}
 
@@ -486,12 +486,6 @@ export default function EditProfileModal({ open, onClose }: Props) {
                       </details>
                     </div>
                   )}
-
-                  {success && (
-                    <p className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
-                      {success}
-                    </p>
-                  )}
                 </div>
               )}
             </div>
@@ -517,10 +511,18 @@ export default function EditProfileModal({ open, onClose }: Props) {
                 </button>
               </div>
             </div>
-
-            <ErrorOverlay message={error} onDismiss={dismissError} />
           </div>
         </div>
+
+        {toast && (
+          <div className="fixed bottom-4 right-4 z-[10000]">
+            <Toast
+              message={toast.message}
+              type={toast.type}
+              onDismiss={dismissToast}
+            />
+          </div>
+        )}
       </div>
     </div>,
     document.body,

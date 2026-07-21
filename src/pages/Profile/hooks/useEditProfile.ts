@@ -24,6 +24,10 @@ type AccountDraft = {
   census_id: string;
 };
 type PasswordDraft = { password: string; password_confirmation: string };
+type ToastState = {
+  message: string;
+  type: "success" | "danger" | "warning";
+} | null;
 
 export function useEditProfile(open: boolean) {
   const { user: authUser } = useAuthContext();
@@ -39,7 +43,10 @@ export function useEditProfile(open: boolean) {
     mobile: "",
     address: "",
   });
-  const [draftErrors, setDraftErrors] = useState<
+  const [touched, setTouched] = useState<
+    Partial<Record<keyof PersonalDraft, boolean>>
+  >({});
+  const [allDraftErrors, setAllDraftErrors] = useState<
     Partial<Record<keyof PersonalDraft, string>>
   >({});
   const [accountDraft, setAccountDraft] = useState<AccountDraft>({
@@ -66,9 +73,9 @@ export function useEditProfile(open: boolean) {
   }>({ occupations: [], dependencies: [], censuses: [] });
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState>(null);
 
   const isIncomplete =
     !profile?.name?.trim() ||
@@ -76,27 +83,37 @@ export function useEditProfile(open: boolean) {
     !profile?.address?.trim();
   const isEditable = isIncomplete || canAlwaysEdit;
 
-  // Validación en tiempo real del draft
+  // Validación completa en background (siempre corre, para saber si el draft es válido)
   useEffect(() => {
     if (!isEditable) return;
     const result = profileSchema.safeParse(draft);
     if (result.success) {
-      setDraftErrors({});
+      setAllDraftErrors({});
     } else {
       const errors: Partial<Record<keyof PersonalDraft, string>> = {};
       for (const issue of result.error.issues) {
         const field = issue.path[0] as keyof PersonalDraft;
         if (!errors[field]) errors[field] = issue.message;
       }
-      setDraftErrors(errors);
+      setAllDraftErrors(errors);
     }
   }, [draft, isEditable]);
 
+  // Solo se muestran errores de campos que el usuario ya tocó (no al abrir la ventana)
+  const draftErrors = useMemo(() => {
+    const visible: Partial<Record<keyof PersonalDraft, string>> = {};
+    for (const key of Object.keys(allDraftErrors) as (keyof PersonalDraft)[]) {
+      if (touched[key]) visible[key] = allDraftErrors[key];
+    }
+    return visible;
+  }, [allDraftErrors, touched]);
+
   useEffect(() => {
     if (!open) return;
-    setError(null);
-    setSuccess(null);
-    setDraftErrors({});
+    setLoadError(null);
+    setToast(null);
+    setTouched({});
+    setAllDraftErrors({});
     setLoading(true);
 
     getProfile()
@@ -111,7 +128,7 @@ export function useEditProfile(open: boolean) {
         });
       })
       .catch((err) => {
-        setError(err?.message ?? "Error al cargar el perfil.");
+        setLoadError(err?.message ?? "Error al cargar el perfil.");
       })
       .finally(() => setLoading(false));
   }, [open]);
@@ -233,7 +250,11 @@ export function useEditProfile(open: boolean) {
 
   const handleSave = async () => {
     if (hasDraftErrors) {
-      setError("Corrige los errores en los datos personales antes de guardar.");
+      setToast({
+        message:
+          "Corrige los errores en los datos personales antes de guardar.",
+        type: "warning",
+      });
       return;
     }
     if (
@@ -241,7 +262,10 @@ export function useEditProfile(open: boolean) {
       passwordValidation &&
       passwordValidation.length > 0
     ) {
-      setError("Corrige los errores en la contraseña antes de guardar.");
+      setToast({
+        message: "Corrige los errores en la contraseña antes de guardar.",
+        type: "warning",
+      });
       return;
     }
 
@@ -285,19 +309,23 @@ export function useEditProfile(open: boolean) {
     if (Object.keys(payload).length === 0) return;
 
     setSubmitting(true);
-    setError(null);
-    setSuccess(null);
     try {
       const res = await updateProfile(payload);
       setPasswordDraft({ password: "", password_confirmation: "" });
       setShowPassword(false);
       setShowConfirm(false);
-      setSuccess(res.message ?? "Perfil actualizado correctamente.");
+      setToast({
+        message: res.message ?? "Perfil actualizado correctamente.",
+        type: "success",
+      });
       if (canAlwaysEdit) {
         setOriginalAccountDraft(accountDraft);
       }
     } catch (err: any) {
-      setError(err?.message ?? "Error al guardar los cambios.");
+      setToast({
+        message: err?.message ?? "Error al guardar los cambios.",
+        type: "danger",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -311,16 +339,19 @@ export function useEditProfile(open: boolean) {
 
     profile,
     loading,
+    loadError,
     submitting,
-    error,
-    dismissError: () => setError(null),
-    success,
+    toast,
+    dismissToast: () => setToast(null),
 
     draft,
     setDraftField: <K extends keyof PersonalDraft>(
       field: K,
       value: PersonalDraft[K],
-    ) => setDraft((s) => ({ ...s, [field]: value })),
+    ) => {
+      setDraft((s) => ({ ...s, [field]: value }));
+      setTouched((s) => ({ ...s, [field]: true }));
+    },
     draftErrors,
 
     accountDraft,
