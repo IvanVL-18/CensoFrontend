@@ -121,25 +121,20 @@ export function useUsersData() {
     return () => controller.abort();
   }, [filter, searchTerm, page, sortConfig, reloadToken]);
 
-  const filteredUsers = useMemo(() => {
-    if (!searchTerm) return Users;
-    const term = searchTerm.toLowerCase();
-    return Users.filter(
-      (u) =>
-        (u.name ?? "").toLowerCase().includes(term) ||
-        (u.email ?? "").toLowerCase().includes(term),
-    );
-  }, [Users, searchTerm]);
-
+  // La búsqueda ya se resuelve en el servidor (ver getUsers -> POST /users/search),
+  // por lo que `Users` ya llega filtrado. Volver a filtrar aquí en el cliente
+  // solo por `name`/`email` podía dejar la lista vacía cuando el backend
+  // encontraba coincidencias por otros campos (documento, teléfono, rol, etc.),
+  // mostrando "No se encontraron Usuarios" aunque el Network sí trajera registros.
   const sortedUsers = useMemo(() => {
-    return [...filteredUsers].sort((a, b) => {
+    return [...Users].sort((a, b) => {
       const valA = (a[sortConfig.key as keyof User] ?? "") as string;
       const valB = (b[sortConfig.key as keyof User] ?? "") as string;
       if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
       if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
       return 0;
     });
-  }, [filteredUsers, sortConfig]);
+  }, [Users, sortConfig]);
 
   const handleFilterChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
