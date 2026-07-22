@@ -374,7 +374,7 @@ export function SectionModal({
                         : ind.name;
 
                     return (
-                      <option key={ind.id} value={ind.id}>
+                      <option key={ind.id} value={ind.id} title={ind.name}>
                         {displayName}
                       </option>
                     );
