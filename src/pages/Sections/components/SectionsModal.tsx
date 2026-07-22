@@ -40,7 +40,10 @@ export function SectionModal({
     setIndicatorsError(null);
     getIndicators()
       .then((data) => {
-        setIndicators(data);
+        const sortedIndicators = [...data].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
+        setIndicators(sortedIndicators);
       })
       .catch(() => {
         setIndicatorsError("No se pudieron cargar los indicadores.");
