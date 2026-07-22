@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Deben coincidir EXACTO con las regex del StoreSectionRequest en Laravel
-const NAME_REGEX = /^[\p{L}\p{N}\s/,.:;_"-]+$/u;
+const NAME_REGEX = /^[\p{L}\p{M}\p{N}\s/,.:;_"()-]+$/u;
 const INSTRUCTIONS_REGEX =
   /^[\p{L}\p{M}\p{N}\s/,.:;–—_"“”‘’'(){}\[\]º°´&%|¿?¡!\r\n-]+$/u;
 
