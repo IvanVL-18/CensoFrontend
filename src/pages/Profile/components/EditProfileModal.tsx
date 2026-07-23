@@ -291,11 +291,16 @@ export default function EditProfileModal({ open, onClose }: Props) {
     setError(null);
     setSuccess(null);
     try {
-      const payload: UpdateProfileData = {
-        name:     draft.name     || null,
-        lastname: draft.lastname || null,
-        address:  draft.address  || null,
-      };
+      const payload: UpdateProfileData = {};
+      if (draft.name !== (profile?.name ?? "")) {
+        payload.name = draft.name || null;
+      }
+      if (draft.lastname !== (profile?.lastname ?? "")) {
+        payload.lastname = draft.lastname || null;
+      }
+      if (draft.address !== (profile?.address ?? "")) {
+        payload.address = draft.address || null;
+      }
       if (draft.phone !== (profile?.phone ?? "")) {
         payload.phone = draft.phone || null;
       }
@@ -322,7 +327,6 @@ export default function EditProfileModal({ open, onClose }: Props) {
       setSubmitting(false);
     }
   };
-
   if (!open) return null;
 
   return createPortal(
