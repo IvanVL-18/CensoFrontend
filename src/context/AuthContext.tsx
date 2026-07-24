@@ -34,7 +34,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   clearError: () => void;
   hasPermission: (permission: string) => boolean;
-  markProfileComplete: () => void;
+  markProfileComplete: (completed?: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -107,7 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      const { access_token, profile_completed } = await loginRequest(credentials);
+      const { access_token, profile_completed } =
+        await loginRequest(credentials);
       sessionStorage.setItem("access_token", access_token);
       storeProfileCompleted(profile_completed);
       const me = await meRequest();
@@ -133,9 +134,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearError = useCallback(() => setError(null), []);
 
-  const markProfileComplete = useCallback(() => {
-    storeProfileCompleted(true);
-    setUser((prev) => (prev ? { ...prev, complete: true } : prev));
+  const markProfileComplete = useCallback((completed: boolean = true) => {
+    storeProfileCompleted(completed);
+    setUser((prev) => (prev ? { ...prev, complete: completed } : prev));
   }, []);
 
   // ── Verificación de permisos ─────────────────────────────────────────────

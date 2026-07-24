@@ -269,23 +269,33 @@ export function useEditProfile(open: boolean) {
       return;
     }
 
-    // Payload como diff real: solo se incluyen los campos que cambiaron
     const payload: UpdateProfileData = {};
 
-    if (draft.name !== (profile?.name ?? "")) {
+    // --- CAMBIO APLICADO ---
+    // Si está incompleto mandamos todo para pasar el validator '!array_diff' del backend.
+    // Si ya está completo, mantenemos el comportamiento original del "diff".
+    if (isIncomplete) {
       payload.name = draft.name || null;
-    }
-    if (draft.lastname !== (profile?.lastname ?? "")) {
       payload.lastname = draft.lastname || null;
-    }
-    if (draft.address !== (profile?.address ?? "")) {
       payload.address = draft.address || null;
-    }
-    if (draft.phone !== (profile?.phone ?? "")) {
       payload.phone = draft.phone || null;
-    }
-    if (draft.mobile !== (profile?.mobile ?? "")) {
       payload.mobile = draft.mobile || null;
+    } else {
+      if (draft.name !== (profile?.name ?? "")) {
+        payload.name = draft.name || null;
+      }
+      if (draft.lastname !== (profile?.lastname ?? "")) {
+        payload.lastname = draft.lastname || null;
+      }
+      if (draft.address !== (profile?.address ?? "")) {
+        payload.address = draft.address || null;
+      }
+      if (draft.phone !== (profile?.phone ?? "")) {
+        payload.phone = draft.phone || null;
+      }
+      if (draft.mobile !== (profile?.mobile ?? "")) {
+        payload.mobile = draft.mobile || null;
+      }
     }
 
     if (canAlwaysEdit) {
@@ -319,12 +329,10 @@ export function useEditProfile(open: boolean) {
         type: "success",
       });
 
-      const nowComplete =
-        draft.name.trim() !== "" &&
-        draft.lastname.trim() !== "" &&
-        draft.address.trim() !== "";
-      if (isIncomplete && nowComplete) {
-        markProfileComplete();
+      if (isIncomplete) {
+        // --- CAMBIO APLICADO ---
+        // Leemos la propiedad 'complete' (con fallback a 'any' para evitar que TypeScript llore si tu interfaz no lo tiene)
+        markProfileComplete(res.complete === true);
       }
 
       if (canAlwaysEdit) {
