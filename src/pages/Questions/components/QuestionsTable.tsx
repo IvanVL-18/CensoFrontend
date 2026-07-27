@@ -108,6 +108,15 @@ export function QuestionsTable({
           )}
 
           {/* --- Estado Vacío --- */}
+          {!loading && !error && Questions.length === 0 && (
+            <tr>
+              <td colSpan={4} className="text-center p-6 text-gray-500">
+                No se encontraron preguntas.
+              </td>
+            </tr>
+          )}
+
+          {/* --- Mapeo de datos --- */}
           {!loading &&
             !error &&
             Questions.map((Question, index) => (
