@@ -171,14 +171,18 @@ export function CensusQuestionSearchModal({
           {!error &&
             results.map((item, index) => {
               const context = getQuestionContext(item);
-              const questionId = item.question?.id;
+              const censusQuestionId = item.id;
               const isSelected =
-                questionId != null && selectedQuestionIds.has(questionId);
+                censusQuestionId != null &&
+                selectedQuestionIds.has(censusQuestionId);
 
               return (
                 <div
                   key={item.id ?? index}
-                  onClick={() => questionId != null && onToggleQuestion(questionId)}
+                  onClick={() =>
+                    censusQuestionId != null &&
+                    onToggleQuestion(censusQuestionId)
+                  }
                   role="button"
                   tabIndex={0}
                   className={clsx(

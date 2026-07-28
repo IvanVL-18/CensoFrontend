@@ -16,6 +16,7 @@ import type {
   FindQuestionsResult,
   QuestionDetail,
   CompareQuestionsResult,
+  CompareCensusGroup,
 } from "./Censos.types";
 
 export type CensoFilter = "all" | "active" | "inactive";
@@ -235,15 +236,13 @@ export const findQuestions = async (
 };
 
 export const compareQuestions = async (
-  censusIds: string[],
-  questionIds: string[],
+  censusGroups: CompareCensusGroup[],
   prompt: string,
 ): Promise<CompareQuestionsResult> => {
   const response = await api.post<CompareQuestionsResult>(
     "/compare-questions",
     {
-      censos: censusIds,
-      questions: questionIds,
+      censos: censusGroups,
       prompt,
     },
   );

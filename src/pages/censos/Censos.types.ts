@@ -255,7 +255,7 @@ export interface QuestionSearchCensusSection {
 }
 
 export interface QuestionSearchItem {
-  id?: number;
+  id?: string;
   question?: QuestionSearchQuestion;
   census_section?: QuestionSearchCensusSection;
 }
@@ -264,6 +264,11 @@ export interface FindQuestionsResult {
   ok: boolean;
   message: string;
   questions?: QuestionSearchItem[] | null;
+}
+
+export interface CompareCensusGroup {
+  id: string;
+  questions: string[];
 }
 
 export interface CompareQuestionsResult {

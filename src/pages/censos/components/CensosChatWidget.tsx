@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronRight, Loader2, MessageCircle, Send, X } from "lucide-react";
 import clsx from "clsx";
 import { compareQuestions, findCensus, getCensusesList } from "../Censos.service";
-import type { CensusOption } from "../Censos.types";
+import type { CensusOption, CompareCensusGroup } from "../Censos.types";
 import { CensusQuestionSearchModal } from "./CensusQuestionSearchModal";
 
 type ChatMessage =
@@ -55,10 +55,21 @@ export function CensosChatWidget() {
   const [findingCensus, setFindingCensus] = useState(false);
   const [activeQuestionCenso, setActiveQuestionCenso] =
     useState<CensusOption | null>(null);
-  const [selectedQuestionIds, setSelectedQuestionIds] = useState<Set<string>>(
-    new Set(),
-  );
+  // censusId -> ids de preguntas seleccionadas de ese censo. Agrupar por
+  // censo desde el inicio evita reconstruir la asociación al armar el
+  // payload de /compare-questions.
+  const [selectedQuestionsByCensus, setSelectedQuestionsByCensus] = useState<
+    Map<string, Set<string>>
+  >(new Map());
   const [isComparing, setIsComparing] = useState(false);
+
+  const totalSelectedQuestions = Array.from(
+    selectedQuestionsByCensus.values(),
+  ).reduce((sum, set) => sum + set.size, 0);
+
+  const activeSelectedQuestionIds = activeQuestionCenso
+    ? (selectedQuestionsByCensus.get(activeQuestionCenso.id) ?? new Set<string>())
+    : new Set<string>();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -143,10 +154,17 @@ export function CensosChatWidget() {
   };
 
   const handleToggleQuestion = (questionId: string) => {
-    setSelectedQuestionIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(questionId)) next.delete(questionId);
-      else next.add(questionId);
+    if (!activeQuestionCenso) return;
+    const censusId = activeQuestionCenso.id;
+
+    setSelectedQuestionsByCensus((prev) => {
+      const next = new Map(prev);
+      const current = new Set(next.get(censusId) ?? []);
+      if (current.has(questionId)) current.delete(questionId);
+      else current.add(questionId);
+
+      if (current.size === 0) next.delete(censusId);
+      else next.set(censusId, current);
       return next;
     });
   };
@@ -155,8 +173,7 @@ export function CensosChatWidget() {
     const text = draft.trim();
     if (!text || isComparing) return;
 
-    const hasComparisonReady =
-      selectedCensusIds.size > 0 && selectedQuestionIds.size > 0;
+    const hasComparisonReady = selectedQuestionsByCensus.size > 0;
 
     setMessages((prev) => [
       ...prev,
@@ -164,17 +181,19 @@ export function CensosChatWidget() {
     ]);
     setDraft("");
 
-    // Sin censos y preguntas seleccionadas, el input es solo un mensaje
+    // Sin censos con preguntas seleccionadas, el input es solo un mensaje
     // local; no hay ruta para chat libre todavía.
     if (!hasComparisonReady) return;
 
     setIsComparing(true);
     try {
-      const result = await compareQuestions(
-        Array.from(selectedCensusIds),
-        Array.from(selectedQuestionIds),
-        text,
-      );
+      const censusGroups: CompareCensusGroup[] = Array.from(
+        selectedQuestionsByCensus.entries(),
+      ).map(([censusId, questionIds]) => ({
+        id: censusId,
+        questions: Array.from(questionIds),
+      }));
+      const result = await compareQuestions(censusGroups, text);
       setMessages((prev) => [
         ...prev,
         {
@@ -184,7 +203,7 @@ export function CensosChatWidget() {
           text: toDisplayText(result.message, "Comparación procesada correctamente."),
         },
       ]);
-      setSelectedQuestionIds(new Set());
+      setSelectedQuestionsByCensus(new Map());
     } catch (err: any) {
       const msg = toDisplayText(
         err.response?.data?.message ?? err.message,
@@ -343,15 +362,17 @@ export function CensosChatWidget() {
             <div ref={messagesEndRef} />
           </div>
 
-          {selectedQuestionIds.size > 0 && (
+          {totalSelectedQuestions > 0 && (
             <div className="flex items-center justify-between border-t border-gray-200 bg-red-50 px-3 py-1.5 text-xs text-red-700">
               <span>
-                {selectedQuestionIds.size} pregunta
-                {selectedQuestionIds.size === 1 ? "" : "s"} seleccionada
-                {selectedQuestionIds.size === 1 ? "" : "s"}
+                {totalSelectedQuestions} pregunta
+                {totalSelectedQuestions === 1 ? "" : "s"} seleccionada
+                {totalSelectedQuestions === 1 ? "" : "s"} en{" "}
+                {selectedQuestionsByCensus.size} censo
+                {selectedQuestionsByCensus.size === 1 ? "" : "s"}
               </span>
               <button
-                onClick={() => setSelectedQuestionIds(new Set())}
+                onClick={() => setSelectedQuestionsByCensus(new Map())}
                 className="font-medium hover:underline"
               >
                 Limpiar
@@ -396,7 +417,7 @@ export function CensosChatWidget() {
         isOpen={activeQuestionCenso !== null}
         censo={activeQuestionCenso}
         onClose={() => setActiveQuestionCenso(null)}
-        selectedQuestionIds={selectedQuestionIds}
+        selectedQuestionIds={activeSelectedQuestionIds}
         onToggleQuestion={handleToggleQuestion}
       />
     </div>
