@@ -214,3 +214,54 @@ export interface CensusQueryFilters {
 export interface CensusQueryResponse {
   sections: CensusQuerySection[];
 }
+
+/* =========================
+   CENSUS CHAT WIDGET (AI query prototype)
+========================= */
+
+export interface CensusOption {
+  id: string;
+  name: string;
+}
+
+export interface FindCensusResult {
+  ok: boolean;
+  message: string;
+  census?: CensusOption[];
+}
+
+export interface QuestionSearchQuestion {
+  id?: number;
+  name?: string;
+}
+
+export interface QuestionSearchModuleRef {
+  id?: number;
+  name?: string;
+}
+
+export interface QuestionSearchCensusModule {
+  module?: QuestionSearchModuleRef;
+}
+
+export interface QuestionSearchSectionRef {
+  id?: number;
+  name?: string;
+}
+
+export interface QuestionSearchCensusSection {
+  section?: QuestionSearchSectionRef;
+  census_module?: QuestionSearchCensusModule;
+}
+
+export interface QuestionSearchItem {
+  id?: number;
+  question?: QuestionSearchQuestion;
+  census_section?: QuestionSearchCensusSection;
+}
+
+export interface FindQuestionsResult {
+  ok: boolean;
+  message: string;
+  questions?: QuestionSearchItem[] | null;
+}
