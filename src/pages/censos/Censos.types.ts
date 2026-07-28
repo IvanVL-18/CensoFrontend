@@ -231,7 +231,7 @@ export interface FindCensusResult {
 }
 
 export interface QuestionSearchQuestion {
-  id?: number;
+  id?: string;
   name?: string;
 }
 

@@ -91,7 +91,7 @@ export function CensusQuestionSearchModal({
     setDetailError(null);
     setLoadingDetail(true);
     try {
-      const detail = await getQuestionDetail(String(item.question.id));
+      const detail = await getQuestionDetail(item.question.id);
       setQuestionDetail(detail);
     } catch (err: any) {
       const msg =
