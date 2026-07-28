@@ -265,3 +265,14 @@ export interface FindQuestionsResult {
   message: string;
   questions?: QuestionSearchItem[] | null;
 }
+
+export interface QuestionDetail {
+  id: string;
+  name: string;
+  instructions?: string | null;
+  commentaries: boolean;
+  question_structure?: unknown;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+}

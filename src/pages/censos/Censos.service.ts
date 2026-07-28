@@ -14,6 +14,7 @@ import type {
   CensusOption,
   FindCensusResult,
   FindQuestionsResult,
+  QuestionDetail,
 } from "./Censos.types";
 
 export type CensoFilter = "all" | "active" | "inactive";
@@ -230,4 +231,15 @@ export const findQuestions = async (
     questions: [search],
   });
   return response.data;
+};
+
+export const getQuestionDetail = async (
+  questionId: string,
+  signal?: AbortSignal,
+): Promise<QuestionDetail> => {
+  const response = await api.get<{ data: QuestionDetail }>(
+    `/questions/${questionId}`,
+    { signal },
+  );
+  return response.data.data;
 };

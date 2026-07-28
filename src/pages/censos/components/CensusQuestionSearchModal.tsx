@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
-import { Loader2, Search, X } from "lucide-react";
-import { findQuestions } from "../Censos.service";
-import type { CensusOption, QuestionSearchItem } from "../Censos.types";
+import { Eye, Loader2, Search, X } from "lucide-react";
+import { findQuestions, getQuestionDetail } from "../Censos.service";
+import type {
+  CensusOption,
+  QuestionDetail,
+  QuestionSearchItem,
+} from "../Censos.types";
+import { QuestionDetailModal } from "./QuestionDetailModal";
 
 interface CensusQuestionSearchModalProps {
   isOpen: boolean;
@@ -30,12 +35,23 @@ export function CensusQuestionSearchModal({
   const [results, setResults] = useState<QuestionSearchItem[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
 
+  const [viewingQuestion, setViewingQuestion] =
+    useState<QuestionSearchItem | null>(null);
+  const [questionDetail, setQuestionDetail] = useState<QuestionDetail | null>(
+    null,
+  );
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isOpen) {
       setSearchText("");
       setError(null);
       setResults([]);
       setHasSearched(false);
+      setViewingQuestion(null);
+      setQuestionDetail(null);
+      setDetailError(null);
     }
   }, [isOpen]);
 
@@ -64,6 +80,27 @@ export function CensusQuestionSearchModal({
     if (e.key === "Enter") {
       e.preventDefault();
       void handleSearch();
+    }
+  };
+
+  const handleViewQuestion = async (item: QuestionSearchItem) => {
+    if (item.question?.id == null) return;
+
+    setViewingQuestion(item);
+    setQuestionDetail(null);
+    setDetailError(null);
+    setLoadingDetail(true);
+    try {
+      const detail = await getQuestionDetail(String(item.question.id));
+      setQuestionDetail(detail);
+    } catch (err: any) {
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "No se pudo cargar la pregunta.";
+      setDetailError(msg);
+    } finally {
+      setLoadingDetail(false);
     }
   };
 
@@ -132,12 +169,21 @@ export function CensusQuestionSearchModal({
               return (
                 <div
                   key={item.id ?? index}
-                  className="p-3 rounded-lg border border-gray-200 mb-2 text-sm text-gray-700"
+                  className="flex items-start justify-between gap-2 p-3 rounded-lg border border-gray-200 mb-2 text-sm text-gray-700"
                 >
-                  <p>{getQuestionLabel(item)}</p>
-                  {context && (
-                    <p className="mt-1 text-xs text-gray-400">{context}</p>
-                  )}
+                  <div className="min-w-0">
+                    <p>{getQuestionLabel(item)}</p>
+                    {context && (
+                      <p className="mt-1 text-xs text-gray-400">{context}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => void handleViewQuestion(item)}
+                    className="shrink-0 h-7 w-7 grid place-items-center rounded-full hover:bg-gray-100 text-[#5b1d27] transition"
+                    aria-label={`Ver pregunta ${getQuestionLabel(item)}`}
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
                 </div>
               );
             })}
@@ -149,6 +195,17 @@ export function CensusQuestionSearchModal({
           </div>
         )}
       </div>
+
+      <QuestionDetailModal
+        isOpen={viewingQuestion !== null}
+        onClose={() => setViewingQuestion(null)}
+        loading={loadingDetail}
+        error={detailError}
+        detail={questionDetail}
+        fallbackName={
+          viewingQuestion ? getQuestionLabel(viewingQuestion) : undefined
+        }
+      />
     </div>
   );
 }
