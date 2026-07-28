@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronRight, Loader2, MessageCircle, Send, X } from "lucide-react";
 import clsx from "clsx";
-import { findCensus, getCensusesList } from "../Censos.service";
+import { compareQuestions, findCensus, getCensusesList } from "../Censos.service";
 import type { CensusOption } from "../Censos.types";
 import { CensusQuestionSearchModal } from "./CensusQuestionSearchModal";
 
@@ -11,6 +11,22 @@ type ChatMessage =
 
 let messageIdCounter = 0;
 const nextMessageId = () => ++messageIdCounter;
+
+// Los endpoints de QueryAIController están en desarrollo activo y a veces
+// devuelven `message` como objeto (p. ej. un eco de debug del request) en
+// vez de un string. React no puede renderizar un objeto como children, así
+// que esto evita que la app entera se caiga en blanco por una respuesta
+// inesperada del backend: si no es un string usable, se muestra su JSON en
+// vez de asumir un shape que el backend aún no garantiza.
+const toDisplayText = (value: unknown, fallback: string): string => {
+  if (typeof value === "string" && value.trim() !== "") return value;
+  if (value == null) return fallback;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return fallback;
+  }
+};
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
@@ -39,11 +55,15 @@ export function CensosChatWidget() {
   const [findingCensus, setFindingCensus] = useState(false);
   const [activeQuestionCenso, setActiveQuestionCenso] =
     useState<CensusOption | null>(null);
+  const [selectedQuestionIds, setSelectedQuestionIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [isComparing, setIsComparing] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isOpen, censusOptions, loadingCensuses]);
+  }, [messages, isOpen, censusOptions, loadingCensuses, isComparing]);
 
   useEffect(() => {
     if (!isOpen || hasFetchedRef.current) return;
@@ -95,7 +115,7 @@ export function CensosChatWidget() {
           id: nextMessageId(),
           from: "bot",
           kind: "text",
-          text: result.message ?? "Censos encontrados correctamente.",
+          text: toDisplayText(result.message, "Censos encontrados correctamente."),
         },
         ...(matchedOptions.length > 0
           ? [
@@ -109,10 +129,10 @@ export function CensosChatWidget() {
           : []),
       ]);
     } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        err.message ||
-        "Ocurrió un error al buscar los censos seleccionados.";
+      const msg = toDisplayText(
+        err.response?.data?.message ?? err.message,
+        "Ocurrió un error al buscar los censos seleccionados.",
+      );
       setMessages((prev) => [
         ...prev,
         { id: nextMessageId(), from: "bot", kind: "text", text: msg },
@@ -122,21 +142,67 @@ export function CensosChatWidget() {
     }
   };
 
-  const handleSend = () => {
+  const handleToggleQuestion = (questionId: string) => {
+    setSelectedQuestionIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(questionId)) next.delete(questionId);
+      else next.add(questionId);
+      return next;
+    });
+  };
+
+  const handleSend = async () => {
     const text = draft.trim();
-    if (!text) return;
+    if (!text || isComparing) return;
+
+    const hasComparisonReady =
+      selectedCensusIds.size > 0 && selectedQuestionIds.size > 0;
 
     setMessages((prev) => [
       ...prev,
       { id: nextMessageId(), from: "user", kind: "text", text },
     ]);
     setDraft("");
+
+    // Sin censos y preguntas seleccionadas, el input es solo un mensaje
+    // local; no hay ruta para chat libre todavía.
+    if (!hasComparisonReady) return;
+
+    setIsComparing(true);
+    try {
+      const result = await compareQuestions(
+        Array.from(selectedCensusIds),
+        Array.from(selectedQuestionIds),
+        text,
+      );
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: nextMessageId(),
+          from: "bot",
+          kind: "text",
+          text: toDisplayText(result.message, "Comparación procesada correctamente."),
+        },
+      ]);
+      setSelectedQuestionIds(new Set());
+    } catch (err: any) {
+      const msg = toDisplayText(
+        err.response?.data?.message ?? err.message,
+        "Ocurrió un error al comparar las preguntas seleccionadas.",
+      );
+      setMessages((prev) => [
+        ...prev,
+        { id: nextMessageId(), from: "bot", kind: "text", text: msg },
+      ]);
+    } finally {
+      setIsComparing(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleSend();
+      void handleSend();
     }
   };
 
@@ -265,8 +331,33 @@ export function CensosChatWidget() {
               </div>
             )}
 
+            {isComparing && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-3 py-2 flex items-center gap-2 shadow-sm text-sm text-gray-500">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Comparando preguntas...
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
+
+          {selectedQuestionIds.size > 0 && (
+            <div className="flex items-center justify-between border-t border-gray-200 bg-red-50 px-3 py-1.5 text-xs text-red-700">
+              <span>
+                {selectedQuestionIds.size} pregunta
+                {selectedQuestionIds.size === 1 ? "" : "s"} seleccionada
+                {selectedQuestionIds.size === 1 ? "" : "s"}
+              </span>
+              <button
+                onClick={() => setSelectedQuestionIds(new Set())}
+                className="font-medium hover:underline"
+              >
+                Limpiar
+              </button>
+            </div>
+          )}
 
           <div className="flex items-center gap-2 border-t border-gray-200 bg-white p-2">
             <input
@@ -278,12 +369,16 @@ export function CensosChatWidget() {
               className="flex-1 rounded-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#b48a70]"
             />
             <button
-              onClick={handleSend}
-              disabled={!draft.trim()}
+              onClick={() => void handleSend()}
+              disabled={!draft.trim() || isComparing}
               className="h-9 w-9 shrink-0 grid place-items-center rounded-full bg-[#5b1d27] text-white disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 active:scale-95 transition"
               aria-label="Enviar mensaje"
             >
-              <Send className="w-4 h-4" />
+              {isComparing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
             </button>
           </div>
         </div>
@@ -301,6 +396,8 @@ export function CensosChatWidget() {
         isOpen={activeQuestionCenso !== null}
         censo={activeQuestionCenso}
         onClose={() => setActiveQuestionCenso(null)}
+        selectedQuestionIds={selectedQuestionIds}
+        onToggleQuestion={handleToggleQuestion}
       />
     </div>
   );

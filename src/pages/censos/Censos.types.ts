@@ -266,6 +266,11 @@ export interface FindQuestionsResult {
   questions?: QuestionSearchItem[] | null;
 }
 
+export interface CompareQuestionsResult {
+  ok: boolean;
+  message: string;
+}
+
 export interface QuestionDetail {
   id: string;
   name: string;

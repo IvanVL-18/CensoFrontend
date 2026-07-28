@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Eye, Loader2, Search, X } from "lucide-react";
+import clsx from "clsx";
 import { findQuestions, getQuestionDetail } from "../Censos.service";
 import type {
   CensusOption,
@@ -12,6 +13,8 @@ interface CensusQuestionSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   censo: CensusOption | null;
+  selectedQuestionIds: Set<string>;
+  onToggleQuestion: (questionId: string) => void;
 }
 
 const getQuestionLabel = (item: QuestionSearchItem): string =>
@@ -28,6 +31,8 @@ export function CensusQuestionSearchModal({
   isOpen,
   onClose,
   censo,
+  selectedQuestionIds,
+  onToggleQuestion,
 }: CensusQuestionSearchModalProps) {
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -166,10 +171,22 @@ export function CensusQuestionSearchModal({
           {!error &&
             results.map((item, index) => {
               const context = getQuestionContext(item);
+              const questionId = item.question?.id;
+              const isSelected =
+                questionId != null && selectedQuestionIds.has(questionId);
+
               return (
                 <div
                   key={item.id ?? index}
-                  className="flex items-start justify-between gap-2 p-3 rounded-lg border border-gray-200 mb-2 text-sm text-gray-700"
+                  onClick={() => questionId != null && onToggleQuestion(questionId)}
+                  role="button"
+                  tabIndex={0}
+                  className={clsx(
+                    "flex items-start justify-between gap-2 p-3 rounded-lg border-2 mb-2 text-sm text-gray-700 cursor-pointer transition-colors",
+                    isSelected
+                      ? "border-red-400 bg-red-50"
+                      : "border-gray-200 hover:border-gray-300",
+                  )}
                 >
                   <div className="min-w-0">
                     <p>{getQuestionLabel(item)}</p>
@@ -178,7 +195,10 @@ export function CensusQuestionSearchModal({
                     )}
                   </div>
                   <button
-                    onClick={() => void handleViewQuestion(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void handleViewQuestion(item);
+                    }}
                     className="shrink-0 h-7 w-7 grid place-items-center rounded-full hover:bg-gray-100 text-[#5b1d27] transition"
                     aria-label={`Ver pregunta ${getQuestionLabel(item)}`}
                   >
