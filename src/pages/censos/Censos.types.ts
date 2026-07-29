@@ -165,8 +165,25 @@ export interface CensusViewSectionRef {
   name: string;
 }
 
+export interface CensusViewQuestionRef {
+  id: string;
+  index: string;
+  name: string;
+}
+
+export interface CensusViewQuestionItem {
+  question: CensusViewQuestionRef;
+}
+
 export interface CensusViewSectionItem {
   section: CensusViewSectionRef;
+  census_questions: CensusViewQuestionItem[];
+}
+
+/** Sección con sus subsecciones anidadas, derivadas de la profundidad del índice. */
+export interface CensusSectionNode extends CensusViewSectionItem {
+  depth: number;
+  children: CensusSectionNode[];
 }
 
 export interface CensusViewModuleItem {

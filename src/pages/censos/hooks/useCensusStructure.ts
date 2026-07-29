@@ -10,6 +10,7 @@ import type {
   FilterIndicator,
   CensusQueryFilters,
 } from "../Censos.types";
+import { compareIndex } from "../../../utils/censusIndex";
 
 export function useCensusStructure(
   censusId: string | undefined,
@@ -26,8 +27,12 @@ export function useCensusStructure(
   // Indicators from filters endpoint
   const [indicators, setIndicators] = useState<FilterIndicator[]>([]);
 
-  // Section IDs allowed by indicator/attention query
-  const [allowedIds, setAllowedIds] = useState<Set<string> | null>(null);
+  /*
+   * Índices de sección permitidos por el filtro de indicador/atención. Se compara por índice
+   * y no por id: los ids viajan encriptados con IV aleatorio, así que dos respuestas del
+   * backend nunca producen la misma cadena para la misma sección.
+   */
+  const [allowedIndexes, setAllowedIndexes] = useState<Set<string> | null>(null);
   const [queryLoading, setQueryLoading] = useState(false);
 
   // Load full structure once
@@ -36,7 +41,19 @@ export function useCensusStructure(
     setStructureLoading(true);
     setError(null);
     getCensusStructure(censusId, "full")
-      .then((res) => setAllModules(res.census_modules))
+      .then((res) =>
+        setAllModules(
+          [...res.census_modules]
+            .map((m) => ({
+              ...m,
+              census_sections: (m.census_sections ?? []).map((s) => ({
+                ...s,
+                census_questions: s.census_questions ?? [],
+              })),
+            }))
+            .sort((a, b) => compareIndex(a.module.index, b.module.index)),
+        ),
+      )
       .catch((err) => setError(err?.message ?? "Error al cargar la estructura del censo."))
       .finally(() => setStructureLoading(false));
   }, [censusId]);
@@ -55,7 +72,7 @@ export function useCensusStructure(
       selectedIndicatorId !== "" || requiredAttention !== undefined;
 
     if (!censusId || !selectedModuleId || !hasActiveFilter) {
-      setAllowedIds(null);
+      setAllowedIndexes(null);
       return;
     }
 
@@ -72,10 +89,10 @@ export function useCensusStructure(
     queryCensusSections(filters, controller.signal)
       .then((res) => {
         if (!controller.signal.aborted)
-          setAllowedIds(new Set(res.sections.map((s) => s.id)));
+          setAllowedIndexes(new Set(res.sections.map((s) => s.index)));
       })
       .catch(() => {
-        if (!controller.signal.aborted) setAllowedIds(null);
+        if (!controller.signal.aborted) setAllowedIndexes(null);
       })
       .finally(() => {
         if (!controller.signal.aborted) setQueryLoading(false);
@@ -100,12 +117,12 @@ export function useCensusStructure(
       result = result.filter((m) => m.module.id === selectedModuleId);
     }
 
-    if (allowedIds !== null) {
+    if (allowedIndexes !== null) {
       result = result
         .map((m) => ({
           ...m,
           census_sections: m.census_sections.filter((s) =>
-            allowedIds.has(s.section.id),
+            allowedIndexes.has(s.section.index),
           ),
         }))
         .filter((m) => m.census_sections.length > 0);
@@ -113,20 +130,28 @@ export function useCensusStructure(
 
     if (search.trim()) {
       const q = search.toLowerCase();
+      const matches = (index: string, name: string) =>
+        name.toLowerCase().includes(q) || index.toLowerCase().includes(q);
+
       result = result
         .map((m) => ({
           ...m,
-          census_sections: m.census_sections.filter(
-            (s) =>
-              s.section.name.toLowerCase().includes(q) ||
-              s.section.index.toLowerCase().includes(q),
-          ),
+          census_sections: m.census_sections
+            .map((s) => {
+              // Si casa la sección se muestra completa; si no, solo las preguntas que casan.
+              if (matches(s.section.index, s.section.name)) return s;
+              const hits = s.census_questions.filter((q2) =>
+                matches(q2.question.index, q2.question.name),
+              );
+              return hits.length > 0 ? { ...s, census_questions: hits } : null;
+            })
+            .filter((s): s is NonNullable<typeof s> => s !== null),
         }))
         .filter((m) => m.census_sections.length > 0);
     }
 
     return result;
-  }, [allModules, selectedModuleId, allowedIds, search]);
+  }, [allModules, selectedModuleId, allowedIndexes, search]);
 
   return {
     modules: filtered,

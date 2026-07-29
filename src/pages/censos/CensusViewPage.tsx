@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ChevronRight,
@@ -8,19 +8,138 @@ import {
   AlertCircle,
   ArrowLeft,
   Layers,
+  CornerDownRight,
+  HelpCircle,
   Search,
   Filter,
   SlidersHorizontal,
 } from "lucide-react";
 import AddButton from "../../components/AddButton";
 import { useCensusStructure } from "./hooks/useCensusStructure";
-import type { CensusViewModuleItem } from "./Censos.types";
+import {
+  buildSectionTree,
+  countQuestions,
+  countSections,
+} from "../../utils/censusIndex";
+import type { CensusSectionNode, CensusViewModuleItem } from "./Censos.types";
 
 const inputCls =
   "w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#DDC9A3] focus:ring-4 focus:ring-[#DDC9A3]/20 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
 
+/** Sangría en píxeles según qué tan profundo cuelga el índice del módulo. */
+const indentFor = (depth: number) => 20 + depth * 22;
+
+function plural(n: number, singular: string, pluralWord: string) {
+  return `${n} ${n === 1 ? singular : pluralWord}`;
+}
+
+function SectionRow({ node }: { node: CensusSectionNode }) {
+  const questions = node.census_questions;
+  const hasChildren = node.children.length > 0;
+  const [openChildren, setOpenChildren] = useState(true);
+  const [openQuestions, setOpenQuestions] = useState(false);
+
+  // El primer nivel es una sección; de ahí para abajo son subsecciones.
+  const isSubsection = node.depth > 1;
+
+  return (
+    <>
+      <div
+        className="flex items-center gap-2.5 py-2.5 pr-5 border-b border-slate-50"
+        style={{ paddingLeft: indentFor(node.depth) }}
+      >
+        {hasChildren ? (
+          <button
+            onClick={() => setOpenChildren((v) => !v)}
+            aria-label={openChildren ? "Contraer subsecciones" : "Expandir subsecciones"}
+            className="shrink-0 rounded hover:bg-slate-100 transition-colors"
+          >
+            {openChildren ? (
+              <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+            ) : (
+              <ChevronRightIcon className="h-3.5 w-3.5 text-slate-400" />
+            )}
+          </button>
+        ) : (
+          <span className="w-3.5 shrink-0" />
+        )}
+
+        {isSubsection ? (
+          <CornerDownRight className="h-3.5 w-3.5 text-slate-300 shrink-0" />
+        ) : (
+          <Layers className="h-3.5 w-3.5 text-slate-300 shrink-0" />
+        )}
+
+        <span
+          className={`font-mono text-xs shrink-0 tabular-nums ${
+            isSubsection ? "text-slate-400" : "text-slate-500 font-semibold"
+          }`}
+          style={{ minWidth: 56 }}
+        >
+          {node.section.index}
+        </span>
+
+        <span
+          className={`text-sm ${
+            isSubsection ? "text-slate-500" : "text-slate-700 font-medium"
+          }`}
+        >
+          {node.section.name}
+        </span>
+
+        {questions.length > 0 && (
+          <button
+            onClick={() => setOpenQuestions((v) => !v)}
+            className="ml-auto shrink-0 flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] text-slate-500 bg-slate-50 hover:bg-slate-100 transition-colors"
+          >
+            <HelpCircle className="h-3 w-3" />
+            {plural(questions.length, "pregunta", "preguntas")}
+            {openQuestions ? (
+              <ChevronDown className="h-3 w-3" />
+            ) : (
+              <ChevronRightIcon className="h-3 w-3" />
+            )}
+          </button>
+        )}
+      </div>
+
+      {openQuestions &&
+        questions.map((q) => (
+          <div
+            key={q.question.index}
+            className="flex items-start gap-2.5 py-2 pr-5 border-b border-slate-50 bg-slate-50/40"
+            style={{ paddingLeft: indentFor(node.depth + 1) + 22 }}
+          >
+            <span
+              className="font-mono text-[11px] text-[#7A0C2E]/70 shrink-0 tabular-nums pt-0.5"
+              style={{ minWidth: 56 }}
+            >
+              {q.question.index}
+            </span>
+            <span className="text-[13px] text-slate-600 leading-snug">
+              {q.question.name}
+            </span>
+          </div>
+        ))}
+
+      {hasChildren &&
+        openChildren &&
+        node.children.map((child) => (
+          <SectionRow key={child.section.index} node={child} />
+        ))}
+    </>
+  );
+}
+
 function ModuleBlock({ item }: { item: CensusViewModuleItem }) {
   const [open, setOpen] = useState(true);
+
+  const tree = useMemo(
+    () => buildSectionTree(item.census_sections, item.module.index),
+    [item.census_sections, item.module.index],
+  );
+  const totalSections = countSections(tree);
+  const totalQuestions = countQuestions(tree);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -28,15 +147,16 @@ function ModuleBlock({ item }: { item: CensusViewModuleItem }) {
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition-colors"
       >
-        <span className="font-mono text-sm font-bold text-[#7A0C2E] w-8 shrink-0 text-left">
+        <span className="font-mono text-sm font-bold text-[#7A0C2E] w-8 shrink-0 text-left tabular-nums">
           {item.module.index}
         </span>
         <span className="flex-1 text-sm font-semibold text-slate-800 text-left">
           {item.module.name}
         </span>
         <span className="text-xs text-slate-400 mr-1">
-          {item.census_sections.length}{" "}
-          {item.census_sections.length === 1 ? "sección" : "secciones"}
+          {plural(totalSections, "sección", "secciones")}
+          {totalQuestions > 0 &&
+            ` · ${plural(totalQuestions, "pregunta", "preguntas")}`}
         </span>
         {open ? (
           <ChevronDown className="h-4 w-4 text-slate-400 shrink-0" />
@@ -46,23 +166,14 @@ function ModuleBlock({ item }: { item: CensusViewModuleItem }) {
       </button>
 
       {open && (
-        <div className="border-t border-slate-100">
-          {item.census_sections.length === 0 ? (
+        <div className="border-t border-slate-100 [&>*:last-child]:border-b-0">
+          {tree.length === 0 ? (
             <p className="px-14 py-3 text-sm text-slate-400 italic">
               Sin secciones.
             </p>
           ) : (
-            item.census_sections.map((s) => (
-              <div
-                key={s.section.id}
-                className="flex items-center gap-3 py-2.5 px-5 pl-14 border-b border-slate-50 last:border-0"
-              >
-                <Layers className="h-3.5 w-3.5 text-slate-300 shrink-0" />
-                <span className="font-mono text-xs text-slate-400 w-12 shrink-0">
-                  {s.section.index}
-                </span>
-                <span className="text-sm text-slate-600">{s.section.name}</span>
-              </div>
+            tree.map((node) => (
+              <SectionRow key={node.section.index} node={node} />
             ))
           )}
         </div>
@@ -216,7 +327,7 @@ export default function CensusViewPage() {
             {/* Search */}
             <div className="flex-[2] min-w-[160px]">
               <label className="block text-xs font-medium text-slate-500 mb-1.5">
-                Buscar sección
+                Buscar sección o pregunta
               </label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
@@ -262,7 +373,7 @@ export default function CensusViewPage() {
         ) : (
           <div className="space-y-3">
             {modules.map((item) => (
-              <ModuleBlock key={item.module.id} item={item} />
+              <ModuleBlock key={item.module.index} item={item} />
             ))}
           </div>
         )
