@@ -2,8 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronRight, Loader2, MessageCircle, Send, X } from "lucide-react";
 import clsx from "clsx";
 import { compareQuestions, findCensus, getCensusesList } from "../Censos.service";
-import type { CensusOption, CompareCensusGroup } from "../Censos.types";
+import type {
+  CensusOption,
+  ChatHistoryTurn,
+  CompareCensusGroup,
+} from "../Censos.types";
 import { CensusQuestionSearchModal } from "./CensusQuestionSearchModal";
+import { ChatMarkdown } from "./ChatMarkdown";
 
 type ChatMessage =
   | { id: number; from: "user" | "bot"; kind: "text"; text: string }
@@ -28,9 +33,33 @@ const toDisplayText = (value: unknown, fallback: string): string => {
   }
 };
 
+/**
+ * Convierte el hilo del chat al formato que espera el backend.
+ *
+ * Se descartan las tarjetas de censos (no son texto) y el saludo inicial, que
+ * es de la UI y no de la conversación: mandarlo haría que la IA creyera que
+ * ella listó los censos.
+ */
+const toHistory = (messages: ChatMessage[]): ChatHistoryTurn[] =>
+  // flatMap y no filter+map: dentro del condicional TypeScript sí acota el
+  // union a la variante con `text`, cosa que un filter() no hace.
+  messages.flatMap((m) =>
+    m.kind === "text" && m.id !== GREETING_ID
+      ? [
+          {
+            role:
+              m.from === "user" ? ("user" as const) : ("assistant" as const),
+            content: m.text,
+          },
+        ]
+      : [],
+  );
+
+const GREETING_ID = nextMessageId();
+
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
-    id: nextMessageId(),
+    id: GREETING_ID,
     from: "bot",
     kind: "text",
     text: "¡Hola! Estos son los censos disponibles. Selecciona los que quieras consultar y confirma tu elección.",
@@ -89,6 +118,7 @@ export function CensosChatWidget() {
           {
             id: nextMessageId(),
             from: "bot",
+            kind: "text",
             text: "No pude cargar la lista de censos. Intenta de nuevo más tarde.",
           },
         ]);
@@ -193,17 +223,34 @@ export function CensosChatWidget() {
         id: censusId,
         questions: Array.from(questionIds),
       }));
-      const result = await compareQuestions(censusGroups, text);
+      // El historial se toma del estado previo a este envío: `messages` aún no
+      // incluye el mensaje que se acaba de escribir, y el backend agrega el
+      // prompt actual por su cuenta.
+      const result = await compareQuestions(
+        censusGroups,
+        text,
+        toHistory(messages),
+      );
+
+      // El texto para el usuario está en analysis.answer; `result.message` es
+      // solo el estado del endpoint. Si el análisis falló, analysis.message
+      // trae el motivo (p. ej. credenciales de Bedrock vencidas).
+      const analysis = result.analysis;
+      const answer =
+        analysis?.ok && typeof analysis.answer === "string"
+          ? analysis.answer
+          : toDisplayText(
+              analysis?.message,
+              "No se pudo obtener el análisis de la IA.",
+            );
+
       setMessages((prev) => [
         ...prev,
-        {
-          id: nextMessageId(),
-          from: "bot",
-          kind: "text",
-          text: toDisplayText(result.message, "Comparación procesada correctamente."),
-        },
+        { id: nextMessageId(), from: "bot", kind: "text", text: answer },
       ]);
-      setSelectedQuestionsByCensus(new Map());
+      // La selección se conserva a propósito: es el contexto sobre el que
+      // sigue conversando el usuario. Limpiarla aquí hacía que la segunda
+      // pregunta no llegara al backend.
     } catch (err: any) {
       const msg = toDisplayText(
         err.response?.data?.message ?? err.message,
@@ -285,13 +332,19 @@ export function CensosChatWidget() {
                 >
                   <div
                     className={clsx(
-                      "max-w-[75%] rounded-2xl px-3 py-2 text-sm shadow-sm",
+                      "rounded-2xl px-3 py-2 text-sm shadow-sm",
                       message.from === "user"
-                        ? "bg-[#5b1d27] text-white rounded-br-sm"
-                        : "bg-white text-gray-700 border border-gray-200 rounded-bl-sm",
+                        ? "max-w-[75%] bg-[#5b1d27] text-white rounded-br-sm"
+                        : // Las respuestas de la IA traen tablas y listas, así
+                          // que su burbuja va más ancha que la del usuario.
+                          "max-w-[90%] bg-white text-gray-700 border border-gray-200 rounded-bl-sm",
                     )}
                   >
-                    {message.text}
+                    {message.from === "bot" ? (
+                      <ChatMarkdown text={message.text} />
+                    ) : (
+                      message.text
+                    )}
                   </div>
                 </div>
               );

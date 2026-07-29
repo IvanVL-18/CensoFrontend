@@ -17,6 +17,7 @@ import type {
   QuestionDetail,
   CompareQuestionsResult,
   CompareCensusGroup,
+  ChatHistoryTurn,
 } from "./Censos.types";
 
 export type CensoFilter = "all" | "active" | "inactive";
@@ -238,12 +239,15 @@ export const findQuestions = async (
 export const compareQuestions = async (
   censusGroups: CompareCensusGroup[],
   prompt: string,
+  history: ChatHistoryTurn[] = [],
 ): Promise<CompareQuestionsResult> => {
   const response = await api.post<CompareQuestionsResult>(
     "/compare-questions",
     {
       censos: censusGroups,
       prompt,
+      // Turnos previos, sin incluir el mensaje que se está mandando ahora.
+      history,
     },
   );
   return response.data;

@@ -271,9 +271,33 @@ export interface CompareCensusGroup {
   questions: string[];
 }
 
+/** Turno del hilo que se reenvía al backend para dar contexto a la IA. */
+export interface ChatHistoryTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+/**
+ * El análisis de la IA. `message` (el hermano de arriba) es solo el estado del
+ * endpoint —"Preguntas encontradas correctamente."—; el texto que se le muestra
+ * al usuario está aquí en `answer`.
+ */
+export interface CompareAnalysis {
+  ok: boolean;
+  message: string;
+  answer: string | null;
+  usage?: {
+    input_tokens?: number | null;
+    output_tokens?: number | null;
+    cache_write_tokens?: number | null;
+    cache_read_tokens?: number | null;
+  };
+}
+
 export interface CompareQuestionsResult {
   ok: boolean;
   message: string;
+  analysis?: CompareAnalysis | null;
 }
 
 export interface QuestionDetail {
