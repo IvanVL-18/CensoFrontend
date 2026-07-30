@@ -6,6 +6,11 @@ export interface CensusSectionInfo {
 
 export interface QuestionOption {
   id: string;
+  /**
+   * Identificador estable de la fila. `id` viaja encriptado con IV aleatorio, así que cambia
+   * en cada respuesta y no sirve para reconocer la misma pregunta entre dos listados; `key` sí.
+   */
+  key: string;
   name: string;
 }
 
@@ -47,6 +52,7 @@ export interface SelectedQuestionItem {
   id: string;
   question: {
     id: string;
+    key: string;
     name: string;
   };
   index: {
@@ -68,6 +74,7 @@ export interface SearchCensusQuestionsResponse {
 }
 
 export interface CensusQuestionRow {
+  key: string;
   question_id: string;
   question_name: string;
   checked: boolean;

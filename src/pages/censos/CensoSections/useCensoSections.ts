@@ -24,6 +24,11 @@ type SelectedSectionState = {
   census_section_id: string | null;
 };
 
+/**
+ * Indexado por `section.key`, el identificador estable que manda el backend. Antes se usaba el
+ * nombre de la sección, pero hay nombres repetidos ("Programa 1" existe 12 veces): todas las
+ * homónimas compartían entrada, así que marcar una marcaba las demás y se guardaba una sola.
+ */
 type SelectedSectionsMap = Record<string, SelectedSectionState>;
 
 // Ordena índices por segmentos numéricos ("1.10" va después de "1.9").
@@ -56,12 +61,12 @@ type UseCensoSectionsReturn = {
   searchError: string | null;
   usedIndexIds: Set<string>;
   toggleSectionRow: (
-    sectionName: string,
+    sectionKey: string,
     sectionId: string,
     checked: boolean,
   ) => void;
   toggleAllSectionRows: (checked: boolean) => void;
-  changeIndex: (sectionName: string, indexId: string) => void;
+  changeIndex: (sectionKey: string, indexId: string) => void;
   saveChanges: () => Promise<boolean>;
   reload: () => Promise<void>;
   goToPage: (page: number) => void;
@@ -117,10 +122,8 @@ export const useCensoSections = (
       const map: SelectedSectionsMap = {};
 
       selectedSections.forEach((item) => {
-        const sectionName = (item.section?.name ?? "")
-          .replace(/\s+/g, " ")
-          .trim();
-        if (!sectionName) return;
+        const sectionKey = item.section?.key;
+        if (!sectionKey) return;
 
         const matchedIndex = availableIndexes.find(
           (idx) =>
@@ -128,7 +131,7 @@ export const useCensoSections = (
             item.index?.name?.trim().toLowerCase(),
         );
 
-        map[sectionName] = {
+        map[sectionKey] = {
           section_id: item.section?.id ?? "",
           index_id: matchedIndex
             ? String(matchedIndex.id)
@@ -209,20 +212,20 @@ export const useCensoSections = (
           const currentMap = mapRef.current;
           const merged = { ...currentMap };
 
-          Object.entries(freshMap).forEach(([name, backendEntry]) => {
-            if (!currentMap[name]) {
-              merged[name] = backendEntry;
+          Object.entries(freshMap).forEach(([key, backendEntry]) => {
+            if (!currentMap[key]) {
+              merged[key] = backendEntry;
             } else {
-              merged[name] = {
-                ...currentMap[name],
+              merged[key] = {
+                ...currentMap[key],
                 section_id: backendEntry.section_id,
                 index_id: backendEntry.index_id,
                 census_section_id:
                   backendEntry.census_section_id ??
-                  currentMap[name].census_section_id,
+                  currentMap[key].census_section_id,
                 stored_index_name:
                   backendEntry.stored_index_name ??
-                  currentMap[name].stored_index_name,
+                  currentMap[key].stored_index_name,
               };
             }
           });
@@ -290,12 +293,12 @@ export const useCensoSections = (
     const map = mapRef.current;
 
     return sections.map((section) => {
-      const key = section.name.replace(/\s+/g, " ").trim();
-      const sel = map[key] ?? map[section.name];
+      const sel = map[section.key];
       const isChecked = sel?.checked ?? false;
       const currentIndexId = isChecked ? (sel?.index_id ?? "") : "";
 
       return {
+        key: section.key,
         section_id: section.id,
         section_name: section.name,
         checked: isChecked,
@@ -322,13 +325,12 @@ export const useCensoSections = (
   }, [mapVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleSectionRow = useCallback(
-    (sectionName: string, sectionId: string, checked: boolean) => {
+    (sectionKey: string, sectionId: string, checked: boolean) => {
       updateMap((prev) => {
-        const key = sectionName.replace(/\s+/g, " ").trim();
-        const existing = prev[key];
+        const existing = prev[sectionKey];
         return {
           ...prev,
-          [key]: {
+          [sectionKey]: {
             section_id: existing?.section_id ?? sectionId,
             index_id: existing?.index_id ?? "",
             index_name: existing?.index_name ?? "",
@@ -347,9 +349,8 @@ export const useCensoSections = (
       updateMap((prev) => {
         const next = { ...prev };
         sections.forEach((section) => {
-          const key = section.name.replace(/\s+/g, " ").trim();
-          const existing = next[key];
-          next[key] = {
+          const existing = next[section.key];
+          next[section.key] = {
             section_id: existing?.section_id ?? section.id,
             index_id: existing?.index_id ?? "",
             index_name: existing?.index_name ?? "",
@@ -365,15 +366,18 @@ export const useCensoSections = (
   );
 
   const changeIndex = useCallback(
-    (sectionName: string, indexId: string) => {
+    (sectionKey: string, indexId: string) => {
       updateMap((prev) => {
-        const key = sectionName.replace(/\s+/g, " ").trim();
-        if (!prev[key]) return prev;
+        if (!prev[sectionKey]) return prev;
         const idxName =
           indexes.find((idx) => String(idx.id) === String(indexId))?.name ?? "";
         return {
           ...prev,
-          [key]: { ...prev[key], index_id: indexId, index_name: idxName },
+          [sectionKey]: {
+            ...prev[sectionKey],
+            index_id: indexId,
+            index_name: idxName,
+          },
         };
       });
     },

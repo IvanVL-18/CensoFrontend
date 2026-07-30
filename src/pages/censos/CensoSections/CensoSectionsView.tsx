@@ -178,7 +178,7 @@ const CensoSectionsPageContent: React.FC = () => {
 
                       return (
                         <tr
-                          key={row.section_id}
+                          key={row.key}
                           className={`border-t border-gray-200 text-sm text-gray-700 ${
                             row.checked ? "bg-green-50" : "bg-white"
                           }`}
@@ -189,7 +189,7 @@ const CensoSectionsPageContent: React.FC = () => {
                               checked={row.checked}
                               onChange={(e) =>
                                 toggleSectionRow(
-                                  row.section_name,
+                                  row.key,
                                   row.section_id,
                                   e.target.checked,
                                 )
@@ -206,7 +206,7 @@ const CensoSectionsPageContent: React.FC = () => {
                             <select
                               value={row.selected_index_id}
                               onChange={(e) =>
-                                changeIndex(row.section_name, e.target.value)
+                                changeIndex(row.key, e.target.value)
                               }
                               disabled={!row.checked}
                               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"

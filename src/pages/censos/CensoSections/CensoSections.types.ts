@@ -10,6 +10,11 @@ export interface SectionIndexOption {
 
 export interface SectionInfo {
   id: string;
+  /**
+   * Identificador estable de la fila. `id` viaja encriptado con IV aleatorio, así que cambia
+   * en cada respuesta y no sirve para reconocer la misma sección entre dos listados; `key` sí.
+   */
+  key: string;
   name: string;
 }
 
@@ -46,6 +51,7 @@ export interface SelectedSectionItem {
   id: string;
   section: {
     id: string;
+    key: string;
     name: string;
   };
   index: {
@@ -69,6 +75,7 @@ export interface SearchCensoSectionsResponse {
 }
 
 export interface CensoSectionRow {
+  key: string;
   section_id: string;
   section_name: string;
   checked: boolean;
