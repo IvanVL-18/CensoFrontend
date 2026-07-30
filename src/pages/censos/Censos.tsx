@@ -15,6 +15,7 @@ import { Toast } from "../../components/Toast";
 import type { CensoManualFormRef } from "./components/CensoManualForm";
 import { useNavigate } from "react-router-dom";
 import { CloneCensoModal } from "./components/CloneCensoModal";
+import { CensosChatWidget } from "./components/CensosChatWidget";
 import { getCenso } from "./Censos.service";
 import type { Censo } from "./Censos.types";
 
@@ -265,6 +266,8 @@ function CensosPageContent() {
         targetCenso={modals.cloningCenso}
         onSuccess={refreshCensos}
       />
+
+      <CensosChatWidget />
     </div>
   );
 }

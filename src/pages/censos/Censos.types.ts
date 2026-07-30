@@ -231,3 +231,99 @@ export interface CensusQueryFilters {
 export interface CensusQueryResponse {
   sections: CensusQuerySection[];
 }
+
+/* =========================
+   CENSUS CHAT WIDGET (AI query prototype)
+========================= */
+
+export interface CensusOption {
+  id: string;
+  name: string;
+}
+
+export interface FindCensusResult {
+  ok: boolean;
+  message: string;
+  census?: CensusOption[];
+}
+
+export interface QuestionSearchQuestion {
+  id?: string;
+  name?: string;
+}
+
+export interface QuestionSearchModuleRef {
+  id?: number;
+  name?: string;
+}
+
+export interface QuestionSearchCensusModule {
+  module?: QuestionSearchModuleRef;
+}
+
+export interface QuestionSearchSectionRef {
+  id?: number;
+  name?: string;
+}
+
+export interface QuestionSearchCensusSection {
+  section?: QuestionSearchSectionRef;
+  census_module?: QuestionSearchCensusModule;
+}
+
+export interface QuestionSearchItem {
+  id?: string;
+  question?: QuestionSearchQuestion;
+  census_section?: QuestionSearchCensusSection;
+}
+
+export interface FindQuestionsResult {
+  ok: boolean;
+  message: string;
+  questions?: QuestionSearchItem[] | null;
+}
+
+export interface CompareCensusGroup {
+  id: string;
+  questions: string[];
+}
+
+/** Turno del hilo que se reenvía al backend para dar contexto a la IA. */
+export interface ChatHistoryTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+/**
+ * El análisis de la IA. `message` (el hermano de arriba) es solo el estado del
+ * endpoint —"Preguntas encontradas correctamente."—; el texto que se le muestra
+ * al usuario está aquí en `answer`.
+ */
+export interface CompareAnalysis {
+  ok: boolean;
+  message: string;
+  answer: string | null;
+  usage?: {
+    input_tokens?: number | null;
+    output_tokens?: number | null;
+    cache_write_tokens?: number | null;
+    cache_read_tokens?: number | null;
+  };
+}
+
+export interface CompareQuestionsResult {
+  ok: boolean;
+  message: string;
+  analysis?: CompareAnalysis | null;
+}
+
+export interface QuestionDetail {
+  id: string;
+  name: string;
+  instructions?: string | null;
+  commentaries: boolean;
+  question_structure?: unknown;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+}

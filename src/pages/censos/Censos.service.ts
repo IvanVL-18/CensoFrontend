@@ -11,6 +11,13 @@ import type {
   GetCensusFiltersResponse,
   CensusQueryFilters,
   CensusQueryResponse,
+  CensusOption,
+  FindCensusResult,
+  FindQuestionsResult,
+  QuestionDetail,
+  CompareQuestionsResult,
+  CompareCensusGroup,
+  ChatHistoryTurn,
 } from "./Censos.types";
 
 export type CensoFilter = "all" | "active" | "inactive";
@@ -198,4 +205,61 @@ export const queryCensusSections = async (
 ): Promise<CensusQueryResponse> => {
   const { data } = await api.post("/censuses/filters", filters, { signal });
   return data;
+};
+
+export const getCensusesList = async (
+  signal?: AbortSignal,
+): Promise<CensusOption[]> => {
+  const response = await api.get<{ data: CensusOption[] }>("/censuses", {
+    signal,
+  });
+  return response.data.data;
+};
+
+export const findCensus = async (
+  censusIds: string[],
+): Promise<FindCensusResult> => {
+  const response = await api.post<FindCensusResult>("/find-census", {
+    censos: censusIds,
+  });
+  return response.data;
+};
+
+export const findQuestions = async (
+  censusId: string,
+  search: string,
+): Promise<FindQuestionsResult> => {
+  const response = await api.post<FindQuestionsResult>("/find-questions", {
+    censos: [censusId],
+    questions: [search],
+  });
+  return response.data;
+};
+
+export const compareQuestions = async (
+  censusGroups: CompareCensusGroup[],
+  prompt: string,
+  history: ChatHistoryTurn[] = [],
+): Promise<CompareQuestionsResult> => {
+  const response = await api.post<CompareQuestionsResult>(
+    "/compare-questions",
+    {
+      censos: censusGroups,
+      prompt,
+      // Turnos previos, sin incluir el mensaje que se está mandando ahora.
+      history,
+    },
+  );
+  return response.data;
+};
+
+export const getQuestionDetail = async (
+  questionId: string,
+  signal?: AbortSignal,
+): Promise<QuestionDetail> => {
+  const response = await api.get<{ data: QuestionDetail }>(
+    `/questions/${questionId}`,
+    { signal },
+  );
+  return response.data.data;
 };
