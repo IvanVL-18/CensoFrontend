@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCensoSections,
+  searchCensoSectionIndexes,
   searchCensoSections,
   storeCensoSections,
   updateCensoSections,
@@ -66,7 +67,12 @@ type UseCensoSectionsReturn = {
     checked: boolean,
   ) => void;
   toggleAllSectionRows: (checked: boolean) => void;
-  changeIndex: (sectionKey: string, indexId: string) => void;
+  selectIndex: (sectionKey: string, option: SectionIndexOption | null) => void;
+  /** Busca índices asignables del subárbol del módulo; alimenta el combobox de cada fila. */
+  searchIndexes: (
+    term: string,
+    signal: AbortSignal,
+  ) => Promise<{ indexes: SectionIndexOption[]; hasMore: boolean }>;
   saveChanges: () => Promise<boolean>;
   reload: () => Promise<void>;
   goToPage: (page: number) => void;
@@ -365,23 +371,46 @@ export const useCensoSections = (
     [sections, updateMap],
   );
 
-  const changeIndex = useCallback(
-    (sectionKey: string, indexId: string) => {
+  const searchIndexes = useCallback(
+    async (term: string, signal: AbortSignal) => {
+      const data = await searchCensoSectionIndexes(
+        censusModuleId,
+        term,
+        signal,
+      );
+      return { indexes: data.indexes ?? [], hasMore: Boolean(data.hasMore) };
+    },
+    [censusModuleId],
+  );
+
+  const selectIndex = useCallback(
+    (sectionKey: string, option: SectionIndexOption | null) => {
+      /*
+       * El índice puede venir del buscador y no estar en `indexes`, que solo trae los
+       * hijos directos del módulo. Se registra para que la columna "Asignación actual"
+       * pueda resolver su nombre.
+       */
+      if (option) {
+        setIndexes((prev) =>
+          prev.some((idx) => String(idx.id) === String(option.id))
+            ? prev
+            : [...prev, option].sort(compareIndexNames),
+        );
+      }
+
       updateMap((prev) => {
         if (!prev[sectionKey]) return prev;
-        const idxName =
-          indexes.find((idx) => String(idx.id) === String(indexId))?.name ?? "";
         return {
           ...prev,
           [sectionKey]: {
             ...prev[sectionKey],
-            index_id: indexId,
-            index_name: idxName,
+            index_id: option ? String(option.id) : "",
+            index_name: option?.name ?? "",
           },
         };
       });
     },
-    [updateMap, indexes],
+    [updateMap],
   );
 
   const validItems = useMemo(
@@ -483,7 +512,8 @@ export const useCensoSections = (
     usedIndexIds,
     toggleSectionRow,
     toggleAllSectionRows,
-    changeIndex,
+    selectIndex,
+    searchIndexes,
     saveChanges,
     reload,
     goToPage,

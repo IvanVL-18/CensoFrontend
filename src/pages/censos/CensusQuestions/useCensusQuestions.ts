@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCensusQuestions,
+  searchCensusQuestionIndexes,
   searchCensusQuestions,
   storeCensusQuestions,
   updateCensusQuestions,
@@ -66,7 +67,12 @@ type UseCensusQuestionsReturn = {
   usedIndexIds: Set<string>;
   toggleQuestionRow: (questionKey: string, questionId: string, checked: boolean) => void;
   toggleAllQuestionRows: (checked: boolean) => void;
-  changeIndex: (questionKey: string, indexId: string) => void;
+  selectIndex: (questionKey: string, option: QuestionIndexOption | null) => void;
+  /** Busca índices asignables del subárbol de la sección; alimenta el combobox de cada fila. */
+  searchIndexes: (
+    term: string,
+    signal: AbortSignal,
+  ) => Promise<{ indexes: QuestionIndexOption[]; hasMore: boolean }>;
   saveChanges: () => Promise<boolean>;
   reload: () => Promise<void>;
   goToPage: (page: number) => void;
@@ -377,23 +383,46 @@ export const useCensusQuestions = (
     [questions, updateMap],
   );
 
-  const changeIndex = useCallback(
-    (questionKey: string, indexId: string) => {
+  const searchIndexes = useCallback(
+    async (term: string, signal: AbortSignal) => {
+      const data = await searchCensusQuestionIndexes(
+        censusSectionId,
+        term,
+        signal,
+      );
+      return { indexes: data.indexes ?? [], hasMore: Boolean(data.hasMore) };
+    },
+    [censusSectionId],
+  );
+
+  const selectIndex = useCallback(
+    (questionKey: string, option: QuestionIndexOption | null) => {
+      /*
+       * El índice puede venir del buscador y no estar en `indexes`, que solo trae los
+       * hijos directos de la sección. Se registra para que la columna "Asignación
+       * actual" pueda resolver su nombre.
+       */
+      if (option) {
+        setIndexes((prev) =>
+          prev.some((idx) => String(idx.id) === String(option.id))
+            ? prev
+            : [...prev, option].sort(compareIndexNames),
+        );
+      }
+
       updateMap((prev) => {
         if (!prev[questionKey]) return prev;
-        const idxName =
-          indexes.find((idx) => String(idx.id) === String(indexId))?.name ?? "";
         return {
           ...prev,
           [questionKey]: {
             ...prev[questionKey],
-            index_id: indexId,
-            index_name: idxName,
+            index_id: option ? String(option.id) : "",
+            index_name: option?.name ?? "",
           },
         };
       });
     },
-    [updateMap, indexes],
+    [updateMap],
   );
 
   const validItems = useMemo(
@@ -496,7 +525,8 @@ export const useCensusQuestions = (
     usedIndexIds,
     toggleQuestionRow,
     toggleAllQuestionRows,
-    changeIndex,
+    selectIndex,
+    searchIndexes,
     saveChanges,
     reload,
     goToPage,

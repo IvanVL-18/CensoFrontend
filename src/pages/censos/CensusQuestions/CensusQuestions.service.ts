@@ -6,6 +6,7 @@ import type {
   UpdateCensusQuestionsPayload,
   ApiMessageResponse,
   EncryptedCensusSectionId,
+  IndexSearchResponse,
 } from "./CensusQuestions.types";
 
 export const getCensusQuestions = async (
@@ -16,6 +17,27 @@ export const getCensusQuestions = async (
   const response = await api.get<GetCensusQuestionsResponse>(
     `/census-question/${censusSectionId}`,
     { signal, params: { page } },
+  );
+  return response.data;
+};
+
+/**
+ * Índices asignables a las preguntas de la sección, filtrados por prefijo.
+ *
+ * Sin `search` el backend devuelve los hijos directos del índice de la sección; con
+ * término busca en todo el subárbol, a cualquier profundidad.
+ */
+export const searchCensusQuestionIndexes = async (
+  censusSectionId: EncryptedCensusSectionId,
+  search: string,
+  signal?: AbortSignal,
+): Promise<IndexSearchResponse> => {
+  const response = await api.get<IndexSearchResponse>(
+    `/census-question/${censusSectionId}/indexes`,
+    {
+      signal,
+      params: search ? { search } : {},
+    },
   );
   return response.data;
 };

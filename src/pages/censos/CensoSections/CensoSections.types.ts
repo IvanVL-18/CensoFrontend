@@ -8,6 +8,13 @@ export interface SectionIndexOption {
   name: string;
 }
 
+/** Respuesta de GET /census-section/{id}/indexes. */
+export interface IndexSearchResponse {
+  indexes: SectionIndexOption[];
+  /** true si el backend recortó la lista; el usuario debe acotar más la búsqueda. */
+  hasMore: boolean;
+}
+
 export interface SectionInfo {
   id: string;
   /**

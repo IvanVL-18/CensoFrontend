@@ -14,6 +14,13 @@ export interface QuestionOption {
   name: string;
 }
 
+/** Respuesta de GET /census-question/{id}/indexes. */
+export interface IndexSearchResponse {
+  indexes: QuestionIndexOption[];
+  /** true si el backend recortó la lista; el usuario debe acotar más la búsqueda. */
+  hasMore: boolean;
+}
+
 export interface QuestionIndexOption {
   id: string;
   name: string;

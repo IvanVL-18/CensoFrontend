@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Eye } from "lucide-react";
 import { useCensusQuestions } from "./useCensusQuestions";
 import Pagination from "../../../components/Pagination";
 import { SearchInput } from "../../../components/SearchInput";
+import { IndexCombobox } from "../../../components/IndexCombobox";
 import { ViewQuestionModal } from "./ViewQuestionsModal";
 import { ToastProvider, useToast } from "../../../context/ToastContext";
 import { Toast } from "../../../components/Toast";
@@ -58,7 +59,8 @@ const CensusQuestionsPageContent: React.FC = () => {
     usedIndexIds,
     toggleQuestionRow,
     toggleAllQuestionRows,
-    changeIndex,
+    selectIndex,
+    searchIndexes,
     saveChanges,
     goToPage,
   } = useCensusQuestions(id ?? "");
@@ -190,28 +192,20 @@ const CensusQuestionsPageContent: React.FC = () => {
 
 
                         <td className="px-4 py-3">
-                          <select
+                          <IndexCombobox
                             value={row.selected_index_id}
-                            onChange={(e) =>
-                              changeIndex(row.key, e.target.value)
+                            valueName={
+                              row.selected_index_id
+                                ? (selectedIndexName ??
+                                  row.stored_index_name ??
+                                  "")
+                                : ""
                             }
+                            onSelect={(option) => selectIndex(row.key, option)}
+                            search={searchIndexes}
+                            excludedIds={usedIndexIds}
                             disabled={!row.checked}
-                            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pantone-7421)] disabled:cursor-not-allowed disabled:bg-gray-100"
-                          >
-                            <option value="">Selecciona un índice</option>
-                            {indexes
-                              .filter(
-                                (idx) =>
-                                  String(idx.id) ===
-                                    String(row.selected_index_id) ||
-                                  !usedIndexIds.has(String(idx.id)),
-                              )
-                              .map((idx) => (
-                                <option key={idx.id} value={idx.id}>
-                                  {idx.name}
-                                </option>
-                              ))}
-                          </select>
+                          />
                         </td>
 
 

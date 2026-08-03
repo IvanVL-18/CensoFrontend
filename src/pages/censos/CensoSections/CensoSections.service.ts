@@ -9,6 +9,7 @@ import type {
   GetAssignmentResponse,
   StoreAssignmentPayload,
   UpdateAssignmentPayload,
+  IndexSearchResponse,
 } from "./CensoSections.types";
 
 export const getCensoSections = async (
@@ -21,6 +22,28 @@ export const getCensoSections = async (
     {
       signal,
       params: { page },
+    },
+  );
+
+  return response.data;
+};
+
+/**
+ * Índices asignables a las secciones del módulo, filtrados por prefijo.
+ *
+ * Sin `search` el backend devuelve los hijos directos del índice del módulo; con término
+ * busca en todo el subárbol, a cualquier profundidad.
+ */
+export const searchCensoSectionIndexes = async (
+  censusModuleId: EncryptedCensusModuleId,
+  search: string,
+  signal?: AbortSignal,
+): Promise<IndexSearchResponse> => {
+  const response = await api.get<IndexSearchResponse>(
+    `/census-section/${censusModuleId}/indexes`,
+    {
+      signal,
+      params: search ? { search } : {},
     },
   );
 
