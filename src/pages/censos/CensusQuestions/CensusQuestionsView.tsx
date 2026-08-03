@@ -108,7 +108,7 @@ const CensusQuestionsPageContent: React.FC = () => {
             />
           </div>
 
-          <div className="relative overflow-x-auto rounded-xl border border-gray-200">
+          <div className="relative rounded-xl border border-gray-200">
             {paginating && (
               <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70">
                 <span className="text-sm text-gray-400">

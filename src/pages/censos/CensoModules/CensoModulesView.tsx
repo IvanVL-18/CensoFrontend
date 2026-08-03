@@ -83,7 +83,7 @@ const CensoModulesPageContent: React.FC = () => {
         </div>
 
         <div className="p-6">
-          <div className="overflow-x-auto rounded-xl border border-gray-200">
+          <div className=" rounded-xl border border-gray-200">
             <table className="min-w-full border-collapse">
               <thead className="bg-gray-50">
                 <tr className="text-left text-sm font-semibold text-gray-700">
