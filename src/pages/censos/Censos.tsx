@@ -13,7 +13,6 @@ import { BulkErrorModal } from "./components/BulkErrorModal";
 import { ToastProvider, useToast } from "../../context/ToastContext";
 import { Toast } from "../../components/Toast";
 import type { CensoManualFormRef } from "./components/CensoManualForm";
-import { useNavigate } from "react-router-dom";
 import { CloneCensoModal } from "./components/CloneCensoModal";
 import { CensosChatWidget } from "./components/CensosChatWidget";
 import { getCenso } from "./Censos.service";
@@ -50,7 +49,6 @@ function CensosPageContent() {
     handleSearch,
     handlePageChange,
   } = useCensosData();
-  const navigate = useNavigate();
 
   const [createModalMode, setCreateModalMode] = useState<"create" | "upload">(
     "create",

@@ -30,8 +30,8 @@ export function CatalogModal({
     Module?: string;
   }>({});
   const [serverError, setServerError] = useState<string | null>(null);
-  const [nameCharCount, setNameCharCount] = useState(0);
-  const [slugCharCount, setSlugCharCount] = useState(0);
+  const [, setNameCharCount] = useState(0);
+  const [, setSlugCharCount] = useState(0);
 
   const [touchedFields, setTouchedFields] = useState({
     name: false,

@@ -3,7 +3,6 @@ import {
   X,
   Calendar,
   PieChart,
-  Clock,
   Settings,
   Layers,
   Copy,
@@ -76,10 +75,6 @@ export function ViewCensoModal({
   }, [isOpen, Censo?.id]);
 
   if (!isOpen || !Censo) return null;
-
-  const createdYear = Censo.created_at
-    ? new Date(Censo.created_at).getFullYear()
-    : "—";
 
   const totalExpected = progressData?.total_expected ?? 0;
   const totalCompleted = progressData?.total_completed ?? 0;

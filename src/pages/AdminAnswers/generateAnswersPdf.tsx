@@ -6,7 +6,12 @@ import {
   StyleSheet,
   pdf,
 } from "@react-pdf/renderer";
-import type { GetAnswersResponse, QuestionItem } from "./AdminAnswers.types";
+import type {
+  GetAnswersResponse,
+  ModuleItem,
+  QuestionItem,
+  SectionItem,
+} from "./AdminAnswers.types";
 import { evaluateOperations } from "../../lib/formioOperations";
 import { htmlToText, shouldShowLabel } from "../../lib/formioText";
 
@@ -523,14 +528,13 @@ function iterationTitle(
   return title ? `Registro ${index + 1} — ${title}` : `Registro ${index + 1}`;
 }
 
-function QuestionBlock({ question }: { question: QuestionItem }) {
+function QuestionBlock({ fragment }: { fragment: QuestionFragment }) {
+  const { question, parsed, from, to, first, last } = fragment;
   let answerContent: React.ReactElement;
 
   if (!question.answer) {
     answerContent = <Text style={S.noAnswer}>Sin respuesta</Text>;
   } else {
-    const parsed = buildSubmissions(question);
-
     if (!parsed) {
       // No schema → show raw answer text
       answerContent = (
@@ -539,7 +543,11 @@ function QuestionBlock({ question }: { question: QuestionItem }) {
         </View>
       );
     } else {
-      const opResults = evaluateOperationsForPdf(parsed.operations, parsed.submissions);
+      // Los totales se calculan siempre sobre TODOS los registros, aunque el
+      // bloque venga partido en varias páginas; solo se imprimen en la última.
+      const opResults = last
+        ? evaluateOperationsForPdf(parsed.operations, parsed.submissions)
+        : [];
 
       if (!parsed.isRepeat) {
         // Single submission (con totales si la pregunta define operaciones)
@@ -550,16 +558,18 @@ function QuestionBlock({ question }: { question: QuestionItem }) {
           </View>
         );
       } else {
-        // Repeat submissions
+        // Repeat submissions — solo el tramo [from, to) de esta página
         const leafComps = extractLeafComponents(parsed.components);
 
         answerContent = (
           <View style={S.answerArea}>
-            {parsed.submissions.map((sub, i) => (
-              <View key={i} style={{ marginBottom: 6 }}>
+            {parsed.submissions.slice(from, to).map((sub, i) => (
+              <View key={from + i} style={{ marginBottom: 6 }}>
                 <View style={S.iterHeader} wrap={false}>
                   <View style={S.iterAccent} />
-                  <Text style={S.iterTitle}>{iterationTitle(sub, i, leafComps)}</Text>
+                  <Text style={S.iterTitle}>
+                    {iterationTitle(sub, from + i, leafComps)}
+                  </Text>
                 </View>
                 {renderFormComponents(parsed.components, sub)}
               </View>
@@ -571,20 +581,179 @@ function QuestionBlock({ question }: { question: QuestionItem }) {
     }
   }
 
+  const total = parsed?.isRepeat ? parsed.submissions.length : 0;
+
   return (
     <View style={S.qContainer}>
       <Text style={S.qName}>
         {question.index ? <Text style={S.qIndexInline}>{question.index} · </Text> : null}
         {question.name}
+        {total > 0 && !(first && last) ? (
+          <Text style={S.qInst}>{`  (registros ${from + 1}–${to} de ${total})`}</Text>
+        ) : null}
       </Text>
-      {question.instructions && <Text style={S.qInst}>{question.instructions}</Text>}
+      {first && question.instructions && (
+        <Text style={S.qInst}>{question.instructions}</Text>
+      )}
       {answerContent}
-      <View style={S.qDivider} />
+      {last && <View style={S.qDivider} />}
     </View>
   );
 }
 
+// ── Paginado por presupuesto ──────────────────────────────────────────────────
+// El costo de layout de @react-pdf es cuadrático respecto al contenido de UN
+// mismo <Page>: los censos reales traen esquemas de cientos de componentes por
+// pregunta y el documento completo dentro de una sola <Page> tarda decenas de
+// minutos (medido: 37 preguntas → 38 min). Repartir el mismo contenido en
+// varias <Page> lo vuelve lineal, así que agrupamos las preguntas en páginas
+// hasta agotar un presupuesto de nodos estimados.
+
+/** Nodos estimados que caben en una <Page> antes de que el layout se degrade. */
+const PAGE_BUDGET = 400;
+
+/**
+ * Un tramo de pregunta que cabe en una página. Las preguntas con repeticiones
+ * (hasta 120 registros × decenas de campos) se parten por registros; el resto
+ * es un único fragmento con `first` y `last` en true.
+ */
+interface QuestionFragment {
+  question: QuestionItem;
+  parsed:   ParsedSubmissions | null;
+  from:     number;  // primer registro incluido
+  to:       number;  // exclusivo
+  first:    boolean; // imprime instrucciones
+  last:     boolean; // imprime totales y separador
+  weight:   number;
+}
+
+/** Cuenta componentes del esquema (aprox. nodos que emitirá el renderer). */
+function countComponents(components: any[]): number {
+  if (!Array.isArray(components)) return 0;
+  let n = 0;
+  for (const c of components) {
+    if (!c) continue;
+    n++;
+    if (Array.isArray(c.components)) n += countComponents(c.components);
+    if (Array.isArray(c.columns))
+      for (const col of c.columns) n += countComponents(col?.components ?? []);
+    if (Array.isArray(c.rows))
+      for (const row of c.rows)
+        if (Array.isArray(row))
+          for (const cell of row) n += countComponents(cell?.components ?? []);
+  }
+  return n;
+}
+
+/**
+ * Parsea una vez por pregunta (los esquemas reales pesan ~1 MB) y la corta en
+ * fragmentos que quepan en el presupuesto de página.
+ */
+function splitQuestion(question: QuestionItem): QuestionFragment[] {
+  const parsed = question.answer ? buildSubmissions(question) : null;
+  const whole  = (weight: number): QuestionFragment[] => [
+    { question, parsed, from: 0, to: 1, first: true, last: true, weight },
+  ];
+
+  if (!parsed) return whole(1);
+
+  const comps = Math.max(1, countComponents(parsed.components));
+  if (!parsed.isRepeat) return whole(comps);
+
+  const total = parsed.submissions.length;
+  // Registros por página: al menos uno, aunque el formulario sea enorme.
+  const perPage = Math.max(1, Math.floor(PAGE_BUDGET / comps));
+  const out: QuestionFragment[] = [];
+  for (let from = 0; from < total; from += perPage) {
+    const to = Math.min(total, from + perPage);
+    out.push({
+      question,
+      parsed,
+      from,
+      to,
+      first: from === 0,
+      last:  to === total,
+      weight: comps * (to - from),
+    });
+  }
+  return out.length ? out : whole(comps);
+}
+
+interface SectionChunk {
+  module:       ModuleItem;
+  section:      SectionItem;
+  fragments:    QuestionFragment[];
+  continuation: boolean; // la sección venía de la página anterior
+}
+
+/** Reparte los fragmentos en páginas respetando el presupuesto. */
+function buildPages(data: GetAnswersResponse): SectionChunk[][] {
+  const pages: SectionChunk[][] = [];
+  let current: SectionChunk[] = [];
+  let used = 0;
+
+  const flush = () => {
+    if (current.length) pages.push(current);
+    current = [];
+    used = 0;
+  };
+
+  for (const mod of data.modules) {
+    for (const sec of mod.sections) {
+      let continuation = false;
+      for (const q of sec.questions) {
+        for (const fragment of splitQuestion(q)) {
+          // Si el fragmento no cabe y la página ya trae contenido, abre otra.
+          if (used > 0 && used + fragment.weight > PAGE_BUDGET) {
+            flush();
+            continuation = true;
+          }
+          let chunk = current[current.length - 1];
+          if (!chunk || chunk.section.id !== sec.id) {
+            chunk = { module: mod, section: sec, fragments: [], continuation };
+            current.push(chunk);
+          }
+          chunk.fragments.push(fragment);
+          used += fragment.weight;
+        }
+      }
+      if (used >= PAGE_BUDGET) flush();
+    }
+  }
+  flush();
+  return pages.length ? pages : [[]];
+}
+
 // ── PDF document ──────────────────────────────────────────────────────────────
+
+function PageFrame({
+  data,
+  children,
+}: {
+  data: GetAnswersResponse;
+  children: React.ReactNode;
+}) {
+  return (
+    <Page size="A4" style={S.page}>
+      {/* Fixed header — repeats every page */}
+      <View style={S.headerBand} fixed>
+        <Text style={S.headerTitle}>REPORTE DE RESPUESTAS DE CENSO</Text>
+        <Text style={S.headerSub}>{data.census.name}</Text>
+      </View>
+
+      {children}
+
+      {/* Fixed footer — repeats every page */}
+      <View style={S.footer} fixed>
+        <Text style={S.footerText}>{data.census.name} · {data.institution.name}</Text>
+        <Text
+          style={S.footerText}
+          render={({ pageNumber, totalPages }) => `Pág. ${pageNumber} / ${totalPages}`}
+        />
+      </View>
+    </Page>
+  );
+}
 
 function AnswersDocument({ data }: { data: GetAnswersResponse }) {
   const today = new Date().toLocaleDateString("es-MX", { day: "2-digit", month: "long", year: "numeric" });
@@ -597,64 +766,82 @@ function AnswersDocument({ data }: { data: GetAnswersResponse }) {
     ["Generado",    today],
   ];
 
+  const pages = buildPages(data);
+
   return (
     <Document>
-      <Page size="A4" style={S.page}>
-        {/* Fixed header — repeats every page */}
-        <View style={S.headerBand} fixed>
-          <Text style={S.headerTitle}>REPORTE DE RESPUESTAS DE CENSO</Text>
-          <Text style={S.headerSub}>{data.census.name}</Text>
-        </View>
+      {pages.map((chunks, pi) => (
+        <PageFrame key={pi} data={data}>
+          {/* Ficha de identificación: solo en la primera página */}
+          {pi === 0 && (
+            <>
+              {infoRows.map(([label, value]) => (
+                <View key={label} style={S.infoRow}>
+                  <Text style={S.infoLabel}>{label}:</Text>
+                  <Text style={S.infoValue}>{value}</Text>
+                </View>
+              ))}
+              <View style={S.divider} />
+            </>
+          )}
 
-        {/* Info block */}
-        {infoRows.map(([label, value]) => (
-          <View key={label} style={S.infoRow}>
-            <Text style={S.infoLabel}>{label}:</Text>
-            <Text style={S.infoValue}>{value}</Text>
-          </View>
-        ))}
-        <View style={S.divider} />
-
-        {/* Content */}
-        {data.modules.map((mod) => (
-          <View key={mod.id}>
-            <View style={S.moduleBand}>
-              <View style={S.moduleAccent} />
-              <Text style={S.moduleText}>Módulo {mod.index}: {mod.name}</Text>
-            </View>
-
-            {mod.sections.map((sec) => (
-              <View key={sec.id} style={{ marginBottom: 6 }}>
-                <Text style={S.sectionLabel}>Sección {sec.index}: {sec.name}</Text>
-                {sec.instructions && <Text style={S.sectionInst}>{sec.instructions}</Text>}
-                {sec.questions.map((q) => <QuestionBlock key={q.id} question={q} />)}
+          {chunks.map((chunk, ci) => {
+            const { module: mod, section: sec } = chunk;
+            const prevChunk = ci > 0 ? chunks[ci - 1] : null;
+            const showModule = !prevChunk || prevChunk.module.id !== mod.id;
+            return (
+              <View key={`${sec.id}-${ci}`} style={{ marginBottom: 6 }}>
+                {showModule && (
+                  <View style={S.moduleBand}>
+                    <View style={S.moduleAccent} />
+                    <Text style={S.moduleText}>
+                      Módulo {mod.index}: {mod.name}
+                    </Text>
+                  </View>
+                )}
+                <Text style={S.sectionLabel}>
+                  Sección {sec.index}: {sec.name}
+                  {chunk.continuation && ci === 0 ? " (continúa)" : ""}
+                </Text>
+                {sec.instructions && !chunk.continuation && (
+                  <Text style={S.sectionInst}>{sec.instructions}</Text>
+                )}
+                {chunk.fragments.map((fragment, fi) => (
+                  <QuestionBlock
+                    key={`${fragment.question.id}-${fragment.from}-${fi}`}
+                    fragment={fragment}
+                  />
+                ))}
               </View>
-            ))}
-          </View>
-        ))}
-
-        {/* Fixed footer — repeats every page */}
-        <View style={S.footer} fixed>
-          <Text style={S.footerText}>{data.census.name} · {data.institution.name}</Text>
-          <Text
-            style={S.footerText}
-            render={({ pageNumber, totalPages }) => `Pág. ${pageNumber} / ${totalPages}`}
-          />
-        </View>
-      </Page>
+            );
+          })}
+        </PageFrame>
+      ))}
     </Document>
   );
 }
 
 // ── Export ────────────────────────────────────────────────────────────────────
 
+/** Descarga un blob sin depender de que el ancla esté fuera del DOM. */
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a   = document.createElement("a");
+  a.href     = url;
+  a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  // Revocar en el mismo tick puede cancelar la descarga en curso.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
 export async function generateAnswersPdf(data: GetAnswersResponse): Promise<void> {
   const blob = await pdf(<AnswersDocument data={data} />).toBlob();
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a");
   const safe = (s: string) => s.replace(/\s+/g, "_").replace(/[^\w]/g, "");
-  a.href     = url;
-  a.download = `respuestas_${safe(data.user.lastname)}_${safe(data.user.name)}.pdf`;
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadBlob(
+    blob,
+    `respuestas_${safe(data.user.lastname)}_${safe(data.user.name)}.pdf`,
+  );
 }

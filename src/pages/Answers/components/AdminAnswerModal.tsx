@@ -11,6 +11,7 @@ import {
   sanitizeSchema,
   disableAllFields,
 } from "../../../lib/formioSchema";
+import type { QuestionItem } from "../../AdminAnswers/AdminAnswers.types";
 
 
 const FormAny = Form as any;

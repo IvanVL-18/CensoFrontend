@@ -14,7 +14,7 @@ export interface CensoUploadDependencyRef {
 }
 
 export const CensoUploadDependency = forwardRef<CensoUploadDependencyRef, CensoUploadDependencyProps>(
-  ({ isSubmitting, onFileSubmit, error }, ref) => {
+  ({ onFileSubmit }, ref) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploadErrors, setUploadErrors] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
