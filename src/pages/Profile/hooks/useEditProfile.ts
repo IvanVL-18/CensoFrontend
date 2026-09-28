@@ -72,6 +72,10 @@ export function useEditProfile(open: boolean) {
     censuses: CatalogItem[];
   }>({ occupations: [], dependencies: [], censuses: [] });
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
+
+  const [loadingCensuses, setLoadingCensuses] = useState(false);
+  const [censusesLoaded, setCensusesLoaded] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -109,29 +113,42 @@ export function useEditProfile(open: boolean) {
   }, [allDraftErrors, touched]);
 
   useEffect(() => {
-    if (!open) return;
-    setLoadError(null);
-    setToast(null);
-    setTouched({});
-    setAllDraftErrors({});
-    setLoading(true);
+  if (!open) return;
 
-    getProfile()
-      .then((p) => {
-        setProfile(p);
-        setDraft({
-          name: p.name ?? "",
-          lastname: p.lastname ?? "",
-          phone: p.phone ?? "",
-          mobile: p.mobile ?? "",
-          address: p.address ?? "",
-        });
-      })
-      .catch((err) => {
-        setLoadError(err?.message ?? "Error al cargar el perfil.");
-      })
-      .finally(() => setLoading(false));
-  }, [open]);
+  setLoadError(null);
+  setToast(null);
+  setTouched({});
+  setAllDraftErrors({});
+  setLoading(true);
+
+  setCensusesLoaded(false);
+  setLoadingCensuses(false);
+
+ 
+  if (isSurveyor) {
+    setCatalogs((prev) => ({
+      ...prev,
+      censuses: [],
+    }));
+  }
+
+  getProfile()
+    .then((p) => {
+      setProfile(p);
+
+      setDraft({
+        name: p.name ?? "",
+        lastname: p.lastname ?? "",
+        phone: p.phone ?? "",
+        mobile: p.mobile ?? "",
+        address: p.address ?? "",
+      });
+    })
+    .catch((err) => {
+      setLoadError(err?.message ?? "Error al cargar el perfil.");
+    })
+    .finally(() => setLoading(false));
+}, [open, isSurveyor]);
 
   useEffect(() => {
     if (!open || !canAlwaysEdit) return;
@@ -165,19 +182,50 @@ export function useEditProfile(open: boolean) {
     return () => controller.abort();
   }, [open, canAlwaysEdit]);
 
-  useEffect(() => {
-    if (!open || !isSurveyor) return;
-    const controller = new AbortController();
-    getCatalogList("answers/my-censuses", controller.signal)
-      .then((data) => {
-        const items = Array.isArray(data)
-          ? data
-          : ((data as any)?.censuses ?? []);
-        setCatalogs((prev) => ({ ...prev, censuses: items }));
-      })
-      .catch(() => {});
-    return () => controller.abort();
-  }, [open, isSurveyor]);
+  const loadCensuses = async () => {
+  // Solo aplica para Encuestadores.
+  if (!isSurveyor) return;
+
+  // Si ya se consultaron, no volver a ejecutar el endpoint.
+  if (censusesLoaded || loadingCensuses) return;
+
+  const controller = new AbortController();
+
+  setLoadingCensuses(true);
+
+  try {
+    const data = await getCatalogList(
+      "answers/my-censuses",
+      controller.signal,
+    );
+
+    const items = Array.isArray(data)
+      ? data
+      : ((data as any)?.censuses ?? []);
+
+    setCatalogs((prev) => ({
+      ...prev,
+      censuses: items,
+    }));
+
+    setCensusesLoaded(true);
+  } catch (error: any) {
+   
+    if (error?.name !== "AbortError") {
+      console.error(
+        "Error al cargar los censos asignados:",
+        error,
+      );
+
+      setToast({
+        message: "No fue posible cargar los censos asignados.",
+        type: "danger",
+      });
+    }
+  } finally {
+    setLoadingCensuses(false);
+  }
+};
 
   useEffect(() => {
     if (!profile || !canAlwaysEdit) return;
@@ -380,6 +428,9 @@ export function useEditProfile(open: boolean) {
 
     catalogs,
     loadingCatalogs,
+    loadCensuses,
+    loadingCensuses,
+    censusesLoaded,
 
     passwordDraft,
     setPasswordField: <K extends keyof PasswordDraft>(
