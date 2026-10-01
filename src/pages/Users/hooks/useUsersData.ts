@@ -30,7 +30,38 @@ export function useUsersData() {
   );
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingRelated, setLoadingRelated] = useState(true);
+  const [loadingRelated, setLoadingRelated] = useState(false);
+  const [relatedDataLoaded, setRelatedDataLoaded] = useState(false);
+  const loadRelatedData = useCallback(async () => {
+    if (relatedDataLoaded || loadingRelated) return;
+
+    setLoadingRelated(true);
+
+    try {
+      const [
+        rolesData,
+        occupationsData,
+        dependenciesData,
+        institutionsData,
+      ] = await Promise.all([
+        getRelatedData("roles"),
+        getRelatedData("occupations"),
+        getRelatedData("dependency"),
+        getRelatedData("institutions"),
+      ]);
+
+      setRoles(rolesData);
+      setOccupations(occupationsData);
+      setDependencias(dependenciesData);
+      setInstitutions(institutionsData);
+
+      setRelatedDataLoaded(true);
+    } catch (error) {
+      console.error("Error al cargar opciones del formulario", error);
+    } finally {
+      setLoadingRelated(false);
+    }
+  }, [relatedDataLoaded, loadingRelated]);
   const [error, setError] = useState<string | null>(null);
 
   const [filter, setFilter] = useState<UserFilter>("all");
@@ -53,37 +84,7 @@ export function useUsersData() {
   const [reloadToken, setReloadToken] = useState(0);
   const refreshUsers = useCallback(() => setReloadToken((t) => t + 1), []);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-    setLoadingRelated(true);
-
-    const fetchAllRelatedData = async () => {
-      try {
-        const [rolesData, occupationsData, dependenciesData, institutionsData] =
-          await Promise.all([
-            getRelatedData("roles", signal),
-            getRelatedData("occupations", signal),
-            getRelatedData("dependency", signal),
-            getRelatedData("institutions", signal),
-          ]);
-        setRoles(rolesData);
-        setOccupations(occupationsData);
-        setDependencias(dependenciesData);
-        setInstitutions(institutionsData);
-      } catch (err: any) {
-        if (err.name !== "CanceledError") {
-          setError("Error al cargar opciones para el formulario.");
-        }
-      } finally {
-        if (!signal.aborted) setLoadingRelated(false);
-      }
-    };
-
-    fetchAllRelatedData();
-
-    return () => controller.abort();
-  }, []);
+  
 
   useEffect(() => {
     const controller = new AbortController();
@@ -170,7 +171,8 @@ export function useUsersData() {
 
   return {
     Users: sortedUsers,
-    loading: loading || loadingRelated,
+    loading,
+    loadingRelated,
     error,
     meta,
     links,
@@ -181,6 +183,7 @@ export function useUsersData() {
     occupations,
     dependencies,
     institutions,
+    loadRelatedData,
     refreshUsers,
     handleFilterChange,
     handleSearch,

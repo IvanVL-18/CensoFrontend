@@ -45,6 +45,7 @@ function UsersPageContent() {
     occupations,
     dependencies,
     institutions,
+    loadRelatedData,
     refreshUsers,
     handleFilterChange,
     handleSort,
@@ -63,7 +64,10 @@ function UsersPageContent() {
 
   const handleEditClick = async (partialUser: any) => {
     try {
+      await loadRelatedData();
+
       const fullUser = await getUser(partialUser.id);
+
       modals.openEdit(fullUser);
     } catch (error) {
       console.error("Error al cargar detalles del Usuario para editar", error);
@@ -127,8 +131,9 @@ function UsersPageContent() {
         canCreate={hasPermission("users.create")}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
-        onAddClick={() => {
+        onAddClick={async () => {
           resetMutationError();
+          await loadRelatedData();
           modals.openCreate();
         }}
         onBulkUpload={handleBulkUpload}
