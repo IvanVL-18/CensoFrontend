@@ -45,7 +45,10 @@ function UsersPageContent() {
     occupations,
     dependencies,
     institutions,
-    loadRelatedData,
+    loadRoles,
+    loadOccupations,
+    loadDependencies,
+    loadInstitutions,
     refreshUsers,
     handleFilterChange,
     handleSort,
@@ -64,7 +67,7 @@ function UsersPageContent() {
 
   const handleEditClick = async (partialUser: any) => {
     try {
-      await loadRelatedData();
+      
 
       const fullUser = await getUser(partialUser.id);
 
@@ -133,7 +136,6 @@ function UsersPageContent() {
         onSearchChange={handleSearch}
         onAddClick={async () => {
           resetMutationError();
-          await loadRelatedData();
           modals.openCreate();
         }}
         onBulkUpload={handleBulkUpload}
@@ -168,10 +170,17 @@ function UsersPageContent() {
         error={mutationError}
         title={modalTitle}
         initialData={modals.editingUser}
+
         roles={roles}
         occupations={occupations}
         dependencies={dependencies}
         institutions={institutions}
+
+        onLoadRoles={loadRoles}
+        onLoadOccupations={loadOccupations}
+        onLoadDependencies={loadDependencies}
+        onLoadInstitutions={loadInstitutions}
+
         onClose={() => {
           modals.closeForm();
           resetMutationError();

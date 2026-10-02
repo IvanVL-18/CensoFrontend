@@ -31,6 +31,12 @@ interface ExtendedUserModalProps {
   occupations?: any[];
   dependencies?: any[];
   institutions?: any[];
+
+  onLoadRoles?: () => void;
+  onLoadOccupations?: () => void;
+  onLoadDependencies?: () => void;
+  onLoadInstitutions?: () => void;
+
   onClose: () => void;
   onSave: (data: any) => void;
   onOpenExtra?: (user: any) => void;
@@ -46,6 +52,11 @@ export function UserModal({
   occupations = [],
   dependencies = [],
   institutions = [],
+  onLoadRoles,
+  onLoadOccupations,
+  onLoadDependencies,
+  onLoadInstitutions,
+
   onClose,
   onSave,
   onOpenExtra,
@@ -360,8 +371,14 @@ export function UserModal({
               {/* Rol */}
               <div>
                 <label htmlFor="role_id" className="block text-sm font-medium text-gray-700 mb-1">Rol:</label>
-                <select id="role_id" name="role_id" value={formData.role_id} onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]">
+                <select
+                  id="role_id"
+                  name="role_id"
+                  value={formData.role_id}
+                  onMouseDown={() => onLoadRoles?.()}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                >
                   <option value="">Seleccionar Rol</option>
                   {roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}
                 </select>
@@ -370,8 +387,14 @@ export function UserModal({
               {/* Ocupación */}
               <div>
                 <label htmlFor="occupation_id" className="block text-sm font-medium text-gray-700 mb-1">Ocupación:</label>
-                <select id="occupation_id" name="occupation_id" value={formData.occupation_id} onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]">
+                <select
+                  id="occupation_id"
+                  name="occupation_id"
+                  value={formData.occupation_id}
+                  onMouseDown={() => onLoadOccupations?.()}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                >
                   <option value="">Seleccionar Ocupación</option>
                   {occupations.map((occ: any) => <option key={occ.id} value={occ.id}>{occ.name}</option>)}
                 </select>
@@ -380,19 +403,34 @@ export function UserModal({
               {/* Dependencia */}
               <div>
                 <label htmlFor="dependency_id" className="block text-sm font-medium text-gray-700 mb-1">Dependencia:</label>
-                <select id="dependency_id" name="dependency_id" value={formData.dependency_id} onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]">
+                <select
+                  id="dependency_id"
+                  name="dependency_id"
+                  value={formData.dependency_id}
+                  onMouseDown={() => onLoadDependencies?.()}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                >
                   <option value="">Seleccionar Dependencia</option>
-                  {dependencies.length === 0 && <option disabled>Cargando dependencia...</option>}
-                  {dependencies.map((dependency: any) => <option key={dependency.id} value={dependency.id}>{dependency.name}</option>)}
+                  {dependencies.map((dependency: any) => (
+                    <option key={dependency.id} value={dependency.id}>
+                      {dependency.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               {/* Institución */}
               <div>
                 <label htmlFor="institution_id" className="block text-sm font-medium text-gray-700 mb-1">Institución:</label>
-                <select id="institution_id" name="institution_id" value={formData.institution_id} onChange={handleChange}
-                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]">
+                <select
+                  id="institution_id"
+                  name="institution_id"
+                  value={formData.institution_id}
+                  onMouseDown={() => onLoadInstitutions?.()}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
+                >
                   <option value="">Seleccionar Institución</option>
                   {institutions.map((inst: any) => <option key={inst.id} value={inst.id}>{inst.name}</option>)}
                 </select>

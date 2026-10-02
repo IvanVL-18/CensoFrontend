@@ -30,38 +30,7 @@ export function useUsersData() {
   );
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingRelated, setLoadingRelated] = useState(false);
-  const [relatedDataLoaded, setRelatedDataLoaded] = useState(false);
-  const loadRelatedData = useCallback(async () => {
-    if (relatedDataLoaded || loadingRelated) return;
-
-    setLoadingRelated(true);
-
-    try {
-      const [
-        rolesData,
-        occupationsData,
-        dependenciesData,
-        institutionsData,
-      ] = await Promise.all([
-        getRelatedData("roles"),
-        getRelatedData("occupations"),
-        getRelatedData("dependency"),
-        getRelatedData("institutions"),
-      ]);
-
-      setRoles(rolesData);
-      setOccupations(occupationsData);
-      setDependencias(dependenciesData);
-      setInstitutions(institutionsData);
-
-      setRelatedDataLoaded(true);
-    } catch (error) {
-      console.error("Error al cargar opciones del formulario", error);
-    } finally {
-      setLoadingRelated(false);
-    }
-  }, [relatedDataLoaded, loadingRelated]);
+  
   const [error, setError] = useState<string | null>(null);
 
   const [filter, setFilter] = useState<UserFilter>("all");
@@ -70,7 +39,34 @@ export function useUsersData() {
   const [occupations, setOccupations] = useState([]);
   const [dependencies, setDependencias] = useState([]);
   const [institutions, setInstitutions] = useState([]);
+  
+  const loadRoles = useCallback(async () => {
+    if (roles.length > 0) return;
 
+    const data = await getRelatedData("roles");
+    setRoles(data);
+  }, [roles.length]);
+
+  const loadOccupations = useCallback(async () => {
+    if (occupations.length > 0) return;
+
+    const data = await getRelatedData("occupations");
+    setOccupations(data);
+  }, [occupations.length]);
+
+  const loadDependencies = useCallback(async () => {
+    if (dependencies.length > 0) return;
+
+    const data = await getRelatedData("dependency");
+    setDependencias(data);
+  }, [dependencies.length]);
+
+  const loadInstitutions = useCallback(async () => {
+    if (institutions.length > 0) return;
+
+    const data = await getRelatedData("institutions");
+    setInstitutions(data);
+  }, [institutions.length]);
   const [page, setPage] = useState(1);
 
   const [sortConfig, setSortConfig] = useState<{
@@ -172,18 +168,23 @@ export function useUsersData() {
   return {
     Users: sortedUsers,
     loading,
-    loadingRelated,
     error,
     meta,
     links,
     filter,
     searchTerm,
     sortConfig,
+
     roles,
     occupations,
     dependencies,
     institutions,
-    loadRelatedData,
+
+    loadRoles,
+    loadOccupations,
+    loadDependencies,
+    loadInstitutions,
+
     refreshUsers,
     handleFilterChange,
     handleSearch,
