@@ -154,6 +154,9 @@ export default function EditProfileModal({ open, onClose }: Props) {
     setAccountDraftField,
     catalogs,
     loadingCatalogs,
+    loadCensuses,
+    loadingCensuses,
+    censusesLoaded,
     passwordDraft,
     setPasswordField,
     passwordValidation,
@@ -164,10 +167,17 @@ export default function EditProfileModal({ open, onClose }: Props) {
     hasChanges,
     hasDraftErrors,
     handleSave,
+    
   } = useEditProfile(open);
 
   if (!open) return null;
+  const handleCensusesToggle = async (
+    e: React.SyntheticEvent<HTMLDetailsElement>,
+  ) => {
+    if (!e.currentTarget.open) return;
 
+    await loadCensuses();
+  };
   return createPortal(
     <div className="fixed inset-0 z-[9999]">
       <div
@@ -449,7 +459,10 @@ export default function EditProfileModal({ open, onClose }: Props) {
                       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Censos asignados
                       </p>
-                      <details className="group rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
+                      <details
+                        onToggle={handleCensusesToggle}
+                        className="group rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4"
+                      >
                         <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50">
                           <span>Ver censos</span>
                           <ChevronDown
@@ -458,7 +471,14 @@ export default function EditProfileModal({ open, onClose }: Props) {
                           />
                         </summary>
                         <div className="mt-5 max-h-64 overflow-y-auto pr-2">
-                          {catalogs.censuses.length > 0 ? (
+                          {loadingCensuses ? (
+                            <div className="flex items-center justify-center gap-2 py-4 text-slate-400">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span className="text-sm">
+                                Cargando censos...
+                              </span>
+                            </div>
+                          ) : catalogs.censuses.length > 0 ? (
                             <ol className="relative border-s border-slate-200">
                               {catalogs.censuses.map(
                                 (census: any, index: number) => (
@@ -477,11 +497,11 @@ export default function EditProfileModal({ open, onClose }: Props) {
                                 ),
                               )}
                             </ol>
-                          ) : (
+                          ) : censusesLoaded ? (
                             <p className="text-sm text-slate-500">
                               No hay censos asignados.
                             </p>
-                          )}
+                          ) : null}
                         </div>
                       </details>
                     </div>
