@@ -17,7 +17,7 @@ export const getModules = async (
   _sortBy: string = "id",           
   direction: "asc" | "desc" = "asc", 
   signal?: AbortSignal,
-  perPage: number = 10
+  _perPage: number = 10
 ): Promise<PaginatedModulesResponse> => {
   const response = await api.post<PaginatedModulesResponse>(
     `/modules/search`,
