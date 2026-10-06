@@ -23,7 +23,6 @@ export function CensosToolbar({
   onFilterChange,
   onSearchChange,
   onAddClick,
-  onBulkUpload,
   canCreate = true,
 }: CensosToolbarProps) {
   return (

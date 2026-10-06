@@ -15,7 +15,6 @@ type Props = {
 
 const GovSwitch: React.FC<Props> = ({ 
   label,
-  logoSrc = "/Estrella_header.svg",
   checked,
   onCheckedChange,
   size = "md",
@@ -36,7 +35,6 @@ const GovSwitch: React.FC<Props> = ({
       : checked
       ? "translate-x-9"
       : "translate-x-1";
-  const imgClass = size === "sm" ? "h-3.5" : "h-4";
 
   return (
     <div className="flex items-center gap-3 font-sans">

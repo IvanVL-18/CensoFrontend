@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 import { getCensoModules, updateCensoModules } from "../Censos.service";
 // Importamos el tipo de respuesta tal como lo define la API (puede tener discrepancias)
-import type { ModuleForCensoShowResponse, Index, Module, IndexForCenso } from "../Censos.types";
+import type { ModuleForCensoShowResponse, IndexForCenso } from "../Censos.types";
 
 // Formato interno normalizado que realmente usaremos en el componente
 interface NormalizedIndex {

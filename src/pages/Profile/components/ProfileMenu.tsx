@@ -46,6 +46,7 @@ export default function ProfileMenu() {
       phone:    null as string | null,
       mobile:   null as string | null,
       address:  null as string | null,
+      profile_completed_at: null as string | null,
     },
   };
 

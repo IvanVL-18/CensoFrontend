@@ -21,10 +21,6 @@ interface Props {
 }
 
 const norm = (v: any) => (v === null || v === undefined ? "" : String(v));
-const toNull = (v: string) => {
-  const s = v.trim();
-  return s === "" ? null : s;
-};
 
 
 export function UsersExtraModal({
