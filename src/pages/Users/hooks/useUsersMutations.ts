@@ -52,19 +52,35 @@ export function useUsersMutations({
         if (editingUser) {
           const updateData: UpdateUserDTO = { ...userData };
 
-          if (isSameValue(updateData.email, editingUser.email)) {
-            delete updateData.email;
-          }
+          (Object.keys(updateData) as Array<keyof UpdateUserDTO>).forEach(
+            (key) => {
+              const newValue = updateData[key];
+
+              if (
+                newValue === null ||
+                newValue === undefined ||
+                newValue === ""
+              ) {
+                delete updateData[key];
+                return;
+              }
+
+              if (isSameValue(newValue, (editingUser as any)[key])) {
+                delete updateData[key];
+              }
+            },
+          );
 
           if (!updateData.password) {
             delete updateData.password;
             delete updateData.password_confirmation;
           }
 
-          if (!updateData.role_id) delete updateData.role_id;
-          if (!updateData.occupation_id) delete updateData.occupation_id;
-          if (!updateData.dependency_id) delete updateData.dependency_id;
-          if (!updateData.institution_id) delete updateData.institution_id;
+          if (Object.keys(updateData).length === 0) {
+            addToast("No se detectaron cambios para guardar", "warning");
+            setIsSubmitting(false);
+            return;
+          }
 
           response = await updateUser(editingUser.id, updateData);
           addToast(
@@ -79,12 +95,18 @@ export function useUsersMutations({
           };
 
           if (userData.role_id) createData.role_id = userData.role_id;
-          if (userData.occupation_id) createData.occupation_id = userData.occupation_id;
-          if (userData.dependency_id) createData.dependency_id = userData.dependency_id;
-          if (userData.institution_id) createData.institution_id = userData.institution_id;
+          if (userData.occupation_id)
+            createData.occupation_id = userData.occupation_id;
+          if (userData.dependency_id)
+            createData.dependency_id = userData.dependency_id;
+          if (userData.institution_id)
+            createData.institution_id = userData.institution_id;
 
           response = await createUser(createData);
-          addToast(response?.message || "Usuario creado correctamente", "success");
+          addToast(
+            response?.message || "Usuario creado correctamente",
+            "success",
+          );
         }
 
         closeForm();
@@ -92,29 +114,14 @@ export function useUsersMutations({
         try {
           refreshUsers();
         } catch (refreshError) {
-          console.error("El usuario se guardó, pero falló refreshUsers:", refreshError);
+          console.error(
+            "El usuario se guardó, pero falló refreshUsers:",
+            refreshError,
+          );
         }
       } catch (err: any) {
         console.error("Error real al guardar usuario:", err);
         console.error("Respuesta del backend:", err.response?.data || err.data);
-
-        const status = err.status || err.response?.status;
-
-        /*
-          Caso especial:
-          El backend responde 400, pero la actualización sí se guarda.
-          Como no tenemos acceso al backend, evitamos mostrar error falso.
-        */
-        if (editingUser && status === 400) {
-          addToast("Usuario actualizado correctamente", "success");
-          closeForm();
-          try {
-            refreshUsers();
-          } catch (refreshError) {
-            console.error("El usuario se actualizó, pero falló refreshUsers:", refreshError);
-          }
-          return;
-        }
 
         let msg =
           err.response?.data?.message ||

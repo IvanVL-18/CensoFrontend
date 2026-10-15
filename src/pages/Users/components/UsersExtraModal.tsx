@@ -1,15 +1,9 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type FormEvent,
-} from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { FormErrors } from "./FormErrors";
 import { UsersExtraSchema } from "../schemas/UsersExtra.schema";
 import type { User, UpdateUserDTO } from "../Users.types";
 import { CharCountInput } from "../../../components/CharCountInput";
-
 
 interface Props {
   isOpen: boolean;
@@ -25,7 +19,6 @@ const toNull = (v: string) => {
   const s = v.trim();
   return s === "" ? null : s;
 };
-
 
 export function UsersExtraModal({
   isOpen,
@@ -77,7 +70,7 @@ export function UsersExtraModal({
       return true;
     }
     const uniqueMessages = Array.from(
-      new Set(result.error.issues.map((issue) => issue.message))
+      new Set(result.error.issues.map((issue) => issue.message)),
     );
     const nextFieldErrors: Record<string, string> = {};
     result.error.issues.forEach((issue) => {
@@ -104,15 +97,19 @@ export function UsersExtraModal({
     if (!isValid) return;
     const trim = (v: any) => (v ?? "").toString().trim();
     const payload: UpdateUserDTO = {};
-    if (trim(formData.name) !== trim(User.name)) payload.name;
-    if (trim(formData.lastname) !== trim(User.lastname)) payload.lastname ;
-    if (trim(formData.phone) !== trim(User.phone)) payload.phone ;
-    if (trim(formData.mobile) !== trim(User.mobile)) payload.mobile ;
-    if (trim(formData.address) !== trim(User.address)) payload.address ;
-    if (Object.keys(payload).length === 0) {
-       onSave(payload);
+    if (trim(formData.name) !== trim(User.name))
+      payload.name = trim(formData.name);
+    if (trim(formData.lastname) !== trim(User.lastname))
+      payload.lastname = trim(formData.lastname);
+    if (trim(formData.phone) !== trim(User.phone))
+      payload.phone = trim(formData.phone);
+    if (trim(formData.mobile) !== trim(User.mobile))
+      payload.mobile = trim(formData.mobile);
+    if (trim(formData.address) !== trim(User.address))
+      payload.address = trim(formData.address);
+    if (Object.keys(payload).length > 0) {
+      onSave(payload);
     }
-   
   };
 
   const handleClose = () => {
@@ -137,14 +134,21 @@ export function UsersExtraModal({
               <h2 className="text-xl font-bold text-white">Datos Personales</h2>
               <p className="text-sm text-white/80">{User.email}</p>
             </div>
-            <button type="button" onClick={handleClose} className="text-white hover:text-gray-300">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="text-white hover:text-gray-300"
+            >
               <X size={24} />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate className="flex-1 overflow-y-auto">
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="flex-1 overflow-y-auto"
+          >
             <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
-
               {/* Nombre */}
               <div>
                 <CharCountInput
@@ -158,7 +162,9 @@ export function UsersExtraModal({
                   onChange={(val) => handleFieldChange("name", val)}
                 />
                 {fieldErrors.name && (
-                  <p className="mt-1 text-xs text-red-600">{fieldErrors.name}</p>
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.name}
+                  </p>
                 )}
               </div>
 
@@ -175,7 +181,9 @@ export function UsersExtraModal({
                   onChange={(val) => handleFieldChange("lastname", val)}
                 />
                 {fieldErrors.lastname && (
-                  <p className="mt-1 text-xs text-red-600">{fieldErrors.lastname}</p>
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.lastname}
+                  </p>
                 )}
               </div>
 
@@ -192,7 +200,9 @@ export function UsersExtraModal({
                   onChange={(val) => handleFieldChange("phone", val)}
                 />
                 {fieldErrors.phone && (
-                  <p className="mt-1 text-xs text-red-600">{fieldErrors.phone}</p>
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.phone}
+                  </p>
                 )}
               </div>
 
@@ -209,7 +219,9 @@ export function UsersExtraModal({
                   onChange={(val) => handleFieldChange("mobile", val)}
                 />
                 {fieldErrors.mobile && (
-                  <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.mobile}
+                  </p>
                 )}
               </div>
 
@@ -226,7 +238,9 @@ export function UsersExtraModal({
                   onChange={(val) => handleFieldChange("address", val)}
                 />
                 {fieldErrors.address && (
-                  <p className="mt-1 text-xs text-red-600">{fieldErrors.address}</p>
+                  <p className="mt-1 text-xs text-red-600">
+                    {fieldErrors.address}
+                  </p>
                 )}
               </div>
 
