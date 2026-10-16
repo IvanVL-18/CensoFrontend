@@ -33,7 +33,7 @@ export function useUsersMutations({
   const [mutationError, setMutationError] = useState<string | null>(null);
   const resetMutationError = () => setMutationError(null);
   const [isExtraSubmitting, setIsExtraSubmitting] = useState(false);
-  const [extraError, setExtraError] = useState<string | null>(null);
+  const [extraErrors, setExtraErrors] = useState<string[]>([]);
 
   const handleSave = useCallback(
     async (userData: CreateUserDTO, editingUser?: User | null) => {
@@ -152,7 +152,7 @@ export function useUsersMutations({
   const handleSaveExtra = useCallback(
     async (User: User, extraData: UpdateUserDTO) => {
       setIsExtraSubmitting(true);
-      setExtraError(null);
+      setExtraErrors([]);
 
       try {
         // Solo se envían los campos que realmente cambiaron (extraData ya viene filtrado)
@@ -163,12 +163,22 @@ export function useUsersMutations({
         closeExtra();
         refreshUsers();
       } catch (err: any) {
-        const msg =
-          err.response?.data?.message ||
-          err.message ||
-          "Error al guardar datos";
-        setExtraError(msg);
-        addToast(msg, "danger");
+        const errors = err.response?.data?.errors;
+        if (errors) {
+          // Errores de validación del backend (422): uno por cada <li> en FormErrors
+          const validationErrors = Object.values(
+            errors as Record<string, string[]>,
+          ).flat();
+          setExtraErrors(validationErrors);
+          addToast(validationErrors.join(", "), "danger");
+        } else {
+          const msg =
+            err.response?.data?.message ||
+            err.message ||
+            "Error al guardar datos";
+          setExtraErrors([msg]);
+          addToast(msg, "danger");
+        }
       } finally {
         setIsExtraSubmitting(false);
       }
@@ -241,7 +251,8 @@ export function useUsersMutations({
     handleConfirmAction,
     handleBulkUpload,
     isExtraSubmitting,
-    extraError,
+    extraErrors,
+    resetExtraErrors: () => setExtraErrors([]),
     handleSaveExtra,
   };
 }
