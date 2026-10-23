@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuthContext } from "../../../context/AuthContext";
 import {
   getProfile,
@@ -75,6 +75,7 @@ export function useEditProfile(open: boolean) {
 
   const [loadingCensuses, setLoadingCensuses] = useState(false);
   const [censusesLoaded, setCensusesLoaded] = useState(false);
+  const censusesControllerRef = useRef<AbortController | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -113,42 +114,41 @@ export function useEditProfile(open: boolean) {
   }, [allDraftErrors, touched]);
 
   useEffect(() => {
-  if (!open) return;
+    if (!open) return;
 
-  setLoadError(null);
-  setToast(null);
-  setTouched({});
-  setAllDraftErrors({});
-  setLoading(true);
+    setLoadError(null);
+    setToast(null);
+    setTouched({});
+    setAllDraftErrors({});
+    setLoading(true);
 
-  setCensusesLoaded(false);
-  setLoadingCensuses(false);
+    setCensusesLoaded(false);
+    setLoadingCensuses(false);
 
- 
-  if (isSurveyor) {
-    setCatalogs((prev) => ({
-      ...prev,
-      censuses: [],
-    }));
-  }
+    if (isSurveyor) {
+      setCatalogs((prev) => ({
+        ...prev,
+        censuses: [],
+      }));
+    }
 
-  getProfile()
-    .then((p) => {
-      setProfile(p);
+    getProfile()
+      .then((p) => {
+        setProfile(p);
 
-      setDraft({
-        name: p.name ?? "",
-        lastname: p.lastname ?? "",
-        phone: p.phone ?? "",
-        mobile: p.mobile ?? "",
-        address: p.address ?? "",
-      });
-    })
-    .catch((err) => {
-      setLoadError(err?.message ?? "Error al cargar el perfil.");
-    })
-    .finally(() => setLoading(false));
-}, [open, isSurveyor]);
+        setDraft({
+          name: p.name ?? "",
+          lastname: p.lastname ?? "",
+          phone: p.phone ?? "",
+          mobile: p.mobile ?? "",
+          address: p.address ?? "",
+        });
+      })
+      .catch((err) => {
+        setLoadError(err?.message ?? "Error al cargar el perfil.");
+      })
+      .finally(() => setLoading(false));
+  }, [open, isSurveyor]);
 
   useEffect(() => {
     if (!open || !canAlwaysEdit) return;
@@ -182,50 +182,53 @@ export function useEditProfile(open: boolean) {
     return () => controller.abort();
   }, [open, canAlwaysEdit]);
 
+  // Cancela la petición de censos asignados si se cierra el modal o se desmonta
+  useEffect(() => {
+    if (!open) return;
+    return () => censusesControllerRef.current?.abort();
+  }, [open]);
+
   const loadCensuses = async () => {
-  // Solo aplica para Encuestadores.
-  if (!isSurveyor) return;
+    // Solo aplica para Encuestadores.
+    if (!isSurveyor) return;
 
-  // Si ya se consultaron, no volver a ejecutar el endpoint.
-  if (censusesLoaded || loadingCensuses) return;
+    // Si ya se consultaron, no volver a ejecutar el endpoint.
+    if (censusesLoaded || loadingCensuses) return;
 
-  const controller = new AbortController();
+    const controller = new AbortController();
+    censusesControllerRef.current = controller;
 
-  setLoadingCensuses(true);
+    setLoadingCensuses(true);
 
-  try {
-    const data = await getCatalogList(
-      "answers/my-censuses",
-      controller.signal,
-    );
-
-    const items = Array.isArray(data)
-      ? data
-      : ((data as any)?.censuses ?? []);
-
-    setCatalogs((prev) => ({
-      ...prev,
-      censuses: items,
-    }));
-
-    setCensusesLoaded(true);
-  } catch (error: any) {
-   
-    if (error?.name !== "AbortError") {
-      console.error(
-        "Error al cargar los censos asignados:",
-        error,
+    try {
+      const data = await getCatalogList(
+        "answers/my-censuses",
+        controller.signal,
       );
 
-      setToast({
-        message: "No fue posible cargar los censos asignados.",
-        type: "danger",
-      });
+      const items = Array.isArray(data)
+        ? data
+        : ((data as any)?.censuses ?? []);
+
+      setCatalogs((prev) => ({
+        ...prev,
+        censuses: items,
+      }));
+
+      setCensusesLoaded(true);
+    } catch (error: any) {
+      if (!controller.signal.aborted) {
+        console.error("Error al cargar los censos asignados:", error);
+
+        setToast({
+          message: "No fue posible cargar los censos asignados.",
+          type: "danger",
+        });
+      }
+    } finally {
+      if (!controller.signal.aborted) setLoadingCensuses(false);
     }
-  } finally {
-    setLoadingCensuses(false);
-  }
-};
+  };
 
   useEffect(() => {
     if (!profile || !canAlwaysEdit) return;

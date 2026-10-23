@@ -135,7 +135,7 @@ function UsersPageContent() {
         canCreate={hasPermission("users.create")}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearch}
-        onAddClick={async () => {
+        onAddClick={() => {
           resetMutationError();
           modals.openCreate();
         }}
