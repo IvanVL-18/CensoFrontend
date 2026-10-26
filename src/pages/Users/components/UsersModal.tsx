@@ -61,6 +61,20 @@ export function UserModal({
   onSave,
   onOpenExtra,
 }: ExtendedUserModalProps) {
+  // Los catálogos se cargan hasta abrir cada select; mientras tanto se agrega
+  // el valor actual del usuario como opción para que no aparezca vacío al editar.
+  const withCurrent = (catalog: any[], relation: any) => {
+    if (!relation?.name) return catalog;
+    const exists = catalog.some(
+      (item) => String(item.name).trim().toLowerCase() === String(relation.name).trim().toLowerCase(),
+    );
+    return exists ? catalog : [{ id: relation.id, name: relation.name }, ...catalog];
+  };
+  const roleOptions = useMemo(() => withCurrent(roles, initialData?.role), [roles, initialData]);
+  const occupationOptions = useMemo(() => withCurrent(occupations, initialData?.occupation), [occupations, initialData]);
+  const dependencyOptions = useMemo(() => withCurrent(dependencies, initialData?.dependency), [dependencies, initialData]);
+  const institutionOptions = useMemo(() => withCurrent(institutions, initialData?.institution), [institutions, initialData]);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -101,13 +115,13 @@ export function UserModal({
       return normalize(currentName) !== normalize(initialName);
     };
 
-    const roleChanged = checkRelationChange(formData.role_id, initialData?.role, roles);
-    const occupationChanged = checkRelationChange(formData.occupation_id, initialData?.occupation, occupations);
-    const dependencyChanged = checkRelationChange(formData.dependency_id, initialData?.dependency, dependencies);
-    const institutionChanged = checkRelationChange(formData.institution_id, initialData?.institution, institutions);
+    const roleChanged = checkRelationChange(formData.role_id, initialData?.role, roleOptions);
+    const occupationChanged = checkRelationChange(formData.occupation_id, initialData?.occupation, occupationOptions);
+    const dependencyChanged = checkRelationChange(formData.dependency_id, initialData?.dependency, dependencyOptions);
+    const institutionChanged = checkRelationChange(formData.institution_id, initialData?.institution, institutionOptions);
 
     return emailChanged || passwordChanged || roleChanged || occupationChanged || dependencyChanged || institutionChanged;
-  }, [formData, initialData, roles, occupations, dependencies, institutions]);
+  }, [formData, initialData, roleOptions, occupationOptions, dependencyOptions, institutionOptions]);
 
   const buildPayload = (data: typeof formData) => {
     const payload: any = { ...data };
@@ -138,10 +152,10 @@ export function UserModal({
       delete payload.password_confirmation;
     }
 
-    const selectedRoleName = getSelectedName(roles, data.role_id);
-    const selectedOccupationName = getSelectedName(occupations, data.occupation_id);
-    const selectedDependencyName = getSelectedName(dependencies, data.dependency_id);
-    const selectedInstitutionName = getSelectedName(institutions, data.institution_id);
+    const selectedRoleName = getSelectedName(roleOptions, data.role_id);
+    const selectedOccupationName = getSelectedName(occupationOptions, data.occupation_id);
+    const selectedDependencyName = getSelectedName(dependencyOptions, data.dependency_id);
+    const selectedInstitutionName = getSelectedName(institutionOptions, data.institution_id);
 
     if (!payload.role_id || normalize(selectedRoleName) === normalize(initialData?.role?.name)) delete payload.role_id;
     if (!payload.occupation_id || normalize(selectedOccupationName) === normalize(initialData?.occupation?.name)) delete payload.occupation_id;
@@ -211,15 +225,15 @@ export function UserModal({
         email: initialData?.email || "",
         password: "",
         password_confirmation: "",
-        role_id: findIdInCatalog(roles, initialData?.role, initialData?.role_id),
-        occupation_id: findIdInCatalog(occupations, initialData?.occupation, initialData?.occupation_id),
-        dependency_id: findIdInCatalog(dependencies, initialData?.dependency, initialData?.dependency_id),
-        institution_id: findIdInCatalog(institutions, initialData?.institution, initialData?.institution_id),
+        role_id: findIdInCatalog(roleOptions, initialData?.role, initialData?.role_id),
+        occupation_id: findIdInCatalog(occupationOptions, initialData?.occupation, initialData?.occupation_id),
+        dependency_id: findIdInCatalog(dependencyOptions, initialData?.dependency, initialData?.dependency_id),
+        institution_id: findIdInCatalog(institutionOptions, initialData?.institution, initialData?.institution_id),
       });
       setFormErrors([]);
       setFieldErrors({});
     }
-  }, [isOpen, initialData, roles, occupations, dependencies, institutions]);
+  }, [isOpen, initialData, roleOptions, occupationOptions, dependencyOptions, institutionOptions]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -380,7 +394,7 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Rol</option>
-                  {roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}
+                  {roleOptions.map((role: any) => <option key={role.id} value={role.id}>{role.name}</option>)}
                 </select>
               </div>
 
@@ -396,7 +410,7 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Ocupación</option>
-                  {occupations.map((occ: any) => <option key={occ.id} value={occ.id}>{occ.name}</option>)}
+                  {occupationOptions.map((occ: any) => <option key={occ.id} value={occ.id}>{occ.name}</option>)}
                 </select>
               </div>
 
@@ -412,7 +426,7 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Dependencia</option>
-                  {dependencies.map((dependency: any) => (
+                  {dependencyOptions.map((dependency: any) => (
                     <option key={dependency.id} value={dependency.id}>
                       {dependency.name}
                     </option>
@@ -432,7 +446,7 @@ export function UserModal({
                   className="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-[#DDC9A3]"
                 >
                   <option value="">Seleccionar Institución</option>
-                  {institutions.map((inst: any) => <option key={inst.id} value={inst.id}>{inst.name}</option>)}
+                  {institutionOptions.map((inst: any) => <option key={inst.id} value={inst.id}>{inst.name}</option>)}
                 </select>
               </div>
 
