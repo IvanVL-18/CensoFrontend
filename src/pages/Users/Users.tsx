@@ -88,7 +88,8 @@ function UsersPageContent() {
     handleConfirmAction,
     handleBulkUpload,
     isExtraSubmitting,
-    extraError,
+    extraErrors,
+    resetExtraErrors,
     handleSaveExtra,
   } = useUsersMutations({
     refreshUsers,
@@ -191,9 +192,12 @@ function UsersPageContent() {
       <UsersExtraModal
         isOpen={modals.isExtraOpen}
         isSubmitting={isExtraSubmitting}
-        error={extraError}
+        serverErrors={extraErrors}
         User={modals.extraUser}
-        onClose={modals.closeExtra}
+        onClose={() => {
+          modals.closeExtra();
+          resetExtraErrors();
+        }}
         onSave={(data) => {
           if (!modals.extraUser) return;
           handleSaveExtra(modals.extraUser, data);

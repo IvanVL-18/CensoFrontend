@@ -14,23 +14,19 @@ import { CharCountInput } from "../../../components/CharCountInput";
 interface Props {
   isOpen: boolean;
   isSubmitting: boolean;
-  error: string | null;
+  serverErrors: string[];
   User: User | null;
   onClose: () => void;
   onSave: (data: UpdateUserDTO) => void;
 }
 
 const norm = (v: any) => (v === null || v === undefined ? "" : String(v));
-const toNull = (v: string) => {
-  const s = v.trim();
-  return s === "" ? null : s;
-};
 
 
 export function UsersExtraModal({
   isOpen,
   isSubmitting,
-  error,
+  serverErrors,
   User,
   onClose,
   onSave,
@@ -44,6 +40,11 @@ export function UsersExtraModal({
   });
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [visibleServerErrors, setVisibleServerErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    setVisibleServerErrors(serverErrors);
+  }, [serverErrors]);
 
   useEffect(() => {
     if (!isOpen || !User) return;
@@ -90,6 +91,7 @@ export function UsersExtraModal({
   };
 
   const handleFieldChange = (field: keyof typeof formData, value: string) => {
+    setVisibleServerErrors([]);
     setFormData((prev) => {
       const next = { ...prev, [field]: value };
       validateAndSetErrors(next);
@@ -102,17 +104,21 @@ export function UsersExtraModal({
     if (!User) return;
     const isValid = validateAndSetErrors(formData);
     if (!isValid) return;
-    const trim = (v: any) => (v ?? "").toString().trim();
+    // El backend valida con "sometimes|string": los campos vacíos se omiten
+    // (no se envían como null ni "") para que no fallen la validación.
+    const fields = ["name", "lastname", "phone", "mobile", "address"] as const;
     const payload: UpdateUserDTO = {};
-    if (trim(formData.name) !== trim(User.name)) payload.name;
-    if (trim(formData.lastname) !== trim(User.lastname)) payload.lastname ;
-    if (trim(formData.phone) !== trim(User.phone)) payload.phone ;
-    if (trim(formData.mobile) !== trim(User.mobile)) payload.mobile ;
-    if (trim(formData.address) !== trim(User.address)) payload.address ;
-    if (Object.keys(payload).length === 0) {
-       onSave(payload);
+    for (const field of fields) {
+      const value = formData[field].trim();
+      if (value !== "" && value !== norm(User[field]).trim()) {
+        payload[field] = value;
+      }
     }
-   
+    if (Object.keys(payload).length === 0) {
+      setFormErrors(["No hay cambios para guardar."]);
+      return;
+    }
+    onSave(payload);
   };
 
   const handleClose = () => {
@@ -234,11 +240,9 @@ export function UsersExtraModal({
                 <div id="form-errors-client">
                   <FormErrors errors={formErrors} />
                 </div>
-                {error && (
-                  <div id="form-errors-server">
-                    <FormErrors errors={[error]} />
-                  </div>
-                )}
+                <div id="form-errors-server">
+                  <FormErrors errors={visibleServerErrors} />
+                </div>
               </div>
             </div>
 
