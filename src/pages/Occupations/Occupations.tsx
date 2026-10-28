@@ -75,6 +75,16 @@ function OccupationsPageContent() {
     }
   };
 
+  const handleEditClick = async (partialOccupation: any) => {
+    try {
+      clearMutationError();
+      const fullOccupation = await getOccupation(partialOccupation.id);
+      modals.openEdit(fullOccupation);
+    } catch (error) {
+      console.error("Error al cargar detalles de la Ocupación para editar", error);
+    }
+  };
+
   const modalTitle = modals.editingOccupation
     ? "Editar Ocupación"
     : "Agregar Ocupación";
@@ -130,10 +140,7 @@ function OccupationsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={hasPermission("occupations.edit") ? (o) => {
-            clearMutationError();
-            modals.openEdit(o);
-          } : undefined}
+          onEdit={hasPermission("occupations.edit") ? handleEditClick : undefined}
           onBan={hasPermission("occupations.deactivate") ? (o) => {
             clearMutationError();
             modals.openConfirm(o, "ban");

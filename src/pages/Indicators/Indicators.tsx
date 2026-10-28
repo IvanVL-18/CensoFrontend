@@ -73,6 +73,16 @@ function IndicatorsPageContent() {
     }
   };
 
+  const handleEditClick = async (partialIndicator: any) => {
+    try {
+      clearMutationError();
+      const fullIndicator = await getIndicator(partialIndicator.id);
+      modals.openEdit(fullIndicator);
+    } catch (error) {
+      console.error("Error al cargar detalles del Indicador para editar", error);
+    }
+  };
+
   const modalTitle = modals.editingIndicator
     ? "Editar Indicador"
     : "Agregar Indicador";
@@ -126,14 +136,7 @@ function IndicatorsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={
-            hasPermission("Indicators.edit")
-              ? (u) => {
-                  clearMutationError();
-                  modals.openEdit(u);
-                }
-              : undefined
-          }
+          onEdit={hasPermission("Indicators.edit") ? handleEditClick : undefined}
           onBan={
             hasPermission("Indicators.deactivate")
               ? (u) => {

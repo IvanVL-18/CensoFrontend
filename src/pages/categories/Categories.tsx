@@ -56,6 +56,15 @@ function CategoriesPageContent() {
       console.error("Error al cargar detalles de la categoría", error);
     }
   };
+
+  const handleEditClick = async (partialCategory: any) => {
+    try {
+      const fullCategory = await getCategory(partialCategory.id);
+      modals.openEdit(fullCategory);
+    } catch (error) {
+      console.error("Error al cargar detalles de la categoría para editar", error);
+    }
+  };
   const modals = useCategoriesModals();
 
   const {
@@ -121,7 +130,7 @@ function CategoriesPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={hasPermission("categories.edit") ? modals.openEdit : undefined}
+          onEdit={hasPermission("categories.edit") ? handleEditClick : undefined}
           onBan={hasPermission("categories.deactivate") ? (u) => modals.openConfirm(u, "ban") : undefined}
           onRestore={hasPermission("categories.restore") ? (u) => modals.openConfirm(u, "restore") : undefined}
           onDelete={hasPermission("categories.delete") ? (u) => modals.openConfirm(u, "delete") : undefined}
