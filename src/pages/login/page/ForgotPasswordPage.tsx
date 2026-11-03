@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import TopBar from "../components/TopBar";
 import ForgotPasswordCard from "../components/ForgotPasswordCard";
-import Footer from "../components/Footer";
+import Footer from "../../../components/Footer";
 import FallingEmblems from "../components/FallingEmblems";
 import { useAuthContext } from "../../../context/AuthContext";
 

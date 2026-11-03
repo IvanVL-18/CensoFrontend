@@ -36,6 +36,7 @@ import InstitutionUsersPage from "./pages/AdminAnswers/InstitutionUsersPage";
 import UserAnswersPage from "./pages/AdminAnswers/UserAnswersPage";
 import ForgotPasswordPage from "./pages/login/page/ForgotPasswordPage";
 import Indicators from "./pages/Indicators/Indicators";
+import Maintenance from "./pages/Maintenance/Maintenance";
 import "./App.css";
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/mantenimiento" element={<Maintenance />} />
 
       {/* ── Área autenticada ─────────────────────────────────────────────── */}
       <Route element={<ProtectedRoute />}>
