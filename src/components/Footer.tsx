@@ -1,62 +1,80 @@
-export default function Footer() {
-  return (
-    <>
-      <footer className="bg-[#691B31] text-white py-8 mt-20">
-        <div className="text-center mt-8 border-t border-[#DDC9A3]/50 pt-4"></div>
-        <div className="max-w-screen-xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-center md:text-left">
-          <div className="flex justify-center md:justify-start">
-            <img
-              src="/Hidalgo_log.svg"
-              alt="Escudo del Estado de Hidalgo"
-              className="h-10 object-contain"
-            />
-          </div>
+import { MapPin } from "lucide-react";
 
-          <div>
-            <h3 className="text-[#C79D63] font-semibold mb-2 text-base">
-              Ubicación
-            </h3>
-            <p className="text-sm leading-relaxed text-[#f3e9da]">
-              CITNOVA | EDIFICIO INNOVACIÓN
+const SOCIAL_LINKS = [
+  { href: "https://www.facebook.com/CITNOVA/", label: "Facebook", icon: "fab fa-facebook-f" },
+  { href: "https://x.com/CITNOVA", label: "X", icon: "fab fa-x-twitter" },
+];
+
+type Props = { className?: string };
+
+export default function Footer({ className = "" }: Props) {
+  const year = new Date().getFullYear();
+
+  return (
+    <footer
+      className={`mt-auto w-full shrink-0 border-t-4 border-[#C79D63] bg-[#5A1629] text-[#f3e9da] ${className}`}
+    >
+      <div className="mx-auto grid max-w-screen-xl grid-cols-1 gap-8 px-6 py-10 text-center sm:grid-cols-2 sm:text-left lg:grid-cols-3 lg:gap-12">
+        {/* Logo */}
+        <div className="flex flex-col items-center gap-3 sm:items-start">
+          <img
+            src="/Hidalgo_log.svg"
+            alt="Escudo del Estado de Hidalgo"
+            className="h-12 w-auto object-contain"
+            draggable={false}
+          />
+          <p className="max-w-xs text-sm leading-relaxed text-[#f3e9da]/80">
+            Censo Nacional de Gobiernos Estatales
+          </p>
+        </div>
+
+        {/* Ubicación */}
+        <div className="flex flex-col items-center gap-3 sm:items-start">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C79D63]">
+            Ubicación
+          </h3>
+          <address className="flex items-start gap-2 text-sm not-italic leading-relaxed">
+            <MapPin size={18} className="mt-0.5 shrink-0 text-[#C79D63]" aria-hidden="true" />
+            <span>
+              CITNOVA | Edificio Innovación
               <br />
               Boulevard Circuito La Concepción #3
               <br />
-              Colonia La Concepción, CP 42162,
+              Col. La Concepción, CP 42162
               <br />
               San Agustín Tlaxiaca, Hidalgo
-            </p>
-          </div>
-
-          {/* Redes sociales */}
-          <div className="flex flex-col items-center md:items-end gap-3">
-            <span className="text-[#C79D63] font-semibold">Síguenos en</span>
-            <div className="flex gap-4">
-              <a
-                href="https://www.facebook.com/CITNOVA/"
-                target="_blank"
-                className="bg-[#7a2834] hover:bg-[#8c3341] p-2 rounded-md transition-colors"
-                aria-label="Facebook"
-              >
-                <i className="fab fa-facebook-f text-white text-lg"></i>
-              </a>
-
-              <a
-                href="https://x.com/CITNOVA"
-                target="_blank"
-                className="bg-[#7a2834] hover:bg-[#8c3341] p-2 rounded-md transition-colors"
-                aria-label="X"
-              >
-                <i className="fab fa-x-twitter text-white text-lg"></i>
-              </a>
-            </div>
-          </div>
+            </span>
+          </address>
         </div>
 
-        {/* Línea inferior */}
-        <div className="text-center text-xs text-[#FFFFFF] mt-8 border-t border-[#DDC9A3]/10 pt-4">
-          © 2025 Gobierno del Estado de Hidalgo
+        {/* Redes sociales */}
+        <div className="flex flex-col items-center gap-3 sm:col-span-2 lg:col-span-1 lg:items-end">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C79D63]">
+            Síguenos
+          </h3>
+          <div className="flex gap-3">
+            {SOCIAL_LINKS.map(({ href, label, icon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#C79D63]/40 text-[#f3e9da] transition-colors hover:border-[#C79D63] hover:bg-[#C79D63] hover:text-[#5A1629] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C79D63]"
+              >
+                <i className={`${icon} text-base`} aria-hidden="true" />
+              </a>
+            ))}
+          </div>
         </div>
-      </footer>
-    </>
+      </div>
+
+      {/* Línea inferior */}
+      <div className="border-t border-[#DDC9A3]/15">
+        <p className="mx-auto max-w-screen-xl px-6 py-4 text-center text-xs text-[#f3e9da]/70">
+          © {year} Gobierno del Estado de Hidalgo. Todos los derechos reservados.
+        </p>
+      </div>
+    </footer>
   );
 }

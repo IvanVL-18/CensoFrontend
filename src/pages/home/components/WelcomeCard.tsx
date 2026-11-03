@@ -12,7 +12,7 @@ type Props = {
 import { useAuthContext } from "../../../context/AuthContext";
 
 export default function WelcomeCard({
-  title = "Censo Nacional de Gobiernos Estatales Hidalgo 2026",
+  title = `Censo Nacional de Gobiernos Estatales Hidalgo ${new Date().getFullYear()}`,
   subtitle = " Plataforma para digitalizar y centralizar el proceso de captura del censo",
   logoSrc = EstrellaHeader,
 }: Omit<Props, "userName">) {

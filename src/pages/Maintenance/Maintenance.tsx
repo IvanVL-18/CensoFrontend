@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Wrench } from "lucide-react";
 import FallingEmblems from "../login/components/FallingEmblems";
 import CensusNetwork from "./components/CensusNetwork";
+import Footer from "../../components/Footer";
 
 export default function Maintenance() {
   useEffect(() => {
@@ -66,10 +67,7 @@ export default function Maintenance() {
         </div>
       </main>
 
-      <footer className="relative z-10 border-t border-[#DDC9A3]/15 p-4 text-center font-montserrat text-xs text-[#f3e9da]/70 sm:p-6">
-        Gracias por tu paciencia · © {new Date().getFullYear()} Gobierno del
-        Estado de Hidalgo
-      </footer>
+      <Footer className="relative z-10" />
     </div>
   );
 }

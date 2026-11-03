@@ -1,6 +1,6 @@
 import { useResetPassword } from "./hooks/useResetPassword";
 import TopBar from "../login/components/TopBar";
-import Footer from "../login/components/Footer";
+import Footer from "../../components/Footer";
 import FallingEmblems from "../login/components/FallingEmblems";
 import ResetPasswordCard from "./components/ResetPasswordCard";
 import { useNavigate } from "react-router-dom";
