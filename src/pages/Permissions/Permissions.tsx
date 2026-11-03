@@ -53,6 +53,15 @@ function PermissionsPageContent() {
       console.error("Error al cargar detalles del Permiso", error);
     }
   };
+
+  const handleEditClick = async (partialPermission: any) => {
+    try {
+      const fullPermission = await getPermission(partialPermission.id);
+      modals.openEdit(fullPermission);
+    } catch (error) {
+      console.error("Error al cargar detalles del Permiso para editar", error);
+    }
+  };
   const modals = usePermissionsModals();
 
   const {
@@ -117,7 +126,7 @@ function PermissionsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={modals.openEdit}
+          onEdit={handleEditClick}
           onBan={(u) => modals.openConfirm(u, "ban")}
           onRestore={(u) => modals.openConfirm(u, "restore")}
           onDelete={(u) => modals.openConfirm(u, "delete")}

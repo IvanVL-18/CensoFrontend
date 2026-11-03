@@ -167,6 +167,15 @@ function CatalogsPageContent() {
     }
   };
 
+  const handleEditClick = async (partialCatalog: any) => {
+    try {
+      const fullCatalog = await getCatalog(partialCatalog.id);
+      modals.openEdit(fullCatalog);
+    } catch (error) {
+      console.error("Error al cargar detalles del catálogo para editar", error);
+    }
+  };
+
   const modalConfig = {
     title: modals.editingCatalog ? "Editar catálogo" : "Agregar catálogo",
     initialName: modals.editingCatalog?.name || "",
@@ -202,7 +211,7 @@ function CatalogsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={hasPermission("catalogs.edit") ? modals.openEdit : undefined}
+          onEdit={hasPermission("catalogs.edit") ? handleEditClick : undefined}
           onBan={hasPermission("catalogs.deactivate") ? (c) => modals.openConfirm(c, "ban") : undefined}
           onRestore={hasPermission("catalogs.restore") ? (c) => modals.openConfirm(c, "restore") : undefined}
           onDelete={hasPermission("catalogs.delete") ? (c) => modals.openConfirm(c, "delete") : undefined}

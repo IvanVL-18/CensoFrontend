@@ -71,6 +71,16 @@ function IndexsPageContent() {
     }
   };
 
+  const handleEditClick = async (partialIndex: any) => {
+    try {
+      clearMutationError();
+      const fullIndex = await getIndex(partialIndex.id);
+      modals.openEdit(fullIndex);
+    } catch (error) {
+      console.error("Error al cargar detalles del Índice para editar", error);
+    }
+  };
+
   const modalTitle = modals.editingIndex ? "Editar Índice" : "Agregar Índice";
   const modalInitialName = modals.editingIndex?.name || "";
 
@@ -121,10 +131,7 @@ function IndexsPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={(i) => {
-            clearMutationError();
-            modals.openEdit(i);
-          }}
+          onEdit={handleEditClick}
           onBan={(i) => {
             clearMutationError();
             modals.openConfirm(i, "ban");

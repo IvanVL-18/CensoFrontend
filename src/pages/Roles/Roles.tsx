@@ -72,6 +72,16 @@ function RolesPageContent() {
     }
   };
 
+  const handleEditClick = async (partialRol: any) => {
+    try {
+      clearMutationError();
+      const fullRol = await getRol(partialRol.id);
+      modals.openEdit(fullRol);
+    } catch (error) {
+      console.error("Error al cargar detalles del Rol para editar", error);
+    }
+  };
+
   const modalTitle = modals.editingRol ? "Editar Rol" : "Agregar Rol";
   const modalInitialName = modals.editingRol?.name || "";
 
@@ -123,7 +133,7 @@ function RolesPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={hasPermission("roles.edit") ? (r) => { clearMutationError(); modals.openEdit(r); } : undefined}
+          onEdit={hasPermission("roles.edit") ? handleEditClick : undefined}
           onBan={hasPermission("roles.deactivate") ? (r) => { clearMutationError(); modals.openConfirm(r, "ban"); } : undefined}
           onRestore={hasPermission("roles.restore") ? (r) => { clearMutationError(); modals.openConfirm(r, "restore"); } : undefined}
           onDelete={hasPermission("roles.delete") ? (r) => { clearMutationError(); modals.openConfirm(r, "delete"); } : undefined}

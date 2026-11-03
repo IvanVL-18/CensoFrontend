@@ -72,6 +72,16 @@ function DependenciesPageContent() {
     }
   };
 
+  const handleEditClick = async (partialDependency: any) => {
+    try {
+      clearMutationError();
+      const fullDependency = await getDependency(partialDependency.id);
+      modals.openEdit(fullDependency);
+    } catch (error) {
+      console.error("Error al cargar detalles de la Dependencia para editar", error);
+    }
+  };
+
   const modalTitle = modals.editingDependency ? "Editar Dependencia" : "Agregar Dependencia";
   const modalInitialName = modals.editingDependency?.name || "";
 
@@ -123,7 +133,7 @@ function DependenciesPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={hasPermission("dependencie.edit") ? (a) => { clearMutationError(); modals.openEdit(a); } : undefined}
+          onEdit={hasPermission("dependencie.edit") ? handleEditClick : undefined}
           onBan={hasPermission("dependencie.deactivate") ? (a) => { clearMutationError(); modals.openConfirm(a, "ban"); } : undefined}
           onRestore={hasPermission("dependencie.restore") ? (a) => { clearMutationError(); modals.openConfirm(a, "restore"); } : undefined}
           onDelete={hasPermission("dependencie.delete") ? (a) => { clearMutationError(); modals.openConfirm(a, "delete"); } : undefined}

@@ -73,6 +73,16 @@ function ModulesPageContent() {
     }
   };
 
+  const handleEditClick = async (partialModule: any) => {
+    try {
+      clearMutationError();
+      const fullModule = await getModule(partialModule.id);
+      modals.openEdit(fullModule);
+    } catch (error) {
+      console.error("Error al cargar detalles del módulo para editar", error);
+    }
+  };
+
   const modalTitle = modals.editingModule ? "Editar Módulo" : "Agregar Módulo";
   const modalInitialName = modals.editingModule?.name || "";
 
@@ -124,10 +134,7 @@ function ModulesPageContent() {
           meta={meta}
           onSort={handleSort}
           onView={handleViewClick}
-          onEdit={hasPermission("modules.edit") ? (u) => {
-            clearMutationError();
-            modals.openEdit(u);
-          } : undefined}
+          onEdit={hasPermission("modules.edit") ? handleEditClick : undefined}
           onBan={hasPermission("modules.deactivate") ? (u) => {
             clearMutationError();
             modals.openConfirm(u, "ban");
