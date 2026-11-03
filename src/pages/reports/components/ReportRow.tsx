@@ -1,5 +1,6 @@
 import { Download } from "lucide-react";
 import type { ReportItem } from "../ReportsPage";
+import { TruncatedText } from "../../../components/TruncatedText";
 
 type Props = {
   item: ReportItem;
@@ -12,9 +13,7 @@ export default function ReportRow({ item }: Props) {
 
   return (
     <div className="grid grid-cols-[1fr_120px] items-center px-4 py-3 hover:bg-slate-50 transition">
-      <div className="text-sm text-slate-800 truncate" title={item.name}>
-        {item.name}
-      </div>
+      <TruncatedText text={item.name} className="text-sm text-slate-800" />
 
       <div className="flex justify-end">
         <button

@@ -9,6 +9,7 @@ import { ViewSectionModal } from "./ViewSectionsModal";
 import { AssignInstitutionsModal } from "./AssignInstitutionsModal";
 import { ToastProvider, useToast } from "../../../context/ToastContext";
 import { Toast } from "../../../components/Toast";
+import { TruncatedText } from "../../../components/TruncatedText";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
@@ -201,7 +202,7 @@ const CensoSectionsPageContent: React.FC = () => {
                           </td>
 
                           <td className="px-4 py-3 font-medium">
-                            {row.section_name}
+                            <TruncatedText text={row.section_name} lines={2} />
                           </td>
 
                           <td className="px-4 py-3">

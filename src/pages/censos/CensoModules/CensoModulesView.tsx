@@ -4,6 +4,7 @@ import { ArrowLeft, Save, PlusCircle } from "lucide-react";
 import { useCensoModules } from "../CensoModules/useCensoModules";
 import { ToastProvider, useToast } from "../../../context/ToastContext";
 import { Toast } from "../../../components/Toast";
+import { TruncatedText } from "../../../components/TruncatedText";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
@@ -135,7 +136,7 @@ const CensoModulesPageContent: React.FC = () => {
                       </td>
 
                       <td className="px-4 py-3 font-medium">
-                        {row.module_name}
+                        <TruncatedText text={row.module_name} lines={2} />
                       </td>
 
                       <td className="px-4 py-3">

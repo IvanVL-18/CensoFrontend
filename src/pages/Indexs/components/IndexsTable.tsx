@@ -10,6 +10,10 @@ import {
 import type { IndexsTableProps } from "../Indexs.types";
 import Loading from "../../../components/Loading";
 import { ValidationError } from "../../../components/ValidationError";
+import {
+  SEARCH_NAME_LIMIT,
+  TruncatedText,
+} from "../../../components/TruncatedText";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -62,7 +66,7 @@ export function IndexsTable({
             </th>
 
             {/* 2. Columna "Nombre" */}
-            <th className="px-6 py-3 text-left w-full">
+            <th className="px-6 py-3 text-left w-full min-w-48">
               <button
                 onClick={() => onSort("name")} 
                 className="
@@ -120,8 +124,8 @@ export function IndexsTable({
                 </td>
 
                 {/* Celda "Nombre" */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {Index.name}
+                <td className="max-w-0 px-6 py-4 text-sm font-medium text-gray-900">
+                  <TruncatedText text={Index.name} truncatedAt={SEARCH_NAME_LIMIT} />
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}

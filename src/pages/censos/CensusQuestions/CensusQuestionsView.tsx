@@ -8,6 +8,7 @@ import { IndexCombobox } from "../../../components/IndexCombobox";
 import { ViewQuestionModal } from "./ViewQuestionsModal";
 import { ToastProvider, useToast } from "../../../context/ToastContext";
 import { Toast } from "../../../components/Toast";
+import { TruncatedText } from "../../../components/TruncatedText";
 
 function ToastContainer() {
   const { toasts, removeToast } = useToast();
@@ -187,7 +188,7 @@ const CensusQuestionsPageContent: React.FC = () => {
 
 
                         <td className="px-4 py-3 font-medium">
-                          {row.question_name}
+                          <TruncatedText text={row.question_name} lines={2} />
                         </td>
 
 
