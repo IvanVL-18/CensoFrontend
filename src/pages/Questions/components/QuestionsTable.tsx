@@ -12,6 +12,10 @@ import { useNavigate } from "react-router-dom";
 import type { QuestionsTableProps } from "../Questions.types";
 import Loading from "../../../components/Loading";
 import { ValidationError } from "../../../components/ValidationError";
+import {
+  SEARCH_NAME_LIMIT,
+  TruncatedText,
+} from "../../../components/TruncatedText";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -69,7 +73,7 @@ export function QuestionsTable({
             </th>
 
             {/* 2. Columna "Nombre" */}
-            <th className="px-6 py-3 text-left w-full">
+            <th className="px-6 py-3 text-left w-full min-w-48">
               <button
                 onClick={() => onSort("name")}
                 className="
@@ -129,27 +133,21 @@ export function QuestionsTable({
                 </td>
 
                 {/* Pregunta (Nombre) con truncado */}
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                  <div
-                    className="max-w-md md:max-w-lg lg:max-w-xl truncate"
-                    title={Question.name}
-                  >
-                    {Question.name}
-                  </div>
+                <td className="max-w-0 px-6 py-4 text-sm font-medium text-gray-900">
+                  <TruncatedText text={Question.name} truncatedAt={SEARCH_NAME_LIMIT} />
                 </td>
 
                 {/* Instrucciones con truncado */}
                 <td className="px-6 py-4 text-sm text-gray-500 hidden md:table-cell">
-                  <div
-                    className="max-w-xs truncate"
-                    title={Question.instructions || ""}
-                  >
-                    {Question.instructions || (
+                  <TruncatedText
+                    text={Question.instructions}
+                    className="max-w-xs"
+                    fallback={
                       <span className="italic text-gray-400">
                         Sin instrucciones
                       </span>
-                    )}
-                  </div>
+                    }
+                  />
                 </td>
 
                 {/* Opciones (Igual que antes) */}

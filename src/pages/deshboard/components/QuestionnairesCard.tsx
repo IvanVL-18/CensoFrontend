@@ -3,6 +3,7 @@ import { SearchInput } from "../../../components/SearchInput";
 import Pagination from "../../../components/Pagination";
 import type { QuestionnaireItem, Links, Meta } from "../dashboard.types";
 import Loading from "../../../components/Loading";
+import { TruncatedText } from "../../../components/TruncatedText";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -72,7 +73,7 @@ export default function QuestionnairesCard({
                 <span>No°</span>
               </th>
 
-              <th className="px-6 py-3 text-left w-full">
+              <th className="px-6 py-3 text-left w-full min-w-48">
                 <button
                   type="button"
                   onClick={() => onSort?.("name")}
@@ -118,11 +119,8 @@ export default function QuestionnairesCard({
                     {meta ? (meta.from ?? 1) + index : index + 1}
                   </td>
 
-                  <td
-                    className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-                    title={it.name}
-                  >
-                    {it.name}
+                  <td className="max-w-0 px-6 py-4 text-sm font-medium text-gray-900">
+                    <TruncatedText text={it.name} />
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">

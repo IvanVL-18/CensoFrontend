@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import type { CensosTableProps } from "../Censos.types";
 import { ValidationError } from "../../../components/ValidationError";
+import { TruncatedText } from "../../../components/TruncatedText";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -61,7 +62,7 @@ export function CensosTable({
             </th>
 
             {/* 2. Columna "Nombre" */}
-            <th className="px-6 py-3 text-left w-full">
+            <th className="px-6 py-3 text-left w-full min-w-48">
               <button
                 onClick={() => onSort("name")} 
                 className="
@@ -119,8 +120,8 @@ export function CensosTable({
                 </td>
 
                 {/* Celda "Nombre" */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {Censo.name}
+                <td className="max-w-0 px-6 py-4 text-sm font-medium text-gray-900">
+                  <TruncatedText text={Censo.name} />
                 </td>
 
                 {/* Celda "Opciones" con lógica condicional */}

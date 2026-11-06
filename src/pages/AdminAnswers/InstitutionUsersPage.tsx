@@ -19,6 +19,7 @@ import type { InstitutionUsersResponse } from "./AdminAnswers.types";
 import { generateAnswersPdf } from "./generateAnswersPdf";
 import { generateAnswersExcel } from "./generateAnswersExcel";
 import AddButton from "../../components/AddButton";
+import { TruncatedText } from "../../components/TruncatedText";
 import { useAdminAnswersMutations } from "./hooks/UseAdminAnswersMutations";
 import { BulkAnswersErrorModal } from "./BulkAnswersErrorModal";
 
@@ -233,18 +234,19 @@ export default function InstitutionUsersPage() {
                         {i + 1}
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-sm font-medium text-slate-800">
-                          {user.name} {user.lastname}
-                        </p>
+                        <TruncatedText
+                          text={[user.name, user.lastname].filter(Boolean).join(" ")}
+                          className="max-w-xs text-sm font-medium text-slate-800"
+                        />
                         <p className="text-xs text-slate-400 sm:hidden flex items-center gap-1 mt-0.5">
-                          <Mail className="h-3 w-3" />
-                          {user.email}
+                          <Mail className="h-3 w-3 shrink-0" />
+                          <TruncatedText text={user.email} className="max-w-[14rem]" />
                         </p>
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell">
                         <span className="flex items-center gap-1.5 text-sm text-slate-500">
                           <Mail className="h-4 w-4 shrink-0 text-slate-300" />
-                          {user.email}
+                          <TruncatedText text={user.email} className="max-w-xs" />
                         </span>
                       </td>
                       <td className="px-4 py-3">

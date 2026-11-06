@@ -11,6 +11,10 @@ import {
 import type { InstitutionTableProps } from "../institutions.types"; 
 import Loading from "../../../components/Loading";
 import { ValidationError } from "../../../components/ValidationError";
+import {
+  SEARCH_NAME_LIMIT,
+  TruncatedText,
+} from "../../../components/TruncatedText";
 
 
 
@@ -67,7 +71,7 @@ export function InstitutionsTable({
             </th>
 
             
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-full min-w-48">
               <button
                 onClick={() => onSort("name")} 
                 className="flex items-center space-x-1 text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-opacity-75 transition-colors"
@@ -126,8 +130,8 @@ export function InstitutionsTable({
                 </td>
 
            
-                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {institution.name}
+                <td className="max-w-0 px-4 py-4 text-sm font-medium text-gray-900">
+                  <TruncatedText text={institution.name} truncatedAt={SEARCH_NAME_LIMIT} />
                 </td>
 
               

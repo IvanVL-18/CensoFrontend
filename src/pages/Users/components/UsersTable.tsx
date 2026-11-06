@@ -10,6 +10,7 @@ import {
 import type { UsersTableProps } from "../Users.types";
 import Loading from "../../../components/Loading";
 import { ValidationError } from "../../../components/ValidationError";
+import { TruncatedText } from "../../../components/TruncatedText";
 
 const defaultProps = {
   strokeWidth: 1.75,
@@ -59,7 +60,7 @@ export function UsersTable({
                 <IconSort size={16} strokeWidth={2.5} />
               </button>
             </th>
-            <th className="px-6 py-3 text-left w-full">
+            <th className="px-6 py-3 text-left w-full min-w-48">
               <button
                 onClick={() => onSort("email")}
                 className="
@@ -109,8 +110,8 @@ export function UsersTable({
                   {meta ? meta.from + index : User.id}
                 </td>
 
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {User.email}
+                <td className="max-w-0 px-6 py-4 text-sm font-medium text-gray-900">
+                  <TruncatedText text={User.email} />
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-right">
