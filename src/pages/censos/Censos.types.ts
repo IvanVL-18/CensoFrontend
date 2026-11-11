@@ -283,6 +283,16 @@ export interface FindQuestionsResult {
   questions?: QuestionSearchItem[] | null;
 }
 
+/**
+ * Pregunta elegida en el chat. Se guarda su texto junto al id para poder
+ * mostrarla (y quitarla) sin tener que volver a buscarla.
+ */
+export interface SelectedQuestion {
+  id: string;
+  label: string;
+  context: string | null;
+}
+
 export interface CompareCensusGroup {
   id: string;
   questions: string[];
