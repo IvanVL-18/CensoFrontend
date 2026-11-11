@@ -11,7 +11,16 @@ import { CensusQuestionSearchModal } from "./CensusQuestionSearchModal";
 import { ChatMarkdown } from "./ChatMarkdown";
 
 type ChatMessage =
-  | { id: number; from: "user" | "bot"; kind: "text"; text: string }
+  | {
+      id: number;
+      from: "user" | "bot";
+      kind: "text";
+      text: string;
+      // Mensajes que solo existen en la UI (saludo, avisos de "primero
+      // selecciona preguntas" y lo que el usuario escribió antes de tener
+      // contexto). No se mandan como historial a la IA.
+      localOnly?: boolean;
+    }
   | { id: number; from: "bot"; kind: "census-list"; census: CensusOption[] };
 
 let messageIdCounter = 0;
@@ -36,15 +45,15 @@ const toDisplayText = (value: unknown, fallback: string): string => {
 /**
  * Convierte el hilo del chat al formato que espera el backend.
  *
- * Se descartan las tarjetas de censos (no son texto) y el saludo inicial, que
- * es de la UI y no de la conversación: mandarlo haría que la IA creyera que
- * ella listó los censos.
+ * Se descartan las tarjetas de censos (no son texto) y los mensajes locales de
+ * la UI: el saludo haría que la IA creyera que ella listó los censos, y los
+ * avisos de "selecciona preguntas" no son respuestas suyas.
  */
 const toHistory = (messages: ChatMessage[]): ChatHistoryTurn[] =>
   // flatMap y no filter+map: dentro del condicional TypeScript sí acota el
   // union a la variante con `text`, cosa que un filter() no hace.
   messages.flatMap((m) =>
-    m.kind === "text" && m.id !== GREETING_ID
+    m.kind === "text" && !m.localOnly
       ? [
           {
             role:
@@ -55,14 +64,13 @@ const toHistory = (messages: ChatMessage[]): ChatHistoryTurn[] =>
       : [],
   );
 
-const GREETING_ID = nextMessageId();
-
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
-    id: GREETING_ID,
+    id: nextMessageId(),
     from: "bot",
     kind: "text",
     text: "¡Hola! Estos son los censos disponibles. Selecciona los que quieras consultar y confirma tu elección.",
+    localOnly: true,
   },
 ];
 
@@ -204,16 +212,39 @@ export function CensosChatWidget() {
     if (!text || isComparing) return;
 
     const hasComparisonReady = selectedQuestionsByCensus.size > 0;
+    setDraft("");
+
+    // Sin preguntas seleccionadas no hay nada que mandar al backend (no hay
+    // ruta para chat libre), así que el bot le indica al usuario qué falta en
+    // vez de quedarse callado.
+    if (!hasComparisonReady) {
+      const hint = pickerConfirmed
+        ? "Primero necesito que selecciones las preguntas que quieres consultar para poder responderte. Toca la flecha (›) junto a un censo, marca las preguntas y después escribe tu consulta."
+        : "Primero necesito que selecciones las preguntas que quieres consultar para poder responderte. Elige los censos de la lista, confírmalos y luego marca las preguntas con la flecha (›) de cada censo.";
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: nextMessageId(),
+          from: "user",
+          kind: "text",
+          text,
+          localOnly: true,
+        },
+        {
+          id: nextMessageId(),
+          from: "bot",
+          kind: "text",
+          text: hint,
+          localOnly: true,
+        },
+      ]);
+      return;
+    }
 
     setMessages((prev) => [
       ...prev,
       { id: nextMessageId(), from: "user", kind: "text", text },
     ]);
-    setDraft("");
-
-    // Sin censos con preguntas seleccionadas, el input es solo un mensaje
-    // local; no hay ruta para chat libre todavía.
-    if (!hasComparisonReady) return;
 
     setIsComparing(true);
     try {
