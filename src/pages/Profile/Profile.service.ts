@@ -24,7 +24,9 @@ export interface FullProfile {
   census:      { id: string; name: string } | null;
 }
 
-export async function completeProfile(data: ProfileData): Promise<CompleteProfileResponse> {
+export async function completeProfile(
+  data: Omit<ProfileData, 'profile_completed_at'>,
+): Promise<CompleteProfileResponse> {
   const { data: response } = await api.post<CompleteProfileResponse>('/profile/complete', data);
   return response;
 }

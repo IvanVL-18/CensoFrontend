@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -27,41 +27,55 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function ProfileMenu() {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [promptOpen,   setPromptOpen]   = useState(false);
-  const [completeOpen, setCompleteOpen] = useState(false);
-  const [editOpen,     setEditOpen]     = useState(false);
+  const [dropdownOpen,     setDropdownOpen]     = useState(false);
+  const [showCompleteForm, setShowCompleteForm] = useState(false);
+  const [editOpen,         setEditOpen]         = useState(false);
 
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
   const { user, logout } = useAuthContext();
 
-  // Forma que esperan CompleteProfileModal y EditProfileModal
-  const modalUser = {
-    email: (user as any)?.email ?? "",
-    profile: {
-      name:     null as string | null,
-      lastname: null as string | null,
-      phone:    null as string | null,
-      mobile:   null as string | null,
-      address:  null as string | null,
-    },
-  };
+  // Mientras el perfil esté incompleto, el aviso / formulario es obligatorio:
+  // no se puede cerrar y se vuelve a mostrar en cada carga hasta guardar los datos.
+  const mustCompleteProfile = !!user && !user.complete;
+
+  const userEmail = (user as { email?: string } | null)?.email ?? "";
+
+  // Forma que esperan CompleteProfileModal y EditProfileModal.
+  // Memoizado para que CompleteProfileModal no reinicie el formulario en cada render.
+  const modalUser = useMemo(
+    () => ({
+      email: userEmail,
+      profile: {
+        name:     null as string | null,
+        lastname: null as string | null,
+        phone:    null as string | null,
+        mobile:   null as string | null,
+        address:  null as string | null,
+        profile_completed_at: null as string | null,
+      },
+    }),
+    [userEmail],
+  );
 
   const displayName = user?.name  || "Usuario";
   const displayRole = user?.role  || "Sin rol";
-  const displayEmail = (user as any)?.email || "";
+  const displayEmail = userEmail;
   const initials    = getInitials(displayName);
   const roleBadge   = ROLE_COLORS[displayRole] ?? "bg-gray-100 text-gray-600";
 
+  // Bloquea toda la app detrás del modal (clics, Tab, lectores de pantalla).
+  // Los modales se renderizan con portal en <body>, fuera de #root, así que siguen activos.
   useEffect(() => {
-    const hasSeenModal = sessionStorage.getItem("hasSeenCompleteProfileModal");
-    if (user && !user.complete && !hasSeenModal) {
-      setPromptOpen(true);
-      sessionStorage.setItem("hasSeenCompleteProfileModal", "true");
-    }
-  }, [user]);
+    if (!mustCompleteProfile) return;
+    const root = document.getElementById("root");
+    if (!root) return;
+    root.inert = true;
+    return () => {
+      root.inert = false;
+    };
+  }, [mustCompleteProfile]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -69,10 +83,9 @@ export default function ProfileMenu() {
         setDropdownOpen(false);
     };
     const handleEsc = (e: KeyboardEvent) => {
+      // Escape no cierra los modales de completar perfil (son obligatorios).
       if (e.key === "Escape") {
         setDropdownOpen(false);
-        setPromptOpen(false);
-        setCompleteOpen(false);
         setEditOpen(false);
       }
     };
@@ -87,7 +100,7 @@ export default function ProfileMenu() {
   const handleLogout = async () => {
     try {
       await logout();
-      sessionStorage.removeItem("hasSeenCompleteProfileModal");
+      setShowCompleteForm(false);
       navigate("/login");
     } catch (error) {
       console.error("Error al cerrar sesión", error);
@@ -176,14 +189,14 @@ export default function ProfileMenu() {
       {user && (
         <>
           <CompleteProfilePromptModal
-            open={promptOpen}
-            onClose={() => setPromptOpen(false)}
-            onGoToComplete={() => { setPromptOpen(false); setCompleteOpen(true); }}
+            open={mustCompleteProfile && !showCompleteForm}
+            onGoToComplete={() => setShowCompleteForm(true)}
+            onLogout={handleLogout}
           />
           <CompleteProfileModal
-            open={completeOpen}
-            onClose={() => setCompleteOpen(false)}
-            onCompleted={() => setCompleteOpen(false)}
+            open={mustCompleteProfile && showCompleteForm}
+            onCompleted={() => setShowCompleteForm(false)}
+            onLogout={handleLogout}
             user={modalUser}
           />
           <EditProfileModal

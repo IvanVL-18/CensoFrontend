@@ -28,16 +28,18 @@ export type Props = {
   onGoToComplete: () => void;
 };
 
+// Estos dos modales son obligatorios: no se pueden cerrar hasta completar el perfil.
+// La única salida es cerrar sesión.
 export type CompleteProfilePromptModalProps = Pick<
   Props,
-  "open" | "onClose" | "onGoToComplete"
->;
-
-export type CompleteProfileModalProps = Pick<
-  Props,
-  "open" | "onClose" | "user"
+  "open" | "onGoToComplete"
 > & {
+  onLogout: () => void;
+};
+
+export type CompleteProfileModalProps = Pick<Props, "open" | "user"> & {
   onCompleted: (user: AuthUser) => void;
+  onLogout: () => void;
 };
 
 export type EditProfileModalProps = Pick<Props, "open" | "onClose"> & { user?: AuthUser };
