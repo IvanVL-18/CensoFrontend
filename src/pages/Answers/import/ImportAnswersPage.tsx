@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ToastProvider, useToast } from "../../../context/ToastContext";
+import { useAuthContext } from "../../../context/AuthContext";
 import { Toast } from "../../../components/Toast";
 import {
   getCensuses,
@@ -35,6 +36,9 @@ type Step = "upload" | "preview" | "done";
 
 function ImportAnswersContent() {
   const { addToast } = useToast();
+  // GET /censuses exige censos.view; sin él, el censo se detecta del archivo.
+  const { hasPermission } = useAuthContext();
+  const canListCensuses = hasPermission("censos.view");
 
   const [step, setStep] = useState<Step>("upload");
   const [censuses, setCensuses] = useState<CensusOption[]>([]);
@@ -48,11 +52,12 @@ function ImportAnswersContent() {
   const [report, setReport] = useState<ImportConfirmResponse | null>(null);
 
   useEffect(() => {
+    if (!canListCensuses) return;
     getCensuses()
       .then(setCensuses)
       .catch(() => addToast("No se pudieron cargar los censos.", "danger"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [canListCensuses]);
 
   const apiError = (error: unknown, fallback: string) => {
     const message =
@@ -141,6 +146,7 @@ function ImportAnswersContent() {
       <div className="p-6">
         {step === "upload" && (
           <div className="mx-auto max-w-xl space-y-5">
+            {canListCensuses && (
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">
                 Censo destino
@@ -164,6 +170,7 @@ function ImportAnswersContent() {
                 en el sistema, se creará automáticamente al confirmar.
               </p>
             </div>
+            )}
 
             <div
               className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 text-center transition ${

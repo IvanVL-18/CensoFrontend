@@ -1,3 +1,4 @@
+import { lazy, Suspense, type ReactNode } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/login/page/LoginPage";
@@ -37,7 +38,17 @@ import UserAnswersPage from "./pages/AdminAnswers/UserAnswersPage";
 import ForgotPasswordPage from "./pages/login/page/ForgotPasswordPage";
 import Indicators from "./pages/Indicators/Indicators";
 import Maintenance from "./pages/Maintenance/Maintenance";
+import Loading from "./components/Loading";
 import "./App.css";
+
+// Carga de cuadernos del INEGI (docs/CARGA_CENSOS.md): pantallas nuevas, en su propio chunk.
+const WorkbookReceptionPage = lazy(() => import("./pages/Workbooks/WorkbookReceptionPage"));
+const WorkbookFileDetailPage = lazy(() => import("./pages/Workbooks/WorkbookFileDetailPage"));
+const WorkbookProgressPage = lazy(() => import("./pages/Workbooks/WorkbookProgressPage"));
+
+function LazyPage({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<Loading />}>{children}</Suspense>;
+}
 
 export default function App() {
   return (
@@ -82,6 +93,22 @@ export default function App() {
             <Route
               path="/admin/importar-respuestas"
               element={<ImportAnswersPage />}
+            />
+          </Route>
+
+          {/* Carga de cuadernos del INEGI: mismo permiso que GET/POST /workbook-files/* */}
+          <Route element={<ProtectedRoute permission="workbooks.view" />}>
+            <Route
+              path="/admin/cuadernos"
+              element={<LazyPage><WorkbookReceptionPage /></LazyPage>}
+            />
+            <Route
+              path="/admin/cuadernos/avance"
+              element={<LazyPage><WorkbookProgressPage /></LazyPage>}
+            />
+            <Route
+              path="/admin/cuadernos/archivos/:id"
+              element={<LazyPage><WorkbookFileDetailPage /></LazyPage>}
             />
           </Route>
 
