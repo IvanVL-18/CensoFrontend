@@ -13,15 +13,19 @@ export default function ChartsPage() {
   const [exportError, setExportError] = useState<string | null>(null);
 
   const chartRef = useRef<HTMLDivElement>(null);
+  /** Id cifrado del censo elegido; sin elegir, el backend da el más reciente. */
+  const [censusId, setCensusId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    getChartData()
+    getChartData(censusId)
       .then(setChartData)
       .catch(() => setError("No se pudieron obtener los datos de las gráficas."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [censusId]);
+
+  const censuses = chartData?.censuses ?? [];
 
   async function handleExportPdf() {
     if (exporting || !chartData || !chartRef.current) return;
@@ -59,6 +63,24 @@ export default function ChartsPage() {
             </h2>
           </div>
         </div>
+
+        {censuses.length > 1 && (
+          <label className="ml-auto flex min-w-0 items-center gap-2 text-sm text-[#4b1220]">
+            <span className="hidden shrink-0 sm:inline">Censo</span>
+            <select
+              value={censuses.find((census) => census.selected)?.name ?? ""}
+              onChange={(event) => setCensusId(censuses.find((census) => census.name === event.target.value)?.id)}
+              disabled={loading}
+              className="max-w-[18rem] truncate rounded-lg border border-black/10 bg-white px-2 py-1.5 text-sm focus:border-[#7C1227] focus:outline-none"
+            >
+              {censuses.map((census) => (
+                <option key={census.name} value={census.name}>
+                  {census.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <button
           type="button"

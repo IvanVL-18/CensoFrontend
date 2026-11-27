@@ -99,7 +99,22 @@ export default function CensusInstitutionsPage() {
             </div>
           )}
 
-          {!loading && !error && data && data.institutions.length === 0 && (
+          {!loading && !error && data?.census.program && data.census.year && (
+            <div className="mb-4 rounded-lg border border-[#7A0C2E]/20 bg-[#F7F3E8] px-4 py-3 text-sm text-slate-800">
+              Este censo se armó desde los cuadernos del INEGI: sus respuestas son de las instituciones, no de usuarios.{" "}
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(`/admin/cuadernos/respuestas?edicion=${encodeURIComponent(`${data.census.program}-${data.census.year}`)}`)
+                }
+                className="font-medium text-[#7A0C2E] underline"
+              >
+                Ver las respuestas por sección
+              </button>
+            </div>
+          )}
+
+          {!loading && !error && data && data.institutions.length === 0 && !data.census.program && (
             <div className="text-center py-16 text-slate-400">
               <Building2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
               <p className="text-sm">
