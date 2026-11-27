@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 import clsx from "clsx";
 import {
   fieldHint,
@@ -6,9 +6,11 @@ import {
   formatAnswerValue,
   isSpecialValue,
   withYears,
+  type AnswerRow,
   type AnswerValue,
   type CompiledTemplate,
   type GridCell,
+  type GridRow,
   type TemplateField,
 } from "../lib/compiledTemplate";
 
@@ -23,21 +25,125 @@ interface CompiledGridProps {
    * muestran lo que se contestó; sin ellas, qué se escribe en cada una.
    */
   values?: Readonly<Record<string, AnswerValue>>;
+  /**
+   * Filas contestadas de cada tabla de lista, en el orden de la plantilla. Con ellas cada
+   * tabla se dibuja con sus filas contestadas en lugar de las tres filas de muestra.
+   */
+  lists?: readonly AnswerRow[][];
+  /** Nombre de cada fila de una tabla (por posición de la lista y número de fila), para las celdas que se llenan solas. */
+  rowNames?: Readonly<Record<number, Readonly<Record<string, string>>>>;
 }
 
 /**
  * Copia fiel de una pregunta compilada: la dibuja con la misma forma que tiene en
  * el Excel, desde la rejilla de su plantilla (docs/CARGA_CENSOS.md, §7.3). Sin
- * `values`, las celdas de captura dicen qué se escribe en ellas; con `values`,
- * muestran las respuestas.
+ * respuestas, las celdas de captura dicen qué se escribe en ellas; con `values` y
+ * `lists`, muestran lo que se contestó.
  */
-export default function CompiledGrid({ template, editionYear, highlight, values }: CompiledGridProps) {
+export default function CompiledGrid({ template, editionYear, highlight, values, lists, rowNames }: CompiledGridProps) {
   const { grid } = template;
   if (grid.rows.length === 0) {
     return <p className="text-sm text-gray-500">Esta pregunta no tiene una tabla que dibujar.</p>;
   }
 
   const fields = new Map(template.fields.map((field) => [field.key, field]));
+  const answered = values !== undefined || lists !== undefined;
+
+  // A qué tabla de lista pertenece cada fila de la rejilla (por sus celdas de captura).
+  const listOf = (row: GridRow): number | undefined => {
+    for (const cell of row.cells) {
+      const list = cell.f ? fields.get(cell.f)?.list : undefined;
+      if (list !== undefined) return list;
+    }
+    return undefined;
+  };
+
+  const body: ReactNode[] = [];
+  for (let index = 0; index < grid.rows.length; index++) {
+    const row = grid.rows[index];
+    const list = lists ? listOf(row) : undefined;
+
+    if (list === undefined) {
+      body.push(
+        <Fragment key={index}>
+          <tr>
+            {row.cells.map((cell, cellIndex) => (
+              <Cell
+                key={cellIndex}
+                cell={cell}
+                field={cell.f ? fields.get(cell.f) : undefined}
+                editionYear={editionYear}
+                highlighted={Boolean(cell.f && highlight?.has(cell.f))}
+                answered={answered}
+                value={cell.f ? values?.[cell.f] : undefined}
+              />
+            ))}
+          </tr>
+          {row.fold ? (
+            <tr>
+              <td colSpan={grid.cols.length} className="bg-gray-50 px-2 py-1 text-center italic text-gray-500">
+                … {row.fold === 1 ? "1 fila más" : `${row.fold.toLocaleString("es-MX")} filas más`} con la misma forma
+              </td>
+            </tr>
+          ) : null}
+        </Fragment>,
+      );
+      continue;
+    }
+
+    // Tabla de lista con respuestas: la primera fila de muestra sirve de molde para cada fila contestada.
+    let end = index;
+    while (end + 1 < grid.rows.length && listOf(grid.rows[end + 1]) === list) end++;
+    const rows = lists?.[list] ?? [];
+    const total = template.lists[list]?.rows ?? rows.length;
+
+    rows.forEach((answer) => {
+      body.push(
+        <tr key={`${index}-${answer._row}`}>
+          {row.cells.map((cell, cellIndex) => {
+            if (cell.k === "k") {
+              return (
+                <td key={cellIndex} colSpan={cell.cs ?? 1} className="border border-gray-200 px-1.5 py-1 text-center tabular-nums text-gray-500">
+                  {answer._row}.
+                </td>
+              );
+            }
+            if (cell.k === "d") {
+              const name = rowNames?.[list]?.[String(answer._row)];
+              return (
+                <td key={cellIndex} colSpan={cell.cs ?? 1} className="border border-gray-200 bg-gray-50 px-1.5 py-1 text-left text-gray-800">
+                  {name ?? <span className="italic text-gray-400">{cell.t}</span>}
+                </td>
+              );
+            }
+            return (
+              <Cell
+                key={cellIndex}
+                cell={{ ...cell, rs: undefined }}
+                field={cell.f ? fields.get(cell.f) : undefined}
+                editionYear={editionYear}
+                highlighted={false}
+                answered
+                value={cell.f ? answer[cell.f] : undefined}
+              />
+            );
+          })}
+        </tr>,
+      );
+    });
+    body.push(
+      <tr key={`${index}-resto`}>
+        <td colSpan={grid.cols.length} className="bg-gray-50 px-2 py-1 text-center italic text-gray-500">
+          {rows.length === 0
+            ? `Sin filas contestadas (de ${total.toLocaleString("es-MX")})`
+            : total > rows.length
+              ? `… ${(total - rows.length).toLocaleString("es-MX")} ${total - rows.length === 1 ? "fila más" : "filas más"} en blanco`
+              : "No quedan filas en blanco"}
+        </td>
+      </tr>,
+    );
+    index = end;
+  }
 
   return (
     <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
@@ -47,32 +153,7 @@ export default function CompiledGrid({ template, editionYear, highlight, values 
             <col key={index} style={{ width: `${width}%` }} />
           ))}
         </colgroup>
-        <tbody>
-          {grid.rows.map((row, rowIndex) => (
-            <Fragment key={rowIndex}>
-              <tr>
-                {row.cells.map((cell, cellIndex) => (
-                  <Cell
-                    key={cellIndex}
-                    cell={cell}
-                    field={cell.f ? fields.get(cell.f) : undefined}
-                    editionYear={editionYear}
-                    highlighted={Boolean(cell.f && highlight?.has(cell.f))}
-                    answered={values !== undefined}
-                    value={cell.f ? values?.[cell.f] : undefined}
-                  />
-                ))}
-              </tr>
-              {row.fold ? (
-                <tr>
-                  <td colSpan={grid.cols.length} className="bg-gray-50 px-2 py-1 text-center italic text-gray-500">
-                    … {row.fold === 1 ? "1 fila más" : `${row.fold.toLocaleString("es-MX")} filas más`} con la misma forma
-                  </td>
-                </tr>
-              ) : null}
-            </Fragment>
-          ))}
-        </tbody>
+        <tbody>{body}</tbody>
       </table>
     </div>
   );

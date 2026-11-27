@@ -1,0 +1,105 @@
+import { useMemo } from "react";
+import { buildBreakdown, listGroups, listSources, looseFields } from "../../lib/compiledAnswers";
+import { fieldLabel, type AnswerValue, type CompiledAnswer, type CompiledTemplate } from "../../lib/compiledTemplate";
+import CompiledGrid from "../CompiledGrid";
+import { AnswerBreakdown } from "./AnswerBreakdown";
+import { AnswerFicha } from "./AnswerFicha";
+import { AnswerListTable } from "./AnswerListTable";
+
+/** Nombre de las filas de una tabla que se llena con otra pregunta. */
+export interface AnswerRowSource {
+  list: number;
+  anchor: string;
+  label: string[];
+  rows: Readonly<Record<string, string>>;
+}
+
+interface DigitalAnswerProps {
+  template: CompiledTemplate;
+  answer: CompiledAnswer;
+  /** Número de la pregunta: sirve para saber qué tablas son bloques de la misma. */
+  anchor: string;
+  editionYear: number;
+  rowSources?: readonly AnswerRowSource[];
+  /** «digital»: acomodada para leerse; «excel»: con la misma forma que en el cuaderno. */
+  mode: "digital" | "excel";
+  /** Campos sueltos de la edición anterior, por las mismas claves. */
+  previous?: { year: number; values: Readonly<Record<string, AnswerValue>> };
+}
+
+/**
+ * Las respuestas de una pregunta compilada (docs/CARGA_CENSOS.md, §7.7). En digital la vista
+ * se elige por la forma de la pregunta: ficha para las simples, desglose para las tablas fijas
+ * y una tabla por cada tabla de lista. La copia fiel queda siempre a un clic, para cotejar.
+ */
+export function DigitalAnswer({ template, answer, anchor, editionYear, rowSources = [], mode, previous }: DigitalAnswerProps) {
+  const loose = useMemo(() => looseFields(template), [template]);
+  const breakdown = useMemo(() => buildBreakdown(loose, editionYear), [loose, editionYear]);
+  const groups = useMemo(() => listGroups(template, anchor), [template, anchor]);
+  const sources = useMemo(() => listSources(template), [template]);
+
+  const namesOf = (lists: number[]) => {
+    const source = rowSources.find((item) => lists.includes(item.list));
+    if (!source) return undefined;
+    return { anchor: source.anchor, label: source.label.join(" › "), rows: source.rows };
+  };
+
+  if (mode === "excel") {
+    const rowNames: Record<number, Readonly<Record<string, string>>> = {};
+    for (const source of rowSources) rowNames[source.list] = source.rows;
+
+    return (
+      <div className="space-y-4">
+        <CompiledGrid template={template} editionYear={editionYear} values={answer.fields} lists={answer.lists} rowNames={rowNames} />
+        <Comment text={answer.comment} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {loose.length > 0 &&
+        (breakdown ? (
+          <AnswerBreakdown breakdown={breakdown} values={answer.fields} previous={previous} />
+        ) : (
+          <AnswerFicha fields={loose} values={answer.fields} editionYear={editionYear} previous={previous} />
+        ))}
+
+      {groups.map((lists) => {
+        const source = sources[lists[0]];
+        const names = namesOf(lists);
+        const first = template.fields.find((field) => field.list === lists[0]);
+
+        return (
+          <div key={lists.join("-")} className="space-y-1">
+            {(groups.length > 1 || loose.length > 0) && (
+              <p className="text-sm font-medium text-gray-800">
+                {groups.length > 1 ? `Tabla ${groups.indexOf(lists) + 1}` : "Tabla"}
+                {first && groups.length > 1 && (
+                  <span className="font-normal text-gray-500"> · empieza en «{fieldLabel(first, editionYear) || "Respuesta"}»</span>
+                )}
+              </p>
+            )}
+            {source && source !== anchor && !names && (
+              <p className="text-xs text-gray-500">Cada fila corresponde a la misma fila de la pregunta {source}.</p>
+            )}
+            <AnswerListTable template={template} lists={lists} answers={answer.lists} editionYear={editionYear} rowNames={names} />
+          </div>
+        );
+      })}
+
+      <Comment text={answer.comment} />
+    </div>
+  );
+}
+
+function Comment({ text }: { text: string | null }) {
+  if (!text) return null;
+
+  return (
+    <div className="rounded-lg border border-gray-200 p-3">
+      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Comentario del informante</p>
+      <p className="mt-1 whitespace-pre-line text-sm text-gray-900">{text}</p>
+    </div>
+  );
+}

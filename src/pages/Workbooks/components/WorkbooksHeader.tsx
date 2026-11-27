@@ -2,16 +2,19 @@ import clsx from "clsx";
 import { Link, useLocation } from "react-router-dom";
 
 const PROGRESS_PATH = "/admin/cuadernos/avance";
+const ANSWERS_PATH = "/admin/cuadernos/respuestas";
 
 /** Barra guinda con el título y las pestañas de la carga de cuadernos. */
 export function WorkbooksHeader({ subtitle }: { subtitle?: string }) {
   const { pathname } = useLocation();
   // El detalle de un archivo cuelga de la recepción; las plantillas, del avance.
   const onProgress = pathname.startsWith(PROGRESS_PATH) || pathname.startsWith("/admin/cuadernos/plantillas");
+  const onAnswers = pathname.startsWith(ANSWERS_PATH);
 
   const tabs = [
-    { to: "/admin/cuadernos", label: "Recepción", active: !onProgress },
+    { to: "/admin/cuadernos", label: "Recepción", active: !onProgress && !onAnswers },
     { to: PROGRESS_PATH, label: "Avance por edición", active: onProgress },
+    { to: ANSWERS_PATH, label: "Respuestas", active: onAnswers },
   ];
 
   return (

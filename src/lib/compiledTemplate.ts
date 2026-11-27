@@ -2,6 +2,8 @@
 // Toda la lógica de la plantilla vive aquí, igual que el motor de Form.io vive en
 // formioOperations.ts. Contrato: apis-censo, resources/schemas/workbook-template.v1.schema.json
 // (lo produce Services/Workbooks/Compiler/QuestionCompiler y lo valida TemplateSchema).
+// Cómo se lee una respuesta en la vista digital (desgloses, sumas, tablas de lista) está en
+// compiledAnswers.ts.
 
 export type QuestionKind = "simple" | "list" | "fixed" | "none";
 export type FieldType = "code" | "mark" | "number" | "string" | "text";
@@ -21,6 +23,11 @@ export interface TemplateField {
   options?: TemplateOption[];
   /** Índice de la tabla de lista a la que pertenece la columna. */
   list?: number;
+  /**
+   * En una columna de «marque con X» bajo un número: la opción del catálogo que representa.
+   * La etiqueta va vacía si el compilador no encontró el catálogo.
+   */
+  choice?: TemplateOption;
 }
 
 /** h encabezado, l etiqueta, k número de renglón, e vacía, i captura, d heredada de otra pregunta. */
