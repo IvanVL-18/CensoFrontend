@@ -205,7 +205,17 @@ function Identification({ file }: { file: WorkbookFileDetail }) {
     },
     { label: "Preguntas", value: file.question_count ?? workbook.question_count },
     { label: "Código del cuaderno", value: <span className="font-mono">{workbook.code}</span> },
-    { label: "Plantilla", value: TEMPLATE_LABEL[workbook.template_status] },
+    {
+      label: "Plantilla",
+      value: (
+        <Link
+          to={`/admin/cuadernos/plantillas/${encodeURIComponent(workbook.code)}`}
+          className="text-[var(--pantone-7421)] hover:underline"
+        >
+          {TEMPLATE_LABEL[workbook.template_status]}
+        </Link>
+      ),
+    },
     {
       label: "Institución declarada",
       value: file.institution.declared ? (

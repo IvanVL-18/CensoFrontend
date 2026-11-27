@@ -6,8 +6,8 @@ const PROGRESS_PATH = "/admin/cuadernos/avance";
 /** Barra guinda con el título y las pestañas de la carga de cuadernos. */
 export function WorkbooksHeader({ subtitle }: { subtitle?: string }) {
   const { pathname } = useLocation();
-  // El detalle de un archivo cuelga de la recepción.
-  const onProgress = pathname.startsWith(PROGRESS_PATH);
+  // El detalle de un archivo cuelga de la recepción; las plantillas, del avance.
+  const onProgress = pathname.startsWith(PROGRESS_PATH) || pathname.startsWith("/admin/cuadernos/plantillas");
 
   const tabs = [
     { to: "/admin/cuadernos", label: "Recepción", active: !onProgress },

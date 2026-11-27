@@ -1,8 +1,10 @@
+import { useRef } from "react";
 import { useQuestionsData } from "./hooks/useQuestionsData";
 import { useQuestionsModals } from "./hooks/useQuestionsModals";
 import { useQuestionsMutations } from "./hooks/useQuestionsMutations";
 import { PreviewQuestionModal } from "./components/PreviewQuestionModal";
 import { getQuestion } from "./Questions.service";
+import type { Question } from "./Questions.types";
 import { QuestionsToolbar } from "./components/QuestionsToolbar";
 import { QuestionsTable } from "./components/QuestionsTable";
 import Pagination from "../../components/Pagination";
@@ -63,13 +65,20 @@ function QuestionsPageContent() {
   });
 
   const { hasPermission } = useAuthContext();
+  const { addToast } = useToast();
+  const loadingEdit = useRef(false);
 
-  const handleEditClick = async (partialQuestion: any) => {
-    modals.openEdit(partialQuestion); 
+  // El listado trae el nombre cortado a 60 caracteres. El formulario solo se abre con el registro
+  // completo: si se abriera con el del listado y se guardara, la pregunta quedaría cortada en la base.
+  const handleEditClick = async (partialQuestion: Question) => {
+    if (loadingEdit.current) return;
+    loadingEdit.current = true;
     try {
-      const fullQuestion = await getQuestion(partialQuestion.id);
-      modals.openEdit(fullQuestion); 
+      modals.openEdit(await getQuestion(partialQuestion.id));
     } catch {
+      addToast("No se pudo cargar la pregunta completa. Inténtalo de nuevo.", "danger");
+    } finally {
+      loadingEdit.current = false;
     }
   };
 

@@ -1,4 +1,4 @@
-import { X, ChevronLeft, ChevronRight, Calculator, Loader2 } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Calculator, Loader2, TriangleAlert } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Form } from "@formio/react";
 import "../../../styles/bootstrap-scoped.css";
@@ -15,6 +15,9 @@ import {
 
 
 const FormAny = Form as any;
+
+const NO_FORM_MESSAGE =
+  "Esta pregunta no tiene formulario dibujado, así que su respuesta no se puede mostrar aquí todavía.";
 
 /* =========================================================
    =================== TIPOS INTERNOS ======================
@@ -76,6 +79,8 @@ interface AdminAnswerModalProps {
 
 export function AdminAnswerModal({ isOpen, question, onClose }: AdminAnswerModalProps) {
   const [schema, setSchema] = useState<QuestionSchema | null>(null);
+  // Por qué no hay formulario que mostrar; sin esto la pantalla se quedaba en «Cargando respuesta…».
+  const [formError, setFormError] = useState<string | null>(null);
   const [submissions, setSubmissions] = useState<any[]>([{}]);
   const [operations, setOperations] = useState<OperationConfig[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -96,23 +101,32 @@ export function AdminAnswerModal({ isOpen, question, onClose }: AdminAnswerModal
   );
 
   useEffect(() => {
-    if (!isOpen || !question) {
-      setSchema(null);
-      setSubmissions([{}]);
-      setOperations([]);
-      setCurrentIndex(0);
+    setSchema(null);
+    setFormError(null);
+    setSubmissions([{}]);
+    setOperations([]);
+    setCurrentIndex(0);
+
+    if (!isOpen || !question) return;
+
+    // question_structure puede venir como string o como objeto según tu tipo.
+    // Las preguntas que entran por los cuadernos de Excel no tienen formulario Form.io.
+    const rawStructure = (question as any).question_structure ?? null;
+    if (!rawStructure) {
+      setFormError(NO_FORM_MESSAGE);
       return;
     }
-
-    // question_structure puede venir como string o como objeto según tu tipo
-    const rawStructure = (question as any).question_structure ?? null;
-    if (!rawStructure) return;
 
     try {
       let parsed: QuestionSchema =
         typeof rawStructure === "string"
           ? JSON.parse(rawStructure)
           : { ...rawStructure };
+
+      if (!Array.isArray(parsed?.components) || parsed.components.length === 0) {
+        setFormError(NO_FORM_MESSAGE);
+        return;
+      }
 
       parsed = { ...sanitizeSchema(parsed), display: "form" };
 
@@ -164,6 +178,7 @@ export function AdminAnswerModal({ isOpen, question, onClose }: AdminAnswerModal
       setCurrentIndex(0);
     } catch (e) {
       console.error("Error al parsear question_structure:", e);
+      setFormError("No se pudo leer el formulario de esta pregunta.");
     }
   }, [isOpen, question, parseExistingAnswer]);
 
@@ -242,6 +257,14 @@ export function AdminAnswerModal({ isOpen, question, onClose }: AdminAnswerModal
               </div>
               <OperationResults results={evaluatedResults} />
             </>
+          ) : formError ? (
+            <div
+              role="status"
+              className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+            >
+              <TriangleAlert size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+              <p>{formError}</p>
+            </div>
           ) : (
             <div className="flex justify-center items-center h-40 text-gray-400 gap-2">
               <Loader2 size={24} className="animate-spin" />

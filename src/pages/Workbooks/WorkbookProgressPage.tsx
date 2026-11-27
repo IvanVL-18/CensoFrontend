@@ -247,7 +247,25 @@ function SectionRow({ section, workbooks }: { section: ProgressSection; workbook
         ))}
       </td>
       <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-        {workbook ? TEMPLATE_LABEL[workbook.template_status] : "—"}
+        {workbook ? (
+          <Link
+            to={`/admin/cuadernos/plantillas/${encodeURIComponent(workbook.code)}`}
+            className="font-medium text-[var(--pantone-7421)] hover:underline"
+            title="Ver las preguntas que se leyeron de este cuaderno"
+          >
+            {TEMPLATE_LABEL[workbook.template_status]}
+          </Link>
+        ) : (
+          "—"
+        )}
+        {workbook?.template_status === "in_review" && workbook.template_to_review ? (
+          <span className="block text-xs text-orange-900">
+            {workbook.template_to_review === 1 ? "1 pregunta por revisar" : `${workbook.template_to_review} preguntas por revisar`}
+          </span>
+        ) : null}
+        {workbook?.template_status === "pending" && workbook.compile_error ? (
+          <span className="block text-xs text-red-700">No se pudo compilar</span>
+        ) : null}
       </td>
       <td className="px-4 py-2 text-gray-700">
         {last ? (
