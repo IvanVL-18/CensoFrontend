@@ -30,8 +30,6 @@ export function CatalogModal({
     Module?: string;
   }>({});
   const [serverError, setServerError] = useState<string | null>(null);
-  const [nameCharCount, setNameCharCount] = useState(0);
-  const [slugCharCount, setSlugCharCount] = useState(0);
 
   const [touchedFields, setTouchedFields] = useState({
     name: false,
@@ -76,8 +74,6 @@ export function CatalogModal({
     setName(initialName);
     setSlug(initialSlug);
     setModuleId(finalModuleId);
-    setNameCharCount(initialName.length);
-    setSlugCharCount(initialSlug.length);
 
     setFieldErrors({});
     setServerError(null);
@@ -143,8 +139,6 @@ export function CatalogModal({
     setModuleId("");
     setFieldErrors({});
     setServerError(null);
-    setNameCharCount(0);
-    setSlugCharCount(0);
     setTouchedFields({ name: false, slug: false, module: false });
     onClose();
   };
@@ -190,7 +184,6 @@ export function CatalogModal({
                 autoFocus
                 onChange={(val) => {
                   setName(val);
-                  setNameCharCount(val.length);
                   setTouchedFields((prev) => ({ ...prev, name: true }));
                   validateForm(val, slug, ModuleId);
                   setServerError(null);
@@ -207,7 +200,6 @@ export function CatalogModal({
                 hasError={hasSlugError}
                 onChange={(val) => {
                   setSlug(val);
-                  setSlugCharCount(val.length);
                   setTouchedFields((prev) => ({ ...prev, slug: true }));
                   validateForm(name, val, ModuleId);
                   setServerError(null);

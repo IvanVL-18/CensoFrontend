@@ -7,7 +7,6 @@ import {
   Menu,
   ClipboardList,
   BarChart3,
-  CalendarRange,
   Settings,
   NotebookPen,
   FileUp,

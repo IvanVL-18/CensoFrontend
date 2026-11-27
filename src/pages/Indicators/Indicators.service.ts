@@ -17,7 +17,7 @@ export const getIndicators = async (
   _sortBy: string = "id",
   direction: "asc" | "desc" = "asc",
   signal?: AbortSignal,
-  perPage: number = 10,
+  _perPage: number = 10,
 ): Promise<PaginatedIndicatorsResponse> => {
   const response = await api.post<PaginatedIndicatorsResponse>(
     `/indicators/search`,

@@ -1,5 +1,5 @@
-import { type ChangeEvent, useRef } from "react";
-import { CirclePlus, FileDown } from "lucide-react";
+import { type ChangeEvent } from "react";
+import { CirclePlus } from "lucide-react";
 
 import type { CatalogFilter } from "../Catalogs.service";
 import { SearchInput } from "../../../components/SearchInput";
@@ -20,25 +20,11 @@ interface CatalogsToolbarProps {
 export function CatalogsToolbar({
   filter,
   searchTerm,
-  isSubmitting,
   onFilterChange,
   onSearchChange,
   onAddClick,
-  onBulkUpload,
   canCreate = true,
 }: CatalogsToolbarProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onBulkUpload(file);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-red-900">

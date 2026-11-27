@@ -2,6 +2,7 @@ import { X, ChevronLeft, ChevronRight, Calculator, Loader2 } from "lucide-react"
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Form } from "@formio/react";
 import "../../../styles/bootstrap-scoped.css";
+import type { QuestionItem } from "../../AdminAnswers/AdminAnswers.types";
 import {
   evaluateOperations,
   type OperationConfig,
