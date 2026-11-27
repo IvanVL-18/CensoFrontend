@@ -122,19 +122,11 @@ export interface QuestionAnswers {
   previous: PreviousEdition | null;
 }
 
-/** Todas las respuestas de una sección, para exportarlas. */
+/** Todas las respuestas de una sección: cada pregunta, igual que al pedirla sola. */
 export interface SectionBundle {
   census: CensusRef;
   module: { number: string | null; name: string | null };
   section: { index: string; name: string | null };
   institution: string | null;
-  questions: {
-    id: number;
-    anchor: string;
-    kind: QuestionKind;
-    text: string;
-    template: CompiledTemplate;
-    answer: CompiledAnswer | null;
-    row_sources: RowSource[];
-  }[];
+  questions: QuestionAnswers[];
 }

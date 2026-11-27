@@ -1,4 +1,3 @@
-import { CanceledError } from "axios";
 import api from "../../lib/Axios";
 import type {
   AnswersEdition,
@@ -39,56 +38,34 @@ export const getSectionAnswers = async (
   return response.data;
 };
 
-// Una sección puede tener decenas de preguntas y al imprimir se piden todas: van de pocas en
-// pocas para no saturar al servidor.
-const MAX_PARALLEL = 4;
-let running = 0;
-const waiting: (() => void)[] = [];
-
-const acquire = (): Promise<void> =>
-  new Promise((resolve) => {
-    const start = () => {
-      running++;
-      resolve();
-    };
-    if (running < MAX_PARALLEL) start();
-    else waiting.push(start);
-  });
-
-const release = (): void => {
-  running--;
-  waiting.shift()?.();
-};
-
 /** Lo que una institución respondió en una pregunta. Confidencial: exige workbook-answers.view. */
 export const getQuestionAnswers = async (
   questionId: number,
   institution?: string,
   signal?: AbortSignal,
 ): Promise<QuestionAnswers> => {
-  await acquire();
-  try {
-    // Pudo cancelarse mientras esperaba su turno (por ejemplo, al salir de la página).
-    if (signal?.aborted) throw new CanceledError();
-    const response = await api.get<{ data: QuestionAnswers }>(`/census-answers/questions/${questionId}`, {
-      params: institution ? { institution } : undefined,
-      signal,
-    });
-    return response.data.data;
-  } finally {
-    release();
-  }
+  const response = await api.get<{ data: QuestionAnswers }>(`/census-answers/questions/${questionId}`, {
+    params: institution ? { institution } : undefined,
+    signal,
+  });
+  return response.data.data;
 };
 
-/** Todas las respuestas de la sección de una vez, para exportarlas. Confidencial. */
+/**
+ * Todas las respuestas de la sección en una sola petición: es lo que usa la pantalla (pedir
+ * cada pregunta por separado tarda decenas de segundos en una sección grande) y lo que se
+ * exporta. Confidencial: exige workbook-answers.view.
+ */
 export const getSectionBundle = async (
   program: string,
   year: number,
   index: string,
   institution?: string,
+  signal?: AbortSignal,
 ): Promise<SectionBundle> => {
   const response = await api.get<SectionBundle>(`${sectionUrl(program, year, index)}/answers`, {
     params: institution ? { institution } : undefined,
+    signal,
   });
   return response.data;
 };

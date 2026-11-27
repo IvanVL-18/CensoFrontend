@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import clsx from "clsx";
 import { ArrowLeft, ChevronLeft, ChevronRight, FileDown, Loader2, Lock, Printer, TriangleAlert } from "lucide-react";
@@ -7,8 +7,8 @@ import Loading from "../../components/Loading";
 import { ValidationError } from "../../components/ValidationError";
 import { useAuthContext } from "../../context/AuthContext";
 import { KIND_LABEL, withYears } from "../../lib/compiledTemplate";
-import { getQuestionAnswers, getSectionAnswers, getSectionBundle } from "./CensusAnswers.service";
-import type { QuestionAnswers, SectionAnswers, SectionQuestion } from "./CensusAnswers.types";
+import { getSectionAnswers, getSectionBundle } from "./CensusAnswers.service";
+import type { QuestionAnswers, SectionAnswers, SectionBundle, SectionQuestion } from "./CensusAnswers.types";
 import { QuestionStatusBadge } from "./components/AnswerBadges";
 import { WorkbooksHeader } from "./components/WorkbooksHeader";
 import { apiErrorMessage, isCanceled } from "./Workbooks.service";
@@ -18,6 +18,9 @@ import { formatDateTime } from "./workbookLabels";
  * Vista digital de una sección (docs/CARGA_CENSOS.md, §7.7): el cuestionario con lo que
  * respondió una institución, pregunta por pregunta, acomodado para leerse. Cada pregunta se
  * puede ver también como viene en el Excel. Los valores piden workbook-answers.view.
+ *
+ * Las respuestas de toda la sección llegan en una sola petición; lo que se difiere es el
+ * dibujo de cada tarjeta, hasta que entra a la pantalla.
  */
 export default function WorkbookSectionAnswersPage() {
   const { program = "", year: yearParam = "", index = "" } = useParams();
@@ -32,16 +35,19 @@ export default function WorkbookSectionAnswersPage() {
   const [chosen, setChosen] = useState<string | null>(null);
   const institutions = useRef<SectionAnswers["institutions"]>([]);
 
-  const [loadAll, setLoadAll] = useState(false);
+  const [bundle, setBundle] = useState<SectionBundle | null>(null);
+  const [bundleError, setBundleError] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
+
   const [printing, setPrinting] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const loaded = useRef(new Set<number>());
 
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
-    loaded.current = new Set();
+    setBundle(null);
+    setBundleError(null);
     const id = chosen ? institutions.current.find((item) => item.name === chosen)?.id : undefined;
 
     getSectionAnswers(program, year, index, id, controller.signal)
@@ -64,39 +70,44 @@ export default function WorkbookSectionAnswersPage() {
     return () => controller.abort();
   }, [program, year, index, chosen]);
 
-  const institutionId = data ? data.institutions.find((item) => item.name === data.institution)?.id : undefined;
-  const answered = data?.questions.filter((question) => question.answered) ?? [];
+  const institution = data?.institution ?? null;
+  const answered = useMemo(() => data?.questions.filter((question) => question.answered) ?? [], [data]);
 
-  // Para imprimir hacen falta todas las respuestas en pantalla: se piden y, al llegar la última, se imprime.
-  const onLoaded = useCallback(
-    (id: number) => {
-      loaded.current.add(id);
-      if (printing && loaded.current.size >= answered.length) {
-        setPrinting(false);
-        setTimeout(() => window.print(), 150);
-      }
-    },
-    [printing, answered.length],
-  );
+  // Con la lista de la sección ya en pantalla, las respuestas: todas en una petición.
+  useEffect(() => {
+    if (!canSee || !institution || answered.length === 0) return;
+    const controller = new AbortController();
+    const id = institutions.current.find((item) => item.name === institution)?.id;
 
-  const print = () => {
-    setActionError(null);
-    if (loaded.current.size >= answered.length) {
+    getSectionBundle(program, year, index, id, controller.signal)
+      .then((all) => {
+        setBundle(all);
+        setBundleError(null);
+      })
+      .catch((err) => {
+        if (!isCanceled(err)) setBundleError(apiErrorMessage(err, "No se pudieron cargar las respuestas."));
+      });
+    return () => controller.abort();
+  }, [canSee, institution, answered.length, program, year, index, retry]);
+
+  const details = useMemo(() => new Map((bundle?.questions ?? []).map((item) => [item.question.id, item])), [bundle]);
+
+  // Para imprimir se dibujan todas las tarjetas y, ya pintadas, se abre la impresión.
+  useEffect(() => {
+    if (!printing) return;
+    const timer = setTimeout(() => {
       window.print();
-      return;
-    }
-    setLoadAll(true);
-    setPrinting(true);
-  };
+      setPrinting(false);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [printing]);
 
   const download = async () => {
+    if (!bundle) return;
     setExporting(true);
     setActionError(null);
     try {
-      const [bundle, { exportSectionAnswers }] = await Promise.all([
-        getSectionBundle(program, year, index, institutionId),
-        import("./exportSectionAnswers"),
-      ]);
+      const { exportSectionAnswers } = await import("./exportSectionAnswers");
       await exportSectionAnswers(bundle);
     } catch (err) {
       setActionError(apiErrorMessage(err, "No se pudo generar el Excel."));
@@ -144,9 +155,9 @@ export default function WorkbookSectionAnswersPage() {
                 Sección {data.section.index}
                 {data.section.name ? ` · ${data.section.name}` : ""}
               </h2>
-              {data.institution ? (
+              {institution ? (
                 <p className="text-sm text-gray-800">
-                  Respuestas de <span className="font-medium">{data.institution}</span> · {answered.length} de{" "}
+                  Respuestas de <span className="font-medium">{institution}</span> · {answered.length} de{" "}
                   {data.questions.length} preguntas contestadas
                 </p>
               ) : (
@@ -173,11 +184,8 @@ export default function WorkbookSectionAnswersPage() {
                 <label className="flex items-center gap-2 text-sm text-gray-700">
                   Institución
                   <select
-                    value={data.institution ?? ""}
-                    onChange={(event) => {
-                      setLoadAll(false);
-                      setChosen(event.target.value);
-                    }}
+                    value={institution ?? ""}
+                    onChange={(event) => setChosen(event.target.value)}
                     className="rounded-lg border border-gray-300 px-2 py-1.5 text-sm focus:border-[var(--pantone-7421)] focus:outline-none"
                   >
                     {data.institutions.map((item) => (
@@ -196,7 +204,7 @@ export default function WorkbookSectionAnswersPage() {
                   <button
                     type="button"
                     onClick={download}
-                    disabled={exporting}
+                    disabled={!bundle || exporting}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--pantone-7421)] px-3 py-1.5 text-sm font-medium text-[var(--pantone-7421)] hover:bg-[#F7F3E8] disabled:opacity-50"
                   >
                     {exporting ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <FileDown size={16} aria-hidden="true" />}
@@ -204,8 +212,8 @@ export default function WorkbookSectionAnswersPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={print}
-                    disabled={printing}
+                    onClick={() => setPrinting(true)}
+                    disabled={!bundle || printing}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--pantone-7421)] px-3 py-1.5 text-sm font-medium text-[var(--pantone-7421)] hover:bg-[#F7F3E8] disabled:opacity-50"
                   >
                     {printing ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <Printer size={16} aria-hidden="true" />}
@@ -216,6 +224,14 @@ export default function WorkbookSectionAnswersPage() {
             </div>
 
             {actionError && <p className="text-sm text-red-700 print:hidden">{actionError}</p>}
+            {bundleError && (
+              <p className="text-sm text-red-700 print:hidden">
+                {bundleError}{" "}
+                <button type="button" onClick={() => setRetry((n) => n + 1)} className="font-medium underline">
+                  Reintentar
+                </button>
+              </p>
+            )}
 
             {canSee ? (
               <p className="flex items-start gap-2 rounded-lg bg-gray-50 p-3 text-xs text-gray-700">
@@ -231,14 +247,14 @@ export default function WorkbookSectionAnswersPage() {
 
             <ol className="space-y-4">
               {data.questions.map((question) => (
-                <li key={`${data.institution}-${question.id}`}>
+                <li key={`${institution}-${question.id}`}>
                   <QuestionCard
                     question={question}
-                    institutionId={institutionId}
+                    detail={details.get(question.id)}
+                    failed={bundleError !== null}
                     year={data.census.year}
                     canSee={canSee}
-                    loadNow={loadAll}
-                    onLoaded={onLoaded}
+                    drawNow={printing}
                   />
                 </li>
               ))}
@@ -273,27 +289,21 @@ function SectionStep({ to, label, icon }: { to: string | null; label: string; ic
 
 interface QuestionCardProps {
   question: SectionQuestion;
-  institutionId: string | undefined;
+  /** Su respuesta; undefined mientras llegan las de la sección. */
+  detail: QuestionAnswers | undefined;
+  /** Las respuestas de la sección no se pudieron cargar. */
+  failed: boolean;
   year: number;
   canSee: boolean;
-  /** Pedir la respuesta sin esperar a que la pregunta entre a la pantalla (para imprimir). */
-  loadNow: boolean;
-  onLoaded: (id: number) => void;
+  /** Dibujar aunque no esté en pantalla (para imprimir). */
+  drawNow: boolean;
 }
 
-/** Una pregunta de la sección. Su respuesta se pide cuando la tarjeta entra a la pantalla. */
-function QuestionCard({ question, institutionId, year, canSee, loadNow, onLoaded }: QuestionCardProps) {
+/** Una pregunta de la sección. Su respuesta se dibuja cuando la tarjeta entra a la pantalla. */
+function QuestionCard({ question, detail, failed, year, canSee, drawNow }: QuestionCardProps) {
   const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
-  const [detail, setDetail] = useState<QuestionAnswers | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [attempt, setAttempt] = useState(0);
   const [mode, setMode] = useState<"digital" | "excel">("digital");
-
-  const wanted = question.answered && canSee && (visible || loadNow);
-  // El id cifrado cambia en cada respuesta de la sección: se lee al pedir, no dispara otra petición.
-  const institution = useRef(institutionId);
-  institution.current = institutionId;
 
   useEffect(() => {
     const element = ref.current;
@@ -302,32 +312,14 @@ function QuestionCard({ question, institutionId, year, canSee, loadNow, onLoaded
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) setVisible(true);
       },
-      { rootMargin: "400px 0px" },
+      { rootMargin: "600px 0px" },
     );
     observer.observe(element);
     return () => observer.disconnect();
   }, [visible]);
 
-  useEffect(() => {
-    if (!wanted || detail) return;
-    const controller = new AbortController();
-    getQuestionAnswers(question.id, institution.current, controller.signal)
-      .then((data) => {
-        setDetail(data);
-        setError(null);
-        onLoaded(question.id);
-      })
-      .catch((err) => {
-        if (isCanceled(err)) return;
-        setError(apiErrorMessage(err, "No se pudo cargar la respuesta."));
-        onLoaded(question.id);
-      });
-    return () => controller.abort();
-    // onLoaded cambia al pedir la impresión; no debe repetir la petición.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wanted, detail, question.id, attempt]);
-
   const previous = detail?.previous ?? null;
+  const draw = visible || drawNow;
 
   return (
     <article ref={ref} className="break-inside-avoid-page rounded-xl border border-gray-200 print:border-0 print:border-b print:rounded-none">
@@ -353,21 +345,7 @@ function QuestionCard({ question, institutionId, year, canSee, loadNow, onLoaded
             </ul>
           )}
 
-          {!canSee ? null : error ? (
-            <p className="text-sm text-red-700">
-              {error}{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setError(null);
-                  setAttempt((n) => n + 1);
-                }}
-                className="font-medium underline print:hidden"
-              >
-                Reintentar
-              </button>
-            </p>
-          ) : !detail ? (
+          {!canSee || failed ? null : !detail || !draw ? (
             <p className="flex items-center gap-2 py-4 text-sm text-gray-500">
               <Loader2 size={16} className="animate-spin" aria-hidden="true" />
               Cargando la respuesta…

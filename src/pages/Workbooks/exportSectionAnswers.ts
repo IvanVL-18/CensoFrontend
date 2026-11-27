@@ -41,9 +41,11 @@ export async function exportSectionAnswers(bundle: SectionBundle): Promise<void>
   header.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF691B31" } };
   sheet.views = [{ state: "frozen", ySplit: 1 }];
 
-  for (const question of bundle.questions) {
-    const text = withYears(question.text, year);
-    const { template, answer } = question;
+  for (const entry of bundle.questions) {
+    const question = { anchor: entry.question.anchor, row_sources: entry.row_sources };
+    const text = withYears(entry.question.text, year);
+    const { template } = entry.question;
+    const { answer } = entry;
     if (!answer) {
       sheet.addRow([question.anchor, text, "", "", "", "(en blanco)", ""]);
       continue;
