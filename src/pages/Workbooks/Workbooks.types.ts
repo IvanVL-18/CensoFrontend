@@ -2,6 +2,8 @@
 // (apis-censo: WorkbookFileController y WorkbookFileResource).
 // Los ids de archivo son UUID estables: sí se pueden comparar entre respuestas.
 
+import type { FileAnswersDetail, FileAnswersSummary } from "./Answers.types";
+
 export type WorkbookFileStatus =
   | "queued"
   | "processing"
@@ -61,7 +63,11 @@ export interface WorkbookFile {
   institution: {
     declared: string | null;
     resolved: string | null;
+    /** Cómo se ligó: mismo nombre, alias confirmado antes o elegida a mano. */
+    via: "exact" | "alias" | "manual" | null;
   };
+  /** Respuestas del archivo: estado y conteos, nunca valores. */
+  answers: FileAnswersSummary;
   question_count: number | null;
   informants_count: number;
   warnings_count: number;
@@ -85,6 +91,7 @@ export interface WorkbookFileDetail extends WorkbookFile {
     extra_sheets: string[];
     warnings: string[];
   };
+  answers_detail?: FileAnswersDetail;
 }
 
 export interface Informant {
@@ -168,6 +175,10 @@ export interface ProgressWorkbook {
   compile_error: string | null;
   blank_files: number;
   answered_files: number;
+  /** Archivos cuyas respuestas están vigentes en el censo. */
+  answers_imported: number;
+  /** Archivos con respuestas leídas que esperan que alguien confirme. */
+  answers_to_confirm: number;
   last_answered: {
     file_id: string;
     original_name: string;

@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronRight, Copy, RotateCcw, TriangleAlert, Users } from "
 import Loading from "../../components/Loading";
 import { ValidationError } from "../../components/ValidationError";
 import { useAuthContext } from "../../context/AuthContext";
+import { FileAnswersPanel } from "./components/FileAnswersPanel";
 import { FileStatusBadge } from "./components/FileStatusBadge";
 import { WorkbooksHeader } from "./components/WorkbooksHeader";
 import {
@@ -69,8 +70,8 @@ export default function WorkbookFileDetailPage() {
     return () => controller.abort();
   }, [id, reloadToken]);
 
-  // Mientras se identifica, vuelve a consultar.
-  const pending = file?.status === "queued" || file?.status === "processing";
+  // Mientras se identifica o se leen sus respuestas, vuelve a consultar.
+  const pending = file?.status === "queued" || file?.status === "processing" || file?.answers.status === "pending";
   useEffect(() => {
     if (!pending) return;
     const timer = setTimeout(() => setReloadToken((t) => t + 1), POLL_MS);
@@ -146,6 +147,8 @@ export default function WorkbookFileDetailPage() {
             )}
 
             {file.workbook && <Identification file={file} />}
+
+            {file.workbook && <FileAnswersPanel key={file.id} file={file} onChange={setFile} />}
 
             {file.identification && file.identification.sections.length > 0 && <SectionsTable file={file} />}
 
@@ -224,7 +227,7 @@ function Identification({ file }: { file: WorkbookFileDetail }) {
           <span className="block text-xs text-gray-500">
             {file.institution.resolved
               ? `Registrada como «${file.institution.resolved}»`
-              : "No coincide con ninguna institución registrada; se podrá ligar al importar las respuestas."}
+              : "No coincide con ninguna institución registrada; se liga abajo, en «Respuestas»."}
           </span>
         </>
       ) : (

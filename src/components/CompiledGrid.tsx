@@ -3,7 +3,10 @@ import clsx from "clsx";
 import {
   fieldHint,
   fieldLabel,
+  formatAnswerValue,
+  isSpecialValue,
   withYears,
+  type AnswerValue,
   type CompiledTemplate,
   type GridCell,
   type TemplateField,
@@ -15,14 +18,20 @@ interface CompiledGridProps {
   editionYear: number;
   /** Claves de los campos que se resaltan (por ejemplo, los que cambiaron). */
   highlight?: ReadonlySet<string>;
+  /**
+   * Respuestas de los campos sueltos, por clave. Con ellas las celdas de captura
+   * muestran lo que se contestó; sin ellas, qué se escribe en cada una.
+   */
+  values?: Readonly<Record<string, AnswerValue>>;
 }
 
 /**
  * Copia fiel de una pregunta compilada: la dibuja con la misma forma que tiene en
- * el Excel, desde la rejilla de su plantilla (docs/CARGA_CENSOS.md, §7.3). Las
- * celdas de captura muestran qué se escribe en ellas, no respuestas.
+ * el Excel, desde la rejilla de su plantilla (docs/CARGA_CENSOS.md, §7.3). Sin
+ * `values`, las celdas de captura dicen qué se escribe en ellas; con `values`,
+ * muestran las respuestas.
  */
-export default function CompiledGrid({ template, editionYear, highlight }: CompiledGridProps) {
+export default function CompiledGrid({ template, editionYear, highlight, values }: CompiledGridProps) {
   const { grid } = template;
   if (grid.rows.length === 0) {
     return <p className="text-sm text-gray-500">Esta pregunta no tiene una tabla que dibujar.</p>;
@@ -49,6 +58,8 @@ export default function CompiledGrid({ template, editionYear, highlight }: Compi
                     field={cell.f ? fields.get(cell.f) : undefined}
                     editionYear={editionYear}
                     highlighted={Boolean(cell.f && highlight?.has(cell.f))}
+                    answered={values !== undefined}
+                    value={cell.f ? values?.[cell.f] : undefined}
                   />
                 ))}
               </tr>
@@ -72,9 +83,12 @@ interface CellProps {
   field?: TemplateField;
   editionYear: number;
   highlighted: boolean;
+  /** Se están mostrando respuestas: una celda sin valor es una celda en blanco. */
+  answered: boolean;
+  value?: AnswerValue;
 }
 
-function Cell({ cell, field, editionYear, highlighted }: CellProps) {
+function Cell({ cell, field, editionYear, highlighted, answered, value }: CellProps) {
   const span = { colSpan: cell.cs ?? 1, rowSpan: cell.rs ?? 1 };
 
   switch (cell.k) {
@@ -83,6 +97,24 @@ function Cell({ cell, field, editionYear, highlighted }: CellProps) {
 
     case "i": {
       const label = field ? fieldLabel(field, editionYear) : "";
+      if (answered) {
+        const text = formatAnswerValue(field, value);
+        return (
+          <td
+            {...span}
+            title={label || "Celda de captura"}
+            className={clsx(
+              "break-words border border-[var(--pantone-7421)]/40 px-1.5 py-1 text-center align-middle text-xs",
+              text === "" ? "bg-gray-50 text-gray-400" : "bg-white font-medium text-gray-900",
+              isSpecialValue(value) && "italic text-gray-600",
+              highlighted && "outline outline-2 -outline-offset-2 outline-amber-500",
+            )}
+          >
+            <span className="sr-only">{label ? `${label}: ` : "Respuesta: "}</span>
+            {text === "" ? <span aria-label="en blanco">—</span> : text}
+          </td>
+        );
+      }
       return (
         <td
           {...span}

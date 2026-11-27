@@ -10,6 +10,7 @@ import {
   formatBytes,
   formatDateTime,
 } from "../workbookLabels";
+import { AnswersStatusBadge } from "./AnswerBadges";
 import { FileStatusBadge } from "./FileStatusBadge";
 
 interface WorkbookFilesTableProps {
@@ -27,7 +28,7 @@ export function WorkbookFilesTable({ files, loading, error, emptyMessage }: Work
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            {["Archivo", "Cuaderno identificado", "Llenado", "Institución declarada", "Estado", ""].map((label, i) => (
+            {["Archivo", "Cuaderno identificado", "Llenado y respuestas", "Institución declarada", "Estado", ""].map((label, i) => (
               <th
                 key={i}
                 scope="col"
@@ -79,6 +80,11 @@ export function WorkbookFilesTable({ files, loading, error, emptyMessage }: Work
 
                 <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
                   {file.status === "identified" && file.fill_state ? FILL_LABEL[file.fill_state] : "—"}
+                  {file.answers.status && (
+                    <span className="mt-1 block">
+                      <AnswersStatusBadge status={file.answers.status} version={file.answers.version} />
+                    </span>
+                  )}
                 </td>
 
                 <td className="max-w-xs px-4 py-3 text-sm text-gray-700">

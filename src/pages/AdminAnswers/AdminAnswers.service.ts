@@ -4,7 +4,6 @@ import type {
   InstitutionUsersResponse,
   UserAnswersResponse,
   GetAnswersResponse,
-  BulkImportResponse,
 } from "./AdminAnswers.types";
 
 const enc = (id: string) => encodeURIComponent(id);
@@ -48,18 +47,6 @@ export const getAnswersForReport = async (
     census_id: censusId,
     institution_id: institutionId,
     user_id: userId,
-  });
-  return data;
-};
-
-export const importAnswersBulk = async (
-  file: File,
-): Promise<BulkImportResponse> => {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const { data } = await api.post("/answers/import", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
   });
   return data;
 };
