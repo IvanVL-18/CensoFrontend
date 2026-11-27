@@ -26,8 +26,9 @@ export default function WorkbookReceptionPage() {
   const [searchParams] = useSearchParams();
   const list = useWorkbookFiles(searchParams.get("buscar") ?? "");
   const { refresh } = list;
-  const onUploaded = useCallback(() => refresh(), [refresh]);
-  const queue = useUploadQueue(onUploaded);
+  // Al terminar cada subida, bien o mal, se vuelve a pedir la lista: es la fuente de verdad.
+  const onSettled = useCallback(() => refresh(), [refresh]);
+  const queue = useUploadQueue(onSettled);
 
   const emptyMessage =
     list.filter === "all" && !list.searchTerm

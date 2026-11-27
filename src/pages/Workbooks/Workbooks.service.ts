@@ -12,6 +12,17 @@ import type {
 export const MAX_FILE_SIZE_MB = 20;
 export const ACCEPTED_EXTENSIONS = [".xlsx", ".xlsm"];
 
+/**
+ * El servidor respondió con éxito, pero lo que mandó no se pudo leer. Pasa, por
+ * ejemplo, si PHP antepone un aviso en HTML al JSON (docs/CARGA_CENSOS.md, §9.1).
+ */
+export class UnexpectedResponseError extends Error {
+  constructor() {
+    super("Respuesta inesperada del servidor.");
+    this.name = "UnexpectedResponseError";
+  }
+}
+
 /** Sube un archivo. La pantalla manda uno por petición para mostrar el avance de cada uno. */
 export const uploadWorkbookFile = async (
   file: File,
@@ -34,7 +45,9 @@ export const uploadWorkbookFile = async (
       },
     },
   );
-  return response.data.data[0];
+  const uploaded = response.data?.data?.[0];
+  if (!uploaded) throw new UnexpectedResponseError();
+  return uploaded;
 };
 
 export const searchWorkbookFiles = async (
@@ -111,4 +124,17 @@ export const apiErrorMessage = (error: unknown, fallback: string): string => {
 export const isCanceled = (error: unknown): boolean => {
   const err = error as { name?: string; code?: string };
   return err?.name === "CanceledError" || err?.code === "ERR_CANCELED";
+};
+
+/** Mensaje de una subida que falló, según hasta dónde llegó la petición. */
+export const uploadErrorMessage = (error: unknown): string => {
+  if (isCanceled(error)) return "Subida cancelada.";
+  if (error instanceof UnexpectedResponseError) {
+    return "El servidor respondió, pero su respuesta no se pudo leer. El archivo pudo haber llegado: revísalo en la lista.";
+  }
+  const status = (error as { status?: number })?.status;
+  if (status) {
+    return apiErrorMessage(error, `El servidor no aceptó el archivo (error ${status}).`);
+  }
+  return "No se pudo subir el archivo; revisa tu conexión e intenta de nuevo.";
 };

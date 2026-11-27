@@ -3,8 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import {
   ACCEPTED_EXTENSIONS,
   MAX_FILE_SIZE_MB,
-  apiErrorMessage,
-  isCanceled,
+  uploadErrorMessage,
   uploadWorkbookFile,
 } from "../Workbooks.service";
 import type { WorkbookFile } from "../Workbooks.types";
@@ -46,19 +45,23 @@ function problemWith(file: File): string | null {
 /**
  * Cola de subida: un archivo por petición, dos a la vez, con el avance de cada
  * uno. Si se sale de la pantalla, las subidas en curso terminan igual.
+ *
+ * `onSettled` se llama al terminar cada subida, salga bien o mal: aunque la
+ * respuesta falle, el archivo pudo haber llegado al servidor, y la lista debe
+ * mostrar lo que de verdad hay.
  */
-export function useUploadQueue(onUploaded: (file: WorkbookFile) => void) {
+export function useUploadQueue(onSettled: () => void) {
   const [items, setItems] = useState<UploadItem[]>([]);
 
   const waiting = useRef<{ key: string; file: File }[]>([]);
   const active = useRef(0);
   const controllers = useRef(new Map<string, AbortController>());
-  const onUploadedRef = useRef(onUploaded);
+  const onSettledRef = useRef(onSettled);
   const pumpRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
-    onUploadedRef.current = onUploaded;
-  }, [onUploaded]);
+    onSettledRef.current = onSettled;
+  }, [onSettled]);
 
   const patch = useCallback((key: string, changes: Partial<UploadItem>) => {
     setItems((prev) => prev.map((item) => (item.key === key ? { ...item, ...changes } : item)));
@@ -77,19 +80,14 @@ export function useUploadQueue(onUploaded: (file: WorkbookFile) => void) {
       uploadWorkbookFile(next.file, (progress) => patch(next.key, { progress }), controller.signal)
         .then((result) => {
           patch(next.key, { state: "done", progress: 100, result });
-          onUploadedRef.current(result);
         })
         .catch((error) => {
-          patch(next.key, {
-            state: "error",
-            error: isCanceled(error)
-              ? "Subida cancelada."
-              : apiErrorMessage(error, "No se pudo subir el archivo; revisa tu conexión e intenta de nuevo."),
-          });
+          patch(next.key, { state: "error", error: uploadErrorMessage(error) });
         })
         .finally(() => {
           active.current -= 1;
           controllers.current.delete(next.key);
+          onSettledRef.current();
           pumpRef.current();
         });
     }
