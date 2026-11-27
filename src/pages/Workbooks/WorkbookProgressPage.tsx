@@ -279,6 +279,16 @@ function SectionRow({ section, workbooks }: { section: ProgressSection; workbook
             <span className="block text-xs text-gray-500">
               {last.institution ?? last.declared_institution ?? "Institución no declarada"} · {formatDateTime(last.received_at)}
             </span>
+            {answered && answered.answers_imported > 0 && (
+              <span className="block text-xs text-green-800">
+                En el censo{answered.answers_imported > 1 ? ` (${answered.answers_imported} instituciones)` : ""}
+              </span>
+            )}
+            {answered && answered.answers_to_confirm > 0 && (
+              <span className="block text-xs text-orange-900">
+                {answered.answers_to_confirm === 1 ? "1 archivo por confirmar" : `${answered.answers_to_confirm} archivos por confirmar`}
+              </span>
+            )}
           </>
         ) : workbook && workbook.blank_files > 0 ? (
           <span className="text-gray-600">Solo el cuaderno en blanco</span>

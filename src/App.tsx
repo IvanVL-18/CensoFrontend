@@ -47,6 +47,8 @@ const WorkbookFileDetailPage = lazy(() => import("./pages/Workbooks/WorkbookFile
 const WorkbookProgressPage = lazy(() => import("./pages/Workbooks/WorkbookProgressPage"));
 const WorkbookTemplatePage = lazy(() => import("./pages/Workbooks/WorkbookTemplatePage"));
 const WorkbookTemplateQuestionPage = lazy(() => import("./pages/Workbooks/WorkbookTemplateQuestionPage"));
+const WorkbookAnswersPage = lazy(() => import("./pages/Workbooks/WorkbookAnswersPage"));
+const WorkbookAnswerQuestionPage = lazy(() => import("./pages/Workbooks/WorkbookAnswerQuestionPage"));
 
 function LazyPage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<Loading />}>{children}</Suspense>;
@@ -120,6 +122,19 @@ export default function App() {
             <Route
               path="/admin/cuadernos/plantillas/:code/:id"
               element={<LazyPage><WorkbookTemplateQuestionPage /></LazyPage>}
+            />
+            {/* Respuestas de un archivo (Fase 3): GET /workbook-files/{id}/answers, sin valores */}
+            <Route
+              path="/admin/cuadernos/archivos/:id/respuestas"
+              element={<LazyPage><WorkbookAnswersPage /></LazyPage>}
+            />
+          </Route>
+
+          {/* Valores de las respuestas, confidenciales: GET /workbook-files/{id}/answers/{pregunta} */}
+          <Route element={<ProtectedRoute permission="workbook-answers.view" />}>
+            <Route
+              path="/admin/cuadernos/archivos/:id/respuestas/:questionId"
+              element={<LazyPage><WorkbookAnswerQuestionPage /></LazyPage>}
             />
           </Route>
 

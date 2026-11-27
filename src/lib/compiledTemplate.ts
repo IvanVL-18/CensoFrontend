@@ -60,6 +60,48 @@ export interface CompiledTemplate {
   grid: TemplateGrid;
 }
 
+/** Lo que vale una celda de captura contestada. Una marca con X llega como `true`. */
+export type AnswerValue = string | number | boolean;
+
+/** Fila llena de una tabla de lista: `_row` es su posición (desde 1) y lo demás, sus columnas por clave. */
+export type AnswerRow = { _row: number } & Record<string, AnswerValue>;
+
+/**
+ * Respuestas de una pregunta compiladas, siempre con la misma forma: los campos
+ * sueltos por clave, una lista de filas por cada tabla de lista y el comentario.
+ */
+export interface CompiledAnswer {
+  fields: Record<string, AnswerValue>;
+  lists: AnswerRow[][];
+  comment: string | null;
+}
+
+/** Valores especiales del INEGI: se conservan como texto. */
+export const SPECIAL_VALUE_LABEL: Record<string, string> = {
+  NS: "No se sabe",
+  NA: "No aplica",
+  ND: "No disponible",
+};
+
+export const isSpecialValue = (value: AnswerValue | undefined): value is string =>
+  typeof value === "string" && value in SPECIAL_VALUE_LABEL;
+
+const numberFormat = new Intl.NumberFormat("es-MX", { maximumFractionDigits: 6 });
+
+/** Texto de una respuesta para mostrarla: «Sí (1)», «1,500», «X», «NS». Vacío si no hay respuesta. */
+export function formatAnswerValue(field: TemplateField | undefined, value: AnswerValue | undefined): string {
+  if (value === undefined || value === null) return "";
+  if (value === true) return "X";
+  if (value === false) return "";
+  if (typeof value === "number") return numberFormat.format(value);
+  if (isSpecialValue(value)) return value;
+  if (field?.type === "code") {
+    const option = field.options?.find((o) => o.value === value);
+    if (option && option.label && option.label !== option.value) return `${option.label} (${value})`;
+  }
+  return value;
+}
+
 export const KIND_LABEL: Record<QuestionKind, string> = {
   simple: "Simple",
   list: "Tabla de lista",
