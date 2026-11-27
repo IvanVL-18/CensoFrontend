@@ -1,6 +1,7 @@
 // Plantillas compiladas de los cuadernos del INEGI (docs/CARGA_CENSOS.md, §7.3).
 // Toda la lógica de la plantilla vive aquí, igual que el motor de Form.io vive en
-// formioOperations.ts. Contrato: apis-censo, Services/Workbooks/Compiler/QuestionCompiler.
+// formioOperations.ts. Contrato: apis-censo, resources/schemas/workbook-template.v1.schema.json
+// (lo produce Services/Workbooks/Compiler/QuestionCompiler y lo valida TemplateSchema).
 
 export type QuestionKind = "simple" | "list" | "fixed" | "none";
 export type FieldType = "code" | "mark" | "number" | "string" | "text";

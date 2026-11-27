@@ -26,4 +26,5 @@ export const FLAG_LABEL: Record<TemplateFlag, string> = {
   no_label: "Hay campos sin encabezado",
   no_option_labels: "Hay opciones sin etiqueta",
   text_too_long: "El texto no cabe en la base de datos",
+  invalid_template: "La plantilla salió mal formada: avisa a quien mantiene el sistema",
 };

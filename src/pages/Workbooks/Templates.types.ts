@@ -9,7 +9,13 @@ export type MatchStatus = "same" | "retouched" | "new";
 export type ReviewStatus = "pending" | "approved" | "not_needed";
 
 /** Motivos por los que el compilador manda una pregunta a revisión. */
-export type TemplateFlag = "no_capture" | "row_layouts" | "no_label" | "no_option_labels" | "text_too_long";
+export type TemplateFlag =
+  | "no_capture"
+  | "row_layouts"
+  | "no_label"
+  | "no_option_labels"
+  | "text_too_long"
+  | "invalid_template";
 
 export interface TemplateReport {
   questions: number;
