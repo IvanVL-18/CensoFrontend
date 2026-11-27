@@ -49,6 +49,8 @@ const WorkbookTemplatePage = lazy(() => import("./pages/Workbooks/WorkbookTempla
 const WorkbookTemplateQuestionPage = lazy(() => import("./pages/Workbooks/WorkbookTemplateQuestionPage"));
 const WorkbookAnswersPage = lazy(() => import("./pages/Workbooks/WorkbookAnswersPage"));
 const WorkbookAnswerQuestionPage = lazy(() => import("./pages/Workbooks/WorkbookAnswerQuestionPage"));
+const WorkbookCensusAnswersPage = lazy(() => import("./pages/Workbooks/WorkbookCensusAnswersPage"));
+const WorkbookSectionAnswersPage = lazy(() => import("./pages/Workbooks/WorkbookSectionAnswersPage"));
 
 function LazyPage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<Loading />}>{children}</Suspense>;
@@ -122,6 +124,16 @@ export default function App() {
             <Route
               path="/admin/cuadernos/plantillas/:code/:id"
               element={<LazyPage><WorkbookTemplateQuestionPage /></LazyPage>}
+            />
+            {/* Vista digital (Fase 4): GET /census-answers/*. Los valores los pide cada pregunta,
+                con workbook-answers.view; sin ese permiso la pantalla solo dice qué se contestó. */}
+            <Route
+              path="/admin/cuadernos/respuestas"
+              element={<LazyPage><WorkbookCensusAnswersPage /></LazyPage>}
+            />
+            <Route
+              path="/admin/cuadernos/respuestas/:program/:year/:index"
+              element={<LazyPage><WorkbookSectionAnswersPage /></LazyPage>}
             />
             {/* Respuestas de un archivo (Fase 3): GET /workbook-files/{id}/answers, sin valores */}
             <Route

@@ -1,6 +1,9 @@
 export interface CensusRef {
   id: string;
   name: string;
+  /** Solo en los censos armados desde los cuadernos del INEGI. */
+  program?: string | null;
+  year?: number | null;
 }
 
 export interface InstitutionRef {
