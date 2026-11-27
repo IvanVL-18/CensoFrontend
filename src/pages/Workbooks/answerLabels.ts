@@ -35,9 +35,9 @@ export const CHANGE_LABEL: Record<AnswerChange, string> = {
 };
 
 export const VIA_LABEL: Record<"exact" | "alias" | "manual", string> = {
-  exact: "mismo nombre que en el catálogo",
+  exact: "por tener el mismo nombre que en el catálogo",
   alias: "por un nombre ya confirmado",
-  manual: "elegida a mano",
+  manual: "a mano",
 };
 
 const count = (n: number, one: string, many: string) => `${n.toLocaleString("es-MX")} ${n === 1 ? one : many}`;

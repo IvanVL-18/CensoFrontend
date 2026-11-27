@@ -119,15 +119,18 @@ export function FileAnswersPanel({ file, onChange, showLink = true }: FileAnswer
 
       {status === "imported" && (
         <p className="text-sm text-gray-700">
-          Son las respuestas vigentes en el censo desde el {formatDateTime(answers.imported_at)}
-          {detail?.imported_by ? `, importadas por ${detail.imported_by}` : ""}.
+          Son las respuestas vigentes en el censo.
+          <span className="block text-xs text-gray-500">
+            Importadas el {formatDateTime(answers.imported_at)}
+            {detail?.imported_by ? ` por ${detail.imported_by}` : ""}
+          </span>
         </p>
       )}
 
       {status === "superseded" && (
         <p className="text-sm text-gray-700">
-          Estuvieron en el censo desde el {formatDateTime(answers.imported_at)}; después las sustituyó una versión más
-          nueva. Se conservan aquí como registro.
+          Estuvieron en el censo y después las sustituyó una versión más nueva. Se conservan aquí como registro.
+          <span className="block text-xs text-gray-500">Importadas el {formatDateTime(answers.imported_at)}</span>
         </p>
       )}
 

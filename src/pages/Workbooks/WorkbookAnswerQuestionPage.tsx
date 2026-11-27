@@ -190,7 +190,7 @@ function Detail({ detail }: { detail: AnswerQuestionDetail }) {
       )}
 
       {answer ? (
-        <Answer template={template} answer={answer} year={year} highlight={changed} />
+        <Answer template={template} answer={answer} year={year} highlight={changed} other={detail.previous ? old : undefined} showNote />
       ) : (
         <p className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
           {detail.status === "error"
@@ -210,13 +210,13 @@ function Detail({ detail }: { detail: AnswerQuestionDetail }) {
               <Link to={`/admin/cuadernos/archivos/${detail.previous.file.id}`} className="underline">
                 «{detail.previous.file.original_name}»
               </Link>
-              , importada el {formatDateTime(detail.previous.file.imported_at)}.
+              , importada el {formatDateTime(detail.previous.file.imported_at)}
             </p>
           </div>
           {detail.change === "same" ? (
             <p className="text-sm text-gray-700">Dice lo mismo que este archivo.</p>
           ) : old ? (
-            <Answer template={template} answer={old} year={year} highlight={changed} />
+            <Answer template={template} answer={old} year={year} highlight={changed} other={answer} />
           ) : (
             <p className="text-sm text-gray-700">No había respuesta para esta pregunta.</p>
           )}
@@ -232,17 +232,29 @@ interface AnswerProps {
   year: number;
   /** Claves de los campos sueltos que cambian entre versiones. */
   highlight: ReadonlySet<string>;
+  /** La otra versión, para resaltar las filas de lista que no dicen lo mismo. Sin ella no se compara. */
+  other?: CompiledAnswer | null;
+  /** Explica debajo qué significan «—» y el resaltado. */
+  showNote?: boolean;
 }
 
 /** Las respuestas de una pregunta: sus campos sueltos, sus tablas de lista y el comentario. */
-function Answer({ template, answer, year, highlight }: AnswerProps) {
+function Answer({ template, answer, year, highlight, other, showNote = false }: AnswerProps) {
   const loose = template.fields.filter((field) => field.list === undefined);
   const pureGrid = template.lists.length === 0 && template.grid.rows.length > 0;
+  const comparing = other !== undefined;
 
   return (
     <div className="space-y-4">
       {/* Sin tablas de lista, la pregunta se dibuja como en el Excel, con las respuestas en su lugar. */}
       {pureGrid && <CompiledGrid template={template} editionYear={year} values={answer.fields} highlight={highlight} />}
+
+      {showNote && (pureGrid || comparing) && (
+        <p className="text-xs text-gray-500">
+          {pureGrid ? "Las celdas con «—» vienen en blanco. " : ""}
+          {comparing ? "Lo resaltado no dice lo mismo en las dos versiones." : ""}
+        </p>
+      )}
 
       {!pureGrid && loose.length > 0 && <LooseFields fields={loose} values={answer.fields} year={year} highlight={highlight} />}
 
@@ -255,6 +267,7 @@ function Answer({ template, answer, year, highlight }: AnswerProps) {
             .map((key) => template.fields.find((field) => field.key === key))
             .filter((field): field is TemplateField => field !== undefined)}
           rows={answer.lists[index] ?? []}
+          otherRows={comparing ? (other?.lists[index] ?? []) : undefined}
           year={year}
         />
       ))}
@@ -264,12 +277,6 @@ function Answer({ template, answer, year, highlight }: AnswerProps) {
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Comentario del informante</p>
           <p className="mt-1 whitespace-pre-line text-sm text-gray-900">{answer.comment}</p>
         </div>
-      )}
-
-      {pureGrid && (
-        <p className="text-xs text-gray-500">
-          Las celdas con «—» vienen en blanco.{highlight.size > 0 ? " Las resaltadas cambian entre las dos versiones." : ""}
-        </p>
       )}
     </div>
   );
@@ -334,14 +341,20 @@ function ListTable({
   total,
   fields,
   rows,
+  otherRows,
   year,
 }: {
   title: string;
   total: number;
   fields: TemplateField[];
   rows: AnswerRow[];
+  /** Filas de la otra versión; una fila se resalta si allá no está o dice otra cosa. */
+  otherRows?: AnswerRow[];
   year: number;
 }) {
+  const others = new Map((otherRows ?? []).map((row) => [row._row, JSON.stringify(row)]));
+  const differs = (row: AnswerRow) => otherRows !== undefined && others.get(row._row) !== JSON.stringify(row);
+
   return (
     <div>
       <p className="mb-1 text-sm font-medium text-gray-800">
@@ -369,7 +382,7 @@ function ListTable({
             </thead>
             <tbody className="divide-y divide-gray-100">
               {rows.map((row) => (
-                <tr key={row._row} className="align-top">
+                <tr key={row._row} className={clsx("align-top", differs(row) && "bg-amber-50")}>
                   <td className="px-3 py-1.5 tabular-nums text-gray-500">{row._row}</td>
                   {fields.map((field) => (
                     <td key={field.key} className="px-3 py-1.5 text-gray-900">
