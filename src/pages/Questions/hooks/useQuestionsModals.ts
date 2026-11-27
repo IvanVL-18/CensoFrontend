@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import type { Question } from "../Questions.types";
-import { getQuestion } from "../Questions.service"; 
 
 
 export function useQuestionsModals() {
@@ -22,15 +21,10 @@ const closePreview = useCallback(() => {
     setIsFormOpen(true);
   }, []);
 
-const openEdit = useCallback(async (question: Question) => {
+  /** Recibe la pregunta completa (la de `show`), nunca la del listado, que trae el nombre cortado. */
+  const openEdit = useCallback((question: Question) => {
     setEditingQuestion(question);
     setIsFormOpen(true);
-
-    try {
-      const fullQuestion = await getQuestion(question.id);
-      setEditingQuestion(fullQuestion);
-    } catch {
-    }
   }, []);
 
   const closeForm = useCallback(() => {

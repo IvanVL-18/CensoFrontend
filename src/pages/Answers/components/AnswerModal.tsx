@@ -6,6 +6,7 @@ import {
   Save,
   Calculator,
   Loader2,
+  TriangleAlert,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Form } from "@formio/react";
@@ -23,6 +24,9 @@ import {
 } from "../../../lib/formioSchema";
 
 const FormAny = Form as any;
+
+const NO_FORM_MESSAGE =
+  "Esta pregunta todavía no tiene formulario para contestarla en línea. Se contesta en el cuaderno de Excel del INEGI.";
 
 /* =========================================================
    =================== TIPOS INTERNOS ======================
@@ -152,6 +156,8 @@ export function AnswerModal({
   onAnswerSaved,
 }: AnswerModalProps) {
   const [schema, setSchema] = useState<QuestionSchema | null>(null);
+  // Por qué no hay formulario que mostrar; sin esto la pantalla se quedaba en «Cargando formulario…».
+  const [formError, setFormError] = useState<string | null>(null);
   const [submissions, setSubmissions] = useState<any[]>([{}]);
   const [operations, setOperations] = useState<OperationConfig[]>([]);
   const [isDirty, setIsDirty] = useState(false);
@@ -177,11 +183,17 @@ export function AnswerModal({
   );
 
   useEffect(() => {
-    if (!isOpen || !question) {
-      setSchema(null);
-      setSubmissions([{}]);
-      setOperations([]);
-      setIsDirty(false);
+    setSchema(null);
+    setFormError(null);
+    setSubmissions([{}]);
+    setOperations([]);
+    setIsDirty(false);
+
+    if (!isOpen || !question) return;
+
+    // Las preguntas que entran por los cuadernos de Excel no tienen formulario Form.io.
+    if (!question.question_structure) {
+      setFormError(NO_FORM_MESSAGE);
       return;
     }
 
@@ -190,6 +202,11 @@ export function AnswerModal({
         typeof question.question_structure === "string"
           ? JSON.parse(question.question_structure)
           : { ...question.question_structure };
+
+      if (!Array.isArray(parsed?.components) || parsed.components.length === 0) {
+        setFormError(NO_FORM_MESSAGE);
+        return;
+      }
 
       parsed = { ...sanitizeSchema(parsed), display: "form" };
       if (parsed.components) {
@@ -244,6 +261,7 @@ export function AnswerModal({
       setIsDirty(false);
     } catch (e) {
       console.error("Error al parsear question_structure:", e);
+      setFormError("No se pudo leer el formulario de esta pregunta. Avisa al equipo del censo.");
     }
   }, [isOpen, question, parseExistingAnswer]);
 
@@ -344,6 +362,14 @@ export function AnswerModal({
               </div>
               <OperationResults results={evaluatedResults} />
             </>
+          ) : formError ? (
+            <div
+              role="status"
+              className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+            >
+              <TriangleAlert size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+              <p>{formError}</p>
+            </div>
           ) : (
             <div className="flex h-40 items-center justify-center gap-2 text-gray-400">
               <Loader2 size={24} className="animate-spin" />
