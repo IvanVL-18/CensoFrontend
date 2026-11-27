@@ -1,16 +1,19 @@
 import { Link } from "react-router-dom";
 import { CircleAlert, CircleCheck, Clock, LoaderCircle, X } from "lucide-react";
 import type { UploadItem } from "../hooks/useUploadQueue";
+import type { WorkbookFile, WorkbookFileStatus } from "../Workbooks.types";
 import { STATUS_LABEL, formatBytes } from "../workbookLabels";
 
 interface UploadQueueProps {
   items: UploadItem[];
+  /** Estado actual de los archivos de la lista, por id. La lista se actualiza sola mientras hay archivos en cola. */
+  currentStatus: Record<string, WorkbookFileStatus>;
   onCancel: (key: string) => void;
   onClearFinished: () => void;
 }
 
 /** Archivos que se están subiendo en esta sesión, con su avance. */
-export function UploadQueue({ items, onCancel, onClearFinished }: UploadQueueProps) {
+export function UploadQueue({ items, currentStatus, onCancel, onClearFinished }: UploadQueueProps) {
   if (items.length === 0) return null;
 
   const finished = items.filter((item) => item.state === "done" || item.state === "error").length;
@@ -62,10 +65,7 @@ export function UploadQueue({ items, onCancel, onClearFinished }: UploadQueuePro
               {item.state === "error" && <p className="text-red-700">{item.error}</p>}
               {item.state === "done" && item.result && (
                 <p className="text-gray-600">
-                  Recibido · {STATUS_LABEL[item.result.status]}
-                  {item.result.status === "duplicate" && item.result.duplicate_of
-                    ? ` de «${item.result.duplicate_of.original_name}»`
-                    : ""}
+                  {receivedText(item.result, currentStatus[item.result.id])}
                   {" · "}
                   <Link
                     to={`/admin/cuadernos/archivos/${item.result.id}`}
@@ -97,6 +97,22 @@ export function UploadQueue({ items, onCancel, onClearFinished }: UploadQueuePro
       </ul>
     </section>
   );
+}
+
+/**
+ * Lo que se sabe del archivo ahora. Si está en la lista, su estado actual. Si no, el
+ * que tenía al subirse, salvo «En cola» o «Procesando», que ya pueden haber cambiado.
+ */
+function receivedText(result: WorkbookFile, current?: WorkbookFileStatus): string {
+  const pending = result.status === "queued" || result.status === "processing";
+  const status = current ?? (pending ? null : result.status);
+
+  let text = "Recibido";
+  if (status) text += ` · ${STATUS_LABEL[status]}`;
+  if (status === "duplicate" && result.duplicate_of) {
+    text += ` de «${result.duplicate_of.original_name}»`;
+  }
+  return text;
 }
 
 function StateIcon({ state }: { state: UploadItem["state"] }) {

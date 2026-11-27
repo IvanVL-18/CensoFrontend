@@ -29,6 +29,8 @@ export default function WorkbookReceptionPage() {
   // Al terminar cada subida, bien o mal, se vuelve a pedir la lista: es la fuente de verdad.
   const onSettled = useCallback(() => refresh(), [refresh]);
   const queue = useUploadQueue(onSettled);
+  // El panel de subidas muestra el estado actual de cada archivo, no el que tenía al subirse.
+  const currentStatus = Object.fromEntries(list.files.map((file) => [file.id, file.status] as const));
 
   const emptyMessage =
     list.filter === "all" && !list.searchTerm
@@ -54,7 +56,12 @@ export default function WorkbookReceptionPage() {
           />
         )}
 
-        <UploadQueue items={queue.items} onCancel={queue.cancel} onClearFinished={queue.clearFinished} />
+        <UploadQueue
+          items={queue.items}
+          currentStatus={currentStatus}
+          onCancel={queue.cancel}
+          onClearFinished={queue.clearFinished}
+        />
 
         {list.stalled && (
           <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" role="status">
