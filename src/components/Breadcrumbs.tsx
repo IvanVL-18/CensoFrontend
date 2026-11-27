@@ -21,6 +21,8 @@ const names: Record<string, string> = {
   "permission-roles": "Asignar Permisos",
   categorias: "Categorías",
   indicadores: "Indicadores",
+  cuadernos: "Cuadernos INEGI",
+  avance: "Avance",
 };
 
 export default function Breadcrumbs({ pathname }: { pathname: string }) {
