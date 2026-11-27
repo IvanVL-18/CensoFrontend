@@ -287,6 +287,7 @@ function QuestionCard({ question, institutionId, year, canSee, loadNow, onLoaded
   const [visible, setVisible] = useState(false);
   const [detail, setDetail] = useState<QuestionAnswers | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [mode, setMode] = useState<"digital" | "excel">("digital");
 
   const wanted = question.answered && canSee && (visible || loadNow);
@@ -324,7 +325,7 @@ function QuestionCard({ question, institutionId, year, canSee, loadNow, onLoaded
     return () => controller.abort();
     // onLoaded cambia al pedir la impresión; no debe repetir la petición.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wanted, detail, question.id]);
+  }, [wanted, detail, question.id, attempt]);
 
   const previous = detail?.previous ?? null;
 
@@ -353,7 +354,19 @@ function QuestionCard({ question, institutionId, year, canSee, loadNow, onLoaded
           )}
 
           {!canSee ? null : error ? (
-            <p className="text-sm text-red-700">{error}</p>
+            <p className="text-sm text-red-700">
+              {error}{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setAttempt((n) => n + 1);
+                }}
+                className="font-medium underline print:hidden"
+              >
+                Reintentar
+              </button>
+            </p>
           ) : !detail ? (
             <p className="flex items-center gap-2 py-4 text-sm text-gray-500">
               <Loader2 size={16} className="animate-spin" aria-hidden="true" />
