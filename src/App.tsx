@@ -45,6 +45,8 @@ import "./App.css";
 const WorkbookReceptionPage = lazy(() => import("./pages/Workbooks/WorkbookReceptionPage"));
 const WorkbookFileDetailPage = lazy(() => import("./pages/Workbooks/WorkbookFileDetailPage"));
 const WorkbookProgressPage = lazy(() => import("./pages/Workbooks/WorkbookProgressPage"));
+const WorkbookTemplatePage = lazy(() => import("./pages/Workbooks/WorkbookTemplatePage"));
+const WorkbookTemplateQuestionPage = lazy(() => import("./pages/Workbooks/WorkbookTemplateQuestionPage"));
 
 function LazyPage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<Loading />}>{children}</Suspense>;
@@ -109,6 +111,15 @@ export default function App() {
             <Route
               path="/admin/cuadernos/archivos/:id"
               element={<LazyPage><WorkbookFileDetailPage /></LazyPage>}
+            />
+            {/* Revisión de plantillas compiladas (Fase 2): GET /workbooks/{código}/template */}
+            <Route
+              path="/admin/cuadernos/plantillas/:code"
+              element={<LazyPage><WorkbookTemplatePage /></LazyPage>}
+            />
+            <Route
+              path="/admin/cuadernos/plantillas/:code/:id"
+              element={<LazyPage><WorkbookTemplateQuestionPage /></LazyPage>}
             />
           </Route>
 

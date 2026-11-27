@@ -163,6 +163,9 @@ export interface ProgressWorkbook {
   module_number: number;
   question_count: number;
   template_status: TemplateStatus;
+  /** Preguntas de la plantilla que esperan revisión; null si todavía no se compila. */
+  template_to_review: number | null;
+  compile_error: string | null;
   blank_files: number;
   answered_files: number;
   last_answered: {
