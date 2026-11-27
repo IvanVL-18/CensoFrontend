@@ -17,10 +17,7 @@ import {
 import type { InstitutionUsersResponse } from "./AdminAnswers.types";
 import { generateAnswersPdf } from "./generateAnswersPdf";
 import { generateAnswersExcel } from "./generateAnswersExcel";
-import AddButton from "../../components/AddButton";
 import { TruncatedText } from "../../components/TruncatedText";
-import { useAdminAnswersMutations } from "./hooks/UseAdminAnswersMutations";
-import { BulkAnswersErrorModal } from "./BulkAnswersErrorModal";
 
 export default function InstitutionUsersPage() {
   const { censusId, institutionId } = useParams<{
@@ -38,16 +35,6 @@ export default function InstitutionUsersPage() {
   const [pdfError, setPdfError] = useState<Record<string, string>>({});
   const [xlsxLoading, setXlsxLoading] = useState<Record<string, boolean>>({});
   const [xlsxError, setXlsxError] = useState<Record<string, string>>({});
-
-  const {
-    fileInputRef,
-    bulkLoading,
-    bulkErrors,
-    bulkErrorModalOpen,
-    openFilePicker,
-    handleFileChange,
-    closeBulkErrorModal,
-  } = useAdminAnswersMutations();
 
   useEffect(() => {
     if (!censusId || !institutionId) return;
@@ -156,27 +143,6 @@ export default function InstitutionUsersPage() {
               </p>
             </div>
           </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-          <AddButton
-            label={bulkLoading ? "Cargando…" : "Carga Masiva"}
-            onClick={openFilePicker}
-            icon={
-              bulkLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <FileDown className="h-4 w-4" />
-              )
-            }
-            variant="green"
-            disabled={bulkLoading}
-          />
         </div>
 
         {/* Body */}
@@ -306,12 +272,6 @@ export default function InstitutionUsersPage() {
           )}
         </div>
       </div>
-
-      <BulkAnswersErrorModal
-        isOpen={bulkErrorModalOpen}
-        errors={bulkErrors}
-        onClose={closeBulkErrorModal}
-      />
     </div>
   );
 }

@@ -78,22 +78,3 @@ export interface GetAnswersResponse {
   institution: InstitutionRef;
   modules: ModuleItem[];
 }
-
-// POST /api/answers/import
-export interface BulkImportError {
-  row: number;
-  field: string;
-  invalid_value: string | number | null;
-  errors: string[];
-}
-
-export interface BulkImportResponse {
-  imported: number;
-  errors: BulkImportError[];
-}
-
-export interface BulkErrorModalProps {
-  isOpen: boolean;
-  errors: BulkImportError[];
-  onClose: () => void;
-}
