@@ -5,7 +5,7 @@ import { ArrowLeft, ChevronRight, History, TriangleAlert } from "lucide-react";
 import Loading from "../../components/Loading";
 import { ValidationError } from "../../components/ValidationError";
 import { useAuthContext } from "../../context/AuthContext";
-import { KIND_LABEL, withYears } from "../../lib/compiledTemplate";
+import { KIND_LABEL, anchorLabel, withYears } from "../../lib/compiledTemplate";
 import { getFileAnswers } from "./Answers.service";
 import type { AnswerQuestionRow, FileAnswersPreview } from "./Answers.types";
 import { ChangeBadge, QuestionStatusBadge } from "./components/AnswerBadges";
@@ -179,7 +179,7 @@ export default function WorkbookAnswersPage() {
                       {visible.map((question) => (
                         <tr key={question.id} className="align-top hover:bg-gray-50">
                           <td className="whitespace-nowrap px-4 py-3">
-                            <span className="font-mono text-xs text-gray-900">{question.anchor}</span>
+                            <span className="font-mono text-xs text-gray-900">{anchorLabel(question.anchor)}</span>
                             {question.section_number !== null && (
                               <span className="block text-xs text-gray-500">Sección {question.section_number}</span>
                             )}
@@ -225,7 +225,7 @@ export default function WorkbookAnswersPage() {
                                 <Link
                                   to={`/admin/cuadernos/archivos/${fileId}/respuestas/${question.id}`}
                                   className="inline-flex items-center gap-0.5 whitespace-nowrap text-sm font-medium text-[var(--pantone-7421)] hover:underline"
-                                  aria-label={`Ver las respuestas de la pregunta ${question.anchor}`}
+                                  aria-label={`Ver las respuestas de la pregunta ${anchorLabel(question.anchor)}`}
                                 >
                                   Ver
                                   <ChevronRight size={16} aria-hidden="true" />

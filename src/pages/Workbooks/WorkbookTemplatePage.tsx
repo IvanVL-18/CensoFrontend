@@ -5,13 +5,13 @@ import { ArrowLeft, CircleCheck, Info, TriangleAlert } from "lucide-react";
 import Loading from "../../components/Loading";
 import { ValidationError } from "../../components/ValidationError";
 import { useAuthContext } from "../../context/AuthContext";
-import { KIND_LABEL } from "../../lib/compiledTemplate";
+import { KIND_LABEL, anchorLabel, anchorPhrase } from "../../lib/compiledTemplate";
 import { WorkbooksHeader } from "./components/WorkbooksHeader";
-import { MatchBadge, ReviewBadge, TemplateStatusBadge } from "./components/TemplateBadges";
+import { AnsweredSourceNotice, MatchBadge, ReviewBadge, TemplateStatusBadge } from "./components/TemplateBadges";
 import { approveWorkbookTemplate, compileWorkbookTemplate, getWorkbookTemplate } from "./Templates.service";
 import type { TemplateQuestionRow, WorkbookTemplateSummary } from "./Templates.types";
 import { apiErrorMessage, isCanceled } from "./Workbooks.service";
-import { FLAG_LABEL } from "./templateLabels";
+import { DESIGN_HELP, DESIGN_LABEL, FLAG_LABEL } from "./templateLabels";
 import { formatDateTime, sectionLabel } from "./workbookLabels";
 
 type Filter = "all" | "pending" | "new" | "retouched" | "same" | "flagged";
@@ -24,8 +24,6 @@ const FILTERS: { key: Filter; label: string; test: (q: TemplateQuestionRow) => b
   { key: "same", label: "Iguales", test: (q) => q.match_status === "same" },
   { key: "flagged", label: "Con dudas", test: (q) => q.flags.length > 0 },
 ];
-
-const DESIGN_LABEL = { protected: "Protegido", mixed: "Mixto", open: "Sin protección" } as const;
 
 /**
  * Revisión de la plantilla de un cuaderno (docs/CARGA_CENSOS.md, §7.1, paso 5):
@@ -121,7 +119,7 @@ export default function WorkbookTemplatePage() {
                 </p>
                 <p className="mt-0.5 text-xs text-gray-500">
                   {workbook.compiled_at ? `Compilada el ${formatDateTime(workbook.compiled_at)}` : "Todavía sin compilar"}
-                  {workbook.design ? ` · diseño ${DESIGN_LABEL[workbook.design].toLowerCase()}` : ""}
+                  {workbook.design ? ` · diseño ${(DESIGN_LABEL[workbook.design] ?? workbook.design).toLowerCase()}` : ""}
                 </p>
               </div>
               <TemplateStatusBadge status={workbook.template_status} toReview={workbook.report?.to_review} />
@@ -146,13 +144,14 @@ export default function WorkbookTemplatePage() {
               </div>
             )}
 
-            {workbook.design && workbook.design !== "protected" && (
+            {workbook.design && DESIGN_HELP[workbook.design] && (
               <p className="flex items-start gap-2 rounded-lg bg-[#F7F3E8] p-3 text-sm text-gray-700">
                 <Info size={18} className="mt-0.5 shrink-0 text-[var(--pantone-7421)]" aria-hidden="true" />
-                Este cuaderno no usa el diseño protegido en todas sus preguntas. Las que no lo usan quedan sin celdas de
-                captura hasta que se agregue su perfil de lectura.
+                {DESIGN_HELP[workbook.design]}
               </p>
             )}
+
+            {workbook.report?.blank === false && <AnsweredSourceNotice />}
 
             {notice && (
               <p className="flex items-start gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-800" role="status">
@@ -216,7 +215,7 @@ export default function WorkbookTemplatePage() {
                 <ul className="mt-3 space-y-2 text-sm">
                   {summary.missing.map((question) => (
                     <li key={`${question.workbook}-${question.anchor}`} className="flex gap-3">
-                      <span className="shrink-0 font-mono text-xs text-gray-500">{question.anchor}</span>
+                      <span className="shrink-0 font-mono text-xs text-gray-500">{anchorLabel(question.anchor)}</span>
                       <span className="text-gray-700">{question.text}</span>
                     </li>
                   ))}
@@ -251,7 +250,7 @@ function QuestionsTable({ code, questions, empty }: { code: string; questions: T
           {questions.map((question) => (
             <tr key={question.id} className="align-top">
               <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-gray-700">
-                {question.anchor}
+                {anchorLabel(question.anchor)}
                 <span className="block font-sans text-[11px] text-gray-500">{sectionLabel(question.section_number)}</span>
               </td>
               <td className="max-w-xl px-4 py-3">
@@ -270,9 +269,12 @@ function QuestionsTable({ code, questions, empty }: { code: string; questions: T
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-gray-700">
                 {KIND_LABEL[question.kind]}
-                <span className="block text-xs text-gray-500">
-                  {question.fields === 1 ? "1 campo" : `${question.fields.toLocaleString("es-MX")} campos`}
-                </span>
+                {/* En los bloques repetidos el conteo solo trae los campos de fuera de los bloques. */}
+                {(question.kind !== "blocks" || question.fields > 0) && (
+                  <span className="block text-xs text-gray-500">
+                    {question.fields === 1 ? "1 campo" : `${question.fields.toLocaleString("es-MX")} campos`}
+                  </span>
+                )}
               </td>
               <td className="whitespace-nowrap px-4 py-3">
                 <MatchBadge status={question.match_status} />
@@ -280,7 +282,7 @@ function QuestionsTable({ code, questions, empty }: { code: string; questions: T
                   <span className="mt-1 block text-xs text-gray-500">
                     {question.matched.anchor === question.anchor
                       ? `mismo número en ${question.matched.year}`
-                      : `es la ${question.matched.anchor} de ${question.matched.year}`}
+                      : `es ${anchorPhrase(question.matched.anchor)} de ${question.matched.year}`}
                   </span>
                 )}
               </td>

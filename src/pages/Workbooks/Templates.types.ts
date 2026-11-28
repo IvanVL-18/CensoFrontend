@@ -15,7 +15,16 @@ export type TemplateFlag =
   | "no_label"
   | "no_option_labels"
   | "text_too_long"
-  | "invalid_template";
+  | "invalid_template"
+  | "uneven_blocks"
+  | "needs_blank";
+
+/**
+ * Cómo marca el cuaderno sus celdas de captura. «protected»: con la protección de la hoja;
+ * «mixed»: solo en parte de sus preguntas; «border»: sin protección, por el borde de la celda;
+ * «open»: no se reconocieron celdas de captura.
+ */
+export type WorkbookDesign = "protected" | "mixed" | "border" | "open";
 
 export interface TemplateReport {
   questions: number;
@@ -24,6 +33,12 @@ export interface TemplateReport {
   flags: Partial<Record<TemplateFlag, number>>;
   to_review: number;
   seconds: number;
+  /**
+   * Si la plantilla se armó con el cuaderno en blanco. false: se armó con un contestado y, en
+   * los diseños sin protección, solo se leen las preguntas que coinciden con las de otra edición.
+   * null si no se sabe o no hizo falta saberlo.
+   */
+  blank?: boolean | null;
 }
 
 export interface TemplateWorkbook {
@@ -35,7 +50,7 @@ export interface TemplateWorkbook {
   kind: WorkbookKind;
   sections: WorkbookSectionSummary[];
   template_status: TemplateStatus;
-  design: "protected" | "mixed" | "open" | null;
+  design: WorkbookDesign | null;
   compiled_at: string | null;
   compile_error: string | null;
   report: TemplateReport | null;
@@ -88,16 +103,44 @@ export interface WorkbookTemplateSummary {
 
 export interface CellPosition {
   col: string;
-  /** Filas de distancia desde la fila del ancla. */
+  /** Filas de distancia desde la fila del ancla (o desde el inicio del bloque, en un bloque repetido). */
   row: number;
+  /** Las demás casillas de un campo que ocupa varias (una fecha escrita como mes y año). */
+  more?: { col: string; row: number }[];
+}
+
+export interface ListCellMap {
+  first_row: number;
+  /** Filas físicas de la tabla: si viene partida en dos mitades, las de una. */
+  rows: number;
+  /** null si la tabla no numera sus renglones. */
+  number_col: string | null;
+  /** Columna de cada campo, por clave. */
+  columns: Record<string, string>;
+  /** En una tabla partida en dos: las columnas de las demás mitades, con las mismas claves. */
+  extra?: Record<string, string>[];
+  /** Columnas de las demás casillas de un campo que ocupa varias. */
+  parts?: Record<string, string[]>;
+}
+
+/** Dónde están los bloques repetidos de la pregunta. Las posiciones de sus campos y tablas son relativas al inicio del bloque. */
+export interface RepeatCellMap {
+  /** Filas de distancia desde el ancla hasta el inicio del primer bloque. */
+  first_row: number;
+  /** Filas entre el inicio de un bloque y el del siguiente. */
+  stride: number;
+  count: number;
+  fields: Record<string, CellPosition>;
+  lists: ListCellMap[];
 }
 
 export interface TemplateCellMap {
   sheet: string;
   anchor_row: number;
   fields: Record<string, CellPosition>;
-  lists: { first_row: number; rows: number; number_col: string; columns: Record<string, string> }[];
+  lists: ListCellMap[];
   comment: CellPosition | null;
+  repeat?: RepeatCellMap;
 }
 
 export interface TemplateQuestionDetail extends Omit<TemplateQuestionRow, "fields"> {
