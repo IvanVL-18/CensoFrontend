@@ -1,8 +1,8 @@
 import { Fragment, useId, useMemo, useState } from "react";
 import clsx from "clsx";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
-import { listCellText, listColumns, mergedRows } from "../../lib/compiledAnswers";
-import type { AnswerRow, CompiledTemplate } from "../../lib/compiledTemplate";
+import { groupedRowName, listCellText, listColumns, mergedRows } from "../../lib/compiledAnswers";
+import { anchorLabel, type AnswerRow, type CompiledTemplate } from "../../lib/compiledTemplate";
 import { AnswerText } from "./AnswerText";
 
 interface AnswerListTableProps {
@@ -21,7 +21,8 @@ const SEARCH_FROM = 8;
 /**
  * Tabla de lista en digital: una fila por renglón contestado, los códigos con su etiqueta y
  * las marcas con X como las opciones marcadas. Si la tabla repite las filas de otra pregunta,
- * cada fila lleva el nombre que se escribió allá. Al abrir una fila se ve completa, en vertical.
+ * cada fila lleva el nombre que se escribió allá; si sus filas vienen agrupadas bajo una
+ * etiqueta («a. Agricultura»), el de su grupo. Al abrir una fila se ve completa, en vertical.
  */
 export function AnswerListTable({ template, lists, answers, editionYear, rowNames }: AnswerListTableProps) {
   const searchId = useId();
@@ -37,9 +38,16 @@ export function AnswerListTable({ template, lists, answers, editionYear, rowName
     [rows, columns],
   );
 
+  // El nombre de la fila: el que viene de otra pregunta o, si no, el de su grupo de filas.
+  const grouped = lists.some((index) => (template.lists[index]?.groups?.length ?? 0) > 0);
+  const named = rowNames !== undefined || grouped;
+  const nameLabel = rowNames ? rowNames.label || "Nombre" : "Nombre de la fila";
+  const nameOf = (row: number): string | undefined =>
+    rowNames?.rows[String(row)] ?? (grouped ? groupedRowName(template, lists, row) || undefined : undefined);
+
   const needle = query.trim().toLowerCase();
   const visible = rows
-    .map((row, index) => ({ row, cells: texts[index], name: rowNames?.rows[String(row._row)] }))
+    .map((row, index) => ({ row, cells: texts[index], name: nameOf(row._row) }))
     .filter(
       ({ cells, name }) =>
         needle === "" || (name ?? "").toLowerCase().includes(needle) || cells.some((text) => text.toLowerCase().includes(needle)),
@@ -85,9 +93,10 @@ export function AnswerListTable({ template, lists, answers, editionYear, rowName
               <th scope="col" className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Fila
               </th>
-              {rowNames && (
+              {named && (
                 <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-600">
-                  {rowNames.label || "Nombre"} <span className="font-normal text-gray-500">(de la {rowNames.anchor})</span>
+                  {nameLabel}
+                  {rowNames && <span className="font-normal text-gray-500"> (de la {anchorLabel(rowNames.anchor)})</span>}
                 </th>
               )}
               {columns.map((column) => (
@@ -126,7 +135,7 @@ export function AnswerListTable({ template, lists, answers, editionYear, rowName
                       </button>
                       {row._row}
                     </td>
-                    {rowNames && <td className="px-3 py-1.5 font-medium text-gray-900">{name ?? <AnswerText text="" />}</td>}
+                    {named && <td className="px-3 py-1.5 font-medium text-gray-900">{name ?? <AnswerText text="" />}</td>}
                     {cells.map((text, index) => (
                       <td key={columns[index].id} className="px-3 py-1.5 text-gray-900">
                         <AnswerText text={text} />
@@ -137,9 +146,9 @@ export function AnswerListTable({ template, lists, answers, editionYear, rowName
                     <tr className="bg-[#F7F3E8] print:hidden">
                       <td colSpan={columns.length + 2} className="px-4 pb-3 pt-1">
                         <dl className="grid gap-x-6 gap-y-2 rounded-lg bg-white p-3 sm:grid-cols-2">
-                          {rowNames && name && (
+                          {named && name && (
                             <div className="sm:col-span-2">
-                              <dt className="text-xs text-gray-500">{rowNames.label || "Nombre"}</dt>
+                              <dt className="text-xs text-gray-500">{nameLabel}</dt>
                               <dd className="font-medium text-gray-900">{name}</dd>
                             </div>
                           )}

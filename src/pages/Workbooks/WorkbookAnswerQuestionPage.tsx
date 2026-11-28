@@ -8,6 +8,8 @@ import { ValidationError } from "../../components/ValidationError";
 import {
   KIND_LABEL,
   SPECIAL_VALUE_LABEL,
+  anchorLabel,
+  continuationNote,
   fieldLabel,
   formatAnswerValue,
   isSpecialValue,
@@ -155,7 +157,7 @@ function Detail({ detail }: { detail: AnswerQuestionDetail }) {
     <>
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="rounded bg-gray-100 px-2 py-0.5 font-mono text-xs text-gray-900">{question.anchor}</span>
+          <span className="rounded bg-gray-100 px-2 py-0.5 font-mono text-xs text-gray-900">{anchorLabel(question.anchor)}</span>
           <span className="text-gray-600">{KIND_LABEL[question.kind]}</span>
           <QuestionStatusBadge status={detail.status} />
           {detail.change && <ChangeBadge change={detail.change} />}
@@ -165,6 +167,7 @@ function Detail({ detail }: { detail: AnswerQuestionDetail }) {
           {workbook.code}
           {workbook.module_name ? ` · ${workbook.module_name}` : ""} · hoja{" "}
           <span className="font-mono">{question.sheet}</span>
+          {template.belongs_to ? ` · ${continuationNote(template)}` : ""}
         </p>
       </div>
 
@@ -243,11 +246,12 @@ function Answer({ template, answer, year, highlight, other, showNote = false }: 
   const loose = template.fields.filter((field) => field.list === undefined);
   const pureGrid = template.lists.length === 0 && template.grid.rows.length > 0;
   const comparing = other !== undefined;
+  const blocks = answer.blocks ?? [];
 
   return (
     <div className="space-y-4">
       {/* Sin tablas de lista, la pregunta se dibuja como en el Excel, con las respuestas en su lugar. */}
-      {pureGrid && <CompiledGrid template={template} editionYear={year} values={answer.fields} highlight={highlight} />}
+      {pureGrid && <CompiledGrid template={template} editionYear={year} values={answer.fields} blocks={blocks} highlight={highlight} />}
 
       {showNote && (pureGrid || comparing) && (
         <p className="text-xs text-gray-500">
@@ -271,6 +275,11 @@ function Answer({ template, answer, year, highlight, other, showNote = false }: 
           year={year}
         />
       ))}
+
+      {/* Los bloques repetidos («Programa 1», «Programa 2»…) se dibujan como en el Excel; si arriba ya se dibujó la pregunta, van con ella. */}
+      {!pureGrid && template.repeat && (
+        <CompiledGrid template={{ ...template, fields: [], lists: [], grid: { cols: [], rows: [] } }} editionYear={year} blocks={blocks} />
+      )}
 
       {answer.comment && (
         <div className="rounded-lg border border-gray-200 p-3">

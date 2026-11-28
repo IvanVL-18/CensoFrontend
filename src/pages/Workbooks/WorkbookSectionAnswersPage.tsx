@@ -6,7 +6,7 @@ import { DigitalAnswer } from "../../components/compiled/DigitalAnswer";
 import Loading from "../../components/Loading";
 import { ValidationError } from "../../components/ValidationError";
 import { useAuthContext } from "../../context/AuthContext";
-import { KIND_LABEL, withYears } from "../../lib/compiledTemplate";
+import { KIND_LABEL, anchorLabel, anchorPhrase, withYears } from "../../lib/compiledTemplate";
 import { getSectionAnswers, getSectionBundle } from "./CensusAnswers.service";
 import type { QuestionAnswers, SectionAnswers, SectionBundle, SectionQuestion } from "./CensusAnswers.types";
 import { QuestionStatusBadge } from "./components/AnswerBadges";
@@ -320,12 +320,17 @@ function QuestionCard({ question, detail, failed, year, canSee, drawNow }: Quest
 
   const previous = detail?.previous ?? null;
   const draw = visible || drawNow;
+  // Lo de la edición anterior que no casa uno a uno con esta y se ve aparte.
+  const previousApart = [
+    previous?.answer?.lists.some((rows) => rows.length > 0) ? "las tablas" : "",
+    (previous?.answer?.blocks?.length ?? 0) > 0 ? "los bloques" : "",
+  ].filter((part) => part !== "");
 
   return (
     <article ref={ref} className="break-inside-avoid-page rounded-xl border border-gray-200 print:border-0 print:border-b print:rounded-none">
       <header className="space-y-1 border-b border-gray-100 p-4">
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="rounded bg-gray-100 px-2 py-0.5 font-mono text-xs text-gray-900">{question.anchor}</span>
+          <span className="rounded bg-gray-100 px-2 py-0.5 font-mono text-xs text-gray-900">{anchorLabel(question.anchor)}</span>
           <span className="text-gray-600">{KIND_LABEL[question.kind]}</span>
           <QuestionStatusBadge status={question.answered ? (question.status ?? "ok") : "empty"} />
         </div>
@@ -398,17 +403,17 @@ function QuestionCard({ question, detail, failed, year, canSee, drawNow }: Quest
                   <p>
                     {previous.anchor === question.anchor
                       ? `En ${previous.year} tenía el mismo número`
-                      : `En ${previous.year} era la pregunta ${previous.anchor}`}
+                      : `En ${previous.year} era ${anchorPhrase(previous.anchor)}`}
                     {previous.answer
                       ? previous.same_institution
                         ? "."
                         : `; ese año la contestó ${previous.institution ?? "otra institución"}.`
                       : "; de ese año no hay respuesta importada."}
                   </p>
-                  {previous.answer && previous.answer.lists.some((rows) => rows.length > 0) && (
+                  {previous.answer && previousApart.length > 0 && (
                     <details>
                       <summary className="cursor-pointer text-sm text-[var(--pantone-7421)]">
-                        Ver las tablas que se respondieron en {previous.year}
+                        Ver {previousApart.join(" y ")} que se respondieron en {previous.year}
                       </summary>
                       <div className="mt-2">
                         <DigitalAnswer

@@ -8,16 +8,22 @@ import { useAuthContext } from "../../context/AuthContext";
 import {
   FIELD_TYPE_LABEL,
   KIND_LABEL,
+  allFields,
+  anchorLabel,
+  anchorPhrase,
+  blockTitle,
+  continuationNote,
   diffFields,
   diffWords,
   fieldLabel,
   withYears,
   type TemplateField,
+  type TemplateList,
 } from "../../lib/compiledTemplate";
 import { WorkbooksHeader } from "./components/WorkbooksHeader";
-import { FlagList, MatchBadge, ReviewBadge } from "./components/TemplateBadges";
+import { AnsweredSourceNotice, FlagList, MatchBadge, ReviewBadge } from "./components/TemplateBadges";
 import { approveTemplateQuestion, getTemplateQuestion, getWorkbookTemplate } from "./Templates.service";
-import type { TemplateCellMap, TemplateQuestionDetail, TemplateQuestionRow } from "./Templates.types";
+import type { CellPosition, ListCellMap, TemplateQuestionDetail, TemplateQuestionRow } from "./Templates.types";
 import { apiErrorMessage, isCanceled } from "./Workbooks.service";
 import { formatDateTime } from "./workbookLabels";
 
@@ -33,6 +39,8 @@ export default function WorkbookTemplateQuestionPage() {
 
   const [question, setQuestion] = useState<TemplateQuestionDetail | null>(null);
   const [siblings, setSiblings] = useState<TemplateQuestionRow[]>([]);
+  /** La plantilla del cuaderno se armó con un contestado. */
+  const [fromAnswered, setFromAnswered] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [approving, setApproving] = useState(false);
@@ -58,7 +66,10 @@ export default function WorkbookTemplateQuestionPage() {
   useEffect(() => {
     const controller = new AbortController();
     getWorkbookTemplate(code, controller.signal)
-      .then((summary) => setSiblings(summary.questions))
+      .then((summary) => {
+        setSiblings(summary.questions);
+        setFromAnswered(summary.workbook.report?.blank === false);
+      })
       .catch(() => undefined);
     return () => controller.abort();
   }, [code]);
@@ -110,7 +121,7 @@ export default function WorkbookTemplateQuestionPage() {
           <>
             <header className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded bg-gray-100 px-2 py-0.5 font-mono text-sm text-gray-800">{question.anchor}</span>
+                <span className="rounded bg-gray-100 px-2 py-0.5 font-mono text-sm text-gray-800">{anchorLabel(question.anchor)}</span>
                 <span className="text-sm text-gray-600">{KIND_LABEL[question.kind]}</span>
                 <MatchBadge status={question.match_status} />
                 <ReviewBadge status={question.review_status} />
@@ -120,8 +131,10 @@ export default function WorkbookTemplateQuestionPage() {
                 {question.workbook.program} {question.workbook.year}
                 {question.placement?.section ? ` · ${question.placement.section}` : ""} · hoja{" "}
                 <span className="font-mono">{question.sheet}</span>
+                {question.template.belongs_to ? ` · ${continuationNote(question.template)}` : ""}
               </p>
               <FlagList flags={question.flags} />
+              {fromAnswered && <AnsweredSourceNotice />}
 
               {question.review_status === "pending" && canApprove && (
                 <div className="flex flex-wrap items-center gap-3">
@@ -145,7 +158,7 @@ export default function WorkbookTemplateQuestionPage() {
                     <>
                       {" "}
                       <Link to={`${base}/${nextPending.id}`} className="font-medium text-[var(--pantone-7421)] hover:underline">
-                        Ir a la siguiente por revisar ({nextPending.anchor})
+                        Ir a la siguiente por revisar ({anchorLabel(nextPending.anchor)})
                       </Link>
                     </>
                   )}
@@ -179,7 +192,7 @@ export default function WorkbookTemplateQuestionPage() {
               </p>
             </section>
 
-            <FieldsTable question={question} />
+            <QuestionFields question={question} />
           </>
         )}
       </div>
@@ -220,9 +233,10 @@ function Comparison({ question }: { question: TemplateQuestionDetail }) {
     () => (previous?.template ? diffWords(previous.template.text, question.template.text) : []),
     [previous, question.template.text],
   );
+  // Se comparan también los campos del bloque repetido, si la pregunta lo trae.
   const fields = useMemo(
-    () => (previous?.template ? diffFields(previous.template.fields, question.template.fields) : null),
-    [previous, question.template.fields],
+    () => (previous?.template ? diffFields(allFields(previous.template), allFields(question.template)) : null),
+    [previous, question.template],
   );
 
   if (!previous) {
@@ -233,7 +247,7 @@ function Comparison({ question }: { question: TemplateQuestionDetail }) {
     ) : null;
   }
 
-  const where = `la ${previous.anchor} de ${previous.year}`;
+  const where = `${anchorPhrase(previous.anchor)} de ${previous.year}`;
   if (question.match_status === "same") {
     return (
       <p className="rounded-lg bg-gray-50 p-3 text-sm text-gray-700">
@@ -318,15 +332,66 @@ function describe(field: TemplateField, year: number): string {
   return `${label} — ${FIELD_TYPE_LABEL[field.type].toLowerCase()}`;
 }
 
-/** Los campos de la pregunta, con la celda del Excel de esta edición donde está cada uno. */
-function FieldsTable({ question }: { question: TemplateQuestionDetail }) {
+/**
+ * Los campos de la pregunta y, si trae bloques repetidos, los de un bloque, con la celda del
+ * Excel de esta edición donde está cada uno.
+ */
+function QuestionFields({ question }: { question: TemplateQuestionDetail }) {
   const { template, cell_map: map } = question;
-  if (template.fields.length === 0) {
+  const year = question.workbook.year;
+  const { repeat } = template;
+  const blocks = map.repeat;
+  // Las posiciones de un bloque se cuentan desde su inicio: aquí, el del primero.
+  const blockStart = blocks ? map.anchor_row + blocks.first_row : 0;
+
+  return (
+    <>
+      <FieldsTable
+        id="campos"
+        title="Campos"
+        fields={template.fields}
+        lists={template.lists}
+        year={year}
+        cell={(field) => cellOf(field, map.anchor_row, map.fields, map.lists)}
+      />
+      {repeat && (
+        <FieldsTable
+          id="campos-bloque"
+          title={`Campos de cada bloque («${repeat.title}»)`}
+          note={
+            `La pregunta trae ${repeat.count.toLocaleString("es-MX")} bloques con la misma forma.` +
+            (blocks
+              ? ` Las celdas son las de «${blockTitle(repeat, 1)}», que empieza en la fila ${blockStart}; cada bloque siguiente está ${blocks.stride} filas más abajo.`
+              : "")
+          }
+          fields={repeat.fields}
+          lists={repeat.lists}
+          year={year}
+          cell={(field) => (blocks ? cellOf(field, blockStart, blocks.fields, blocks.lists) : "—")}
+        />
+      )}
+    </>
+  );
+}
+
+interface FieldsTableProps {
+  id: string;
+  title: string;
+  note?: string;
+  fields: TemplateField[];
+  /** Las tablas de lista a las que apunta `field.list`: las de la pregunta o las del bloque. */
+  lists: TemplateList[];
+  year: number;
+  /** Celda o rango del Excel donde está el campo. */
+  cell: (field: TemplateField) => string;
+}
+
+function FieldsTable({ id, title, note, fields, lists, year, cell }: FieldsTableProps) {
+  if (fields.length === 0) {
     return null;
   }
-  const year = question.workbook.year;
   // Con muchos campos (matrices grandes) la tabla se pliega.
-  const collapsed = template.fields.length > 30;
+  const collapsed = fields.length > 30;
 
   const table = (
     <div className="overflow-x-auto rounded-xl border border-gray-200">
@@ -341,13 +406,13 @@ function FieldsTable({ question }: { question: TemplateQuestionDetail }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {template.fields.map((field) => (
+          {fields.map((field) => (
             <tr key={field.key} className="align-top">
               <td className="px-4 py-2 text-gray-900">
                 {fieldLabel(field, year) || <span className="italic text-gray-500">La respuesta a la pregunta</span>}
                 {field.list !== undefined && (
                   <span className="block text-xs text-gray-500">
-                    Columna de la tabla de {template.lists[field.list]?.rows.toLocaleString("es-MX") ?? "varias"} filas
+                    Columna de la tabla de {lists[field.list]?.rows.toLocaleString("es-MX") ?? "varias"} filas
                   </span>
                 )}
               </td>
@@ -370,7 +435,7 @@ function FieldsTable({ question }: { question: TemplateQuestionDetail }) {
                   "—"
                 )}
               </td>
-              <td className="whitespace-nowrap px-4 py-2 font-mono text-xs text-gray-600">{cellOf(field, map)}</td>
+              <td className="whitespace-nowrap px-4 py-2 font-mono text-xs text-gray-600">{cell(field)}</td>
             </tr>
           ))}
         </tbody>
@@ -379,10 +444,11 @@ function FieldsTable({ question }: { question: TemplateQuestionDetail }) {
   );
 
   return (
-    <section aria-labelledby="campos">
-      <h3 id="campos" className="mb-2 font-semibold text-gray-800">
-        Campos ({template.fields.length.toLocaleString("es-MX")})
+    <section aria-labelledby={id}>
+      <h3 id={id} className="mb-2 font-semibold text-gray-800">
+        {title} ({fields.length.toLocaleString("es-MX")})
       </h3>
+      {note && <p className="mb-2 text-xs text-gray-500">{note}</p>}
       {collapsed ? (
         <details>
           <summary className="cursor-pointer text-sm text-[var(--pantone-7421)]">Ver la lista de campos</summary>
@@ -395,17 +461,25 @@ function FieldsTable({ question }: { question: TemplateQuestionDetail }) {
   );
 }
 
-/** Celda o rango del Excel donde está el campo: «C14», o «D23:D27» en una tabla de lista. */
-function cellOf(field: TemplateField, map: TemplateCellMap): string {
-  const single = map.fields[field.key];
+/**
+ * Celda o rango del Excel donde está el campo: «C14», o «D23:D27» en una tabla de lista. `base`
+ * es la fila desde la que se cuentan las posiciones: la del ancla o la del inicio del bloque.
+ * Un campo en varias casillas, o una tabla partida en dos mitades, da varias celdas o rangos.
+ */
+function cellOf(field: TemplateField, base: number, fields: Record<string, CellPosition>, lists: ListCellMap[]): string {
+  const single = fields[field.key];
   if (single) {
-    return `${single.col}${map.anchor_row + single.row}`;
+    return [single, ...(single.more ?? [])].map((at) => `${at.col}${base + at.row}`).join(", ");
   }
-  for (const list of map.lists) {
+  for (const list of lists) {
     const column = list.columns[field.key];
     if (column) {
-      const first = map.anchor_row + list.first_row;
-      return `${column}${first}:${column}${first + list.rows - 1}`;
+      const first = base + list.first_row;
+      const columns = [column, ...(list.parts?.[field.key] ?? []), ...(list.extra ?? []).map((half) => half[field.key])];
+      return columns
+        .filter(Boolean)
+        .map((letter) => `${letter}${first}:${letter}${first + list.rows - 1}`)
+        .join(", ");
     }
   }
   return "—";

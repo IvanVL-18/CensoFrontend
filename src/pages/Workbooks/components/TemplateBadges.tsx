@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { MatchStatus, ReviewStatus, TemplateFlag } from "../Templates.types";
 import type { TemplateStatus } from "../Workbooks.types";
-import { FLAG_LABEL, MATCH_HELP, MATCH_LABEL, REVIEW_LABEL } from "../templateLabels";
+import { ANSWERED_SOURCE_NOTICE, FLAG_LABEL, MATCH_HELP, MATCH_LABEL, REVIEW_LABEL } from "../templateLabels";
 import { TEMPLATE_LABEL } from "../workbookLabels";
 
 // El estado siempre lleva icono y texto: el color nunca va solo.
@@ -67,6 +67,16 @@ export function TemplateStatusBadge({ status, toReview }: { status: TemplateStat
       {TEMPLATE_LABEL[status]}
       {status === "in_review" && toReview ? ` · ${toReview} por revisar` : ""}
     </span>
+  );
+}
+
+/** Aviso de que la plantilla del cuaderno se armó con un contestado y no con el cuaderno en blanco. */
+export function AnsweredSourceNotice() {
+  return (
+    <p className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" role="note">
+      <TriangleAlert size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+      {ANSWERED_SOURCE_NOTICE}
+    </p>
   );
 }
 
